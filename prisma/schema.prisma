@@ -1,0 +1,1083 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// MULTI-TENANCY & AUTH
+// ============================================
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  domain    String?
+  configKey String   @default("default")
+  logo      String?
+  settings  Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users            User[]
+  clients          Client[]
+  briefs           Brief[]
+  projects         Project[]
+  timeEntries      TimeEntry[]
+  rfps             RFP[]
+  clientActivities ClientActivity[]
+  deals            Deal[]
+
+  @@map("organizations")
+}
+
+model User {
+  id              String          @id @default(cuid())
+  organizationId  String
+  email           String
+  name            String
+  role            String
+  department      String
+  permissionLevel PermissionLevel @default(STAFF)
+  isFreelancer    Boolean         @default(false)
+  avatarUrl       String?
+  weeklyCapacity  Int             @default(40)
+  hourlyRate      Decimal?        @db.Decimal(10, 2)
+  skills          String[]        @default([])
+  teamLeadId      String?
+  isActive        Boolean         @default(true)
+  contractEnd     DateTime?
+  notes           String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Employee profile fields
+  phone           String?
+  dateOfBirth     DateTime?
+  nationality     String?
+  maritalStatus   MaritalStatus?
+  emergencyContact String?
+  emergencyPhone  String?
+
+  // UAE-specific fields
+  emiratesId      String?
+  emiratesIdExpiry DateTime?
+  passportNumber  String?
+  passportExpiry  DateTime?
+  visaStatus      VisaStatus?
+  visaExpiry      DateTime?
+
+  // Bank details
+  bankName        String?
+  bankAccountNumber String?
+  bankIban        String?
+
+  // Employment details
+  startDate       DateTime?
+  probationEnd    DateTime?
+  employmentType  EmploymentType @default(FULL_TIME)
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  teamLead       User?        @relation("TeamMembers", fields: [teamLeadId], references: [id])
+  teamMembers    User[]       @relation("TeamMembers")
+  briefsCreated  Brief[]      @relation("BriefCreator")
+  briefsAssigned Brief[]      @relation("BriefAssignee")
+  timeEntries    TimeEntry[]
+  comments       Comment[]
+  accounts       Account[]
+  sessions       Session[]
+  documents      EmployeeDocument[]
+
+  // CRM relations
+  managedClients   Client[]         @relation("AccountManager")
+  clientActivities ClientActivity[]
+  ownedDeals       Deal[]           @relation("DealOwner")
+
+  // Leave relations
+  leaveBalances    LeaveBalance[]
+  leaveRequests    LeaveRequest[]   @relation("LeaveRequester")
+  leaveReviews     LeaveRequest[]   @relation("LeaveReviewer")
+
+  @@unique([organizationId, email])
+  @@index([organizationId])
+  @@index([department])
+  @@map("users")
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+enum VisaStatus {
+  EMPLOYMENT
+  INVESTOR
+  GOLDEN
+  FREELANCE
+  DEPENDENT
+  VISIT
+  NOT_APPLICABLE
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCE
+  INTERN
+}
+
+enum PermissionLevel {
+  ADMIN
+  LEADERSHIP
+  TEAM_LEAD
+  STAFF
+  FREELANCER
+  CLIENT
+}
+
+// NextAuth.js required tables
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================
+// CLIENTS & PROJECTS
+// ============================================
+
+model Client {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  code           String
+  industry       String?
+  isRetainer     Boolean  @default(false)
+  retainerHours  Int?
+  contactName    String?
+  contactEmail   String?
+  logoUrl        String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // CRM fields
+  companySize        CompanySize?
+  website            String?
+  linkedIn           String?
+  accountManagerId   String?
+  relationshipStatus RelationshipStatus @default(ACTIVE)
+  lifetimeValue      Decimal?           @db.Decimal(14, 2)
+  leadSource         LeadSource?
+  notes              String?            @db.Text
+
+  organization     Organization     @relation(fields: [organizationId], references: [id])
+  accountManager   User?            @relation("AccountManager", fields: [accountManagerId], references: [id])
+  projects         Project[]
+  briefs           Brief[]
+  contacts         ClientContact[]
+  activities       ClientActivity[]
+  deals            Deal[]
+  onboarding       ClientOnboarding?
+  blackoutPeriods  BlackoutPeriod[]
+  npsSurveys       NPSSurvey[]
+  driveFolders     GoogleDriveFolder[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@index([accountManagerId])
+  @@map("clients")
+}
+
+enum CompanySize {
+  STARTUP    // 1-10
+  SMALL      // 11-50
+  MEDIUM     // 51-200
+  LARGE      // 201-1000
+  ENTERPRISE // 1000+
+}
+
+enum RelationshipStatus {
+  LEAD
+  PROSPECT
+  ACTIVE
+  AT_RISK
+  CHURNED
+  DORMANT
+}
+
+enum LeadSource {
+  REFERRAL
+  WEBSITE
+  SOCIAL_MEDIA
+  EVENT
+  COLD_OUTREACH
+  RFP_PORTAL
+  PARTNERSHIP
+  OTHER
+}
+
+model ClientContact {
+  id             String  @id @default(cuid())
+  clientId       String
+  name           String
+  email          String?
+  phone          String?
+  jobTitle       String?
+  department     String?
+  linkedIn       String?
+  isPrimary      Boolean @default(false)
+  isDecisionMaker Boolean @default(false)
+  isBillingContact Boolean @default(false)
+  notes          String?
+  isActive       Boolean @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  npsSurveys   NPSSurvey[]
+  npsResponses NPSResponse[]
+
+  @@index([clientId])
+  @@map("client_contacts")
+}
+
+model ClientActivity {
+  id             String       @id @default(cuid())
+  organizationId String
+  clientId       String
+  userId         String
+  type           ActivityType
+  title          String
+  description    String?      @db.Text
+  meetingDate    DateTime?
+  meetingDuration Int?        // minutes
+  attendees      String[]     @default([])
+  emailSubject   String?
+  callDuration   Int?         // minutes
+  createdAt      DateTime     @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@map("client_activities")
+}
+
+enum ActivityType {
+  NOTE
+  EMAIL
+  CALL
+  MEETING
+  TASK
+  STATUS_CHANGE
+}
+
+model Deal {
+  id                String     @id @default(cuid())
+  organizationId    String
+  clientId          String?
+  name              String
+  companyName       String?    // If no client yet
+  contactName       String?
+  contactEmail      String?
+  stage             DealStage  @default(LEAD)
+  value             Decimal?   @db.Decimal(14, 2)
+  currency          String     @default("AED")
+  probability       Int?       // 0-100%
+  source            LeadSource?
+  expectedCloseDate DateTime?
+  actualCloseDate   DateTime?
+  ownerId           String
+  lostReason        String?
+  wonRfpId          String?    // Link to RFP if converted
+  notes             String?    @db.Text
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  client       Client?      @relation(fields: [clientId], references: [id])
+  owner        User         @relation("DealOwner", fields: [ownerId], references: [id])
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([stage])
+  @@map("deals")
+}
+
+enum DealStage {
+  LEAD           // Initial contact
+  RFP_INVITE     // Invited to submit RFP
+  RFP_SUBMITTED  // RFP submitted
+  WON            // Deal won
+  LOST           // Deal lost
+}
+
+model Project {
+  id             String        @id @default(cuid())
+  organizationId String
+  clientId       String
+  name           String
+  code           String?
+  type           ProjectType   @default(PROJECT)
+  status         ProjectStatus @default(ACTIVE)
+  startDate      DateTime?
+  endDate        DateTime?
+  budgetHours    Int?
+  budgetAmount   Decimal?      @db.Decimal(12, 2)
+  description    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  organization     Organization        @relation(fields: [organizationId], references: [id])
+  client           Client              @relation(fields: [clientId], references: [id])
+  briefs           Brief[]
+  timeEntries      TimeEntry[]
+  driveFolders     GoogleDriveFolder[]
+  googleDocuments  GoogleDocument[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@map("projects")
+}
+
+enum ProjectType {
+  RETAINER
+  PROJECT
+  PITCH
+  INTERNAL
+}
+
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+// ============================================
+// BRIEFING SYSTEM
+// ============================================
+
+model Brief {
+  id             String      @id @default(cuid())
+  organizationId String
+  clientId       String
+  projectId      String?
+  briefNumber    String
+  type           BriefType
+  title          String
+  status         BriefStatus @default(DRAFT)
+  priority       Priority    @default(MEDIUM)
+  createdById    String
+  assigneeId     String?
+  deadline       DateTime?
+  startDate      DateTime?
+  endDate        DateTime?
+  formData       Json        @default("{}")
+  qualityScore   Int?
+  aiSuggestions  Json?
+  estimatedHours Decimal?    @db.Decimal(6, 2)
+  actualHours    Decimal?    @db.Decimal(6, 2)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  submittedAt    DateTime?
+  completedAt    DateTime?
+
+  organization  Organization         @relation(fields: [organizationId], references: [id])
+  client        Client               @relation(fields: [clientId], references: [id])
+  project       Project?             @relation(fields: [projectId], references: [id])
+  createdBy     User                 @relation("BriefCreator", fields: [createdById], references: [id])
+  assignee      User?                @relation("BriefAssignee", fields: [assigneeId], references: [id])
+  timeEntries      TimeEntry[]
+  comments         Comment[]
+  attachments      Attachment[]
+  statusHistory    BriefStatusHistory[]
+  calendarEvents   GoogleCalendarEvent[]
+  googleDocuments  GoogleDocument[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([type])
+  @@map("briefs")
+}
+
+enum BriefType {
+  VIDEO_SHOOT
+  VIDEO_EDIT
+  DESIGN
+  COPYWRITING_EN
+  COPYWRITING_AR
+  PAID_MEDIA
+  REPORT
+}
+
+enum BriefStatus {
+  DRAFT
+  SUBMITTED
+  IN_REVIEW
+  APPROVED
+  IN_PROGRESS
+  INTERNAL_REVIEW
+  CLIENT_REVIEW
+  REVISIONS
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model BriefStatusHistory {
+  id          String       @id @default(cuid())
+  briefId     String
+  fromStatus  BriefStatus?
+  toStatus    BriefStatus
+  changedById String
+  notes       String?
+  createdAt   DateTime     @default(now())
+
+  brief Brief @relation(fields: [briefId], references: [id], onDelete: Cascade)
+
+  @@index([briefId])
+  @@map("brief_status_history")
+}
+
+// ============================================
+// TIME TRACKING
+// ============================================
+
+model TimeEntry {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  briefId        String?
+  projectId      String?
+  description    String?
+  date           DateTime @db.Date
+  hours          Decimal  @db.Decimal(5, 2)
+  startTime      DateTime?
+  endTime        DateTime?
+  isRunning      Boolean  @default(false)
+  isBillable     Boolean  @default(true)
+  isApproved     Boolean  @default(false)
+  approvedById   String?
+  approvedAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+  brief        Brief?       @relation(fields: [briefId], references: [id])
+  project      Project?     @relation(fields: [projectId], references: [id])
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([briefId])
+  @@index([date])
+  @@map("time_entries")
+}
+
+// ============================================
+// RFP MANAGEMENT
+// ============================================
+
+model RFP {
+  id              String          @id @default(cuid())
+  organizationId  String
+  name            String
+  clientName      String
+  rfpCode         String?
+  portal          String?
+  status          RFPStatus       @default(VETTING)
+  winProbability  WinProbability?
+  dateReceived    DateTime?
+  deadline        DateTime
+  estimatedValue  Decimal?        @db.Decimal(12, 2)
+  scopeOfWork     String?         @db.Text
+  requirements    String?         @db.Text
+  bidBondRequired Boolean         @default(false)
+  notes           String?         @db.Text
+  outcome         RFPOutcome?
+  outcomeNotes    String?
+  createdById     String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  submittedAt     DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  subitems     RFPSubitem[]
+  attachments  Attachment[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("rfps")
+}
+
+enum RFPStatus {
+  VETTING
+  ACTIVE
+  AWAITING_REVIEW
+  READY_TO_SUBMIT
+  SUBMITTED
+  AWAITING_RESPONSE
+  WON
+  LOST
+  ABANDONED
+}
+
+enum WinProbability {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum RFPOutcome {
+  WON
+  LOST
+  WITHDRAWN
+  CANCELLED
+}
+
+model RFPSubitem {
+  id          String        @id @default(cuid())
+  rfpId       String
+  name        String
+  description String?
+  assigneeId  String?
+  dueDate     DateTime?
+  status      SubitemStatus @default(PENDING)
+  sortOrder   Int           @default(0)
+  completedAt DateTime?
+
+  rfp RFP @relation(fields: [rfpId], references: [id], onDelete: Cascade)
+
+  @@index([rfpId])
+  @@map("rfp_subitems")
+}
+
+enum SubitemStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  BLOCKED
+}
+
+// ============================================
+// SHARED / SUPPORTING
+// ============================================
+
+model Comment {
+  id        String   @id @default(cuid())
+  briefId   String
+  userId    String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  brief Brief @relation(fields: [briefId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([briefId])
+  @@map("comments")
+}
+
+model Attachment {
+  id           String   @id @default(cuid())
+  briefId      String?
+  rfpId        String?
+  fileName     String
+  fileSize     Int
+  mimeType     String
+  storageKey   String
+  uploadedById String
+  createdAt    DateTime @default(now())
+
+  brief Brief? @relation(fields: [briefId], references: [id], onDelete: Cascade)
+  rfp   RFP?   @relation(fields: [rfpId], references: [id], onDelete: Cascade)
+
+  @@index([briefId])
+  @@index([rfpId])
+  @@map("attachments")
+}
+
+// ============================================
+// EMPLOYEE ONBOARDING
+// ============================================
+
+model EmployeeDocument {
+  id           String       @id @default(cuid())
+  userId       String
+  type         DocumentType
+  fileName     String
+  fileSize     Int
+  mimeType     String
+  storageKey   String
+  expiryDate   DateTime?
+  isVerified   Boolean      @default(false)
+  verifiedById String?
+  verifiedAt   DateTime?
+  notes        String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@map("employee_documents")
+}
+
+enum DocumentType {
+  EMIRATES_ID
+  PASSPORT
+  VISA
+  LABOR_CONTRACT
+  BANK_LETTER
+  EDUCATIONAL_CERTIFICATE
+  PROFESSIONAL_CERTIFICATE
+  PHOTO
+  OTHER
+}
+
+// ============================================
+// CLIENT ONBOARDING
+// ============================================
+
+model ClientOnboarding {
+  id             String               @id @default(cuid())
+  clientId       String               @unique
+  status         OnboardingStatus     @default(NOT_STARTED)
+  startedAt      DateTime?
+  completedAt    DateTime?
+  assignedToId   String?
+  notes          String?              @db.Text
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  client Client                   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  tasks  ClientOnboardingTask[]
+
+  @@index([status])
+  @@map("client_onboardings")
+}
+
+model ClientOnboardingTask {
+  id            String            @id @default(cuid())
+  onboardingId  String
+  title         String
+  description   String?
+  category      OnboardingCategory
+  sortOrder     Int               @default(0)
+  isRequired    Boolean           @default(true)
+  status        TaskStatus        @default(PENDING)
+  completedById String?
+  completedAt   DateTime?
+  dueDate       DateTime?
+  notes         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  onboarding ClientOnboarding @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+
+  @@index([onboardingId])
+  @@map("client_onboarding_tasks")
+}
+
+enum OnboardingStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+}
+
+enum OnboardingCategory {
+  CONTRACTS
+  ACCESS
+  BRANDING
+  COMMUNICATIONS
+  BILLING
+  KICKOFF
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
+// ============================================
+// LEAVE MANAGEMENT
+// ============================================
+
+model LeaveType {
+  id               String   @id @default(cuid())
+  organizationId   String
+  name             String   // "Annual Leave", "Sick Leave", etc.
+  code             String   // "ANNUAL", "SICK", etc.
+  defaultDays      Int      // Default annual entitlement
+  carryOverLimit   Int      @default(0) // Max days that can be carried over
+  requiresApproval Boolean  @default(true)
+  isPaid           Boolean  @default(true)
+  color            String   @default("#3B82F6") // For calendar display
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  leaveBalances LeaveBalance[]
+  leaveRequests LeaveRequest[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@map("leave_types")
+}
+
+model LeaveBalance {
+  id             String   @id @default(cuid())
+  userId         String
+  leaveTypeId    String
+  year           Int
+  entitlement    Decimal  @db.Decimal(5, 2) // Total days entitled
+  used           Decimal  @default(0) @db.Decimal(5, 2)
+  carriedOver    Decimal  @default(0) @db.Decimal(5, 2)
+  adjustment     Decimal  @default(0) @db.Decimal(5, 2) // Manual adjustments
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  @@unique([userId, leaveTypeId, year])
+  @@index([userId])
+  @@index([year])
+  @@map("leave_balances")
+}
+
+model LeaveRequest {
+  id             String        @id @default(cuid())
+  organizationId String
+  userId         String
+  leaveTypeId    String
+
+  startDate      DateTime      @db.Date
+  endDate        DateTime      @db.Date
+  totalDays      Decimal       @db.Decimal(5, 2)
+  isHalfDay      Boolean       @default(false)
+  halfDayPeriod  HalfDayPeriod?
+
+  reason         String?       @db.Text
+  status         LeaveStatus   @default(PENDING)
+
+  reviewedById   String?
+  reviewedAt     DateTime?
+  reviewNotes    String?
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user       User      @relation("LeaveRequester", fields: [userId], references: [id])
+  reviewedBy User?     @relation("LeaveReviewer", fields: [reviewedById], references: [id])
+  leaveType  LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@map("leave_requests")
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum HalfDayPeriod {
+  MORNING
+  AFTERNOON
+}
+
+model BlackoutPeriod {
+  id             String   @id @default(cuid())
+  organizationId String
+  clientId       String?  // Optional: specific to a client
+  name           String
+  reason         String?
+  startDate      DateTime @db.Date
+  endDate        DateTime @db.Date
+  isRecurring    Boolean  @default(false) // Repeats annually
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  client Client? @relation(fields: [clientId], references: [id])
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([startDate, endDate])
+  @@map("blackout_periods")
+}
+
+model PublicHoliday {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  date           DateTime @db.Date
+  year           Int
+  isOptional     Boolean  @default(false) // Some holidays are optional
+  createdAt      DateTime @default(now())
+
+  @@unique([organizationId, date])
+  @@index([organizationId, year])
+  @@map("public_holidays")
+}
+
+// ============================================
+// NPS & FEEDBACK
+// ============================================
+
+model NPSSurvey {
+  id             String       @id @default(cuid())
+  organizationId String
+  clientId       String
+  quarter        Int          // 1, 2, 3, 4
+  year           Int
+  status         SurveyStatus @default(DRAFT)
+
+  sentAt         DateTime?
+  sentToId       String?      // Contact who received the survey
+  reminderSentAt DateTime?
+
+  createdById    String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  client    Client          @relation(fields: [clientId], references: [id])
+  sentTo    ClientContact?  @relation(fields: [sentToId], references: [id])
+  responses NPSResponse[]
+
+  @@unique([clientId, quarter, year])
+  @@index([organizationId])
+  @@index([status])
+  @@map("nps_surveys")
+}
+
+model NPSResponse {
+  id          String   @id @default(cuid())
+  surveyId    String
+  contactId   String?  // The contact who responded
+
+  score       Int      // 0-10 NPS score
+  category    NPSCategory // Calculated: PROMOTER, PASSIVE, DETRACTOR
+
+  // Feedback questions
+  whatWeDoWell     String? @db.Text
+  whatToImprove    String? @db.Text
+  additionalNotes  String? @db.Text
+
+  submittedAt DateTime @default(now())
+
+  survey  NPSSurvey      @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  contact ClientContact? @relation(fields: [contactId], references: [id])
+
+  @@index([surveyId])
+  @@map("nps_responses")
+}
+
+enum SurveyStatus {
+  DRAFT
+  SENT
+  COMPLETED
+  EXPIRED
+}
+
+enum NPSCategory {
+  PROMOTER   // 9-10
+  PASSIVE    // 7-8
+  DETRACTOR  // 0-6
+}
+
+// ============================================
+// INTEGRATIONS & AUDIT
+// ============================================
+
+model Integration {
+  id             String    @id @default(cuid())
+  organizationId String
+  provider       String
+  isEnabled      Boolean   @default(false)
+  credentials    Json?
+  settings       Json      @default("{}")
+  lastSyncAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([organizationId, provider])
+  @@map("integrations")
+}
+
+// ============================================
+// GOOGLE WORKSPACE INTEGRATION
+// ============================================
+
+model GoogleCalendarEvent {
+  id              String   @id @default(cuid())
+  organizationId  String
+  briefId         String?
+  googleEventId   String   // Google Calendar event ID
+  calendarId      String   // Which Google Calendar
+  title           String
+  description     String?  @db.Text
+  location        String?
+  startTime       DateTime
+  endTime         DateTime
+  isAllDay        Boolean  @default(false)
+  attendees       String[] @default([]) // Email addresses
+  status          CalendarEventStatus @default(CONFIRMED)
+  syncedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  brief           Brief?   @relation(fields: [briefId], references: [id])
+
+  @@unique([googleEventId])
+  @@index([organizationId])
+  @@index([briefId])
+  @@index([startTime])
+  @@map("google_calendar_events")
+}
+
+enum CalendarEventStatus {
+  CONFIRMED
+  TENTATIVE
+  CANCELLED
+}
+
+model GoogleDriveFolder {
+  id              String   @id @default(cuid())
+  organizationId  String
+  clientId        String?
+  projectId       String?
+  folderId        String   // Google Drive folder ID
+  name            String
+  parentFolderId  String?  // Parent Google Drive folder ID
+  folderType      DriveFolderType
+  driveUrl        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  client          Client?  @relation(fields: [clientId], references: [id])
+  project         Project? @relation(fields: [projectId], references: [id])
+
+  @@unique([folderId])
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([projectId])
+  @@map("google_drive_folders")
+}
+
+enum DriveFolderType {
+  ROOT          // Organization root folder
+  CLIENT        // Client folder
+  PROJECT       // Project folder
+  BRIEFS        // Briefs subfolder
+  ASSETS        // Assets subfolder
+  DELIVERABLES  // Deliverables subfolder
+}
+
+model GoogleDocument {
+  id              String   @id @default(cuid())
+  organizationId  String
+  briefId         String?
+  projectId       String?
+  documentId      String   // Google Docs/Sheets/Slides ID
+  documentType    GoogleDocType
+  title           String
+  documentUrl     String
+  folderId        String?  // Google Drive folder ID
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  brief           Brief?   @relation(fields: [briefId], references: [id])
+  project         Project? @relation(fields: [projectId], references: [id])
+
+  @@unique([documentId])
+  @@index([organizationId])
+  @@index([briefId])
+  @@index([projectId])
+  @@map("google_documents")
+}
+
+enum GoogleDocType {
+  DOCUMENT      // Google Docs
+  SPREADSHEET   // Google Sheets
+  PRESENTATION  // Google Slides
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String?
+  action         String
+  entityType     String
+  entityId       String
+  changes        Json?
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

@@ -1,0 +1,195 @@
+"use client";
+
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Clock,
+  CheckCircle,
+  XCircle,
+  Ban,
+} from "lucide-react";
+import type { LeaveRequest, LeaveType, LeaveStatus } from "@prisma/client";
+import { reviewLeaveRequest, cancelLeaveRequest } from "../actions/leave-actions";
+import { cn } from "@/lib/utils";
+
+type RequestWithRelations = LeaveRequest & {
+  leaveType: LeaveType;
+  user: { id: string; name: string };
+  reviewedBy?: { id: string; name: string } | null;
+};
+
+interface LeaveRequestListProps {
+  requests: RequestWithRelations[];
+  showUser?: boolean;
+  canReview?: boolean;
+  currentUserId?: string;
+}
+
+const statusConfig: Record<LeaveStatus, { icon: React.ReactNode; color: string; bgColor: string }> = {
+  PENDING: {
+    icon: <Clock className="w-4 h-4" />,
+    color: "text-yellow-600",
+    bgColor: "bg-yellow-100",
+  },
+  APPROVED: {
+    icon: <CheckCircle className="w-4 h-4" />,
+    color: "text-green-600",
+    bgColor: "bg-green-100",
+  },
+  REJECTED: {
+    icon: <XCircle className="w-4 h-4" />,
+    color: "text-red-600",
+    bgColor: "bg-red-100",
+  },
+  CANCELLED: {
+    icon: <Ban className="w-4 h-4" />,
+    color: "text-gray-500",
+    bgColor: "bg-gray-100",
+  },
+};
+
+export function LeaveRequestList({
+  requests,
+  showUser = false,
+  canReview = false,
+  currentUserId,
+}: LeaveRequestListProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const handleReview = (requestId: string, status: "APPROVED" | "REJECTED") => {
+    startTransition(async () => {
+      await reviewLeaveRequest(requestId, status);
+      router.refresh();
+    });
+  };
+
+  const handleCancel = (requestId: string) => {
+    startTransition(async () => {
+      await cancelLeaveRequest(requestId);
+      router.refresh();
+    });
+  };
+
+  if (requests.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500 text-sm">
+        No leave requests found
+      </div>
+    );
+  }
+
+  return (
+    <div className="divide-y divide-gray-100">
+      {requests.map((request) => {
+        const config = statusConfig[request.status];
+        const isOwn = currentUserId === request.userId;
+        const canCancel = isOwn && request.status === "PENDING";
+
+        return (
+          <div key={request.id} className="p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  {showUser && (
+                    <span className="font-medium text-gray-900">
+                      {request.user.name}
+                    </span>
+                  )}
+                  <span
+                    className="px-2 py-0.5 text-xs font-medium rounded-full"
+                    style={{
+                      backgroundColor: request.leaveType.color + "20",
+                      color: request.leaveType.color,
+                    }}
+                  >
+                    {request.leaveType.name}
+                  </span>
+                </div>
+
+                <p className="text-sm text-gray-600">
+                  {formatDate(request.startDate)}
+                  {request.startDate.getTime() !== request.endDate.getTime() && (
+                    <> – {formatDate(request.endDate)}</>
+                  )}
+                  <span className="text-gray-400 ml-2">
+                    ({Number(request.totalDays)} {Number(request.totalDays) === 1 ? "day" : "days"})
+                  </span>
+                  {request.isHalfDay && (
+                    <span className="text-gray-400 ml-1">
+                      ({request.halfDayPeriod?.toLowerCase()})
+                    </span>
+                  )}
+                </p>
+
+                {request.reason && (
+                  <p className="text-sm text-gray-500 mt-1">{request.reason}</p>
+                )}
+
+                {request.reviewedBy && (
+                  <p className="text-xs text-gray-400 mt-2">
+                    {request.status === "APPROVED" ? "Approved" : "Rejected"} by{" "}
+                    {request.reviewedBy.name}
+                    {request.reviewNotes && ` – "${request.reviewNotes}"`}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    "flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full",
+                    config.bgColor,
+                    config.color
+                  )}
+                >
+                  {config.icon}
+                  {request.status}
+                </span>
+
+                {canReview && request.status === "PENDING" && !isOwn && (
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => handleReview(request.id, "APPROVED")}
+                      disabled={isPending}
+                      className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
+                      title="Approve"
+                    >
+                      <CheckCircle className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleReview(request.id, "REJECTED")}
+                      disabled={isPending}
+                      className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                      title="Reject"
+                    >
+                      <XCircle className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
+
+                {canCancel && (
+                  <button
+                    onClick={() => handleCancel(request.id)}
+                    disabled={isPending}
+                    className="text-xs text-gray-500 hover:text-red-600 transition-colors disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
