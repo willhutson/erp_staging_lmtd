@@ -14,7 +14,7 @@ export default async function NewSurveyPage() {
   if (!["ADMIN", "LEADERSHIP"].includes(session.user.permissionLevel)) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">You don't have access to this page.</p>
+        <p className="text-gray-500">You don&apos;t have access to this page.</p>
       </div>
     );
   }

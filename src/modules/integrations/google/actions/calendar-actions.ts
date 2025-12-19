@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { getValidAccessToken } from "./google-auth";
-import type { CalendarEventStatus, BriefType } from "@prisma/client";
+import type { BriefType } from "@prisma/client";
 
 const CALENDAR_API_BASE = "https://www.googleapis.com/calendar/v3";
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { submitNPSResponse } from "../actions/nps-actions";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +15,6 @@ export function NPSResponseForm({
   clientName,
   contactId,
 }: NPSResponseFormProps) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
