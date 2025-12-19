@@ -2,6 +2,8 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { FileText, Users, Clock, TrendingUp } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 async function getStats(organizationId: string) {
   const [briefCount, userCount, clientCount] = await Promise.all([
     db.brief.count({ where: { organizationId } }),
