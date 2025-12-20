@@ -38,13 +38,13 @@ interface Props {
 }
 
 const categoryColors: Record<FileCategory, string> = {
-  LOGO: "bg-purple-100 text-purple-700",
-  BRAND_ASSET: "bg-blue-100 text-blue-700",
-  DOCUMENT: "bg-yellow-100 text-yellow-700",
-  VIDEO: "bg-red-100 text-red-700",
-  IMAGE: "bg-green-100 text-green-700",
-  AUDIO: "bg-orange-100 text-orange-700",
-  DESIGN_FILE: "bg-pink-100 text-pink-700",
+  BRIEF_ATTACHMENT: "bg-blue-100 text-blue-700",
+  DELIVERABLE: "bg-green-100 text-green-700",
+  CONTRACT: "bg-yellow-100 text-yellow-700",
+  BRAND_ASSET: "bg-purple-100 text-purple-700",
+  REFERENCE: "bg-orange-100 text-orange-700",
+  INVOICE: "bg-red-100 text-red-700",
+  PROFILE_PHOTO: "bg-pink-100 text-pink-700",
   OTHER: "bg-gray-100 text-gray-700",
 };
 
