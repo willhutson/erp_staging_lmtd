@@ -126,6 +126,10 @@ model User {
   apiKeysRevoked      ApiKey[]             @relation("ApiKeyRevoker")
   webhooksCreated     WebhookSubscription[] @relation("WebhookCreator")
 
+  // Notifications
+  notifications           Notification[]
+  notificationPreference  NotificationPreference?
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([department])
@@ -1325,4 +1329,106 @@ model ApiRequestLog {
   @@index([organizationId, createdAt])
   @@index([apiKeyId, createdAt])
   @@map("api_request_logs")
+}
+
+// ============================================
+// NOTIFICATIONS (Phase 6)
+// ============================================
+
+model Notification {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Recipient
+  userId          String
+
+  // Content
+  type            String   // e.g., "brief.assigned", "submission.approved"
+  title           String
+  body            String?
+
+  // Navigation
+  actionUrl       String?  // Where to go when clicked
+  actionLabel     String?  // "View Brief"
+
+  // Context
+  entityType      String?  // "brief", "submission", "rfp"
+  entityId        String?
+  metadata        Json?    // Additional context data
+
+  // Status
+  isRead          Boolean  @default(false)
+  readAt          DateTime?
+  isArchived      Boolean  @default(false)
+  archivedAt      DateTime?
+
+  // Delivery tracking
+  channels        String[] @default(["in_app"])
+  deliveryStatus  Json     @default("{}")
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime?
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+  @@index([organizationId, createdAt])
+  @@index([entityType, entityId])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+
+  // Global settings
+  emailEnabled    Boolean  @default(true)
+  slackEnabled    Boolean  @default(true)
+  inAppEnabled    Boolean  @default(true)
+
+  // Digest settings
+  emailDigest     String   @default("instant")  // "instant", "daily", "weekly", "none"
+  digestTime      String?  @default("09:00")
+
+  // Quiet hours
+  quietHoursEnabled Boolean @default(false)
+  quietHoursStart  String?  @default("22:00")
+  quietHoursEnd    String?  @default("08:00")
+  timezone         String   @default("Asia/Dubai")
+
+  // Per-type preferences
+  typePreferences  Json     @default("{}")
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}
+
+model NotificationTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  type            String   // e.g., "brief.assigned"
+  channel         String   // "email", "slack", "in_app"
+
+  // Content
+  subject         String?  // For email
+  title           String
+  body            String   @db.Text
+
+  // Slack-specific
+  slackBlocks     Json?
+
+  // Email-specific
+  emailTemplate   String?
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, type, channel])
+  @@map("notification_templates")
 }
