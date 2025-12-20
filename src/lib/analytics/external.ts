@@ -192,7 +192,7 @@ class ExternalAnalyticsService {
       // Pending approval (from client portal)
       db.submissionApproval.count({
         where: {
-          organizationId,
+          brief: { organizationId, ...clientFilter },
           status: "PENDING",
         },
       }),

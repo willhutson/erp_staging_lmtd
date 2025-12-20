@@ -426,6 +426,7 @@ model Brief {
   aiSuggestions  Json?
   estimatedHours Decimal?    @db.Decimal(6, 2)
   actualHours    Decimal?    @db.Decimal(6, 2)
+  revisionCount  Int         @default(0)  // Track number of revisions
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   submittedAt    DateTime?
@@ -444,6 +445,7 @@ model Brief {
   googleDocuments  GoogleDocument[]
   formSubmission   FormSubmission?  // Link to original form submission
   briefFiles       BriefFile[]
+  submissionApprovals SubmissionApproval[]  // Client approval requests
 
   @@index([organizationId])
   @@index([clientId])
@@ -1895,6 +1897,7 @@ model SubmissionApproval {
   respondedAt     DateTime?
   dueDate         DateTime?
 
+  brief           Brief             @relation(fields: [briefId], references: [id])
   approvedBy      ClientPortalUser? @relation(fields: [approvedById], references: [id])
 
   @@index([organizationId])
@@ -2063,6 +2066,13 @@ enum FileCategory {
   REFERENCE          // Inspiration, moodboards
   INVOICE            // Financial documents
   PROFILE_PHOTO      // User avatars
+  // Media type categories
+  IMAGE              // Image files (jpg, png, gif, etc.)
+  VIDEO              // Video files (mp4, mov, etc.)
+  AUDIO              // Audio files (mp3, wav, etc.)
+  DOCUMENT           // Document files (pdf, doc, etc.)
+  DESIGN_FILE        // Design files (psd, ai, figma, etc.)
+  LOGO               // Logo files
   OTHER
 }
 
