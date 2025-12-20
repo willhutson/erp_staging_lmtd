@@ -1,9 +1,6 @@
 import { getPortalUser } from "@/lib/portal/auth";
 import { db } from "@/lib/db";
 import Link from "next/link";
-
-// Force dynamic rendering - uses cookies for auth
-export const dynamic = 'force-dynamic';
 import {
   FileText,
   CheckCircle,
@@ -12,6 +9,9 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+
+// Force dynamic rendering - uses cookies for authentication
+export const dynamic = 'force-dynamic';
 
 export default async function PortalDashboardPage() {
   const user = await getPortalUser();
