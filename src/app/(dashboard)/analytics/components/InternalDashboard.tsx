@@ -7,8 +7,6 @@ import {
   Clock,
   CheckCircle,
   TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight,
 } from "lucide-react";
 import { getInternalAnalytics } from "../actions";
 import { MetricCard } from "./charts/MetricCard";
