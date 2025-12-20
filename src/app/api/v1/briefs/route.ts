@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { withApiAuth, apiSuccess, apiPaginated, apiError, parsePagination } from '@/lib/api/middleware';
 import { db } from '@/lib/db';
 import { z } from 'zod';
-import { BriefType, BriefStatus, Priority } from '@prisma/client';
+import { BriefType, BriefStatus, Priority, Prisma } from '@prisma/client';
 
 // GET /api/v1/briefs - List briefs
 export async function GET(request: NextRequest) {
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
         assigneeId: data.assigneeId,
         priority: data.priority || Priority.MEDIUM,
         status: BriefStatus.DRAFT,
-        formData: data.formData || {},
+        formData: (data.formData || {}) as Prisma.InputJsonValue,
         createdById: data.assigneeId || ctx.apiKeyId, // Use assignee or API key as creator
       },
       include: {

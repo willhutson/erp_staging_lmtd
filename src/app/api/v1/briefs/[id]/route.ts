@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { withApiAuth, apiSuccess, apiError } from '@/lib/api/middleware';
 import { db } from '@/lib/db';
 import { z } from 'zod';
-import { BriefStatus, Priority } from '@prisma/client';
+import { BriefStatus, Priority, Prisma } from '@prisma/client';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -103,7 +103,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (data.assigneeId !== undefined) updateData.assigneeId = data.assigneeId;
     if (data.deadline !== undefined) updateData.deadline = data.deadline ? new Date(data.deadline) : null;
     if (data.startDate !== undefined) updateData.startDate = data.startDate ? new Date(data.startDate) : null;
-    if (data.formData) updateData.formData = data.formData;
+    if (data.formData) updateData.formData = data.formData as Prisma.InputJsonValue;
     if (data.estimatedHours !== undefined) updateData.estimatedHours = data.estimatedHours;
     if (data.status === BriefStatus.COMPLETED) updateData.completedAt = new Date();
 
