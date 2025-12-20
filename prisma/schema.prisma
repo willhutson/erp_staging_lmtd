@@ -1208,6 +1208,248 @@ model DashboardLayout {
 }
 
 // ============================================
+// ANALYTICS (Phase 8)
+// ============================================
+
+// Analytics dashboard configuration
+model AnalyticsDashboard {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String
+  description     String?
+  type            AnalyticsDashboardType
+
+  // Access control
+  isPublic        Boolean  @default(false)  // Visible to all org users
+  ownerId         String?
+
+  // Layout
+  layout          Json     @default("[]")   // Grid layout configuration
+
+  // Filters
+  defaultFilters  Json?    // Default filter state
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  widgets         AnalyticsWidget[]
+
+  @@index([organizationId])
+  @@index([type])
+  @@map("analytics_dashboards")
+}
+
+enum AnalyticsDashboardType {
+  INTERNAL_OVERVIEW    // Overall internal metrics
+  INTERNAL_TEAM        // Team performance
+  INTERNAL_RESOURCE    // Resource utilization
+  INTERNAL_FINANCIAL   // Time/cost tracking
+  EXTERNAL_REALTIME    // Live client metrics
+  EXTERNAL_PERIOD      // Historical client analytics
+  EXTERNAL_CAMPAIGN    // Campaign performance
+  CUSTOM               // User-defined
+}
+
+// Individual widgets on dashboards
+model AnalyticsWidget {
+  id              String   @id @default(cuid())
+  dashboardId     String
+
+  // Widget definition
+  name            String
+  type            AnalyticsWidgetType
+
+  // Visual configuration
+  chartType       ChartType?
+  size            String   @default("medium")  // small, medium, large, full
+  position        Json?    // { x, y, w, h } grid position
+
+  // Data configuration
+  metric          String   // What to measure
+  dimensions      String[] @default([])  // Group by fields
+  filters         Json?    // Widget-specific filters
+
+  // Time settings
+  timeRange       String?  // "realtime", "7d", "30d", "90d", "custom"
+  refreshInterval Int?     // Seconds (null = manual/page refresh)
+
+  // Comparison
+  compareWith     String?  // "previous_period", "same_period_last_year"
+
+  // Thresholds / alerts
+  thresholds      Json?    // { warning: 80, critical: 95 }
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  dashboard       AnalyticsDashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  @@index([dashboardId])
+  @@map("analytics_widgets")
+}
+
+enum AnalyticsWidgetType {
+  // Numbers
+  METRIC_CARD      // Single number with trend
+  COUNTER          // Live counter
+  GAUGE            // Progress toward goal
+
+  // Charts
+  LINE_CHART
+  BAR_CHART
+  AREA_CHART
+  PIE_CHART
+  DONUT_CHART
+
+  // Tables
+  DATA_TABLE
+  LEADERBOARD
+
+  // Time-based
+  TIMELINE
+  HEATMAP
+  CALENDAR_HEATMAP
+
+  // Relationships (Neo4j powered)
+  NETWORK_GRAPH
+  SANKEY_DIAGRAM
+  TREEMAP
+  SUNBURST
+
+  // Comparisons
+  COMPARISON_CARD
+  SPARKLINE
+}
+
+enum ChartType {
+  LINE
+  BAR
+  HORIZONTAL_BAR
+  STACKED_BAR
+  AREA
+  STACKED_AREA
+  PIE
+  DONUT
+  SCATTER
+  BUBBLE
+  RADAR
+  FUNNEL
+}
+
+// Periodic snapshots for historical analytics
+model AnalyticsSnapshot {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Timing
+  period          AnalyticsPeriod
+  periodStart     DateTime
+  periodEnd       DateTime
+
+  // Scope
+  entityType      String?  // "organization", "client", "project", "user"
+  entityId        String?
+
+  // Metrics (stored as JSON for flexibility)
+  metrics         Json
+
+  // Computed at
+  computedAt      DateTime @default(now())
+
+  @@unique([organizationId, period, periodStart, entityType, entityId])
+  @@index([organizationId, period])
+  @@index([entityType, entityId])
+  @@map("analytics_snapshots")
+}
+
+enum AnalyticsPeriod {
+  HOURLY
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+// Neo4j graph sync tracking
+model GraphSyncLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // What was synced
+  entityType      String   // "user", "client", "brief", "project"
+  entityId        String
+  action          String   // "create", "update", "delete", "relationship"
+
+  // Sync status
+  status          String   @default("pending")  // pending, synced, failed
+  error           String?
+
+  // Graph details
+  nodeLabels      String[] @default([])
+  relationshipTypes String[] @default([])
+
+  createdAt       DateTime @default(now())
+  syncedAt        DateTime?
+
+  @@index([organizationId, status])
+  @@index([entityType, entityId])
+  @@map("graph_sync_logs")
+}
+
+// Metric definitions (configurable metrics)
+model MetricDefinition {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Identity
+  code            String   // "brief_completion_rate", "avg_turnaround"
+  name            String   // "Brief Completion Rate"
+  description     String?
+  category        MetricCategory
+
+  // Calculation
+  formula         String   // SQL or expression
+  aggregation     String   // "sum", "avg", "count", "min", "max"
+
+  // Display
+  format          String   @default("number")  // number, percent, currency, duration
+  decimals        Int      @default(0)
+  prefix          String?  // "$", "£"
+  suffix          String?  // "%", "hrs"
+
+  // Trend
+  higherIsBetter  Boolean  @default(true)
+
+  // Status
+  isActive        Boolean  @default(true)
+  isSystem        Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, code])
+  @@index([organizationId, category])
+  @@map("metric_definitions")
+}
+
+enum MetricCategory {
+  // Internal
+  PRODUCTIVITY
+  EFFICIENCY
+  QUALITY
+  CAPACITY
+  FINANCIAL
+
+  // External
+  CLIENT_SATISFACTION
+  DELIVERY
+  ENGAGEMENT
+  PERFORMANCE
+}
+
+// ============================================
 // FORM TEMPLATES (Visual Form Builder)
 // ============================================
 
