@@ -144,6 +144,7 @@ export default async function ClientsPage() {
                       >
                         <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
                           {client.logoUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={client.logoUrl}
                               alt={client.name}

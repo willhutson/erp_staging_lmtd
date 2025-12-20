@@ -84,7 +84,6 @@ export default async function PortalBriefsPage() {
 function BriefSection({
   title,
   briefs,
-  collapsed: _collapsed = false,
 }: {
   title: string;
   briefs: Array<{
@@ -98,7 +97,6 @@ function BriefSection({
     assignee: { id: string; name: string | null; avatarUrl: string | null } | null;
     project: { id: string; name: string } | null;
   }>;
-  collapsed?: boolean;
 }) {
   return (
     <div>

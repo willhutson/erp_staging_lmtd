@@ -116,6 +116,7 @@ export function BriefFileAttachments({
               >
                 <div className="w-10 h-10 bg-white border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
                   {isImage(file.mimeType) && file.cdnUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={file.cdnUrl}
                       alt=""

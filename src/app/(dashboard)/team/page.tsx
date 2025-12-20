@@ -119,6 +119,7 @@ export default async function TeamPage() {
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 rounded-full bg-[#52EDC7] flex items-center justify-center text-gray-900 font-medium text-lg shrink-0">
                     {user.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={user.avatarUrl}
                         alt={user.name}
