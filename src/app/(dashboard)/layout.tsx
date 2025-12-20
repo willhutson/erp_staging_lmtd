@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { Shell } from "@/components/layout/Shell";
 import type { SessionUser } from "@/types";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({
   children,
 }: {
