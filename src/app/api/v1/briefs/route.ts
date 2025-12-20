@@ -61,7 +61,7 @@ const createBriefSchema = z.object({
   startDate: z.string().datetime().optional(),
   assigneeId: z.string().optional(),
   priority: z.nativeEnum(Priority).optional(),
-  formData: z.record(z.unknown()).optional(),
+  formData: z.record(z.string(), z.unknown()).optional(),
 });
 
 export async function POST(request: NextRequest) {

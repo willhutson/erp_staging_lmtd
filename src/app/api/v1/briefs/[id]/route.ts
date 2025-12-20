@@ -51,7 +51,7 @@ const updateBriefSchema = z.object({
   assigneeId: z.string().nullable().optional(),
   deadline: z.string().datetime().nullable().optional(),
   startDate: z.string().datetime().nullable().optional(),
-  formData: z.record(z.unknown()).optional(),
+  formData: z.record(z.string(), z.unknown()).optional(),
   estimatedHours: z.number().min(0).optional(),
 });
 
