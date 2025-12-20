@@ -74,10 +74,10 @@ export function InternalDashboard({
       try {
         const data = await getInternalAnalytics(organizationId, dateRange);
         setOverview(data.overview);
-        setTeamPerformance(data.teamPerformance);
-        setDepartments(data.departments);
-        setThroughput(data.throughput);
-        setHeatmap(data.heatmap);
+        setTeamPerformance(data.teamPerformance as TeamMember[]);
+        setDepartments(data.departments as unknown as DepartmentMetric[]);
+        setThroughput(data.throughput as unknown as ThroughputData[]);
+        setHeatmap(data.heatmap as HeatmapData[]);
       } catch (error) {
         console.error("Failed to load analytics:", error);
       } finally {
