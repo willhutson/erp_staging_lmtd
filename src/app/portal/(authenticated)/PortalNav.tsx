@@ -8,6 +8,7 @@ import {
   CheckCircle,
   PlusCircle,
   FolderOpen,
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +37,11 @@ const navItems = [
     title: "Files",
     href: "/portal/files",
     icon: FolderOpen,
+  },
+  {
+    title: "Feedback",
+    href: "/portal/nps",
+    icon: Star,
   },
 ];
 

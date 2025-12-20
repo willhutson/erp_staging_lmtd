@@ -270,6 +270,7 @@ model ClientContact {
   isContractOwner Boolean @default(false)   // Key client POC / Contract Owner
   isProcurementPoc Boolean @default(false)  // Key Procurement POC
   isFinancePoc    Boolean @default(false)   // Key Finance POC
+  isNpsDesignee   Boolean @default(false)   // Receives NPS surveys
   notes          String?
   isActive       Boolean @default(true)
   createdAt      DateTime @default(now())
@@ -919,9 +920,10 @@ model NPSSurvey {
 }
 
 model NPSResponse {
-  id          String   @id @default(cuid())
-  surveyId    String
-  contactId   String?  // The contact who responded
+  id            String   @id @default(cuid())
+  surveyId      String
+  contactId     String?  // The contact who responded
+  portalUserId  String?  // Portal user who submitted (if via portal)
 
   score       Int      // 0-10 NPS score
   category    NPSCategory // Calculated: PROMOTER, PASSIVE, DETRACTOR
@@ -933,8 +935,9 @@ model NPSResponse {
 
   submittedAt DateTime @default(now())
 
-  survey  NPSSurvey      @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-  contact ClientContact? @relation(fields: [contactId], references: [id])
+  survey      NPSSurvey          @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  contact     ClientContact?     @relation(fields: [contactId], references: [id])
+  portalUser  ClientPortalUser?  @relation(fields: [portalUserId], references: [id])
 
   @@index([surveyId])
   @@map("nps_responses")
@@ -1481,6 +1484,7 @@ model ClientPortalUser {
   approvals       SubmissionApproval[]
   comments        ClientPortalComment[]
   briefRequests   ClientBriefRequest[]
+  npsResponses    NPSResponse[]
 
   @@unique([organizationId, email])
   @@index([clientId])
