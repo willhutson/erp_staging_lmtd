@@ -414,14 +414,17 @@ class InternalAnalyticsService {
 
   private compareMetrics(
     current: number,
-    previous: number
+    previous: number,
+    higherIsBetter: boolean = true
   ): MetricResult {
     const change = current - previous;
     const changePercent = previous !== 0 ? (change / previous) * 100 : 0;
 
     let trend: "up" | "down" | "flat" = "flat";
     if (Math.abs(changePercent) > 1) {
-      trend = change > 0 ? "up" : "down";
+      // For metrics where lower is better (e.g., turnaround time), invert the trend
+      const effectiveChange = higherIsBetter ? change : -change;
+      trend = effectiveChange > 0 ? "up" : "down";
     }
 
     return {
