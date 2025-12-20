@@ -3,8 +3,6 @@ import { db } from "@/lib/db";
 import { NPSSurveyForm } from "./NPSSurveyForm";
 import { CheckCircle, Star } from "lucide-react";
 import { format } from "date-fns";
-import Link from "next/link";
-
 export default async function PortalNPSPage() {
   const user = await getPortalUser();
 
