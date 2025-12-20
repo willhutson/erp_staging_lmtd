@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { PortalHeader } from "./PortalHeader";
 import { PortalNav } from "./PortalNav";
 
+// Force dynamic rendering - uses cookies for authentication
+export const dynamic = 'force-dynamic';
+
 export default async function PortalLayout({
   children,
 }: {
