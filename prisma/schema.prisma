@@ -976,6 +976,101 @@ model Integration {
 }
 
 // ============================================
+// SLACK INTEGRATION (Phase 9)
+// ============================================
+
+model SlackWorkspace {
+  id              String   @id @default(cuid())
+  organizationId  String   @unique
+
+  // Slack workspace info
+  teamId          String   @unique  // Slack team ID
+  teamName        String
+  teamDomain      String?
+
+  // OAuth tokens (encrypted)
+  accessToken     String   // Bot token (xoxb-...)
+  botUserId       String   // Bot user ID
+
+  // Status
+  isActive        Boolean  @default(true)
+
+  // Default channel for notifications
+  defaultChannelId   String?
+  defaultChannelName String?
+
+  // Timestamps
+  installedAt     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  channelMappings SlackChannelMapping[]
+  messages        SlackMessage[]
+
+  @@index([teamId])
+  @@map("slack_workspaces")
+}
+
+model SlackChannelMapping {
+  id              String   @id @default(cuid())
+  workspaceId     String
+
+  // Slack channel
+  channelId       String   // Slack channel ID (C...)
+  channelName     String
+
+  // What this channel is for
+  mappingType     SlackMappingType
+  entityId        String?  // clientId, briefId, etc.
+
+  // Notification settings for this channel
+  notifyOnBriefCreated    Boolean @default(true)
+  notifyOnBriefCompleted  Boolean @default(true)
+  notifyOnApprovalNeeded  Boolean @default(true)
+  notifyOnDeadlineNear    Boolean @default(true)
+
+  createdAt       DateTime @default(now())
+
+  workspace       SlackWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, channelId])
+  @@index([entityId])
+  @@map("slack_channel_mappings")
+}
+
+enum SlackMappingType {
+  DEFAULT       // Default org-wide notifications
+  CLIENT        // Client-specific channel
+  PROJECT       // Project-specific channel
+  TEAM          // Team/department channel
+}
+
+model SlackMessage {
+  id              String   @id @default(cuid())
+  workspaceId     String
+
+  // Message identifiers
+  channelId       String
+  messageTs       String   // Slack message timestamp (unique ID)
+  threadTs        String?  // Parent thread timestamp
+
+  // Context
+  notificationType String?  // Linked to notification type
+  entityType       String?  // "brief", "approval", etc.
+  entityId         String?
+
+  // Status
+  isDelivered     Boolean  @default(true)
+
+  sentAt          DateTime @default(now())
+
+  workspace       SlackWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, messageTs])
+  @@index([entityType, entityId])
+  @@map("slack_messages")
+}
+
+// ============================================
 // GOOGLE WORKSPACE INTEGRATION
 // ============================================
 

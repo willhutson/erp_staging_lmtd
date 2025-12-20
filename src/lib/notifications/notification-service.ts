@@ -1,5 +1,6 @@
 import { db } from '@/lib/db';
 import type { Notification, NotificationPreference, User } from '@prisma/client';
+import { sendSlackNotification } from '@/lib/slack/notification-service';
 
 /**
  * Notification types with default channels
@@ -111,12 +112,17 @@ class NotificationService {
     });
 
     // Queue external channel delivery (email, slack)
-    // For now, we just mark in_app as delivered
-    // Email and Slack integration will be added later
     if (channels.includes('email')) {
       this.deliverEmail(notification, user).catch((error) => {
         console.error('Failed to deliver email notification:', error);
         this.updateDeliveryStatus(notification.id, 'email', 'failed', error.message);
+      });
+    }
+
+    if (channels.includes('slack')) {
+      this.deliverSlack(notification, user).catch((error) => {
+        console.error('Failed to deliver Slack notification:', error);
+        this.updateDeliveryStatus(notification.id, 'slack', 'failed', error.message);
       });
     }
 
@@ -287,6 +293,24 @@ class NotificationService {
     // Will be implemented with Resend or similar service
     console.log(`[Email] Would send to ${user.email}: ${notification.title}`);
     await this.updateDeliveryStatus(notification.id, 'email', 'sent');
+  }
+
+  private async deliverSlack(notification: Notification, user: User): Promise<void> {
+    const result = await sendSlackNotification(user.organizationId, {
+      type: notification.type,
+      title: notification.title,
+      body: notification.body || undefined,
+      actionUrl: notification.actionUrl || undefined,
+      entityType: notification.entityType || undefined,
+      entityId: notification.entityId || undefined,
+      metadata: (notification.metadata as Record<string, unknown>) || undefined,
+    });
+
+    if (result.success) {
+      await this.updateDeliveryStatus(notification.id, 'slack', 'sent');
+    } else {
+      throw new Error(result.error || 'Slack delivery failed');
+    }
   }
 
   private async updateDeliveryStatus(
