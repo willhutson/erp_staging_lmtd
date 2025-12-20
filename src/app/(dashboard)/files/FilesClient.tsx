@@ -43,12 +43,12 @@ interface Props {
 
 const categories: { value: FileCategory | "ALL"; label: string }[] = [
   { value: "ALL", label: "All Files" },
-  { value: "BRIEF_ATTACHMENT", label: "Brief Attachments" },
-  { value: "DELIVERABLE", label: "Deliverables" },
-  { value: "CONTRACT", label: "Contracts" },
+  { value: "IMAGE", label: "Images" },
+  { value: "VIDEO", label: "Videos" },
+  { value: "DOCUMENT", label: "Documents" },
+  { value: "DESIGN_FILE", label: "Design Files" },
+  { value: "LOGO", label: "Logos" },
   { value: "BRAND_ASSET", label: "Brand Assets" },
-  { value: "REFERENCE", label: "References" },
-  { value: "INVOICE", label: "Invoices" },
   { value: "OTHER", label: "Other" },
 ];
 

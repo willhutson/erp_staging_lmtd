@@ -45,6 +45,12 @@ const categoryColors: Record<FileCategory, string> = {
   REFERENCE: "bg-orange-100 text-orange-700",
   INVOICE: "bg-red-100 text-red-700",
   PROFILE_PHOTO: "bg-pink-100 text-pink-700",
+  IMAGE: "bg-green-100 text-green-700",
+  VIDEO: "bg-red-100 text-red-700",
+  AUDIO: "bg-orange-100 text-orange-700",
+  DOCUMENT: "bg-yellow-100 text-yellow-700",
+  DESIGN_FILE: "bg-pink-100 text-pink-700",
+  LOGO: "bg-purple-100 text-purple-700",
   OTHER: "bg-gray-100 text-gray-700",
 };
 
