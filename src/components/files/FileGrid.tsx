@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import {
   File,
   Image,
@@ -10,7 +9,6 @@ import {
   MoreVertical,
   Download,
   Trash2,
-  Edit2,
   Eye,
   Folder,
   Grid,

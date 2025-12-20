@@ -7,11 +7,9 @@ import {
   Video,
   FileText,
   Plus,
-  X,
   Download,
   Eye,
   FolderOpen,
-  Loader2,
 } from "lucide-react";
 import { FileUploader } from "./FileUploader";
 import {
