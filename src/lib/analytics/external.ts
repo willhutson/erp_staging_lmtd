@@ -528,14 +528,14 @@ class ExternalAnalyticsService {
             status: { not: "PENDING" },
             respondedAt: { not: null },
           },
-          select: { createdAt: true, respondedAt: true },
+          select: { requestedAt: true, respondedAt: true },
         }),
       ]);
 
     // Calculate avg response time
     const responseTimes = approvals
       .filter((a) => a.respondedAt)
-      .map((a) => (a.respondedAt!.getTime() - a.createdAt.getTime()) / 3600000);
+      .map((a) => (a.respondedAt!.getTime() - a.requestedAt.getTime()) / 3600000);
     const avgResponseTime =
       responseTimes.length > 0
         ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
