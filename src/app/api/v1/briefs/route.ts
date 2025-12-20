@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     const parsed = createBriefSchema.safeParse(body);
 
     if (!parsed.success) {
-      return apiError(`Validation error: ${parsed.error.errors.map(e => e.message).join(', ')}`, 400);
+      return apiError(`Validation error: ${parsed.error.issues.map(e => e.message).join(', ')}`, 400);
     }
 
     const data = parsed.data;

@@ -69,7 +69,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const parsed = updateBriefSchema.safeParse(body);
 
     if (!parsed.success) {
-      return apiError(`Validation error: ${parsed.error.errors.map(e => e.message).join(', ')}`, 400);
+      return apiError(`Validation error: ${parsed.error.issues.map(e => e.message).join(', ')}`, 400);
     }
 
     const brief = await db.brief.findFirst({
