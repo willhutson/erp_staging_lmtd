@@ -59,8 +59,8 @@ export function ForceGraph({ nodes, edges, height = 400 }: ForceGraphProps) {
     return map;
   }, [edges]);
 
-  // Edge lookup
-  const edgeMap = useMemo(() => {
+  // Edge lookup - reserved for future edge weight features
+  const _edgeMap = useMemo(() => {
     const map = new Map<string, number>();
     edges.forEach((edge) => {
       map.set(`${edge.source}-${edge.target}`, edge.width || 1);
@@ -68,6 +68,7 @@ export function ForceGraph({ nodes, edges, height = 400 }: ForceGraphProps) {
     });
     return map;
   }, [edges]);
+  void _edgeMap;
 
   // Force simulation
   useEffect(() => {
