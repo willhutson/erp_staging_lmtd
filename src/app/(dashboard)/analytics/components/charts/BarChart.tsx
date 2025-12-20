@@ -32,7 +32,8 @@ export function BarChart({ data, xKey, bars, height = 200 }: BarChartProps) {
   }, [data, xKey, bars]);
 
   const barWidth = Math.max(20, Math.min(60, 300 / data.length));
-  const groupWidth = barWidth * bars.length + 10;
+  const _groupWidth = barWidth * bars.length + 10;
+  void _groupWidth; // Reserved for future use
 
   return (
     <div className="w-full" style={{ height }}>
