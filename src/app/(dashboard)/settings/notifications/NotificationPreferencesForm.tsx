@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, MessageSquare, Bell, Moon, Clock } from "lucide-react";
+import { Mail, MessageSquare, Bell, Moon } from "lucide-react";
 import { updatePreferences } from "@/modules/notifications/actions/notification-actions";
 
 interface Props {

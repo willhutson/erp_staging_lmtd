@@ -84,7 +84,7 @@ export default async function PortalBriefsPage() {
 function BriefSection({
   title,
   briefs,
-  collapsed = false,
+  collapsed: _collapsed = false,
 }: {
   title: string;
   briefs: Array<{

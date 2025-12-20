@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { verifyToken } from "../actions";
 import Link from "next/link";
-import { XCircle, Loader2 } from "lucide-react";
+import { XCircle } from "lucide-react";
 
 interface Props {
   searchParams: Promise<{ token?: string }>;

@@ -55,8 +55,11 @@ const categories: { value: FileCategory | "ALL"; label: string }[] = [
 
 export function FilesClient({ initialFiles, initialFolders }: Props) {
   const router = useRouter();
-  const [files, setFiles] = useState(initialFiles);
-  const [folders, setFolders] = useState(initialFolders);
+  const [files, _setFiles] = useState(initialFiles);
+  const [folders, _setFolders] = useState(initialFolders);
+  // Suppress unused warnings - will be used for real-time updates
+  void _setFiles;
+  void _setFolders;
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<FileCategory | "ALL">("ALL");
   const [showUploader, setShowUploader] = useState(false);
