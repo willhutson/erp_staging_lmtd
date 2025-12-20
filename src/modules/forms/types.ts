@@ -20,7 +20,25 @@ export interface FormTemplateData {
   isSystem: boolean;
   createdAt: Date;
   updatedAt: Date;
+  // Menu settings
+  showInMenu: boolean;
+  menuOrder: number;
+  menuParent: string | null;
+  requiredPermissions: string[];
+  submissionModel: string;
 }
+
+// Menu parent options
+export const MENU_PARENT_OPTIONS = [
+  { value: "", label: "Top Level (Sidebar)" },
+  { value: "briefs", label: "Under Briefs" },
+];
+
+// Submission model options
+export const SUBMISSION_MODEL_OPTIONS = [
+  { value: "brief", label: "Brief (creates a brief record)" },
+  { value: "standalone", label: "Standalone (generic form submission)" },
+];
 
 // The config stored as JSON in the database
 export interface FormTemplateConfig {

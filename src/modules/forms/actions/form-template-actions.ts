@@ -4,7 +4,61 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import type { FormTemplateConfig } from "../types";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, PermissionLevel } from "@prisma/client";
+
+// Dynamic menu item for sidebar
+export interface DynamicMenuItem {
+  id: string;
+  type: string;
+  name: string;
+  icon: string | null;
+  menuOrder: number;
+  menuParent: string | null;
+  href: string;
+}
+
+// Get form templates configured to show in menu
+export async function getMenuFormTemplates(permissionLevel: PermissionLevel): Promise<DynamicMenuItem[]> {
+  const session = await auth();
+  if (!session?.user) {
+    return [];
+  }
+
+  const templates = await db.formTemplate.findMany({
+    where: {
+      organizationId: session.user.organizationId,
+      isActive: true,
+      showInMenu: true,
+    },
+    orderBy: { menuOrder: "asc" },
+    select: {
+      id: true,
+      type: true,
+      name: true,
+      icon: true,
+      menuOrder: true,
+      menuParent: true,
+      requiredPermissions: true,
+      submissionModel: true,
+    },
+  });
+
+  // Filter by permission level
+  const accessibleTemplates = templates.filter((t) => {
+    if (t.requiredPermissions.length === 0) return true;
+    return t.requiredPermissions.includes(permissionLevel);
+  });
+
+  return accessibleTemplates.map((t) => ({
+    id: t.id,
+    type: t.type,
+    name: t.name,
+    icon: t.icon,
+    menuOrder: t.menuOrder,
+    menuParent: t.menuParent,
+    href: t.submissionModel === "brief" ? `/briefs/new/${t.type}` : `/forms/${t.type}`,
+  }));
+}
 
 // Get all form templates for the organization
 export async function getFormTemplates() {
@@ -70,6 +124,11 @@ export async function createFormTemplate(data: {
   namingPrefix?: string;
   icon?: string;
   config: FormTemplateConfig;
+  showInMenu?: boolean;
+  menuOrder?: number;
+  menuParent?: string;
+  requiredPermissions?: string[];
+  submissionModel?: string;
 }) {
   const session = await auth();
   if (!session?.user) {
@@ -105,10 +164,16 @@ export async function createFormTemplate(data: {
       config: data.config as unknown as Prisma.InputJsonValue,
       isActive: true,
       isSystem: false,
+      showInMenu: data.showInMenu ?? false,
+      menuOrder: data.menuOrder ?? 100,
+      menuParent: data.menuParent,
+      requiredPermissions: data.requiredPermissions ?? [],
+      submissionModel: data.submissionModel ?? "brief",
     },
   });
 
   revalidatePath("/settings/forms");
+  revalidatePath("/", "layout"); // Revalidate to update sidebar
   return template;
 }
 
@@ -123,6 +188,11 @@ export async function updateFormTemplate(
     icon?: string;
     config?: FormTemplateConfig;
     isActive?: boolean;
+    showInMenu?: boolean;
+    menuOrder?: number;
+    menuParent?: string | null;
+    requiredPermissions?: string[];
+    submissionModel?: string;
   }
 ) {
   const session = await auth();
@@ -156,11 +226,17 @@ export async function updateFormTemplate(
       ...(data.icon !== undefined && { icon: data.icon }),
       ...(data.config !== undefined && { config: data.config as unknown as Prisma.InputJsonValue }),
       ...(data.isActive !== undefined && { isActive: data.isActive }),
+      ...(data.showInMenu !== undefined && { showInMenu: data.showInMenu }),
+      ...(data.menuOrder !== undefined && { menuOrder: data.menuOrder }),
+      ...(data.menuParent !== undefined && { menuParent: data.menuParent || null }),
+      ...(data.requiredPermissions !== undefined && { requiredPermissions: data.requiredPermissions }),
+      ...(data.submissionModel !== undefined && { submissionModel: data.submissionModel }),
     },
   });
 
   revalidatePath("/settings/forms");
   revalidatePath(`/settings/forms/${id}`);
+  revalidatePath("/", "layout"); // Revalidate sidebar if menu settings changed
   return updated;
 }
 
@@ -251,6 +327,11 @@ export async function duplicateFormTemplate(id: string) {
       config: template.config as Prisma.InputJsonValue,
       isActive: false, // Start as inactive
       isSystem: false,
+      showInMenu: false, // Start hidden from menu
+      menuOrder: template.menuOrder,
+      menuParent: template.menuParent,
+      requiredPermissions: template.requiredPermissions,
+      submissionModel: template.submissionModel,
     },
   });
 

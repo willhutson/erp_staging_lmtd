@@ -26,6 +26,11 @@ export default async function EditFormTemplatePage({ params }: PageProps) {
     isActive: template.isActive,
     isSystem: template.isSystem,
     config: template.config as unknown as FormTemplateConfig,
+    showInMenu: template.showInMenu,
+    menuOrder: template.menuOrder,
+    menuParent: template.menuParent || "",
+    requiredPermissions: template.requiredPermissions,
+    submissionModel: template.submissionModel,
   };
 
   return <FormEditor initialData={initialData} />;

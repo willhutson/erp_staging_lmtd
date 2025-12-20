@@ -16,10 +16,42 @@ import {
   UserCircle,
   CalendarDays,
   Star,
+  Video,
+  Image,
+  PenTool,
+  Languages,
+  Target,
+  BarChart,
+  Briefcase,
+  Camera,
+  Film,
+  Palette,
+  MessageSquare,
+  Inbox,
+  type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PermissionLevel } from "@prisma/client";
 import { useState } from "react";
+import type { DynamicMenuItem } from "@/modules/forms/actions/form-template-actions";
+
+// Icon mapping for dynamic menu items
+const iconMap: Record<string, LucideIcon> = {
+  FileText,
+  Video,
+  Image,
+  PenTool,
+  Languages,
+  Target,
+  BarChart,
+  Briefcase,
+  Camera,
+  Film,
+  Palette,
+  MessageSquare,
+  TrendingUp,
+  FileStack,
+};
 
 interface NavItem {
   title: string;
@@ -38,6 +70,12 @@ const navItems: NavItem[] = [
     title: "Briefs",
     href: "/briefs",
     icon: <FileText className="w-5 h-5" />,
+  },
+  {
+    title: "Submissions",
+    href: "/submissions",
+    icon: <Inbox className="w-5 h-5" />,
+    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
   },
   {
     title: "Resources",
@@ -94,9 +132,10 @@ const navItems: NavItem[] = [
 
 interface SidebarProps {
   permissionLevel: PermissionLevel;
+  dynamicMenuItems?: DynamicMenuItem[];
 }
 
-export function Sidebar({ permissionLevel }: SidebarProps) {
+export function Sidebar({ permissionLevel, dynamicMenuItems = [] }: SidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -104,6 +143,33 @@ export function Sidebar({ permissionLevel }: SidebarProps) {
     if (!item.requiredLevels) return true;
     return item.requiredLevels.includes(permissionLevel);
   });
+
+  // Separate top-level and nested dynamic items
+  const topLevelDynamicItems = dynamicMenuItems.filter((item) => !item.menuParent);
+  const briefsNestedItems = dynamicMenuItems.filter((item) => item.menuParent === "briefs");
+
+  // Helper to render a dynamic menu item
+  const renderDynamicItem = (item: DynamicMenuItem, nested = false) => {
+    const IconComponent = item.icon ? iconMap[item.icon] : FileText;
+    const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+
+    return (
+      <Link
+        key={item.id}
+        href={item.href}
+        className={cn(
+          "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
+          nested && "ml-4 text-sm",
+          isActive
+            ? "bg-[#52EDC7] text-gray-900"
+            : "text-gray-400 hover:text-white hover:bg-gray-800"
+        )}
+      >
+        <IconComponent className="w-5 h-5" />
+        {!collapsed && <span>{item.name}</span>}
+      </Link>
+    );
+  };
 
   return (
     <aside
@@ -133,28 +199,48 @@ export function Sidebar({ permissionLevel }: SidebarProps) {
         </button>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {visibleItems.map((item) => {
           const isActive =
             pathname === item.href ||
             pathname.startsWith(item.href + "/");
+          const isBriefs = item.href === "/briefs";
 
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
-                isActive
-                  ? "bg-[#52EDC7] text-gray-900"
-                  : "text-gray-400 hover:text-white hover:bg-gray-800"
+            <div key={item.href}>
+              <Link
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
+                  isActive
+                    ? "bg-[#52EDC7] text-gray-900"
+                    : "text-gray-400 hover:text-white hover:bg-gray-800"
+                )}
+              >
+                {item.icon}
+                {!collapsed && <span>{item.title}</span>}
+              </Link>
+              {/* Render nested items under Briefs */}
+              {isBriefs && !collapsed && briefsNestedItems.length > 0 && (
+                <div className="mt-1 space-y-1">
+                  {briefsNestedItems.map((nested) => renderDynamicItem(nested, true))}
+                </div>
               )}
-            >
-              {item.icon}
-              {!collapsed && <span>{item.title}</span>}
-            </Link>
+            </div>
           );
         })}
+
+        {/* Top-level dynamic items */}
+        {topLevelDynamicItems.length > 0 && (
+          <>
+            {!collapsed && (
+              <div className="pt-3 pb-1">
+                <p className="px-3 text-xs text-gray-500 uppercase tracking-wide">Custom Forms</p>
+              </div>
+            )}
+            {topLevelDynamicItems.map((item) => renderDynamicItem(item))}
+          </>
+        )}
       </nav>
 
       {!collapsed && (

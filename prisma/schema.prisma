@@ -112,6 +112,11 @@ model User {
   // Dashboard layouts
   dashboardLayouts DashboardLayout[]
 
+  // Form submissions
+  submissionsCreated  FormSubmission[] @relation("FormSubmissionCreator")
+  submissionsAssigned FormSubmission[] @relation("FormSubmissionAssignee")
+  submissionsReviewed FormSubmission[] @relation("FormSubmissionReviewer")
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([department])
@@ -413,6 +418,7 @@ model Brief {
   statusHistory    BriefStatusHistory[]
   calendarEvents   GoogleCalendarEvent[]
   googleDocuments  GoogleDocument[]
+  formSubmission   FormSubmission?  // Link to original form submission
 
   @@index([organizationId])
   @@index([clientId])
@@ -1098,8 +1104,75 @@ model FormTemplate {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  // Menu/Navigation settings
+  showInMenu      Boolean  @default(false) // Show as standalone menu item
+  menuOrder       Int      @default(100)   // Sort order in menu
+  menuParent      String?  // Parent menu item (null = top level, "briefs" = under briefs)
+  requiredPermissions String[] @default([]) // Permission levels that can access
+
+  // Submission settings
+  submissionModel String   @default("brief") // "brief" or "standalone"
+
+  submissions     FormSubmission[]
+
   @@unique([organizationId, type])
   @@index([organizationId])
   @@index([isActive])
+  @@index([showInMenu])
   @@map("form_templates")
+}
+
+// Form submissions - can create briefs or be standalone
+model FormSubmission {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Template reference
+  templateId      String
+  template        FormTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  // Submission data
+  data            Json     // Form field values
+  title           String?  // Auto-generated or user-provided title
+
+  // Status workflow
+  status          FormSubmissionStatus @default(SUBMITTED)
+
+  // People
+  submittedById   String
+  submittedBy     User     @relation("FormSubmissionCreator", fields: [submittedById], references: [id])
+  assigneeId      String?
+  assignee        User?    @relation("FormSubmissionAssignee", fields: [assigneeId], references: [id])
+  reviewedById    String?
+  reviewedBy      User?    @relation("FormSubmissionReviewer", fields: [reviewedById], references: [id])
+
+  // Review feedback
+  reviewNotes     String?
+  rejectionReason String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  reviewedAt      DateTime?
+  completedAt     DateTime?
+
+  // Optional brief connection (if submissionModel = "brief")
+  briefId         String?  @unique
+  brief           Brief?   @relation(fields: [briefId], references: [id])
+
+  @@index([organizationId])
+  @@index([templateId])
+  @@index([status])
+  @@index([submittedById])
+  @@map("form_submissions")
+}
+
+enum FormSubmissionStatus {
+  DRAFT           // Started but not submitted
+  SUBMITTED       // Awaiting review
+  IN_REVIEW       // Being reviewed
+  APPROVED        // Approved, processing
+  REJECTED        // Rejected with reason
+  COMPLETED       // Finished
+  CANCELLED       // Cancelled by submitter
 }
