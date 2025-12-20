@@ -406,7 +406,6 @@ class ExternalAnalyticsService {
           createdAt: true,
           completedAt: true,
           deadline: true,
-          revisionCount: true,
         },
       }),
       db.timeEntry.findMany({
@@ -467,13 +466,8 @@ class ExternalAnalyticsService {
         ? npsResponses.reduce((s, r) => s + r.score, 0) / npsResponses.length
         : 0;
 
-    // Revision rate
-    const totalRevisions = completed.reduce(
-      (s, b) => s + (b.revisionCount || 0),
-      0
-    );
-    const revisionRate =
-      completed.length > 0 ? totalRevisions / completed.length : 0;
+    // Revision rate (placeholder - revisionCount not tracked on Brief model)
+    const revisionRate = 0;
 
     return {
       period: `${dateRange.start.toISOString().split("T")[0]} - ${
@@ -745,7 +739,6 @@ class ExternalAnalyticsService {
         createdAt: true,
         completedAt: true,
         deadline: true,
-        revisionCount: true,
         priority: true,
         timeEntries: { select: { hours: true } },
         assignee: { select: { department: true } },
@@ -774,26 +767,7 @@ class ExternalAnalyticsService {
       });
     }
 
-    // Priority vs Revisions
-    const priorityRevisionData = briefs
-      .filter((b) => b.priority)
-      .map((b) => ({
-        priority: b.priority === "HIGH" ? 3 : b.priority === "MEDIUM" ? 2 : 1,
-        revisions: b.revisionCount || 0,
-      }));
-
-    if (priorityRevisionData.length > 5) {
-      correlations.push({
-        factor1: "Priority Level",
-        factor2: "Revision Count",
-        correlation: this.calculateCorrelation(
-          priorityRevisionData.map((d) => d.priority),
-          priorityRevisionData.map((d) => d.revisions)
-        ),
-        sampleSize: priorityRevisionData.length,
-        significance: priorityRevisionData.length > 30 ? "high" : "medium",
-      });
-    }
+    // Note: Priority vs Revisions correlation removed - revisionCount not tracked on Brief model
 
     return correlations;
   }
