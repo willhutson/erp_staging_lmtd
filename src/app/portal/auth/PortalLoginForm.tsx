@@ -22,7 +22,7 @@ export function PortalLoginForm() {
       if (result.success) {
         setStatus("sent");
       } else {
-        setError(result.error || "Something went wrong");
+        setError("error" in result ? result.error : "Something went wrong");
         setStatus("error");
       }
     } catch {
