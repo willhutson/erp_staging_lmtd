@@ -40,6 +40,10 @@ model Organization {
   clientActivities ClientActivity[]
   deals            Deal[]
 
+  // API & Integrations
+  apiKeys              ApiKey[]
+  webhookSubscriptions WebhookSubscription[]
+
   @@map("organizations")
 }
 
@@ -116,6 +120,18 @@ model User {
   submissionsCreated  FormSubmission[] @relation("FormSubmissionCreator")
   submissionsAssigned FormSubmission[] @relation("FormSubmissionAssignee")
   submissionsReviewed FormSubmission[] @relation("FormSubmissionReviewer")
+
+  // API & Integrations
+  apiKeysCreated      ApiKey[]             @relation("ApiKeyCreator")
+  apiKeysRevoked      ApiKey[]             @relation("ApiKeyRevoker")
+  webhooksCreated     WebhookSubscription[] @relation("WebhookCreator")
+
+  // Notifications
+  notifications           Notification[]
+  notificationPreference  NotificationPreference?
+
+  // Files
+  uploadedFiles           File[]  @relation("FileUploader")
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -203,6 +219,8 @@ model Client {
   blackoutPeriods  BlackoutPeriod[]
   npsSurveys       NPSSurvey[]
   driveFolders     GoogleDriveFolder[]
+  clientFiles      ClientFile[]
+  portalUsers      ClientPortalUser[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
@@ -249,6 +267,10 @@ model ClientContact {
   isPrimary      Boolean @default(false)
   isDecisionMaker Boolean @default(false)
   isBillingContact Boolean @default(false)
+  isContractOwner Boolean @default(false)   // Key client POC / Contract Owner
+  isProcurementPoc Boolean @default(false)  // Key Procurement POC
+  isFinancePoc    Boolean @default(false)   // Key Finance POC
+  isNpsDesignee   Boolean @default(false)   // Receives NPS surveys
   notes          String?
   isActive       Boolean @default(true)
   createdAt      DateTime @default(now())
@@ -257,6 +279,7 @@ model ClientContact {
   client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
   npsSurveys   NPSSurvey[]
   npsResponses NPSResponse[]
+  portalUsers  ClientPortalUser[]
 
   @@index([clientId])
   @@map("client_contacts")
@@ -357,6 +380,7 @@ model Project {
   timeEntries      TimeEntry[]
   driveFolders     GoogleDriveFolder[]
   googleDocuments  GoogleDocument[]
+  projectFiles     ProjectFile[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -419,6 +443,7 @@ model Brief {
   calendarEvents   GoogleCalendarEvent[]
   googleDocuments  GoogleDocument[]
   formSubmission   FormSubmission?  // Link to original form submission
+  briefFiles       BriefFile[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -895,9 +920,10 @@ model NPSSurvey {
 }
 
 model NPSResponse {
-  id          String   @id @default(cuid())
-  surveyId    String
-  contactId   String?  // The contact who responded
+  id            String   @id @default(cuid())
+  surveyId      String
+  contactId     String?  // The contact who responded
+  portalUserId  String?  // Portal user who submitted (if via portal)
 
   score       Int      // 0-10 NPS score
   category    NPSCategory // Calculated: PROMOTER, PASSIVE, DETRACTOR
@@ -909,8 +935,9 @@ model NPSResponse {
 
   submittedAt DateTime @default(now())
 
-  survey  NPSSurvey      @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-  contact ClientContact? @relation(fields: [contactId], references: [id])
+  survey      NPSSurvey          @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  contact     ClientContact?     @relation(fields: [contactId], references: [id])
+  portalUser  ClientPortalUser?  @relation(fields: [portalUserId], references: [id])
 
   @@index([surveyId])
   @@map("nps_responses")
@@ -946,6 +973,101 @@ model Integration {
 
   @@unique([organizationId, provider])
   @@map("integrations")
+}
+
+// ============================================
+// SLACK INTEGRATION (Phase 9)
+// ============================================
+
+model SlackWorkspace {
+  id              String   @id @default(cuid())
+  organizationId  String   @unique
+
+  // Slack workspace info
+  teamId          String   @unique  // Slack team ID
+  teamName        String
+  teamDomain      String?
+
+  // OAuth tokens (encrypted)
+  accessToken     String   // Bot token (xoxb-...)
+  botUserId       String   // Bot user ID
+
+  // Status
+  isActive        Boolean  @default(true)
+
+  // Default channel for notifications
+  defaultChannelId   String?
+  defaultChannelName String?
+
+  // Timestamps
+  installedAt     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  channelMappings SlackChannelMapping[]
+  messages        SlackMessage[]
+
+  @@index([teamId])
+  @@map("slack_workspaces")
+}
+
+model SlackChannelMapping {
+  id              String   @id @default(cuid())
+  workspaceId     String
+
+  // Slack channel
+  channelId       String   // Slack channel ID (C...)
+  channelName     String
+
+  // What this channel is for
+  mappingType     SlackMappingType
+  entityId        String?  // clientId, briefId, etc.
+
+  // Notification settings for this channel
+  notifyOnBriefCreated    Boolean @default(true)
+  notifyOnBriefCompleted  Boolean @default(true)
+  notifyOnApprovalNeeded  Boolean @default(true)
+  notifyOnDeadlineNear    Boolean @default(true)
+
+  createdAt       DateTime @default(now())
+
+  workspace       SlackWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, channelId])
+  @@index([entityId])
+  @@map("slack_channel_mappings")
+}
+
+enum SlackMappingType {
+  DEFAULT       // Default org-wide notifications
+  CLIENT        // Client-specific channel
+  PROJECT       // Project-specific channel
+  TEAM          // Team/department channel
+}
+
+model SlackMessage {
+  id              String   @id @default(cuid())
+  workspaceId     String
+
+  // Message identifiers
+  channelId       String
+  messageTs       String   // Slack message timestamp (unique ID)
+  threadTs        String?  // Parent thread timestamp
+
+  // Context
+  notificationType String?  // Linked to notification type
+  entityType       String?  // "brief", "approval", etc.
+  entityId         String?
+
+  // Status
+  isDelivered     Boolean  @default(true)
+
+  sentAt          DateTime @default(now())
+
+  workspace       SlackWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, messageTs])
+  @@index([entityType, entityId])
+  @@map("slack_messages")
 }
 
 // ============================================
@@ -1086,6 +1208,248 @@ model DashboardLayout {
 }
 
 // ============================================
+// ANALYTICS (Phase 8)
+// ============================================
+
+// Analytics dashboard configuration
+model AnalyticsDashboard {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String
+  description     String?
+  type            AnalyticsDashboardType
+
+  // Access control
+  isPublic        Boolean  @default(false)  // Visible to all org users
+  ownerId         String?
+
+  // Layout
+  layout          Json     @default("[]")   // Grid layout configuration
+
+  // Filters
+  defaultFilters  Json?    // Default filter state
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  widgets         AnalyticsWidget[]
+
+  @@index([organizationId])
+  @@index([type])
+  @@map("analytics_dashboards")
+}
+
+enum AnalyticsDashboardType {
+  INTERNAL_OVERVIEW    // Overall internal metrics
+  INTERNAL_TEAM        // Team performance
+  INTERNAL_RESOURCE    // Resource utilization
+  INTERNAL_FINANCIAL   // Time/cost tracking
+  EXTERNAL_REALTIME    // Live client metrics
+  EXTERNAL_PERIOD      // Historical client analytics
+  EXTERNAL_CAMPAIGN    // Campaign performance
+  CUSTOM               // User-defined
+}
+
+// Individual widgets on dashboards
+model AnalyticsWidget {
+  id              String   @id @default(cuid())
+  dashboardId     String
+
+  // Widget definition
+  name            String
+  type            AnalyticsWidgetType
+
+  // Visual configuration
+  chartType       ChartType?
+  size            String   @default("medium")  // small, medium, large, full
+  position        Json?    // { x, y, w, h } grid position
+
+  // Data configuration
+  metric          String   // What to measure
+  dimensions      String[] @default([])  // Group by fields
+  filters         Json?    // Widget-specific filters
+
+  // Time settings
+  timeRange       String?  // "realtime", "7d", "30d", "90d", "custom"
+  refreshInterval Int?     // Seconds (null = manual/page refresh)
+
+  // Comparison
+  compareWith     String?  // "previous_period", "same_period_last_year"
+
+  // Thresholds / alerts
+  thresholds      Json?    // { warning: 80, critical: 95 }
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  dashboard       AnalyticsDashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  @@index([dashboardId])
+  @@map("analytics_widgets")
+}
+
+enum AnalyticsWidgetType {
+  // Numbers
+  METRIC_CARD      // Single number with trend
+  COUNTER          // Live counter
+  GAUGE            // Progress toward goal
+
+  // Charts
+  LINE_CHART
+  BAR_CHART
+  AREA_CHART
+  PIE_CHART
+  DONUT_CHART
+
+  // Tables
+  DATA_TABLE
+  LEADERBOARD
+
+  // Time-based
+  TIMELINE
+  HEATMAP
+  CALENDAR_HEATMAP
+
+  // Relationships (Neo4j powered)
+  NETWORK_GRAPH
+  SANKEY_DIAGRAM
+  TREEMAP
+  SUNBURST
+
+  // Comparisons
+  COMPARISON_CARD
+  SPARKLINE
+}
+
+enum ChartType {
+  LINE
+  BAR
+  HORIZONTAL_BAR
+  STACKED_BAR
+  AREA
+  STACKED_AREA
+  PIE
+  DONUT
+  SCATTER
+  BUBBLE
+  RADAR
+  FUNNEL
+}
+
+// Periodic snapshots for historical analytics
+model AnalyticsSnapshot {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Timing
+  period          AnalyticsPeriod
+  periodStart     DateTime
+  periodEnd       DateTime
+
+  // Scope
+  entityType      String?  // "organization", "client", "project", "user"
+  entityId        String?
+
+  // Metrics (stored as JSON for flexibility)
+  metrics         Json
+
+  // Computed at
+  computedAt      DateTime @default(now())
+
+  @@unique([organizationId, period, periodStart, entityType, entityId])
+  @@index([organizationId, period])
+  @@index([entityType, entityId])
+  @@map("analytics_snapshots")
+}
+
+enum AnalyticsPeriod {
+  HOURLY
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+// Neo4j graph sync tracking
+model GraphSyncLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // What was synced
+  entityType      String   // "user", "client", "brief", "project"
+  entityId        String
+  action          String   // "create", "update", "delete", "relationship"
+
+  // Sync status
+  status          String   @default("pending")  // pending, synced, failed
+  error           String?
+
+  // Graph details
+  nodeLabels      String[] @default([])
+  relationshipTypes String[] @default([])
+
+  createdAt       DateTime @default(now())
+  syncedAt        DateTime?
+
+  @@index([organizationId, status])
+  @@index([entityType, entityId])
+  @@map("graph_sync_logs")
+}
+
+// Metric definitions (configurable metrics)
+model MetricDefinition {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Identity
+  code            String   // "brief_completion_rate", "avg_turnaround"
+  name            String   // "Brief Completion Rate"
+  description     String?
+  category        MetricCategory
+
+  // Calculation
+  formula         String   // SQL or expression
+  aggregation     String   // "sum", "avg", "count", "min", "max"
+
+  // Display
+  format          String   @default("number")  // number, percent, currency, duration
+  decimals        Int      @default(0)
+  prefix          String?  // "$", "£"
+  suffix          String?  // "%", "hrs"
+
+  // Trend
+  higherIsBetter  Boolean  @default(true)
+
+  // Status
+  isActive        Boolean  @default(true)
+  isSystem        Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, code])
+  @@index([organizationId, category])
+  @@map("metric_definitions")
+}
+
+enum MetricCategory {
+  // Internal
+  PRODUCTIVITY
+  EFFICIENCY
+  QUALITY
+  CAPACITY
+  FINANCIAL
+
+  // External
+  CLIENT_SATISFACTION
+  DELIVERY
+  ENGAGEMENT
+  PERFORMANCE
+}
+
+// ============================================
 // FORM TEMPLATES (Visual Form Builder)
 // ============================================
 
@@ -1160,6 +1524,9 @@ model FormSubmission {
   briefId         String?  @unique
   brief           Brief?   @relation(fields: [briefId], references: [id])
 
+  // Files
+  files           FormSubmissionFile[]
+
   @@index([organizationId])
   @@index([templateId])
   @@index([status])
@@ -1175,4 +1542,620 @@ enum FormSubmissionStatus {
   REJECTED        // Rejected with reason
   COMPLETED       // Finished
   CANCELLED       // Cancelled by submitter
+}
+
+// ============================================
+// API & INTEGRATIONS (Phase 11)
+// ============================================
+
+model ApiKey {
+  id              String    @id @default(cuid())
+  organizationId  String
+
+  // Key data
+  name            String    // "n8n Production", "Zapier Integration"
+  keyHash         String    @unique  // SHA-256 of the key (never store raw)
+  keyPrefix       String    // First 8 chars for identification: "sk_live_a1b2..."
+
+  // Permissions
+  scopes          String[]  // ["briefs:read", "briefs:write", "time:read"]
+
+  // Rate limiting
+  rateLimit       Int       @default(1000)  // Requests per hour
+
+  // Status
+  isActive        Boolean   @default(true)
+  lastUsedAt      DateTime?
+  usageCount      Int       @default(0)
+
+  // Expiry
+  expiresAt       DateTime?
+
+  // Audit
+  createdById     String
+  createdAt       DateTime  @default(now())
+  revokedAt       DateTime?
+  revokedById     String?
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdBy       User         @relation("ApiKeyCreator", fields: [createdById], references: [id])
+  revokedBy       User?        @relation("ApiKeyRevoker", fields: [revokedById], references: [id])
+  requestLogs     ApiRequestLog[]
+
+  @@index([organizationId])
+  @@index([keyHash])
+  @@map("api_keys")
+}
+
+model WebhookSubscription {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Target
+  url             String   // https://hooks.zapier.com/...
+  name            String   // "Zapier Brief Notifications"
+
+  // Events to subscribe to
+  events          String[] // ["brief.created", "brief.completed"]
+
+  // Security
+  secret          String   // For HMAC signature verification
+
+  // Filtering (optional)
+  filters         Json?    // { "briefType": ["VIDEO_SHOOT"], "clientId": "xxx" }
+
+  // Status
+  isActive        Boolean  @default(true)
+
+  // Health tracking
+  lastDeliveryAt  DateTime?
+  lastStatus      Int?     // Last HTTP status code
+  failureCount    Int      @default(0)
+  disabledAt      DateTime?  // Auto-disabled after failures
+
+  // Metadata
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization      @relation(fields: [organizationId], references: [id])
+  createdBy       User              @relation("WebhookCreator", fields: [createdById], references: [id])
+  deliveries      WebhookDelivery[]
+
+  @@index([organizationId])
+  @@map("webhook_subscriptions")
+}
+
+model WebhookDelivery {
+  id              String   @id @default(cuid())
+  subscriptionId  String
+
+  // Event data
+  event           String   // "brief.created"
+  payload         Json     // The sent payload
+
+  // Delivery attempt
+  attemptNumber   Int      @default(1)
+
+  // Response
+  status          String   // "pending", "success", "failed"
+  statusCode      Int?
+  responseBody    String?  @db.Text
+  responseTime    Int?     // ms
+
+  // Error info
+  error           String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  deliveredAt     DateTime?
+  nextRetryAt     DateTime?
+
+  subscription    WebhookSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId, createdAt])
+  @@index([status, nextRetryAt])
+  @@map("webhook_deliveries")
+}
+
+model ApiRequestLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+  apiKeyId        String?
+
+  // Request
+  method          String   // GET, POST, etc.
+  path            String   // /api/v1/briefs
+  query           Json?
+
+  // Response
+  statusCode      Int
+  responseTime    Int      // ms
+
+  // Client info
+  ipAddress       String?
+  userAgent       String?
+
+  createdAt       DateTime @default(now())
+
+  apiKey          ApiKey?  @relation(fields: [apiKeyId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([apiKeyId, createdAt])
+  @@map("api_request_logs")
+}
+
+// ============================================
+// NOTIFICATIONS (Phase 6)
+// ============================================
+
+model Notification {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Recipient
+  userId          String
+
+  // Content
+  type            String   // e.g., "brief.assigned", "submission.approved"
+  title           String
+  body            String?
+
+  // Navigation
+  actionUrl       String?  // Where to go when clicked
+  actionLabel     String?  // "View Brief"
+
+  // Context
+  entityType      String?  // "brief", "submission", "rfp"
+  entityId        String?
+  metadata        Json?    // Additional context data
+
+  // Status
+  isRead          Boolean  @default(false)
+  readAt          DateTime?
+  isArchived      Boolean  @default(false)
+  archivedAt      DateTime?
+
+  // Delivery tracking
+  channels        String[] @default(["in_app"])
+  deliveryStatus  Json     @default("{}")
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime?
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+  @@index([organizationId, createdAt])
+  @@index([entityType, entityId])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+
+  // Global settings
+  emailEnabled    Boolean  @default(true)
+  slackEnabled    Boolean  @default(true)
+  inAppEnabled    Boolean  @default(true)
+
+  // Digest settings
+  emailDigest     String   @default("instant")  // "instant", "daily", "weekly", "none"
+  digestTime      String?  @default("09:00")
+
+  // Quiet hours
+  quietHoursEnabled Boolean @default(false)
+  quietHoursStart  String?  @default("22:00")
+  quietHoursEnd    String?  @default("08:00")
+  timezone         String   @default("Asia/Dubai")
+
+  // Per-type preferences
+  typePreferences  Json     @default("{}")
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}
+
+model NotificationTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  type            String   // e.g., "brief.assigned"
+  channel         String   // "email", "slack", "in_app"
+
+  // Content
+  subject         String?  // For email
+  title           String
+  body            String   @db.Text
+
+  // Slack-specific
+  slackBlocks     Json?
+
+  // Email-specific
+  emailTemplate   String?
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, type, channel])
+  @@map("notification_templates")
+}
+
+// ============================================
+// CLIENT PORTAL (Phase 10)
+// ============================================
+
+model ClientPortalUser {
+  id              String   @id @default(cuid())
+  organizationId  String
+  clientId        String
+  contactId       String?  // Link to ClientContact if applicable
+
+  // Auth
+  email           String
+  passwordHash    String?  // For password auth (optional)
+
+  // Profile
+  name            String
+  avatarUrl       String?
+
+  // Status
+  isActive        Boolean  @default(true)
+  lastLoginAt     DateTime?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  contact         ClientContact? @relation(fields: [contactId], references: [id])
+  sessions        ClientPortalSession[]
+  magicLinks      ClientMagicLink[]
+  approvals       SubmissionApproval[]
+  comments        ClientPortalComment[]
+  briefRequests   ClientBriefRequest[]
+  npsResponses    NPSResponse[]
+
+  @@unique([organizationId, email])
+  @@index([clientId])
+  @@map("client_portal_users")
+}
+
+model ClientPortalSession {
+  id              String   @id @default(cuid())
+  userId          String
+
+  // Session data
+  token           String   @unique
+  expiresAt       DateTime
+
+  // Context
+  ipAddress       String?
+  userAgent       String?
+
+  createdAt       DateTime @default(now())
+
+  user            ClientPortalUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("client_portal_sessions")
+}
+
+model ClientMagicLink {
+  id              String   @id @default(cuid())
+  userId          String
+
+  // Token
+  token           String   @unique
+  expiresAt       DateTime
+  usedAt          DateTime?
+
+  createdAt       DateTime @default(now())
+
+  user            ClientPortalUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@map("client_magic_links")
+}
+
+// Client approval of submissions/deliverables
+model SubmissionApproval {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // What's being approved
+  briefId         String
+  submissionType  String   // "deliverable", "concept", "final"
+
+  // Status
+  status          ApprovalStatus @default(PENDING)
+
+  // Client feedback
+  approvedById    String?  // ClientPortalUser who approved/rejected
+  feedback        String?  @db.Text
+  rating          Int?     // 1-5 satisfaction rating
+
+  // Revision request
+  revisionNotes   String?  @db.Text
+  revisionCount   Int      @default(0)
+
+  // Files being approved (JSON array of file IDs)
+  fileIds         String[] @default([])
+
+  // Timestamps
+  requestedAt     DateTime @default(now())
+  respondedAt     DateTime?
+  dueDate         DateTime?
+
+  approvedBy      ClientPortalUser? @relation(fields: [approvedById], references: [id])
+
+  @@index([organizationId])
+  @@index([briefId])
+  @@index([status])
+  @@map("submission_approvals")
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVISION_REQUESTED
+  EXPIRED
+}
+
+// Comments from clients on submissions
+model ClientPortalComment {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Context
+  briefId         String?
+  approvalId      String?
+
+  // Content
+  content         String   @db.Text
+
+  // Author
+  authorId        String
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  author          ClientPortalUser @relation(fields: [authorId], references: [id])
+
+  @@index([briefId])
+  @@index([approvalId])
+  @@map("client_portal_comments")
+}
+
+// Brief requests from clients
+model ClientBriefRequest {
+  id              String   @id @default(cuid())
+  organizationId  String
+  clientId        String
+
+  // Request details
+  title           String
+  description     String   @db.Text
+  briefType       String?  // Suggested type
+  priority        Priority @default(MEDIUM)
+  desiredDeadline DateTime?
+
+  // Attachments (JSON array of file IDs)
+  attachmentIds   String[] @default([])
+
+  // Status
+  status          BriefRequestStatus @default(SUBMITTED)
+
+  // Converted to brief
+  briefId         String?  @unique
+
+  // Submitter
+  submittedById   String
+
+  // Review
+  reviewedById    String?  // Internal user who reviewed
+  reviewNotes     String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  reviewedAt      DateTime?
+
+  submittedBy     ClientPortalUser @relation(fields: [submittedById], references: [id])
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@map("client_brief_requests")
+}
+
+enum BriefRequestStatus {
+  DRAFT
+  SUBMITTED
+  IN_REVIEW
+  APPROVED      // Converted to brief
+  REJECTED
+  ON_HOLD
+}
+
+// ============================================
+// FILE MANAGEMENT (Phase 7)
+// ============================================
+
+model File {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // File identity
+  name            String   // Display name
+  originalName    String   // Original upload name
+  extension       String?  // "jpg", "pdf", "mp4"
+  mimeType        String   // "image/jpeg"
+  size            Int      // Bytes
+
+  // Storage
+  storageKey      String   // R2/S3 key: "org_xxx/files/2024/abc123.jpg"
+  storageProvider String   @default("r2")
+  cdnUrl          String?  // Public CDN URL (if public)
+
+  // Thumbnails
+  thumbnailKey    String?
+  thumbnailUrl    String?
+
+  // Classification
+  category        FileCategory @default(OTHER)
+  tags            String[]     @default([])
+
+  // Folder (optional organization)
+  folderId        String?
+  folder          Folder?  @relation(fields: [folderId], references: [id])
+
+  // AI processing
+  aiStatus        AIProcessingStatus @default(PENDING)
+  aiMetadata      Json?    // Extracted text, labels, colors, etc.
+  aiProcessedAt   DateTime?
+
+  // Search
+  searchVector    String?  @db.Text
+
+  // Ownership
+  uploadedById    String
+  uploadedBy      User     @relation("FileUploader", fields: [uploadedById], references: [id])
+
+  // Soft delete
+  isArchived      Boolean  @default(false)
+  archivedAt      DateTime?
+  archivedById    String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations - polymorphic links
+  briefFiles      BriefFile[]
+  clientFiles     ClientFile[]
+  projectFiles    ProjectFile[]
+  submissionFiles FormSubmissionFile[]
+
+  @@index([organizationId])
+  @@index([category])
+  @@index([uploadedById])
+  @@index([folderId])
+  @@index([createdAt])
+  @@map("files")
+}
+
+enum FileCategory {
+  BRIEF_ATTACHMENT   // Reference materials for briefs
+  DELIVERABLE        // Completed work
+  CONTRACT           // Legal documents
+  BRAND_ASSET        // Logos, fonts, brand guides
+  REFERENCE          // Inspiration, moodboards
+  INVOICE            // Financial documents
+  PROFILE_PHOTO      // User avatars
+  OTHER
+}
+
+enum AIProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  SKIPPED
+}
+
+model Folder {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String
+  parentId        String?
+  path            String   // "/clients/CCAD/brand-assets"
+  depth           Int      @default(0)
+
+  // Permissions
+  isPublic        Boolean  @default(false)
+
+  // Relations
+  parent          Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children        Folder[] @relation("FolderHierarchy")
+  files           File[]
+
+  createdById     String
+  createdAt       DateTime @default(now())
+
+  @@unique([organizationId, path])
+  @@index([organizationId])
+  @@index([parentId])
+  @@map("folders")
+}
+
+// Junction tables for entity relationships
+model BriefFile {
+  briefId   String
+  fileId    String
+  role      String   @default("attachment")  // "attachment", "deliverable", "reference"
+  sortOrder Int      @default(0)
+  addedAt   DateTime @default(now())
+  addedById String
+
+  brief     Brief    @relation(fields: [briefId], references: [id], onDelete: Cascade)
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([briefId, fileId])
+  @@map("brief_files")
+}
+
+model ClientFile {
+  clientId  String
+  fileId    String
+  role      String   @default("asset")  // "asset", "contract", "brand", "logo"
+  sortOrder Int      @default(0)
+  addedAt   DateTime @default(now())
+  addedById String
+
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([clientId, fileId])
+  @@map("client_files")
+}
+
+model ProjectFile {
+  projectId String
+  fileId    String
+  role      String   @default("asset")
+  sortOrder Int      @default(0)
+  addedAt   DateTime @default(now())
+  addedById String
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, fileId])
+  @@map("project_files")
+}
+
+model FormSubmissionFile {
+  submissionId String
+  fileId       String
+  fieldId      String   // Which form field this was uploaded to
+  sortOrder    Int      @default(0)
+  addedAt      DateTime @default(now())
+
+  submission   FormSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  file         File           @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([submissionId, fileId])
+  @@map("form_submission_files")
 }

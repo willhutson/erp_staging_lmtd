@@ -28,6 +28,7 @@ import {
   Palette,
   MessageSquare,
   Inbox,
+  FolderOpen,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -103,6 +104,11 @@ const navItems: NavItem[] = [
     title: "Leave",
     href: "/leave",
     icon: <CalendarDays className="w-5 h-5" />,
+  },
+  {
+    title: "Files",
+    href: "/files",
+    icon: <FolderOpen className="w-5 h-5" />,
   },
   {
     title: "Pipeline",

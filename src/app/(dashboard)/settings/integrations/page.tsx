@@ -2,7 +2,9 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { SettingsNav } from "@/components/settings/SettingsNav";
 import { GoogleIntegrationCard } from "@/modules/integrations/google/components/GoogleIntegrationCard";
-import { Slack, FileSpreadsheet, BarChart3 } from "lucide-react";
+import { SlackIntegrationCard } from "@/modules/integrations/slack/components/SlackIntegrationCard";
+import { getSlackChannels } from "@/modules/integrations/slack/actions";
+import { FileSpreadsheet, BarChart3 } from "lucide-react";
 
 export default async function IntegrationsSettingsPage() {
   const session = await auth();
@@ -18,6 +20,16 @@ export default async function IntegrationsSettingsPage() {
   });
 
   const isGoogleConnected = googleIntegration?.isEnabled ?? false;
+
+  // Get Slack workspace status
+  const slackWorkspace = await db.slackWorkspace.findUnique({
+    where: { organizationId: session!.user.organizationId },
+  });
+
+  const isSlackConnected = slackWorkspace?.isActive ?? false;
+
+  // Get Slack channels if connected
+  const slackChannels = isSlackConnected ? await getSlackChannels() : [];
 
   return (
     <div className="space-y-6">
@@ -38,25 +50,11 @@ export default async function IntegrationsSettingsPage() {
             <div className="space-y-4">
               <GoogleIntegrationCard isConnected={isGoogleConnected} />
 
-              {/* Slack - Coming Soon */}
-              <div className="border border-gray-200 rounded-lg p-4 opacity-60">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                      <Slack className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Slack</p>
-                      <p className="text-sm text-gray-500">
-                        Send notifications and create briefs from Slack
-                      </p>
-                    </div>
-                  </div>
-                  <span className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-500 rounded-full">
-                    Coming Soon
-                  </span>
-                </div>
-              </div>
+              <SlackIntegrationCard
+                isConnected={isSlackConnected}
+                workspace={slackWorkspace}
+                channels={slackChannels}
+              />
 
               {/* Monday.com - Coming Soon */}
               <div className="border border-gray-200 rounded-lg p-4 opacity-60">
