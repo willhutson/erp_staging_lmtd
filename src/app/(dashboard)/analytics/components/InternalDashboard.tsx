@@ -13,49 +13,46 @@ import { MetricCard } from "./charts/MetricCard";
 import { BarChart } from "./charts/BarChart";
 import { HeatmapChart } from "./charts/HeatmapChart";
 import { LineChart } from "./charts/LineChart";
+import type { MetricResult } from "@/lib/analytics/internal";
 
 interface InternalDashboardProps {
   organizationId: string;
   dateRange: { start: Date; end: Date };
 }
 
-interface OverviewMetrics {
-  totalBriefs: { value: number; change: number };
-  completedBriefs: { value: number; change: number };
-  avgTurnaround: { value: number; change: number };
-  teamUtilization: { value: number; change: number };
-  totalHours: { value: number; change: number };
-  onTimeRate: { value: number; change: number };
-}
+type OverviewMetrics = Record<string, MetricResult>;
 
 interface TeamMember {
   userId: string;
-  userName: string;
+  name: string;
   department: string;
   briefsCompleted: number;
+  briefsInProgress: number;
   hoursLogged: number;
-  utilization: number;
+  utilizationRate: number;
+  avgTurnaroundDays: number;
   onTimeRate: number;
 }
 
 interface DepartmentMetric {
   department: string;
+  teamSize: number;
   briefsCompleted: number;
   totalHours: number;
-  avgTurnaround: number;
-  utilization: number;
+  avgUtilization: number;
+  briefsPerMember: number;
 }
 
 interface ThroughputData {
-  period: string;
+  date: string;
   created: number;
   completed: number;
 }
 
 interface HeatmapData {
   userId: string;
-  userName: string;
-  weekData: number[];
+  name: string;
+  data: Array<{ date: string; hours: number; capacity: number }>;
 }
 
 export function InternalDashboard({
@@ -108,39 +105,39 @@ export function InternalDashboard({
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <MetricCard
           title="Total Briefs"
-          value={overview?.totalBriefs.value || 0}
-          change={overview?.totalBriefs.change || 0}
+          value={overview?.totalBriefs?.value || 0}
+          change={overview?.totalBriefs?.change || 0}
           icon={<CheckCircle className="h-4 w-4" />}
         />
         <MetricCard
           title="Completed"
-          value={overview?.completedBriefs.value || 0}
-          change={overview?.completedBriefs.change || 0}
+          value={overview?.completedBriefs?.value || 0}
+          change={overview?.completedBriefs?.change || 0}
           icon={<CheckCircle className="h-4 w-4" />}
         />
         <MetricCard
           title="Avg Turnaround"
-          value={`${overview?.avgTurnaround.value || 0}d`}
-          change={overview?.avgTurnaround.change || 0}
+          value={`${overview?.avgTurnaround?.value || 0}d`}
+          change={overview?.avgTurnaround?.change || 0}
           invertChange
           icon={<Clock className="h-4 w-4" />}
         />
         <MetricCard
           title="Utilization"
-          value={`${overview?.teamUtilization.value || 0}%`}
-          change={overview?.teamUtilization.change || 0}
+          value={`${overview?.utilizationRate?.value || 0}%`}
+          change={overview?.utilizationRate?.change || 0}
           icon={<Users className="h-4 w-4" />}
         />
         <MetricCard
           title="Total Hours"
-          value={overview?.totalHours.value || 0}
-          change={overview?.totalHours.change || 0}
+          value={overview?.totalHours?.value || 0}
+          change={overview?.totalHours?.change || 0}
           icon={<Clock className="h-4 w-4" />}
         />
         <MetricCard
           title="On-Time Rate"
-          value={`${overview?.onTimeRate.value || 0}%`}
-          change={overview?.onTimeRate.change || 0}
+          value={`${overview?.onTimeRate?.value || 0}%`}
+          change={overview?.onTimeRate?.change || 0}
           icon={<TrendingUp className="h-4 w-4" />}
         />
       </div>
@@ -154,7 +151,7 @@ export function InternalDashboard({
           <CardContent>
             <LineChart
               data={throughput}
-              xKey="period"
+              xKey="date"
               lines={[
                 { key: "created", color: "#52EDC7", label: "Created" },
                 { key: "completed", color: "#1BA098", label: "Completed" },
@@ -213,7 +210,7 @@ export function InternalDashboard({
               <tbody>
                 {teamPerformance.slice(0, 10).map((member) => (
                   <tr key={member.userId} className="border-b last:border-0">
-                    <td className="py-3 font-medium">{member.userName}</td>
+                    <td className="py-3 font-medium">{member.name}</td>
                     <td className="py-3 text-muted-foreground">
                       {member.department}
                     </td>
@@ -222,14 +219,14 @@ export function InternalDashboard({
                     <td className="py-3 text-right">
                       <span
                         className={
-                          member.utilization > 90
+                          member.utilizationRate > 90
                             ? "text-red-500"
-                            : member.utilization > 70
+                            : member.utilizationRate > 70
                             ? "text-yellow-500"
                             : "text-green-500"
                         }
                       >
-                        {member.utilization}%
+                        {member.utilizationRate}%
                       </span>
                     </td>
                     <td className="py-3 text-right">
