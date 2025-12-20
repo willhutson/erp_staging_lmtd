@@ -40,6 +40,10 @@ model Organization {
   clientActivities ClientActivity[]
   deals            Deal[]
 
+  // API & Integrations
+  apiKeys              ApiKey[]
+  webhookSubscriptions WebhookSubscription[]
+
   @@map("organizations")
 }
 
@@ -116,6 +120,11 @@ model User {
   submissionsCreated  FormSubmission[] @relation("FormSubmissionCreator")
   submissionsAssigned FormSubmission[] @relation("FormSubmissionAssignee")
   submissionsReviewed FormSubmission[] @relation("FormSubmissionReviewer")
+
+  // API & Integrations
+  apiKeysCreated      ApiKey[]             @relation("ApiKeyCreator")
+  apiKeysRevoked      ApiKey[]             @relation("ApiKeyRevoker")
+  webhooksCreated     WebhookSubscription[] @relation("WebhookCreator")
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -1175,4 +1184,145 @@ enum FormSubmissionStatus {
   REJECTED        // Rejected with reason
   COMPLETED       // Finished
   CANCELLED       // Cancelled by submitter
+}
+
+// ============================================
+// API & INTEGRATIONS (Phase 11)
+// ============================================
+
+model ApiKey {
+  id              String    @id @default(cuid())
+  organizationId  String
+
+  // Key data
+  name            String    // "n8n Production", "Zapier Integration"
+  keyHash         String    @unique  // SHA-256 of the key (never store raw)
+  keyPrefix       String    // First 8 chars for identification: "sk_live_a1b2..."
+
+  // Permissions
+  scopes          String[]  // ["briefs:read", "briefs:write", "time:read"]
+
+  // Rate limiting
+  rateLimit       Int       @default(1000)  // Requests per hour
+
+  // Status
+  isActive        Boolean   @default(true)
+  lastUsedAt      DateTime?
+  usageCount      Int       @default(0)
+
+  // Expiry
+  expiresAt       DateTime?
+
+  // Audit
+  createdById     String
+  createdAt       DateTime  @default(now())
+  revokedAt       DateTime?
+  revokedById     String?
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdBy       User         @relation("ApiKeyCreator", fields: [createdById], references: [id])
+  revokedBy       User?        @relation("ApiKeyRevoker", fields: [revokedById], references: [id])
+  requestLogs     ApiRequestLog[]
+
+  @@index([organizationId])
+  @@index([keyHash])
+  @@map("api_keys")
+}
+
+model WebhookSubscription {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Target
+  url             String   // https://hooks.zapier.com/...
+  name            String   // "Zapier Brief Notifications"
+
+  // Events to subscribe to
+  events          String[] // ["brief.created", "brief.completed"]
+
+  // Security
+  secret          String   // For HMAC signature verification
+
+  // Filtering (optional)
+  filters         Json?    // { "briefType": ["VIDEO_SHOOT"], "clientId": "xxx" }
+
+  // Status
+  isActive        Boolean  @default(true)
+
+  // Health tracking
+  lastDeliveryAt  DateTime?
+  lastStatus      Int?     // Last HTTP status code
+  failureCount    Int      @default(0)
+  disabledAt      DateTime?  // Auto-disabled after failures
+
+  // Metadata
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization      @relation(fields: [organizationId], references: [id])
+  createdBy       User              @relation("WebhookCreator", fields: [createdById], references: [id])
+  deliveries      WebhookDelivery[]
+
+  @@index([organizationId])
+  @@map("webhook_subscriptions")
+}
+
+model WebhookDelivery {
+  id              String   @id @default(cuid())
+  subscriptionId  String
+
+  // Event data
+  event           String   // "brief.created"
+  payload         Json     // The sent payload
+
+  // Delivery attempt
+  attemptNumber   Int      @default(1)
+
+  // Response
+  status          String   // "pending", "success", "failed"
+  statusCode      Int?
+  responseBody    String?  @db.Text
+  responseTime    Int?     // ms
+
+  // Error info
+  error           String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  deliveredAt     DateTime?
+  nextRetryAt     DateTime?
+
+  subscription    WebhookSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId, createdAt])
+  @@index([status, nextRetryAt])
+  @@map("webhook_deliveries")
+}
+
+model ApiRequestLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+  apiKeyId        String?
+
+  // Request
+  method          String   // GET, POST, etc.
+  path            String   // /api/v1/briefs
+  query           Json?
+
+  // Response
+  statusCode      Int
+  responseTime    Int      // ms
+
+  // Client info
+  ipAddress       String?
+  userAgent       String?
+
+  createdAt       DateTime @default(now())
+
+  apiKey          ApiKey?  @relation(fields: [apiKeyId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([apiKeyId, createdAt])
+  @@map("api_request_logs")
 }
