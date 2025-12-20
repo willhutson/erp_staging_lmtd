@@ -109,6 +109,9 @@ model User {
   leaveRequests    LeaveRequest[]   @relation("LeaveRequester")
   leaveReviews     LeaveRequest[]   @relation("LeaveReviewer")
 
+  // Dashboard layouts
+  dashboardLayouts DashboardLayout[]
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([department])
@@ -1053,4 +1056,25 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ============================================
+// DASHBOARD LAYOUTS
+// ============================================
+
+model DashboardLayout {
+  id              String   @id @default(cuid())
+  userId          String
+  organizationId  String
+  name            String   @default("My Dashboard")
+  isDefault       Boolean  @default(false)
+  layout          Json     // Widget positions and configurations
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@index([organizationId])
+  @@map("dashboard_layouts")
 }

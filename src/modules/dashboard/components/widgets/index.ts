@@ -1,0 +1,9 @@
+export { MyTasksWidget } from "./MyTasksWidget";
+export { UpcomingDeadlinesWidget } from "./UpcomingDeadlinesWidget";
+export { RecentBriefsWidget } from "./RecentBriefsWidget";
+export { TimeLoggedWidget } from "./TimeLoggedWidget";
+export { QuickActionsWidget } from "./QuickActionsWidget";
+export { NPSScoreWidget } from "./NPSScoreWidget";
+export { PipelineSummaryWidget } from "./PipelineSummaryWidget";
+export { TeamCapacityWidget } from "./TeamCapacityWidget";
+export { ClientActivityWidget } from "./ClientActivityWidget";

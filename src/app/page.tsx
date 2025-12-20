@@ -5,7 +5,7 @@ export default async function HomePage() {
   const session = await auth();
 
   if (session?.user) {
-    redirect("/briefs");
+    redirect("/dashboard");
   } else {
     redirect("/login");
   }

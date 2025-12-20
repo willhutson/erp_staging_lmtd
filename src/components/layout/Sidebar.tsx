@@ -31,7 +31,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     title: "Dashboard",
-    href: "/",
+    href: "/dashboard",
     icon: <LayoutDashboard className="w-5 h-5" />,
   },
   {
@@ -137,7 +137,7 @@ export function Sidebar({ permissionLevel }: SidebarProps) {
         {visibleItems.map((item) => {
           const isActive =
             pathname === item.href ||
-            (item.href !== "/" && pathname.startsWith(item.href));
+            pathname.startsWith(item.href + "/");
 
           return (
             <Link
