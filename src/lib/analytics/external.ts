@@ -420,9 +420,8 @@ class ExternalAnalyticsService {
       clientId
         ? db.nPSResponse.findMany({
             where: {
-              organizationId,
-              clientId,
-              createdAt: { gte: dateRange.start, lte: dateRange.end },
+              survey: { organizationId, clientId },
+              submittedAt: { gte: dateRange.start, lte: dateRange.end },
             },
             select: { score: true },
           })
