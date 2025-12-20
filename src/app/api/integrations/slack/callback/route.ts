@@ -3,6 +3,9 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { slackClient } from "@/lib/slack/client";
 
+// Force dynamic rendering for OAuth callback
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;

@@ -1,6 +1,9 @@
 import { getPortalUser } from "@/lib/portal/auth";
 import { db } from "@/lib/db";
 import Link from "next/link";
+
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = 'force-dynamic';
 import {
   FileText,
   CheckCircle,
