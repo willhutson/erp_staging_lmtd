@@ -13,8 +13,8 @@ This document analyzes Phases 6-11 to determine optimal implementation order bas
 1. **Phase 11**: API & Integrations (foundation for automation)
 2. **Phase 6**: Notifications (enables all communication)
 3. **Phase 7**: Files (required for briefs/portal)
-4. **Phase 9**: Slack (highest user adoption impact)
-5. **Phase 10**: Client Portal (client self-service)
+4. **Phase 10**: Client Portal (client self-service)
+5. **Phase 9**: Slack (team workflow integration)
 6. **Phase 8**: Analytics (management visibility)
 
 ---
@@ -26,8 +26,8 @@ This document analyzes Phases 6-11 to determine optimal implementation order bas
 | **11: API** | High | Medium | None | 2-3 weeks | **95** |
 | **6: Notifications** | High | Medium | None | 2 weeks | **90** |
 | **7: Files** | High | Medium-High | None | 2-3 weeks | **85** |
-| **9: Slack** | Very High | Medium-High | Phase 6 | 2-3 weeks | **80** |
-| **10: Portal** | High | High | Phase 7 | 3-4 weeks | **70** |
+| **10: Portal** | High | High | Phase 7 | 3-4 weeks | **80** |
+| **9: Slack** | High | Medium-High | Phase 6 | 2-3 weeks | **70** |
 | **8: Analytics** | Medium-High | Medium | Phases 5,6,7 | 2-3 weeks | **65** |
 
 ---
@@ -95,11 +95,11 @@ Week 3: AI processing pipeline (optional, can defer)
 ---
 
 ### Phase 9: Slack Integration
-**Priority: 4**
+**Priority: 5**
 
 | Factor | Assessment |
 |--------|------------|
-| **Why Fourth** | Team lives in Slack - highest adoption driver |
+| **Why Fifth** | Team workflow integration after client-facing features |
 | **Dependencies** | Phase 6 (for Slack notifications) |
 | **Quick Wins** | /status command in ~3 days |
 | **Risk if Delayed** | Lower platform adoption, context switching |
@@ -114,11 +114,11 @@ Week 3: Interactive modals + approve/reject buttons
 ---
 
 ### Phase 10: Client Portal
-**Priority: 5**
+**Priority: 4**
 
 | Factor | Assessment |
 |--------|------------|
-| **Why Fifth** | Depends on files for deliverable downloads |
+| **Why Fourth** | Client self-service reduces overhead, depends on files |
 | **Dependencies** | Phase 7 (files), Phase 6 (notifications) |
 | **Quick Wins** | Magic link auth + dashboard in ~1 week |
 | **Risk if Delayed** | More status update calls, manual deliverable sharing |
@@ -191,23 +191,23 @@ Some phases can run in parallel with different team members:
 
 ### Track A: Core Platform
 ```
-Phase 11 (API) → Phase 6 (Notifications) → Phase 9 (Slack)
+Phase 11 (API) → Phase 6 (Notifications)
 ```
 
-### Track B: Content & Files
+### Track B: Client-Facing
 ```
 Phase 7 (Files) → Phase 10 (Client Portal)
 ```
 
-### Track C: Insights (Can Start After Track A/B)
+### Track C: Team & Insights (After A/B)
 ```
-Phase 8 (Analytics)
+Phase 9 (Slack) → Phase 8 (Analytics)
 ```
 
 **Parallel Timeline:**
 ```
 Week 1-3:  [Track A: API + Notifications] | [Track B: Files]
-Week 4-6:  [Track A: Slack]               | [Track B: Portal]
+Week 4-6:  [Track B: Portal]              | [Track C: Slack]
 Week 7-8:  [Track C: Analytics]
 ```
 
@@ -222,8 +222,8 @@ If you want immediate value, prioritize these mini-milestones:
 | **1** | API keys + /api/v1/briefs | Enable basic automation |
 | **2** | In-app notifications + bell | Users see updates |
 | **3** | Basic file upload | Attach files to briefs |
-| **4** | /status Slack command | Team can check briefs from Slack |
-| **5** | Portal magic link + dashboard | Clients can log in |
+| **4** | Portal magic link + dashboard | Clients can log in |
+| **5** | /status Slack command | Team can check briefs from Slack |
 | **6** | Utilization widget | Leadership sees team capacity |
 
 ---
@@ -253,20 +253,20 @@ Given that:
 **Recommended Sequence:**
 
 ```
-1. Phase 11: API (2 weeks)      ← Enables automation immediately
+1. Phase 11: API (2 weeks)        ← Enables automation immediately
    └─ Quick win: n8n brief creation workflow
 
 2. Phase 6: Notifications (2 weeks)
    └─ Quick win: Assignment alerts, deadline reminders
 
-3. Phase 9: Slack (2 weeks)     ← Highest team adoption impact
-   └─ Quick win: /brief and /status commands
-
-4. Phase 7: Files (2 weeks)
+3. Phase 7: Files (2 weeks)
    └─ Quick win: Attach files to briefs
 
-5. Phase 10: Portal (3 weeks)   ← Reduces client overhead
+4. Phase 10: Portal (3 weeks)     ← Client self-service
    └─ Quick win: Client can see brief status
+
+5. Phase 9: Slack (2 weeks)       ← Team workflow integration
+   └─ Quick win: /brief and /status commands
 
 6. Phase 8: Analytics (2 weeks)
    └─ Quick win: Utilization dashboard
