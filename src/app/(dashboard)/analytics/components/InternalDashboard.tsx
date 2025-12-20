@@ -35,6 +35,7 @@ interface TeamMember {
 }
 
 interface DepartmentMetric {
+  [key: string]: string | number;
   department: string;
   teamSize: number;
   briefsCompleted: number;
@@ -44,6 +45,7 @@ interface DepartmentMetric {
 }
 
 interface ThroughputData {
+  [key: string]: string | number;
   date: string;
   created: number;
   completed: number;
