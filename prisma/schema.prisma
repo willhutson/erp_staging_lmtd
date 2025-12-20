@@ -220,6 +220,7 @@ model Client {
   npsSurveys       NPSSurvey[]
   driveFolders     GoogleDriveFolder[]
   clientFiles      ClientFile[]
+  portalUsers      ClientPortalUser[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
@@ -266,6 +267,9 @@ model ClientContact {
   isPrimary      Boolean @default(false)
   isDecisionMaker Boolean @default(false)
   isBillingContact Boolean @default(false)
+  isContractOwner Boolean @default(false)   // Key client POC / Contract Owner
+  isProcurementPoc Boolean @default(false)  // Key Procurement POC
+  isFinancePoc    Boolean @default(false)   // Key Finance POC
   notes          String?
   isActive       Boolean @default(true)
   createdAt      DateTime @default(now())
@@ -274,6 +278,7 @@ model ClientContact {
   client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
   npsSurveys   NPSSurvey[]
   npsResponses NPSResponse[]
+  portalUsers  ClientPortalUser[]
 
   @@index([clientId])
   @@map("client_contacts")
@@ -1440,6 +1445,206 @@ model NotificationTemplate {
 
   @@unique([organizationId, type, channel])
   @@map("notification_templates")
+}
+
+// ============================================
+// CLIENT PORTAL (Phase 10)
+// ============================================
+
+model ClientPortalUser {
+  id              String   @id @default(cuid())
+  organizationId  String
+  clientId        String
+  contactId       String?  // Link to ClientContact if applicable
+
+  // Auth
+  email           String
+  passwordHash    String?  // For password auth (optional)
+
+  // Profile
+  name            String
+  avatarUrl       String?
+
+  // Status
+  isActive        Boolean  @default(true)
+  lastLoginAt     DateTime?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  contact         ClientContact? @relation(fields: [contactId], references: [id])
+  sessions        ClientPortalSession[]
+  magicLinks      ClientMagicLink[]
+  approvals       SubmissionApproval[]
+  comments        ClientPortalComment[]
+  briefRequests   ClientBriefRequest[]
+
+  @@unique([organizationId, email])
+  @@index([clientId])
+  @@map("client_portal_users")
+}
+
+model ClientPortalSession {
+  id              String   @id @default(cuid())
+  userId          String
+
+  // Session data
+  token           String   @unique
+  expiresAt       DateTime
+
+  // Context
+  ipAddress       String?
+  userAgent       String?
+
+  createdAt       DateTime @default(now())
+
+  user            ClientPortalUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("client_portal_sessions")
+}
+
+model ClientMagicLink {
+  id              String   @id @default(cuid())
+  userId          String
+
+  // Token
+  token           String   @unique
+  expiresAt       DateTime
+  usedAt          DateTime?
+
+  createdAt       DateTime @default(now())
+
+  user            ClientPortalUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@map("client_magic_links")
+}
+
+// Client approval of submissions/deliverables
+model SubmissionApproval {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // What's being approved
+  briefId         String
+  submissionType  String   // "deliverable", "concept", "final"
+
+  // Status
+  status          ApprovalStatus @default(PENDING)
+
+  // Client feedback
+  approvedById    String?  // ClientPortalUser who approved/rejected
+  feedback        String?  @db.Text
+  rating          Int?     // 1-5 satisfaction rating
+
+  // Revision request
+  revisionNotes   String?  @db.Text
+  revisionCount   Int      @default(0)
+
+  // Files being approved (JSON array of file IDs)
+  fileIds         String[] @default([])
+
+  // Timestamps
+  requestedAt     DateTime @default(now())
+  respondedAt     DateTime?
+  dueDate         DateTime?
+
+  approvedBy      ClientPortalUser? @relation(fields: [approvedById], references: [id])
+
+  @@index([organizationId])
+  @@index([briefId])
+  @@index([status])
+  @@map("submission_approvals")
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVISION_REQUESTED
+  EXPIRED
+}
+
+// Comments from clients on submissions
+model ClientPortalComment {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Context
+  briefId         String?
+  approvalId      String?
+
+  // Content
+  content         String   @db.Text
+
+  // Author
+  authorId        String
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  author          ClientPortalUser @relation(fields: [authorId], references: [id])
+
+  @@index([briefId])
+  @@index([approvalId])
+  @@map("client_portal_comments")
+}
+
+// Brief requests from clients
+model ClientBriefRequest {
+  id              String   @id @default(cuid())
+  organizationId  String
+  clientId        String
+
+  // Request details
+  title           String
+  description     String   @db.Text
+  briefType       String?  // Suggested type
+  priority        Priority @default(MEDIUM)
+  desiredDeadline DateTime?
+
+  // Attachments (JSON array of file IDs)
+  attachmentIds   String[] @default([])
+
+  // Status
+  status          BriefRequestStatus @default(SUBMITTED)
+
+  // Converted to brief
+  briefId         String?  @unique
+
+  // Submitter
+  submittedById   String
+
+  // Review
+  reviewedById    String?  // Internal user who reviewed
+  reviewNotes     String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  reviewedAt      DateTime?
+
+  submittedBy     ClientPortalUser @relation(fields: [submittedById], references: [id])
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@map("client_brief_requests")
+}
+
+enum BriefRequestStatus {
+  DRAFT
+  SUBMITTED
+  IN_REVIEW
+  APPROVED      // Converted to brief
+  REJECTED
+  ON_HOLD
 }
 
 // ============================================
