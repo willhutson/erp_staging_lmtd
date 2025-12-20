@@ -3,6 +3,8 @@ import { verifyToken } from "../actions";
 import Link from "next/link";
 import { XCircle } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 interface Props {
   searchParams: Promise<{ token?: string }>;
 }
