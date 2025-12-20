@@ -5,7 +5,7 @@
  */
 
 import { db } from "@/lib/db";
-import { subDays, subWeeks, subMonths, startOfDay, endOfDay, differenceInDays } from "date-fns";
+import { subDays, subWeeks, startOfDay, endOfDay, differenceInDays } from "date-fns";
 
 export interface DateRange {
   start: Date;
