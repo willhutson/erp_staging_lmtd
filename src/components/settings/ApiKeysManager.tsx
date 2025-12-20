@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Copy, Trash2, Check, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Plus, Copy, Trash2, Check, AlertCircle } from "lucide-react";
 import { createApiKeyAction, revokeApiKeyAction } from "@/modules/settings/actions/api-key-actions";
 import { API_SCOPES } from "@/lib/api/keys";
 

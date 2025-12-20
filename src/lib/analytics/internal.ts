@@ -414,8 +414,7 @@ class InternalAnalyticsService {
 
   private compareMetrics(
     current: number,
-    previous: number,
-    _higherIsBetter = true
+    previous: number
   ): MetricResult {
     const change = current - previous;
     const changePercent = previous !== 0 ? (change / previous) * 100 : 0;
