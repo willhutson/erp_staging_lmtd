@@ -1078,3 +1078,28 @@ model DashboardLayout {
   @@index([organizationId])
   @@map("dashboard_layouts")
 }
+
+// ============================================
+// FORM TEMPLATES (Visual Form Builder)
+// ============================================
+
+model FormTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+  type            String   // Unique identifier like "VIDEO_SHOOT", "CUSTOM_1"
+  name            String   // Display name
+  description     String?
+  namingConvention String? // e.g., "Shoot: [Client] – [Topic]"
+  namingPrefix    String?  // e.g., "Shoot"
+  icon            String?  // Lucide icon name
+  config          Json     // Full form config (sections, fields, qualityRules)
+  isActive        Boolean  @default(true)
+  isSystem        Boolean  @default(false) // Built-in forms can't be deleted
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, type])
+  @@index([organizationId])
+  @@index([isActive])
+  @@map("form_templates")
+}

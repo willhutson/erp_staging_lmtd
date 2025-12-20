@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, Users, Calendar, Palette, Shield, Plug } from "lucide-react";
+import { Settings, Users, Calendar, Palette, Shield, Plug, FileText } from "lucide-react";
 
 const settingsNav = [
   { href: "/settings", label: "General", icon: Settings },
   { href: "/settings/users", label: "Users", icon: Users },
   { href: "/settings/leave", label: "Leave & Holidays", icon: Calendar },
   { href: "/settings/branding", label: "Branding", icon: Palette },
+  { href: "/settings/forms", label: "Form Templates", icon: FileText },
   { href: "/settings/integrations", label: "Integrations", icon: Plug },
   { href: "/settings/audit", label: "Audit Log", icon: Shield },
 ];
