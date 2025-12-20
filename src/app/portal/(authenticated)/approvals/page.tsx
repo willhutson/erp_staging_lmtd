@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { ApprovalsClient } from "./ApprovalsClient";
 import { CheckCircle } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 export default async function PortalApprovalsPage() {
   const user = await getPortalUser();
 
