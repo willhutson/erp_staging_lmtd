@@ -96,7 +96,7 @@ export function PortalDashboardClient({
               </div>
             </div>
             <Link
-              href="/portal/approvals"
+              href="/portal/dashboard/approvals"
               className="text-sm text-orange-600 hover:text-orange-700 font-medium flex items-center gap-1"
             >
               View all
@@ -111,7 +111,7 @@ export function PortalDashboardClient({
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">Recent Briefs</h2>
           <Link
-            href="/portal/briefs"
+            href="/portal/dashboard/briefs"
             className="text-sm text-[#52EDC7] hover:text-[#3dd4b0] font-medium flex items-center gap-1"
           >
             View all

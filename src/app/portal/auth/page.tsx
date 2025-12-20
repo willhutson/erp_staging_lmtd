@@ -6,7 +6,7 @@ export default async function PortalLoginPage() {
   // If already logged in, redirect to dashboard
   const user = await getPortalUser();
   if (user) {
-    redirect("/portal");
+    redirect("/portal/dashboard");
   }
 
   return (

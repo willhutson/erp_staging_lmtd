@@ -23,7 +23,7 @@ export default async function VerifyPage({ searchParams }: Props) {
 
   if (result.success) {
     // Redirect to portal dashboard
-    redirect("/portal");
+    redirect("/portal/dashboard");
   }
 
   return (

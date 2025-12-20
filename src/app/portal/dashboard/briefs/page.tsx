@@ -72,7 +72,7 @@ export default async function PortalBriefsPage() {
             Request a new brief to get started
           </p>
           <Link
-            href="/portal/requests/new"
+            href="/portal/dashboard/requests/new"
             className="inline-flex px-4 py-2 bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#3dd4b0] transition-colors"
           >
             Submit a Request
