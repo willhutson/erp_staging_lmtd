@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowLeft,
   Building2,
@@ -119,12 +120,14 @@ export default async function ClientDetailPage({ params }: PageProps) {
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
               {client.logoUrl ? (
-                <img
+                <Image
                   src={client.logoUrl}
                   alt={client.name}
-                  className="w-12 h-12 rounded-lg object-cover"
+                  width={48}
+                  height={48}
+                  className="rounded-lg object-cover"
                 />
               ) : (
                 <Building2 className="w-6 h-6 text-gray-600" />
