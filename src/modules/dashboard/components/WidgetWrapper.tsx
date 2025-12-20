@@ -1,6 +1,4 @@
-"use client";
-
-import { GripVertical, X, Settings, LucideIcon } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 import { WidgetDefinition } from "../types";
 import {
   CheckSquare,
@@ -33,16 +31,12 @@ interface WidgetWrapperProps {
   definition: WidgetDefinition;
   children: React.ReactNode;
   isEditing?: boolean;
-  onRemove?: () => void;
-  onSettings?: () => void;
 }
 
 export function WidgetWrapper({
   definition,
   children,
   isEditing = false,
-  onRemove,
-  onSettings,
 }: WidgetWrapperProps) {
   // Get the icon component from the map
   const IconComponent = iconMap[definition.icon] || Square;
@@ -54,34 +48,14 @@ export function WidgetWrapper({
         <div className="flex items-center gap-2">
           {isEditing && (
             <div className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 drag-handle">
-              <GripVertical className="w-4 h-4" />
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+              </svg>
             </div>
           )}
           <IconComponent className="w-4 h-4 text-gray-500" />
           <h3 className="font-medium text-gray-900 text-sm">{definition.name}</h3>
         </div>
-        {isEditing && (
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {onSettings && (
-              <button
-                onClick={onSettings}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded"
-                title="Settings"
-              >
-                <Settings className="w-4 h-4" />
-              </button>
-            )}
-            {onRemove && (
-              <button
-                onClick={onRemove}
-                className="p-1 text-gray-400 hover:text-red-500 rounded"
-                title="Remove"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Content */}
