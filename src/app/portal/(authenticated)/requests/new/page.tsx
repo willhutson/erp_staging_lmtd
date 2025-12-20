@@ -1,6 +1,8 @@
 import { getPortalUser } from "@/lib/portal/auth";
 import { BriefRequestForm } from "./BriefRequestForm";
 
+export const dynamic = 'force-dynamic';
+
 export default async function NewBriefRequestPage() {
   const user = await getPortalUser();
 

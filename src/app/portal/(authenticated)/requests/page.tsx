@@ -4,6 +4,8 @@ import Link from "next/link";
 import { PlusCircle, FileText, Clock, CheckCircle, XCircle } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 
+export const dynamic = 'force-dynamic';
+
 export default async function PortalRequestsPage() {
   const user = await getPortalUser();
 

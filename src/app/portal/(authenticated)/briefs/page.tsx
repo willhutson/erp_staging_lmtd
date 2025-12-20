@@ -4,6 +4,8 @@ import Link from "next/link";
 import { FileText, Calendar, User } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 
+export const dynamic = 'force-dynamic';
+
 export default async function PortalBriefsPage() {
   const user = await getPortalUser();
 
