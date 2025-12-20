@@ -130,6 +130,9 @@ model User {
   notifications           Notification[]
   notificationPreference  NotificationPreference?
 
+  // Files
+  uploadedFiles           File[]  @relation("FileUploader")
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([department])
@@ -216,6 +219,7 @@ model Client {
   blackoutPeriods  BlackoutPeriod[]
   npsSurveys       NPSSurvey[]
   driveFolders     GoogleDriveFolder[]
+  clientFiles      ClientFile[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
@@ -370,6 +374,7 @@ model Project {
   timeEntries      TimeEntry[]
   driveFolders     GoogleDriveFolder[]
   googleDocuments  GoogleDocument[]
+  projectFiles     ProjectFile[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -432,6 +437,7 @@ model Brief {
   calendarEvents   GoogleCalendarEvent[]
   googleDocuments  GoogleDocument[]
   formSubmission   FormSubmission?  // Link to original form submission
+  briefFiles       BriefFile[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -1173,6 +1179,9 @@ model FormSubmission {
   briefId         String?  @unique
   brief           Brief?   @relation(fields: [briefId], references: [id])
 
+  // Files
+  files           FormSubmissionFile[]
+
   @@index([organizationId])
   @@index([templateId])
   @@index([status])
@@ -1431,4 +1440,176 @@ model NotificationTemplate {
 
   @@unique([organizationId, type, channel])
   @@map("notification_templates")
+}
+
+// ============================================
+// FILE MANAGEMENT (Phase 7)
+// ============================================
+
+model File {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // File identity
+  name            String   // Display name
+  originalName    String   // Original upload name
+  extension       String?  // "jpg", "pdf", "mp4"
+  mimeType        String   // "image/jpeg"
+  size            Int      // Bytes
+
+  // Storage
+  storageKey      String   // R2/S3 key: "org_xxx/files/2024/abc123.jpg"
+  storageProvider String   @default("r2")
+  cdnUrl          String?  // Public CDN URL (if public)
+
+  // Thumbnails
+  thumbnailKey    String?
+  thumbnailUrl    String?
+
+  // Classification
+  category        FileCategory @default(OTHER)
+  tags            String[]     @default([])
+
+  // Folder (optional organization)
+  folderId        String?
+  folder          Folder?  @relation(fields: [folderId], references: [id])
+
+  // AI processing
+  aiStatus        AIProcessingStatus @default(PENDING)
+  aiMetadata      Json?    // Extracted text, labels, colors, etc.
+  aiProcessedAt   DateTime?
+
+  // Search
+  searchVector    String?  @db.Text
+
+  // Ownership
+  uploadedById    String
+  uploadedBy      User     @relation("FileUploader", fields: [uploadedById], references: [id])
+
+  // Soft delete
+  isArchived      Boolean  @default(false)
+  archivedAt      DateTime?
+  archivedById    String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations - polymorphic links
+  briefFiles      BriefFile[]
+  clientFiles     ClientFile[]
+  projectFiles    ProjectFile[]
+  submissionFiles FormSubmissionFile[]
+
+  @@index([organizationId])
+  @@index([category])
+  @@index([uploadedById])
+  @@index([folderId])
+  @@index([createdAt])
+  @@map("files")
+}
+
+enum FileCategory {
+  BRIEF_ATTACHMENT   // Reference materials for briefs
+  DELIVERABLE        // Completed work
+  CONTRACT           // Legal documents
+  BRAND_ASSET        // Logos, fonts, brand guides
+  REFERENCE          // Inspiration, moodboards
+  INVOICE            // Financial documents
+  PROFILE_PHOTO      // User avatars
+  OTHER
+}
+
+enum AIProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  SKIPPED
+}
+
+model Folder {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String
+  parentId        String?
+  path            String   // "/clients/CCAD/brand-assets"
+  depth           Int      @default(0)
+
+  // Permissions
+  isPublic        Boolean  @default(false)
+
+  // Relations
+  parent          Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children        Folder[] @relation("FolderHierarchy")
+  files           File[]
+
+  createdById     String
+  createdAt       DateTime @default(now())
+
+  @@unique([organizationId, path])
+  @@index([organizationId])
+  @@index([parentId])
+  @@map("folders")
+}
+
+// Junction tables for entity relationships
+model BriefFile {
+  briefId   String
+  fileId    String
+  role      String   @default("attachment")  // "attachment", "deliverable", "reference"
+  sortOrder Int      @default(0)
+  addedAt   DateTime @default(now())
+  addedById String
+
+  brief     Brief    @relation(fields: [briefId], references: [id], onDelete: Cascade)
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([briefId, fileId])
+  @@map("brief_files")
+}
+
+model ClientFile {
+  clientId  String
+  fileId    String
+  role      String   @default("asset")  // "asset", "contract", "brand", "logo"
+  sortOrder Int      @default(0)
+  addedAt   DateTime @default(now())
+  addedById String
+
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([clientId, fileId])
+  @@map("client_files")
+}
+
+model ProjectFile {
+  projectId String
+  fileId    String
+  role      String   @default("asset")
+  sortOrder Int      @default(0)
+  addedAt   DateTime @default(now())
+  addedById String
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, fileId])
+  @@map("project_files")
+}
+
+model FormSubmissionFile {
+  submissionId String
+  fileId       String
+  fieldId      String   // Which form field this was uploaded to
+  sortOrder    Int      @default(0)
+  addedAt      DateTime @default(now())
+
+  submission   FormSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  file         File           @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([submissionId, fileId])
+  @@map("form_submission_files")
 }
