@@ -218,6 +218,49 @@ async function main() {
   }
 
   console.log(`Created ${testAccounts.length} test accounts (password: ${TEST_PASSWORD})`);
+
+  // Create Portal Users (for client portal testing)
+  const ccadClient = await prisma.client.findFirst({
+    where: { organizationId: org.id, code: "CCAD" },
+  });
+
+  if (ccadClient) {
+    // Create a client contact first
+    const contact = await prisma.clientContact.upsert({
+      where: {
+        id: "portal-test-contact"
+      },
+      update: {},
+      create: {
+        id: "portal-test-contact",
+        clientId: ccadClient.id,
+        name: "Sarah Mitchell",
+        email: "portal@test.com",
+        jobTitle: "Marketing Director",
+        isPrimary: true,
+        isDecisionMaker: true,
+      },
+    });
+
+    // Create portal user
+    await prisma.clientPortalUser.upsert({
+      where: {
+        organizationId_email: { organizationId: org.id, email: "portal@test.com" },
+      },
+      update: {},
+      create: {
+        organizationId: org.id,
+        clientId: ccadClient.id,
+        contactId: contact.id,
+        email: "portal@test.com",
+        name: "Sarah Mitchell",
+        isActive: true,
+      },
+    });
+
+    console.log("Created portal test user: portal@test.com (use magic link to login)");
+  }
+
   console.log("Seeding complete!");
 }
 
