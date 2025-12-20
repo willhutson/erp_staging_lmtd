@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { Prisma } from '@prisma/client';
 import type { Notification, NotificationPreference, User } from '@prisma/client';
 import { sendSlackNotification } from '@/lib/slack/notification-service';
 
@@ -105,9 +106,9 @@ class NotificationService {
         actionLabel: options.actionLabel,
         entityType: options.entityType,
         entityId: options.entityId,
-        metadata: options.metadata,
+        metadata: (options.metadata ?? {}) as Prisma.InputJsonValue,
         channels,
-        deliveryStatus: { in_app: 'delivered' },
+        deliveryStatus: { in_app: 'delivered' } as Prisma.InputJsonValue,
       },
     });
 
@@ -229,9 +230,9 @@ class NotificationService {
         actionLabel: options.actionLabel,
         entityType: options.entityType,
         entityId: options.entityId,
-        metadata: options.metadata,
+        metadata: (options.metadata ?? {}) as Prisma.InputJsonValue,
         channels,
-        deliveryStatus: { in_app: 'delivered' },
+        deliveryStatus: { in_app: 'delivered' } as Prisma.InputJsonValue,
       },
     });
   }
