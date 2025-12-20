@@ -53,8 +53,8 @@ interface ThroughputData {
 
 interface HeatmapData {
   userId: string;
-  name: string;
-  data: Array<{ date: string; hours: number; capacity: number }>;
+  userName: string;
+  weekData: number[];
 }
 
 export function InternalDashboard({
@@ -77,7 +77,7 @@ export function InternalDashboard({
         setTeamPerformance(data.teamPerformance as TeamMember[]);
         setDepartments(data.departments as unknown as DepartmentMetric[]);
         setThroughput(data.throughput as unknown as ThroughputData[]);
-        setHeatmap(data.heatmap as HeatmapData[]);
+        setHeatmap(data.heatmap as unknown as HeatmapData[]);
       } catch (error) {
         console.error("Failed to load analytics:", error);
       } finally {
