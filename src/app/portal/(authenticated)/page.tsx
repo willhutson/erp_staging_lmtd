@@ -1,61 +1,26 @@
-import { getPortalUser } from "@/lib/portal/auth";
-import { db } from "@/lib/db";
-import { PortalDashboardClient } from "./PortalDashboardClient";
+import { Suspense } from "react";
+import { PortalDashboardContent } from "./PortalDashboardContent";
 
 export const dynamic = 'force-dynamic';
 
-export default async function PortalDashboardPage() {
-  const user = await getPortalUser();
-
-  if (!user) {
-    return null;
-  }
-
-  // Get briefs for this client
-  const briefs = await db.brief.findMany({
-    where: {
-      clientId: user.clientId,
-      status: { not: "CANCELLED" },
-    },
-    orderBy: { updatedAt: "desc" },
-    take: 10,
-    include: {
-      assignee: { select: { name: true } },
-    },
-  });
-
-  // Get pending approvals count
-  const pendingApprovalsCount = await db.submissionApproval.count({
-    where: {
-      organizationId: user.organizationId,
-      status: "PENDING",
-    },
-  });
-
-  // Stats
-  const inProgressCount = briefs.filter((b) =>
-    ["IN_PROGRESS", "INTERNAL_REVIEW"].includes(b.status)
-  ).length;
-  const awaitingReviewCount = briefs.filter(
-    (b) => b.status === "CLIENT_REVIEW"
-  ).length;
-  const completedCount = briefs.filter((b) => b.status === "COMPLETED").length;
-
+export default function PortalDashboardPage() {
   return (
-    <PortalDashboardClient
-      userName={user.name.split(" ")[0]}
-      briefs={briefs.map((b) => ({
-        id: b.id,
-        title: b.title,
-        type: b.type,
-        status: b.status,
-        updatedAt: b.updatedAt,
-        assignee: b.assignee,
-      }))}
-      pendingApprovalsCount={pendingApprovalsCount}
-      inProgressCount={inProgressCount}
-      awaitingReviewCount={awaitingReviewCount}
-      completedCount={completedCount}
-    />
+    <Suspense fallback={<DashboardSkeleton />}>
+      <PortalDashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="max-w-6xl mx-auto space-y-8 animate-pulse">
+      <div className="h-8 bg-gray-200 rounded w-64"></div>
+      <div className="grid grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-24 bg-gray-200 rounded-xl"></div>
+        ))}
+      </div>
+      <div className="h-64 bg-gray-200 rounded-xl"></div>
+    </div>
   );
 }
