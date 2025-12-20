@@ -1,6 +1,10 @@
 import { PrismaClient, PermissionLevel } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
+
+// Test account password (same for all test accounts)
+const TEST_PASSWORD = "testpass123";
 
 async function main() {
   console.log("Seeding database...");
@@ -160,6 +164,60 @@ async function main() {
   }
 
   console.log("Set team lead relationships");
+
+  // Create test accounts for each permission level
+  const hashedPassword = await bcrypt.hash(TEST_PASSWORD, 10);
+
+  const testAccounts = [
+    {
+      email: "admin@test.com",
+      name: "Test Admin",
+      role: "Test Admin",
+      department: "Management",
+      permissionLevel: PermissionLevel.ADMIN
+    },
+    {
+      email: "lead@test.com",
+      name: "Test Team Lead",
+      role: "Test Lead",
+      department: "Creative & Design",
+      permissionLevel: PermissionLevel.TEAM_LEAD
+    },
+    {
+      email: "staff@test.com",
+      name: "Test Staff",
+      role: "Test Designer",
+      department: "Creative & Design",
+      permissionLevel: PermissionLevel.STAFF
+    },
+    {
+      email: "freelancer@test.com",
+      name: "Test Freelancer",
+      role: "Test Contractor",
+      department: "Video Production",
+      permissionLevel: PermissionLevel.FREELANCER,
+      isFreelancer: true
+    },
+  ];
+
+  for (const account of testAccounts) {
+    await prisma.user.upsert({
+      where: { organizationId_email: { organizationId: org.id, email: account.email } },
+      update: { passwordHash: hashedPassword },
+      create: {
+        organizationId: org.id,
+        email: account.email,
+        name: account.name,
+        role: account.role,
+        department: account.department,
+        permissionLevel: account.permissionLevel,
+        isFreelancer: account.isFreelancer ?? false,
+        passwordHash: hashedPassword,
+      },
+    });
+  }
+
+  console.log(`Created ${testAccounts.length} test accounts (password: ${TEST_PASSWORD})`);
   console.log("Seeding complete!");
 }
 

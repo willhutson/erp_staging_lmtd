@@ -2,20 +2,39 @@
 
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   const handleGoogleSignIn = () => {
     setIsLoading(true);
-    signIn("google", { callbackUrl: "/" });
+    setError("");
+    signIn("google", { callbackUrl });
   };
 
-  const handleDevSignIn = async (e: React.FormEvent) => {
+  const handleCredentialsSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    await signIn("credentials", { email, callbackUrl: "/" });
+    setError("");
+
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+
+    if (result?.error) {
+      setError("Invalid email or password");
+      setIsLoading(false);
+    } else {
+      window.location.href = callbackUrl;
+    }
   };
 
   return (
@@ -27,6 +46,7 @@ export default function LoginPage() {
         </div>
 
         <div className="mt-8 space-y-6">
+          {/* Google Sign In */}
           <button
             onClick={handleGoogleSignIn}
             disabled={isLoading}
@@ -53,51 +73,78 @@ export default function LoginPage() {
             Sign in with Google
           </button>
 
-          {process.env.NODE_ENV === "development" && (
-            <>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-gray-50 text-gray-500">
-                    Dev Mode Only
-                  </span>
-                </div>
-              </div>
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-gray-50 text-gray-500">
+                Or sign in with email
+              </span>
+            </div>
+          </div>
 
-              <form onSubmit={handleDevSignIn} className="space-y-4">
-                <div>
-                  <label htmlFor="email" className="sr-only">
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Email (e.g., will@teamlmtd.com)"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={isLoading || !email}
-                  className="w-full px-4 py-3 bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#1BA098] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#52EDC7] disabled:opacity-50"
-                >
-                  Dev Sign In
-                </button>
-              </form>
-
-              <div className="text-xs text-gray-500 text-center">
-                <p className="font-medium mb-1">Test accounts:</p>
-                <p>will@teamlmtd.com (Admin)</p>
-                <p>cj@teamlmtd.com (Leadership)</p>
-                <p>haidy@teamlmtd.com (Team Lead)</p>
+          {/* Email/Password Form */}
+          <form onSubmit={handleCredentialsSignIn} className="space-y-4">
+            {error && (
+              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+                {error}
               </div>
-            </>
-          )}
+            )}
+            <div>
+              <label htmlFor="email" className="sr-only">
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={isLoading || !email || !password}
+              className="w-full px-4 py-3 bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#1BA098] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#52EDC7] disabled:opacity-50"
+            >
+              {isLoading ? "Signing in..." : "Sign In"}
+            </button>
+          </form>
+
+          {/* Test Accounts Info */}
+          <div className="text-xs text-gray-500 text-center border-t pt-4">
+            <p className="font-medium mb-2">Test Accounts (password: testpass123)</p>
+            <div className="grid grid-cols-2 gap-1">
+              <p>admin@test.com</p>
+              <p className="text-gray-400">Admin</p>
+              <p>lead@test.com</p>
+              <p className="text-gray-400">Team Lead</p>
+              <p>staff@test.com</p>
+              <p className="text-gray-400">Staff</p>
+              <p>freelancer@test.com</p>
+              <p className="text-gray-400">Freelancer</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

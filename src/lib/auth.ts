@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
 import { db } from "./db";
 import type { PermissionLevel } from "@prisma/client";
 
@@ -19,7 +21,6 @@ declare module "next-auth" {
 }
 
 // JWT-only auth - no database adapter
-// Force rebuild: v2
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
   pages: {
@@ -30,6 +31,45 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Google({
       clientId: process.env.AUTH_GOOGLE_ID!,
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+    }),
+    Credentials({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        const email = credentials.email as string;
+        const password = credentials.password as string;
+
+        try {
+          const user = await db.user.findFirst({
+            where: { email },
+          });
+
+          if (!user || !user.passwordHash) {
+            return null;
+          }
+
+          const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+          if (!isValidPassword) {
+            return null;
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          };
+        } catch (error) {
+          console.error("Credentials auth error:", error);
+          return null;
+        }
+      },
     }),
   ],
   callbacks: {
@@ -54,7 +94,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async jwt({ token, user, account }) {
       // On initial sign-in, fetch full user data from our database
-      if (account && user) {
+      if ((account && user) || (user && !token.organizationId)) {
         try {
           const dbUser = await db.user.findFirst({
             where: { email: token.email! },
@@ -87,6 +127,3 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
 });
-// Build trigger: Sat Dec 20 05:07:08 +04 2025
-// Build trigger v2: Sat Dec 20 05:11:57 +04 2025
-// Trigger after reconnect: Sat Dec 20 05:19:24 +04 2025
