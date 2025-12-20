@@ -140,7 +140,7 @@ export function FileUploader({
       // Start uploads
       newQueue.forEach((qf) => uploadFile(qf));
     },
-    [category, folderId, maxSize, onUploadComplete, onError]
+    [category, folderId, maxSize, onUploadComplete, onError, uploadFile]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -187,7 +187,6 @@ export function FileUploader({
   const activeUploads = queue.filter(
     (f) => f.status === "pending" || f.status === "uploading"
   );
-  const completedUploads = queue.filter((f) => f.status === "complete");
 
   return (
     <div className={className}>
