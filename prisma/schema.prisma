@@ -1380,13 +1380,15 @@ model GraphSyncLog {
   organizationId  String
 
   // What was synced
-  entityType      String   // "user", "client", "brief", "project"
-  entityId        String
-  action          String   // "create", "update", "delete", "relationship"
+  entityType      String   // "user", "client", "brief", "project", "FULL_SYNC"
+  entityId        String?  // Optional for FULL_SYNC operations
+  action          String?  // Optional for FULL_SYNC operations
+  recordCount     Int?     // Number of records synced (for FULL_SYNC)
 
   // Sync status
   status          String   @default("pending")  // pending, synced, failed
   error           String?
+  errorMessage    String?  // Detailed error message
 
   // Graph details
   nodeLabels      String[] @default([])
