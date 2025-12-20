@@ -87,3 +87,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
 });
+// Build trigger: Sat Dec 20 05:07:08 +04 2025
