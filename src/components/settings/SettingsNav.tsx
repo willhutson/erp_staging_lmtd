@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, Users, Calendar, Palette, Shield, Plug, FileText, Key } from "lucide-react";
+import { Settings, Users, Calendar, Palette, Shield, Plug, FileText, Key, Bell } from "lucide-react";
 
 const settingsNav = [
   { href: "/settings", label: "General", icon: Settings },
@@ -10,6 +10,7 @@ const settingsNav = [
   { href: "/settings/leave", label: "Leave & Holidays", icon: Calendar },
   { href: "/settings/branding", label: "Branding", icon: Palette },
   { href: "/settings/forms", label: "Form Templates", icon: FileText },
+  { href: "/settings/notifications", label: "Notifications", icon: Bell },
   { href: "/settings/integrations", label: "Integrations", icon: Plug },
   { href: "/settings/api", label: "API Keys", icon: Key },
   { href: "/settings/audit", label: "Audit Log", icon: Shield },
