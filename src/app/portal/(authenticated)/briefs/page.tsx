@@ -57,7 +57,7 @@ export default async function PortalBriefsPage() {
 
       {/* Completed Briefs */}
       {completedBriefs.length > 0 && (
-        <BriefSection title="Completed" briefs={completedBriefs} collapsed />
+        <BriefSection title="Completed" briefs={completedBriefs} />
       )}
 
       {briefs.length === 0 && (
