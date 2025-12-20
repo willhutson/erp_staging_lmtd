@@ -4,7 +4,7 @@
  */
 
 import { db } from "@/lib/db";
-import { subDays, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import { startOfWeek } from "date-fns";
 
 export interface DateRange {
   start: Date;
@@ -309,7 +309,7 @@ class InternalAnalyticsService {
       const dailyCapacity = user.weeklyCapacity / 5; // Assume 5-day week
 
       const data: Array<{ date: string; hours: number; capacity: number }> = [];
-      let current = new Date(dateRange.start);
+      const current = new Date(dateRange.start);
       while (current <= dateRange.end) {
         const dateKey = current.toISOString().split("T")[0];
         data.push({
@@ -415,7 +415,7 @@ class InternalAnalyticsService {
   private compareMetrics(
     current: number,
     previous: number,
-    higherIsBetter = true
+    _higherIsBetter = true
   ): MetricResult {
     const change = current - previous;
     const changePercent = previous !== 0 ? (change / previous) * 100 : 0;

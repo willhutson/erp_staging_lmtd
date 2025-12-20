@@ -3,8 +3,9 @@ import type { File, FileCategory, Prisma } from '@prisma/client';
 
 /**
  * Storage configuration from environment
+ * Reserved for future R2/cloud storage integration
  */
-const STORAGE_CONFIG = {
+const _STORAGE_CONFIG = {
   provider: process.env.STORAGE_PROVIDER || 'local', // 'r2' | 'local'
   r2Endpoint: process.env.R2_ENDPOINT,
   r2AccessKeyId: process.env.R2_ACCESS_KEY_ID,
@@ -13,6 +14,7 @@ const STORAGE_CONFIG = {
   r2PublicUrl: process.env.R2_PUBLIC_URL,
   localPath: process.env.LOCAL_STORAGE_PATH || '/tmp/uploads',
 };
+void _STORAGE_CONFIG;
 
 /**
  * Get file extension from filename
