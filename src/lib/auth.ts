@@ -18,10 +18,9 @@ declare module "next-auth" {
   }
 }
 
-// No adapter - we use JWT sessions and look up users ourselves
+// JWT-only auth - no database adapter
+// Force rebuild: v2
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  // Explicitly set no adapter
-  adapter: undefined,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
