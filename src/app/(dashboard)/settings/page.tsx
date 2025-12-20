@@ -1,4 +1,13 @@
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { SettingsNav } from "@/components/settings/SettingsNav";
+
 export default async function SettingsPage() {
+  const session = await auth();
+
+  const organization = await db.organization.findFirst({
+    where: { id: session!.user.organizationId },
+  });
 
   return (
     <div className="space-y-6">
@@ -8,35 +17,36 @@ export default async function SettingsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <nav className="lg:col-span-1 space-y-1">
-          <button className="w-full text-left px-4 py-2 bg-gray-100 text-gray-900 font-medium rounded-lg">
-            General
-          </button>
-          <button className="w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
-            Users
-          </button>
-          <button className="w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
-            Integrations
-          </button>
-          <button className="w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
-            Branding
-          </button>
-        </nav>
+        <SettingsNav />
 
         <div className="lg:col-span-3 bg-white rounded-xl border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-6">
             General Settings
           </h2>
 
-          <div className="space-y-6">
+          <form className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Organization Name
               </label>
               <input
                 type="text"
-                defaultValue="TeamLMTD"
+                name="name"
+                defaultValue={organization?.name || ""}
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Domain
+              </label>
+              <input
+                type="text"
+                name="domain"
+                defaultValue={organization?.domain || ""}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+                placeholder="e.g., teamlmtd.com"
               />
             </div>
 
@@ -44,28 +54,54 @@ export default async function SettingsPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Timezone
               </label>
-              <select className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]">
+              <select
+                name="timezone"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              >
                 <option value="Asia/Dubai">Asia/Dubai (GMT+4)</option>
+                <option value="Europe/London">Europe/London (GMT+0)</option>
+                <option value="America/New_York">America/New_York (GMT-5)</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Default Weekly Capacity
+                Default Weekly Capacity (hours)
               </label>
               <input
                 type="number"
+                name="weeklyCapacity"
                 defaultValue={40}
+                min={1}
+                max={80}
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Currency
+              </label>
+              <select
+                name="currency"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              >
+                <option value="AED">AED - UAE Dirham</option>
+                <option value="USD">USD - US Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="GBP">GBP - British Pound</option>
+              </select>
+            </div>
+
             <div className="pt-4 border-t border-gray-200">
-              <button className="px-4 py-2 bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#1BA098] hover:text-white transition-colors">
+              <button
+                type="submit"
+                className="px-4 py-2 bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#1BA098] hover:text-white transition-colors"
+              >
                 Save Changes
               </button>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>

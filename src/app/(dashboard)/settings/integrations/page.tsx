@@ -1,25 +1,17 @@
 import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import { SettingsNav } from "@/components/settings/SettingsNav";
 import { GoogleIntegrationCard } from "@/modules/integrations/google/components/GoogleIntegrationCard";
+import { Slack, FileSpreadsheet, BarChart3 } from "lucide-react";
 
 export default async function IntegrationsSettingsPage() {
   const session = await auth();
-
-  if (!session?.user?.organizationId) {
-    redirect("/login");
-  }
-
-  // Check if user has admin permission
-  if (session.user.permissionLevel !== "ADMIN") {
-    redirect("/");
-  }
 
   // Get Google integration status
   const googleIntegration = await db.integration.findUnique({
     where: {
       organizationId_provider: {
-        organizationId: session.user.organizationId,
+        organizationId: session!.user.organizationId,
         provider: "google",
       },
     },
@@ -28,16 +20,86 @@ export default async function IntegrationsSettingsPage() {
   const isGoogleConnected = googleIntegration?.isEnabled ?? false;
 
   return (
-    <div className="p-6 max-w-4xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Integrations</h1>
-        <p className="text-gray-500 mt-1">
-          Connect third-party services to enhance your workflow
-        </p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+        <p className="text-gray-500 mt-1">Manage platform settings</p>
       </div>
 
-      <div className="space-y-4">
-        <GoogleIntegrationCard isConnected={isGoogleConnected} />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <SettingsNav />
+
+        <div className="lg:col-span-3 space-y-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-6">
+              Connected Services
+            </h2>
+
+            <div className="space-y-4">
+              <GoogleIntegrationCard isConnected={isGoogleConnected} />
+
+              {/* Slack - Coming Soon */}
+              <div className="border border-gray-200 rounded-lg p-4 opacity-60">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                      <Slack className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Slack</p>
+                      <p className="text-sm text-gray-500">
+                        Send notifications and create briefs from Slack
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-500 rounded-full">
+                    Coming Soon
+                  </span>
+                </div>
+              </div>
+
+              {/* Monday.com - Coming Soon */}
+              <div className="border border-gray-200 rounded-lg p-4 opacity-60">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center">
+                      <FileSpreadsheet className="w-5 h-5 text-yellow-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Monday.com Import</p>
+                      <p className="text-sm text-gray-500">
+                        Import existing briefs and projects from Monday.com
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-500 rounded-full">
+                    Coming Soon
+                  </span>
+                </div>
+              </div>
+
+              {/* Meta Business - Coming Soon */}
+              <div className="border border-gray-200 rounded-lg p-4 opacity-60">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <BarChart3 className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Meta Business Suite</p>
+                      <p className="text-sm text-gray-500">
+                        Pull campaign analytics and performance data
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-500 rounded-full">
+                    Coming Soon
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
