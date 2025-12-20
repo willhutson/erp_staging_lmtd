@@ -17,10 +17,19 @@ model Organization {
   slug      String   @unique
   domain    String?
   configKey String   @default("default")
-  logo      String?
-  settings  Json     @default("{}")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Branding
+  logo          String?  // Main logo URL
+  logoMark      String?  // Square icon version
+  favicon       String?  // Browser favicon
+
+  // Theme settings (JSON)
+  themeSettings Json     @default("{}")
+
+  // General settings
+  settings      Json     @default("{}")
 
   users            User[]
   clients          Client[]
