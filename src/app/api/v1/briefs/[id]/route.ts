@@ -95,24 +95,21 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     // Track status change for history
     const statusChanged = data.status && data.status !== brief.status;
 
+    // Build update data explicitly to satisfy Prisma's strict types
+    const updateData: Parameters<typeof db.brief.update>[0]['data'] = {};
+    if (data.title) updateData.title = data.title;
+    if (data.status) updateData.status = data.status;
+    if (data.priority) updateData.priority = data.priority;
+    if (data.assigneeId !== undefined) updateData.assigneeId = data.assigneeId;
+    if (data.deadline !== undefined) updateData.deadline = data.deadline ? new Date(data.deadline) : null;
+    if (data.startDate !== undefined) updateData.startDate = data.startDate ? new Date(data.startDate) : null;
+    if (data.formData) updateData.formData = data.formData;
+    if (data.estimatedHours !== undefined) updateData.estimatedHours = data.estimatedHours;
+    if (data.status === BriefStatus.COMPLETED) updateData.completedAt = new Date();
+
     const updated = await db.brief.update({
       where: { id },
-      data: {
-        ...(data.title && { title: data.title }),
-        ...(data.status && { status: data.status }),
-        ...(data.priority && { priority: data.priority }),
-        ...(data.assigneeId !== undefined && { assigneeId: data.assigneeId }),
-        ...(data.deadline !== undefined && {
-          deadline: data.deadline ? new Date(data.deadline) : null
-        }),
-        ...(data.startDate !== undefined && {
-          startDate: data.startDate ? new Date(data.startDate) : null
-        }),
-        ...(data.formData && { formData: data.formData }),
-        ...(data.estimatedHours !== undefined && { estimatedHours: data.estimatedHours }),
-        // Update completedAt if status changed to COMPLETED
-        ...(data.status === BriefStatus.COMPLETED && { completedAt: new Date() }),
-      },
+      data: updateData,
       include: {
         client: { select: { id: true, name: true, code: true } },
         assignee: { select: { id: true, name: true, email: true } },
