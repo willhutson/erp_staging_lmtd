@@ -25,7 +25,7 @@ export default async function UsersSettingsPage() {
     orderBy: [{ isActive: "desc" }, { name: "asc" }],
   });
 
-  const departments = [...new Set(users.map((u) => u.department))].sort();
+  const departments = Array.from(new Set(users.map((u) => u.department))).sort();
   const activeCount = users.filter((u) => u.isActive).length;
   const freelancerCount = users.filter((u) => u.isFreelancer && u.isActive).length;
 

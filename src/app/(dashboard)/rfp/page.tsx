@@ -4,6 +4,7 @@ import { can } from "@/lib/permissions";
 import { Plus, FileStack, TrendingUp, TrendingDown } from "lucide-react";
 import Link from "next/link";
 import { RFPPipeline } from "@/modules/rfp/components/RFPPipeline";
+import { RFPConvertButton } from "@/modules/rfp/components/RFPConvertButton";
 
 export default async function RFPPage() {
   const session = await auth();
@@ -21,6 +22,7 @@ export default async function RFPPage() {
     where: { organizationId: session.user.organizationId },
     include: {
       subitems: true,
+      convertedToClient: true,
     },
     orderBy: { deadline: "asc" },
   });
@@ -153,29 +155,41 @@ export default async function RFPPage() {
           </div>
           <div className="divide-y divide-gray-100">
             {[...statusGroups.won, ...statusGroups.lost].map((rfp) => (
-              <Link
+              <div
                 key={rfp.id}
-                href={`/rfp/${rfp.id}`}
                 className="flex items-center justify-between p-4 hover:bg-gray-50"
               >
-                <div>
+                <Link href={`/rfp/${rfp.id}`} className="flex-1">
                   <p className="font-medium text-gray-900">{rfp.name}</p>
                   <p className="text-sm text-gray-500">
                     {rfp.clientName}
                     {rfp.estimatedValue &&
                       ` • ${formatCurrency(Number(rfp.estimatedValue))}`}
                   </p>
+                </Link>
+                <div className="flex items-center gap-2">
+                  {rfp.status === "WON" && !rfp.convertedToClient && (
+                    <RFPConvertButton rfpId={rfp.id} />
+                  )}
+                  {rfp.convertedToClient && (
+                    <Link
+                      href={`/clients/${rfp.convertedToClient.id}`}
+                      className="px-2 py-1 text-xs font-medium text-green-600 bg-green-50 rounded hover:bg-green-100"
+                    >
+                      View Client
+                    </Link>
+                  )}
+                  <span
+                    className={`px-2 py-1 text-xs font-medium rounded ${
+                      rfp.status === "WON"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {rfp.status}
+                  </span>
                 </div>
-                <span
-                  className={`px-2 py-1 text-xs font-medium rounded ${
-                    rfp.status === "WON"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
-                >
-                  {rfp.status}
-                </span>
-              </Link>
+              </div>
             ))}
           </div>
         </div>

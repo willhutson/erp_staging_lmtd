@@ -27,9 +27,10 @@ const leadSources = [
 ];
 
 const relationshipStatuses = [
-  { value: "LEAD", label: "Lead" },
-  { value: "PROSPECT", label: "Prospect" },
   { value: "ACTIVE", label: "Active" },
+  { value: "AT_RISK", label: "At Risk" },
+  { value: "DORMANT", label: "Dormant" },
+  { value: "PAUSED", label: "Paused" },
 ];
 
 export default function NewClientPage() {
@@ -44,8 +45,10 @@ export default function NewClientPage() {
     industry: "",
     isRetainer: false,
     retainerHours: "",
-    contactName: "",
-    contactEmail: "",
+    primaryContactName: "",
+    primaryContactEmail: "",
+    primaryContactPhone: "",
+    primaryContactTitle: "",
     companySize: "",
     website: "",
     linkedIn: "",
@@ -79,8 +82,10 @@ export default function NewClientPage() {
         industry: formData.industry || undefined,
         isRetainer: formData.isRetainer,
         retainerHours: formData.retainerHours ? parseInt(formData.retainerHours) : undefined,
-        contactName: formData.contactName || undefined,
-        contactEmail: formData.contactEmail || undefined,
+        primaryContactName: formData.primaryContactName || undefined,
+        primaryContactEmail: formData.primaryContactEmail || undefined,
+        primaryContactPhone: formData.primaryContactPhone || undefined,
+        primaryContactTitle: formData.primaryContactTitle || undefined,
         companySize: formData.companySize as any || undefined,
         website: formData.website || undefined,
         linkedIn: formData.linkedIn || undefined,
@@ -324,16 +329,17 @@ export default function NewClientPage() {
         {/* Primary Contact */}
         <div className="space-y-4 pt-4 border-t">
           <h2 className="text-lg font-semibold text-gray-900">Primary Contact</h2>
+          <p className="text-sm text-gray-500">This will be saved as the main point of contact.</p>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Contact Name
+                Name
               </label>
               <input
                 type="text"
-                name="contactName"
-                value={formData.contactName}
+                name="primaryContactName"
+                value={formData.primaryContactName}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
                 placeholder="Full name"
@@ -342,15 +348,45 @@ export default function NewClientPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Contact Email
+                Job Title
+              </label>
+              <input
+                type="text"
+                name="primaryContactTitle"
+                value={formData.primaryContactTitle}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+                placeholder="e.g., Marketing Director"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email
               </label>
               <input
                 type="email"
-                name="contactEmail"
-                value={formData.contactEmail}
+                name="primaryContactEmail"
+                value={formData.primaryContactEmail}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
                 placeholder="email@company.com"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phone
+              </label>
+              <input
+                type="tel"
+                name="primaryContactPhone"
+                value={formData.primaryContactPhone}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+                placeholder="+971 50 123 4567"
               />
             </div>
           </div>

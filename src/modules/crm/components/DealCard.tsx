@@ -1,13 +1,23 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Deal, Client, User } from "@prisma/client";
-import { Calendar, DollarSign, User as UserIcon } from "lucide-react";
+import {
+  Calendar,
+  DollarSign,
+  User as UserIcon,
+  UserPlus,
+  Check,
+  Loader2,
+} from "lucide-react";
+import { convertDealToClient } from "@/modules/crm/actions/client-actions";
 
 type DealWithRelations = Deal & {
   client: Client | null;
   owner: User;
+  convertedToClient?: Client | null;
 };
 
 interface DealCardProps {
@@ -15,6 +25,9 @@ interface DealCardProps {
 }
 
 export function DealCard({ deal }: DealCardProps) {
+  const [isPending, startTransition] = useTransition();
+  const [isConverted, setIsConverted] = useState(!!deal.convertedToClient);
+
   const {
     attributes,
     listeners,
@@ -37,6 +50,20 @@ export function DealCard({ deal }: DealCardProps) {
       maximumFractionDigits: 0,
     }).format(value);
   };
+
+  const handleConvert = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    startTransition(async () => {
+      try {
+        await convertDealToClient(deal.id);
+        setIsConverted(true);
+      } catch (error) {
+        console.error("Failed to convert deal:", error);
+      }
+    });
+  };
+
+  const showConvertButton = deal.stage === "WON" && !isConverted;
 
   return (
     <div
@@ -79,9 +106,33 @@ export function DealCard({ deal }: DealCardProps) {
           )}
         </div>
 
-        <div className="flex items-center gap-1 text-xs text-gray-400">
-          <UserIcon className="w-3 h-3" />
-          <span>{deal.owner.name.split(" ")[0]}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1 text-xs text-gray-400">
+            <UserIcon className="w-3 h-3" />
+            <span>{deal.owner.name.split(" ")[0]}</span>
+          </div>
+
+          {showConvertButton && (
+            <button
+              onClick={handleConvert}
+              disabled={isPending}
+              className="flex items-center gap-1 px-2 py-1 text-xs font-medium bg-[#52EDC7] text-gray-900 rounded hover:bg-[#1BA098] hover:text-white transition-colors disabled:opacity-50"
+            >
+              {isPending ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <UserPlus className="w-3 h-3" />
+              )}
+              Convert to Client
+            </button>
+          )}
+
+          {isConverted && deal.stage === "WON" && (
+            <div className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-green-600 bg-green-50 rounded">
+              <Check className="w-3 h-3" />
+              Converted
+            </div>
+          )}
         </div>
       </div>
     </div>

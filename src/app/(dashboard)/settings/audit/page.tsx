@@ -39,7 +39,7 @@ export default async function AuditSettingsPage() {
   });
 
   // Get user names for the logs
-  const userIds = [...new Set(auditLogs.filter(l => l.userId).map(l => l.userId!))];
+  const userIds = Array.from(new Set(auditLogs.filter(l => l.userId).map(l => l.userId!)));
   const users = await db.user.findMany({
     where: { id: { in: userIds } },
     select: { id: true, name: true },

@@ -33,8 +33,8 @@ interface DealPipelineProps {
 
 const stages: { id: DealStage; label: string; color: string }[] = [
   { id: "LEAD", label: "Lead", color: "bg-gray-100" },
-  { id: "RFP_INVITE", label: "RFP Invite", color: "bg-blue-50" },
-  { id: "RFP_SUBMITTED", label: "RFP Submitted", color: "bg-purple-50" },
+  { id: "PITCH", label: "Pitch", color: "bg-blue-50" },
+  { id: "NEGOTIATION", label: "Negotiation", color: "bg-purple-50" },
   { id: "WON", label: "Won", color: "bg-green-50" },
   { id: "LOST", label: "Lost", color: "bg-red-50" },
 ];

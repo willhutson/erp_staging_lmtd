@@ -153,8 +153,6 @@ model Client {
   industry       String?
   isRetainer     Boolean  @default(false)
   retainerHours  Int?
-  contactName    String?
-  contactEmail   String?
   logoUrl        String?
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
@@ -170,13 +168,20 @@ model Client {
   leadSource         LeadSource?
   notes              String?            @db.Text
 
+  // Conversion tracking (source of client)
+  convertedFromDealId String?   @unique
+  convertedFromRfpId  String?   @unique
+  convertedAt         DateTime?
+
   organization     Organization     @relation(fields: [organizationId], references: [id])
   accountManager   User?            @relation("AccountManager", fields: [accountManagerId], references: [id])
+  convertedFromDeal Deal?           @relation("DealToClient", fields: [convertedFromDealId], references: [id])
+  convertedFromRfp  RFP?            @relation("RfpToClient", fields: [convertedFromRfpId], references: [id])
   projects         Project[]
   briefs           Brief[]
   contacts         ClientContact[]
   activities       ClientActivity[]
-  deals            Deal[]
+  deals            Deal[]           @relation("ClientDeals")
   onboarding       ClientOnboarding?
   blackoutPeriods  BlackoutPeriod[]
   npsSurveys       NPSSurvey[]
@@ -197,12 +202,11 @@ enum CompanySize {
 }
 
 enum RelationshipStatus {
-  LEAD
-  PROSPECT
-  ACTIVE
-  AT_RISK
-  CHURNED
-  DORMANT
+  ACTIVE         // Current paying client
+  AT_RISK        // Relationship issues
+  CHURNED        // Left/cancelled
+  DORMANT        // No activity, but not churned
+  PAUSED         // Temporarily on hold
 }
 
 enum LeadSource {
@@ -291,14 +295,14 @@ model Deal {
   actualCloseDate   DateTime?
   ownerId           String
   lostReason        String?
-  wonRfpId          String?    // Link to RFP if converted
   notes             String?    @db.Text
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  client       Client?      @relation(fields: [clientId], references: [id])
-  owner        User         @relation("DealOwner", fields: [ownerId], references: [id])
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  client            Client?      @relation("ClientDeals", fields: [clientId], references: [id])
+  owner             User         @relation("DealOwner", fields: [ownerId], references: [id])
+  convertedToClient Client?      @relation("DealToClient") // Reverse relation
 
   @@index([organizationId])
   @@index([clientId])
@@ -307,10 +311,10 @@ model Deal {
 }
 
 enum DealStage {
-  LEAD           // Initial contact
-  RFP_INVITE     // Invited to submit RFP
-  RFP_SUBMITTED  // RFP submitted
-  WON            // Deal won
+  LEAD           // Initial contact/interest
+  PITCH          // Proposal being prepared
+  NEGOTIATION    // Terms being discussed
+  WON            // Deal closed
   LOST           // Deal lost
 }
 
@@ -513,9 +517,10 @@ model RFP {
   updatedAt       DateTime        @updatedAt
   submittedAt     DateTime?
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  subitems     RFPSubitem[]
-  attachments  Attachment[]
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  subitems          RFPSubitem[]
+  attachments       Attachment[]
+  convertedToClient Client?      @relation("RfpToClient") // Reverse relation
 
   @@index([organizationId])
   @@index([status])

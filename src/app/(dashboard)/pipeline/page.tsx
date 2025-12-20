@@ -16,6 +16,7 @@ export default async function PipelinePage() {
       include: {
         client: true,
         owner: true,
+        convertedToClient: true,
       },
       orderBy: { createdAt: "desc" },
     }),
