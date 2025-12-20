@@ -61,11 +61,11 @@ export function ClientFileAttachments({
   const getCategoryForRole = (role: string): FileCategory => {
     switch (role) {
       case "logo":
-        return "LOGO";
+        return "BRAND_ASSET"; // Logos are brand assets
       case "brand_asset":
         return "BRAND_ASSET";
       case "document":
-        return "DOCUMENT";
+        return "CONTRACT"; // Documents map to contracts
       default:
         return "OTHER";
     }
@@ -82,12 +82,11 @@ export function ClientFileAttachments({
   };
 
   // Group files by category
-  const logos = files.filter((f) => f.category === "LOGO");
   const brandAssets = files.filter((f) => f.category === "BRAND_ASSET");
-  const documents = files.filter((f) => f.category === "DOCUMENT");
+  const documents = files.filter((f) => f.category === "CONTRACT");
   const otherFiles = files.filter(
     (f) =>
-      !["LOGO", "BRAND_ASSET", "DOCUMENT"].includes(f.category)
+      !["BRAND_ASSET", "CONTRACT"].includes(f.category)
   );
 
   const renderFileGroup = (groupFiles: FileType[], title: string) => {
@@ -213,7 +212,6 @@ export function ClientFileAttachments({
         </div>
       ) : (
         <div className="space-y-6">
-          {renderFileGroup(logos, "Logos")}
           {renderFileGroup(brandAssets, "Brand Assets")}
           {renderFileGroup(documents, "Documents")}
           {renderFileGroup(otherFiles, "Other Files")}
