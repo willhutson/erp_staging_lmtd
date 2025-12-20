@@ -36,7 +36,7 @@ export function ForceGraph({ nodes, edges, height = 400 }: ForceGraphProps) {
 
   // Initialize simulation nodes
   useEffect(() => {
-    nodesRef.current = nodes.map((node, i) => ({
+    nodesRef.current = nodes.map((node) => ({
       ...node,
       size: node.size || 15,
       color: node.color || "#52EDC7",

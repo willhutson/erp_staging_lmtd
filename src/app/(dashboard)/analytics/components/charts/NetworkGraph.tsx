@@ -24,7 +24,7 @@ const TYPE_COLORS = {
 };
 
 export function NetworkGraph({ nodes, edges, height = 400 }: NetworkGraphProps) {
-  const { positions, nodeMap } = useMemo(() => {
+  const { positions } = useMemo(() => {
     // Simple circular layout with type grouping
     const byType: Record<string, typeof nodes> = {
       user: [],

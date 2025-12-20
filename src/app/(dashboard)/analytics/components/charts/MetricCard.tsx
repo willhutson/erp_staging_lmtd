@@ -23,7 +23,6 @@ export function MetricCard({
 }: MetricCardProps) {
   const isPositive = invertChange ? (change ?? 0) < 0 : (change ?? 0) > 0;
   const isNegative = invertChange ? (change ?? 0) > 0 : (change ?? 0) < 0;
-  const isNeutral = change === 0 || change === undefined;
 
   const variantStyles = {
     default: "bg-card",
