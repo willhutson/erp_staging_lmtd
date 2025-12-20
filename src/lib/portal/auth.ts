@@ -157,7 +157,7 @@ export async function verifyMagicLink(token: string) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     expires: expiresAt,
-    path: "/portal",
+    path: "/portal/dashboard",
   });
 
   return {

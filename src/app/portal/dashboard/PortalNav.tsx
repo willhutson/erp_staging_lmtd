@@ -15,32 +15,32 @@ import { cn } from "@/lib/utils";
 const navItems = [
   {
     title: "Dashboard",
-    href: "/portal",
+    href: "/portal/dashboard",
     icon: LayoutDashboard,
   },
   {
     title: "Your Briefs",
-    href: "/portal/briefs",
+    href: "/portal/dashboard/briefs",
     icon: FileText,
   },
   {
     title: "Approvals",
-    href: "/portal/approvals",
+    href: "/portal/dashboard/approvals",
     icon: CheckCircle,
   },
   {
     title: "New Request",
-    href: "/portal/requests/new",
+    href: "/portal/dashboard/requests/new",
     icon: PlusCircle,
   },
   {
     title: "Files",
-    href: "/portal/files",
+    href: "/portal/dashboard/files",
     icon: FolderOpen,
   },
   {
     title: "Feedback",
-    href: "/portal/nps",
+    href: "/portal/dashboard/nps",
     icon: Star,
   },
 ];

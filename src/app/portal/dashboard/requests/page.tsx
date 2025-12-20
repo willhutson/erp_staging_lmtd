@@ -35,7 +35,7 @@ export default async function PortalRequestsPage() {
           <p className="text-gray-500 mt-1">Track your brief requests</p>
         </div>
         <Link
-          href="/portal/requests/new"
+          href="/portal/dashboard/requests/new"
           className="flex items-center gap-2 px-4 py-2.5 bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#3dd4b0] transition-colors"
         >
           <PlusCircle className="w-5 h-5" />
@@ -53,7 +53,7 @@ export default async function PortalRequestsPage() {
             Submit your first brief request to get started
           </p>
           <Link
-            href="/portal/requests/new"
+            href="/portal/dashboard/requests/new"
             className="inline-flex items-center gap-2 px-4 py-2 bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#3dd4b0] transition-colors"
           >
             <PlusCircle className="w-5 h-5" />
