@@ -2,6 +2,8 @@ import { PortalLoginForm } from "./PortalLoginForm";
 import { getPortalUser } from "@/lib/portal/auth";
 import { redirect } from "next/navigation";
 
+export const dynamic = 'force-dynamic';
+
 export default async function PortalLoginPage() {
   // If already logged in, redirect to dashboard
   const user = await getPortalUser();
