@@ -331,7 +331,7 @@ class NotificationService {
 
     await db.notification.update({
       where: { id: notificationId },
-      data: { deliveryStatus },
+      data: { deliveryStatus: deliveryStatus as Prisma.InputJsonValue },
     });
   }
 }
