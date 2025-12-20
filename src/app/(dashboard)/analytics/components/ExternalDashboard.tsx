@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -27,7 +27,6 @@ import {
 import { MetricCard } from "./charts/MetricCard";
 import { LineChart } from "./charts/LineChart";
 import { PieChart } from "./charts/PieChart";
-import { BarChart } from "./charts/BarChart";
 
 interface ExternalDashboardProps {
   organizationId: string;

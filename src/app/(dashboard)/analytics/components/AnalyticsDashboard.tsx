@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -31,7 +31,7 @@ export function AnalyticsDashboard({
 
   const getDateRange = () => {
     const end = new Date();
-    let start = new Date();
+    const start = new Date();
 
     switch (dateRange) {
       case "7d":
