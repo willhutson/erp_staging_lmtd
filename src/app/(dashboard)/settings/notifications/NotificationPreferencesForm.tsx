@@ -39,7 +39,13 @@ export function NotificationPreferencesForm({ initialPreferences }: Props) {
 
   const handleSave = async () => {
     setSaving(true);
-    const result = await updatePreferences(preferences);
+    // Convert null values to undefined for the action
+    const result = await updatePreferences({
+      ...preferences,
+      digestTime: preferences.digestTime ?? undefined,
+      quietHoursStart: preferences.quietHoursStart ?? undefined,
+      quietHoursEnd: preferences.quietHoursEnd ?? undefined,
+    });
     setSaving(false);
 
     if (result.success) {
