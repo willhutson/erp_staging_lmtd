@@ -43,7 +43,7 @@ export async function updateThemeSettings(themeSettings: Partial<ThemeSettings>)
   await db.organization.update({
     where: { id: session.user.organizationId },
     data: {
-      themeSettings: themeSettings as any,
+      themeSettings: themeSettings as object,
     },
   });
 

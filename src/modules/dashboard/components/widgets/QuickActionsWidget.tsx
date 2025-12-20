@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Clock, FileText, Users, FileStack } from "lucide-react";
+import { Clock, FileText, Users, FileStack } from "lucide-react";
 
 const actions = [
   {

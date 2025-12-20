@@ -3,7 +3,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   ThemeSettings,
-  defaultTheme,
   mergeTheme,
   generateCSSVariables,
 } from "@/lib/theme";

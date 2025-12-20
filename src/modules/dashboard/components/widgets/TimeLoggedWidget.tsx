@@ -1,6 +1,5 @@
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
-import { Clock } from "lucide-react";
 
 export async function TimeLoggedWidget() {
   const session = await auth();

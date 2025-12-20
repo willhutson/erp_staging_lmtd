@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Building2 } from "lucide-react";
 import Link from "next/link";
 import { createClient, getAccountManagers } from "@/modules/crm/actions/client-actions";
-import { useEffect } from "react";
+import type { CompanySize, RelationshipStatus, LeadSource } from "@prisma/client";
 
 const companySizes = [
   { value: "STARTUP", label: "Startup (1-10)" },
@@ -86,12 +86,12 @@ export default function NewClientPage() {
         primaryContactEmail: formData.primaryContactEmail || undefined,
         primaryContactPhone: formData.primaryContactPhone || undefined,
         primaryContactTitle: formData.primaryContactTitle || undefined,
-        companySize: formData.companySize as any || undefined,
+        companySize: formData.companySize as CompanySize || undefined,
         website: formData.website || undefined,
         linkedIn: formData.linkedIn || undefined,
         accountManagerId: formData.accountManagerId || undefined,
-        relationshipStatus: formData.relationshipStatus as any,
-        leadSource: formData.leadSource as any || undefined,
+        relationshipStatus: formData.relationshipStatus as RelationshipStatus,
+        leadSource: formData.leadSource as LeadSource || undefined,
         notes: formData.notes || undefined,
       });
       router.push("/clients");

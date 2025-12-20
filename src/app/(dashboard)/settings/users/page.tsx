@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { SettingsNav } from "@/components/settings/SettingsNav";
-import { Plus, Search, MoreVertical, Mail, Shield } from "lucide-react";
+import { Plus, MoreVertical, Mail } from "lucide-react";
 import Link from "next/link";
 
 const permissionColors: Record<string, { bg: string; text: string }> = {

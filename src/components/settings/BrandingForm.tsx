@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { Upload, Palette, Type, Square, Sun, Moon, Monitor, Loader2 } from "lucide-react";
 import {
   ThemeSettings,
-  defaultTheme,
   mergeTheme,
   availableFonts,
   borderRadiusOptions,
