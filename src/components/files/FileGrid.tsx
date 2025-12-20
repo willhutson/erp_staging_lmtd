@@ -143,6 +143,7 @@ export function FileGrid({ files, onFileSelect, onRefresh }: Props) {
                 {/* Preview */}
                 <div className="aspect-square bg-gray-50 flex items-center justify-center relative">
                   {isImage(file.mimeType) && file.cdnUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={file.cdnUrl}
                       alt={file.name}
@@ -276,6 +277,7 @@ export function FileGrid({ files, onFileSelect, onRefresh }: Props) {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
                           {isImage(file.mimeType) && file.cdnUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={file.cdnUrl}
                               alt=""

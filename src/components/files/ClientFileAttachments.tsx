@@ -110,6 +110,7 @@ export function ClientFileAttachments({
               >
                 <div className="aspect-square bg-gray-50 flex items-center justify-center">
                   {isImage(file.mimeType) && file.cdnUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={file.cdnUrl}
                       alt={file.name}

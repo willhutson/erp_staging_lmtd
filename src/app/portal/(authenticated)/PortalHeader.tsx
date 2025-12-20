@@ -53,6 +53,7 @@ export function PortalHeader({ user }: Props) {
             >
               <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                 {user.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={user.avatarUrl}
                     alt=""

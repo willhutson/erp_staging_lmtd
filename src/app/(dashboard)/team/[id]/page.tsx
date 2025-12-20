@@ -122,6 +122,7 @@ export default async function EmployeeProfilePage({ params }: PageProps) {
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-[#52EDC7] flex items-center justify-center text-gray-900 font-bold text-xl">
               {user.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={user.avatarUrl}
                   alt={user.name}

@@ -53,6 +53,7 @@ export function BrandingForm({ initialTheme, organizationName, logo }: BrandingF
         <div className="flex items-start gap-6">
           <div className="w-24 h-24 rounded-xl bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
             {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={logo}
                 alt="Logo"
