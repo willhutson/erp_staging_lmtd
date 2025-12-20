@@ -1,29 +1,16 @@
-import { getPortalUser } from "@/lib/portal/auth";
-import { redirect } from "next/navigation";
-import { PortalHeader } from "./PortalHeader";
-import { PortalNav } from "./PortalNav";
-
-// Force dynamic rendering - uses cookies for authentication
 export const dynamic = 'force-dynamic';
 
-export default async function PortalLayout({
+export default function PortalLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getPortalUser();
-
-  if (!user) {
-    redirect("/portal/auth");
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <PortalHeader user={user} />
-      <div className="flex">
-        <PortalNav />
-        <main className="flex-1 p-6">{children}</main>
+      <div className="p-4 bg-white border-b">
+        <span className="font-semibold">Client Portal</span>
       </div>
+      <main className="p-6">{children}</main>
     </div>
   );
 }
