@@ -1514,61 +1514,162 @@ Client Request (via Portal)
 
 ---
 
-## Part 8: Implementation Phases
+## Part 8: Implementation - Parallel Tracks
 
-### Phase 12.1: Knowledge Foundation (2-3 weeks)
+> **See also:** [Skill Development Sandbox](./20_Skill_Development_Sandbox.md) for the parallel skill development track
+
+### The Two-Track Approach
+
+Skills are NOT Phase 8. They're developed **in parallel** with infrastructure from Day 1.
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│                         PARALLEL DEVELOPMENT TRACKS                         │
+├────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  INFRASTRUCTURE TRACK                 SKILL DEVELOPMENT TRACK               │
+│  (Engineering)                        (Founder + Engineering)               │
+│                                                                             │
+│  12.1: Knowledge Schema          ←→   Founder Knowledge Capture Sessions    │
+│                                       Skill Seeds from User Stories         │
+│                                       Sandbox UI for testing                │
+│                                                                             │
+│  12.2: Agent Infrastructure      ←→   First Skills Go Live (v0.1)           │
+│                                       Validation with real data             │
+│                                                                             │
+│  12.3: Deliverables              ←→   Delivery/Quality Skills               │
+│                                                                             │
+│  [Each phase...]                 ←→   [Skills grow with platform...]        │
+│                                                                             │
+└────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Phase 12.1: Knowledge Foundation + Sandbox (2-3 weeks)
+
+**Infrastructure:**
 - [ ] KnowledgeDocument schema + CRUD
 - [ ] Document versioning
 - [ ] Hierarchical document structure
 - [ ] Basic markdown editor with frontmatter
 - [ ] Document status workflow
 
+**Sandbox (Built Day 1):**
+- [ ] Skill Playground UI (test skills without DB writes)
+- [ ] Skill Template Wizard (guided skill creation)
+- [ ] Knowledge Capture Interface (interview-style prompts)
+- [ ] Validation Checkpoint system
+
+**Parallel Skill Work:**
+- [ ] Founder Session 1: Brief Creation knowledge capture
+- [ ] Founder Session 2: Resource Allocation knowledge capture
+- [ ] Seed skills from existing user stories in `/docs/07_User_Stories.md`
+- [ ] `brief-creator` skill seed with validation questions
+- [ ] `resource-scanner` skill seed with validation questions
+- [ ] `intake-processor` skill seed with validation questions
+
 ### Phase 12.2: Agent Infrastructure (2-3 weeks)
+
+**Infrastructure:**
 - [ ] AgentSkill schema + registry
 - [ ] AgentPersona schema + registry
 - [ ] Skill invocation system
 - [ ] Context injection framework
 - [ ] Invocation logging
 
+**Parallel Skill Work:**
+- [ ] `brief-creator` v0.1 goes live
+- [ ] Test with real briefs, founder validates outputs
+- [ ] `timeline-estimator` skill development
+- [ ] `quality-scorer` skill seed
+- [ ] Founder Session 3: Client Intelligence knowledge capture
+
 ### Phase 12.3: Deliverables System (2-3 weeks)
+
+**Infrastructure:**
 - [ ] Deliverable schema + CRUD
 - [ ] Internal review workflow
 - [ ] Client review workflow
 - [ ] Revision management
 - [ ] File attachments
 
+**Parallel Skill Work:**
+- [ ] `quality-scorer` v0.1 goes live
+- [ ] `revision-predictor` skill development
+- [ ] `handoff-checker` skill seed
+- [ ] Founder Session 4: Delivery/Quality knowledge capture
+
 ### Phase 12.4: Event System (1-2 weeks)
+
+**Infrastructure:**
 - [ ] Content events emission
 - [ ] Trigger system
 - [ ] Event-to-skill routing
 - [ ] Event history
 
+**Parallel Skill Work:**
+- [ ] `status-updater` skill (responds to events)
+- [ ] `reminder-generator` skill
+- [ ] `escalation-router` skill seed
+
 ### Phase 12.5: Semantic Search (1-2 weeks)
+
+**Infrastructure:**
 - [ ] Vector embeddings generation
 - [ ] Semantic search API
 - [ ] Hybrid search (semantic + full-text)
 - [ ] Context-aware search
 
+**Parallel Skill Work:**
+- [ ] Context injection testing with real skills
+- [ ] Skill context optimization
+- [ ] Knowledge retrieval tuning
+
 ### Phase 12.6: Templates & Rendering (1-2 weeks)
+
+**Infrastructure:**
 - [ ] Template schema + CRUD
 - [ ] Template editor
 - [ ] Dynamic rendering
 - [ ] Export to PDF/DOCX
 
+**Parallel Skill Work:**
+- [ ] `report-builder` skill
+- [ ] `proposal-generator` skill seed
+- [ ] Founder Session 5: Templates/Proposals knowledge capture
+
 ### Phase 12.7: Portal Integration (1-2 weeks)
+
+**Infrastructure:**
 - [ ] Client deliverable views
 - [ ] Client review/approval UI
 - [ ] Client commenting
 - [ ] Public knowledge access
 
-### Phase 12.8: Agent Skills (Ongoing)
-- [ ] Brief Creator skill
-- [ ] Quality Scorer skill
-- [ ] Time Estimator skill
-- [ ] Resource Optimizer skill
-- [ ] Client Communicator skill
-- [ ] Report Generator skill
-- [ ] ... (dozens more)
+**Parallel Skill Work:**
+- [ ] `client-communicator` skill
+- [ ] `portal-assistant` skill (client-facing AI)
+- [ ] `intake-processor` v1.0 (full client request handling)
+
+### Ongoing: Skill Library Expansion
+
+The skill library grows continuously:
+
+**Tier 1 - Foundation (Weeks 1-2):**
+- `brief-creator`, `resource-scanner`, `intake-processor`, `timeline-estimator`
+
+**Tier 2 - Quality (Weeks 3-4):**
+- `quality-scorer`, `brief-validator`, `scope-detector`, `handoff-checker`
+
+**Tier 3 - Intelligence (Weeks 5-6):**
+- `client-health-monitor`, `resource-predictor`, `rfp-analyzer`, `risk-flagger`
+
+**Tier 4 - Automation (Weeks 7-8):**
+- `status-updater`, `reminder-generator`, `report-builder`, `escalation-router`
+
+**Tier 5+ - Continuous:**
+- New skills as business needs emerge
+- Skill refinements based on usage data
+- Founder validation sessions monthly
 
 ---
 
