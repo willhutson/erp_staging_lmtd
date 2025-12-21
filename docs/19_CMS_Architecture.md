@@ -1,1319 +1,1620 @@
-# Phase 12: Content Management System (CMS) Architecture
+# Phase 12: Enterprise Content Engine
 
-## Overview
-
-A robust, multi-tenant CMS that integrates seamlessly with the existing ERP platform. Designed for professional services agencies to manage:
-- Website content (pages, blog posts, case studies)
-- Marketing assets (landing pages, campaigns)
-- Client-facing content (proposals, deliverables)
-- Internal knowledge base (SOPs, templates, guides)
-
-### Design Principles
-
-1. **Config-Driven Content Types** - Define content structures in `/config/content/`, not code
-2. **Multi-Tenant by Default** - All content scoped to `organizationId`
-3. **Workflow-First** - Draft → Review → Published workflow with approvals
-4. **Headless Architecture** - API-first for any frontend (website, app, portal)
-5. **Leverage Existing Infrastructure** - Reuse forms, files, permissions, notifications
+**Version:** 2.0
+**Status:** Architecture Specification
+**Scope:** The knowledge backbone of an agentic enterprise platform
 
 ---
 
-## Content Architecture
+## Vision Statement
 
-### Content Type Hierarchy
+This is not a website CMS. This is the **Content Engine** that powers:
+
+1. **The Agent Brain** - Hundreds/thousands of structured MD documents that give AI agents context, capabilities, and procedures
+2. **The Work Product System** - Content IS the deliverable (videos, designs, copy, reports) flowing through agency workflows
+3. **The Knowledge Graph** - All organizational intelligence queryable by humans and machines
+4. **The Client Delivery Layer** - How clients receive, review, iterate, and approve work
+5. **The Automation Backbone** - Content events that trigger workflows, agents, and integrations
 
 ```
-ContentType (config-driven schema)
-    ↓
-ContentEntry (instance of content type)
-    ↓
-ContentVersion (versioned snapshots)
-    ↓
-ContentBlock (modular content blocks)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        ENTERPRISE CONTENT ENGINE                             │
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │                         KNOWLEDGE LAYER                                  ││
+│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐        ││
+│  │  │ Agent Docs  │ │ Procedures  │ │ Playbooks   │ │ Templates   │        ││
+│  │  │ (Skills)    │ │ (SOPs)      │ │ (Runbooks)  │ │ (Patterns)  │        ││
+│  │  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘        ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                                    │                                         │
+│                                    ▼                                         │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │                         CONTENT LAYER                                    ││
+│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐        ││
+│  │  │ Briefs      │ │Deliverables │ │ Proposals   │ │ Reports     │        ││
+│  │  │ (Input)     │ │ (Output)    │ │ (Pitches)   │ │ (Analysis)  │        ││
+│  │  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘        ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                                    │                                         │
+│                                    ▼                                         │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │                       DELIVERY LAYER                                     ││
+│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐        ││
+│  │  │ Client      │ │ Approval    │ │ Versioning  │ │ Publishing  │        ││
+│  │  │ Portal      │ │ Workflows   │ │ & History   │ │ & Export    │        ││
+│  │  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘        ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                                    │                                         │
+│                                    ▼                                         │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │                        AGENT LAYER                                       ││
+│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐        ││
+│  │  │ Skills      │ │ Triggers    │ │ Context     │ │ Actions     │        ││
+│  │  │ Registry    │ │ & Events    │ │ Injection   │ │ & Mutations │        ││
+│  │  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘        ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
-
-### Core Content Types
-
-| Type | Purpose | Example |
-|------|---------|---------|
-| `page` | Static website pages | About, Services, Contact |
-| `post` | Blog/news articles | Industry insights, news |
-| `case_study` | Client work showcases | Project portfolios |
-| `landing_page` | Campaign pages | Service promos, events |
-| `knowledge_base` | Internal docs | SOPs, guides, FAQs |
-| `proposal` | Client proposals | RFP responses, pitches |
-| `template` | Reusable content | Email templates, snippets |
 
 ---
 
-## Database Schema
+## Part 1: Knowledge Architecture
+
+### The Document Hierarchy
+
+All knowledge lives in a queryable, version-controlled document system:
+
+```
+/knowledge
+├── /agents                      # Agent capability definitions
+│   ├── /skills                  # Individual skill docs
+│   │   ├── brief-creator.md
+│   │   ├── time-estimator.md
+│   │   ├── quality-scorer.md
+│   │   ├── resource-optimizer.md
+│   │   └── client-communicator.md
+│   ├── /personas                # Agent personality/context
+│   │   ├── project-manager.md
+│   │   ├── creative-director.md
+│   │   └── account-executive.md
+│   └── /orchestration           # Multi-agent workflows
+│       ├── brief-to-delivery.md
+│       └── rfp-response.md
+│
+├── /procedures                  # How things are done
+│   ├── /workflows               # Step-by-step processes
+│   │   ├── video-production.md
+│   │   ├── design-review.md
+│   │   └── client-onboarding.md
+│   ├── /policies                # Rules and constraints
+│   │   ├── brand-guidelines.md
+│   │   ├── approval-matrix.md
+│   │   └── sla-definitions.md
+│   └── /checklists              # Quality gates
+│       ├── pre-shoot-checklist.md
+│       ├── design-qa.md
+│       └── delivery-prep.md
+│
+├── /playbooks                   # Situational guides
+│   ├── /client-types            # Per-client-category strategies
+│   │   ├── government.md
+│   │   ├── enterprise.md
+│   │   └── startup.md
+│   ├── /crisis                  # Emergency procedures
+│   │   ├── deadline-miss.md
+│   │   ├── client-escalation.md
+│   │   └── resource-shortage.md
+│   └── /growth                  # Expansion playbooks
+│       ├── new-client-pitch.md
+│       └── service-expansion.md
+│
+├── /templates                   # Reusable content patterns
+│   ├── /briefs                  # Brief templates by type
+│   ├── /proposals               # Proposal structures
+│   ├── /reports                 # Report formats
+│   ├── /emails                  # Communication templates
+│   └── /contracts               # Legal templates
+│
+├── /reference                   # Static reference material
+│   ├── /clients                 # Client background docs
+│   ├── /industry                # Industry knowledge
+│   ├── /tools                   # Tool documentation
+│   └── /glossary                # Terminology
+│
+└── /meta                        # System documentation
+    ├── /api                     # API documentation
+    ├── /schemas                 # Data schemas
+    └── /changelog               # System changes
+```
+
+### Document Schema
+
+Every knowledge document follows a structured format:
+
+```typescript
+interface KnowledgeDocument {
+  // Identity
+  id: string;                    // Unique identifier
+  path: string;                  // Hierarchical path
+  slug: string;                  // URL-friendly name
+
+  // Metadata
+  title: string;
+  description: string;
+  documentType: DocumentType;    // skill | procedure | playbook | template | reference
+
+  // Categorization
+  tags: string[];
+  categories: string[];
+  relatedDocuments: string[];    // Linked doc IDs
+
+  // Content
+  content: string;               // Markdown content
+  frontmatter: Record<string, any>;  // YAML frontmatter
+
+  // Agent metadata
+  agentContext: {
+    whenToUse: string;           // Conditions for agent to use this
+    requiredInputs: string[];    // What the agent needs
+    expectedOutputs: string[];   // What the agent produces
+    permissions: string[];       // Required permissions
+    examples: Example[];         // Usage examples
+  };
+
+  // Versioning
+  version: number;
+  versionHistory: Version[];
+
+  // Access control
+  visibility: 'public' | 'internal' | 'restricted';
+  allowedRoles: PermissionLevel[];
+
+  // Audit
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  lastEditedBy: string;
+
+  // Status
+  status: 'draft' | 'review' | 'approved' | 'published' | 'deprecated';
+  effectiveDate?: Date;
+  expirationDate?: Date;
+}
+
+type DocumentType =
+  | 'skill'           // Agent capability
+  | 'procedure'       // Step-by-step process
+  | 'playbook'        // Situational guide
+  | 'template'        // Reusable pattern
+  | 'reference'       // Static information
+  | 'policy'          // Rules/constraints
+  | 'checklist'       // Quality gates
+  | 'persona'         // Agent personality
+  | 'orchestration';  // Multi-agent workflow
+```
+
+### Agent Skill Document Format
+
+```markdown
+---
+id: skill_brief_creator
+type: skill
+version: 2.1
+status: published
+permissions:
+  - brief:create
+  - client:read
+  - user:read
+triggers:
+  - event: client_request_submitted
+  - event: manual_invocation
+  - schedule: null
+inputs:
+  - client_context
+  - request_details
+  - available_resources
+outputs:
+  - draft_brief
+  - resource_suggestions
+  - timeline_estimate
+dependencies:
+  - skill_time_estimator
+  - skill_resource_optimizer
+---
+
+# Brief Creator Skill
+
+## Purpose
+Transforms client requests into structured, actionable briefs with proper resource allocation and timeline estimates.
+
+## When to Use
+- Client submits a new request via portal
+- Account manager initiates a new project
+- RFP response requires brief breakdown
+
+## Required Context
+1. **Client Profile**: Industry, preferences, history, SLAs
+2. **Request Details**: What they want, deadline, budget
+3. **Resource State**: Team availability, skills, capacity
+
+## Process
+
+### Step 1: Analyze Request
+- Extract key requirements from client input
+- Identify brief type (VIDEO_SHOOT, DESIGN, etc.)
+- Flag any ambiguities for human review
+
+### Step 2: Match Resources
+- Query available team members with required skills
+- Consider workload and capacity
+- Suggest primary and backup assignees
+
+### Step 3: Estimate Timeline
+- Use historical data for similar briefs
+- Factor in client SLA requirements
+- Build in review buffer time
+
+### Step 4: Generate Brief
+- Apply naming convention: `{Type}: {Client} – {Topic}`
+- Populate all required fields
+- Calculate quality score
+- Set appropriate priority
+
+## Output Format
+```json
+{
+  "brief": {
+    "title": "Shoot: CCAD – Annual Report",
+    "type": "VIDEO_SHOOT",
+    "clientId": "...",
+    "formData": {...},
+    "qualityScore": 85
+  },
+  "suggestions": {
+    "assignee": { "primary": "...", "backup": "..." },
+    "timeline": { "start": "...", "end": "..." },
+    "warnings": []
+  }
+}
+```
+
+## Error Handling
+- If client not found: Return error, suggest client creation
+- If no resources available: Flag for manual assignment
+- If deadline impossible: Suggest alternatives
+
+## Examples
+
+### Example 1: Standard Video Request
+**Input**: Client CCAD requests "annual report video, 2 minutes, needed in 3 weeks"
+**Output**: VIDEO_SHOOT brief with Sara (videographer) assigned, 15 business days timeline
+
+### Example 2: Rush Design Request
+**Input**: Client DET needs "social graphics for campaign launch tomorrow"
+**Output**: DESIGN brief marked URGENT, Ahmed assigned with overtime flag
+
+## Metrics
+- Success rate: 94%
+- Average processing time: 2.3 seconds
+- Human override rate: 12%
+
+## Changelog
+- v2.1: Added resource optimization integration
+- v2.0: Refactored for multi-agent orchestration
+- v1.0: Initial release
+```
+
+---
+
+## Part 2: Content Architecture
+
+### Content as Work Product
+
+Unlike traditional CMS where content is for publishing, here **content IS the work**:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CONTENT LIFECYCLE                             │
+│                                                                  │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐  │
+│  │  INPUT   │───▶│ PROCESS  │───▶│  OUTPUT  │───▶│ DELIVERY │  │
+│  │          │    │          │    │          │    │          │  │
+│  │ - Brief  │    │ - Create │    │ - Draft  │    │ - Review │  │
+│  │ - Request│    │ - Edit   │    │ - Final  │    │ - Approve│  │
+│  │ - Idea   │    │ - Refine │    │ - Export │    │ - Publish│  │
+│  └──────────┘    └──────────┘    └──────────┘    └──────────┘  │
+│       │               │               │               │         │
+│       ▼               ▼               ▼               ▼         │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                   VERSION CONTROL                            ││
+│  │  Every state captured, diffable, restorable                 ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Content Types Matrix
+
+| Category | Type | Purpose | Workflow | Client Visible |
+|----------|------|---------|----------|----------------|
+| **Work Input** | Brief | What needs to be done | Draft→Approved→Active | Via Portal |
+| **Work Input** | ClientRequest | Raw client ask | Submitted→Converted | Yes |
+| **Work Output** | Deliverable | The actual work | Draft→Review→Final | Yes |
+| **Work Output** | Revision | Iteration on work | Created→Applied | Yes |
+| **Business** | Proposal | Pitch/RFP response | Draft→Review→Sent | Yes |
+| **Business** | Report | Analytics/insights | Generated→Reviewed | Yes |
+| **Business** | Contract | Legal agreements | Draft→Legal→Signed | Yes |
+| **Internal** | Procedure | How to do things | Draft→Approved→Active | No |
+| **Internal** | Playbook | Situational guides | Draft→Approved→Active | No |
+| **Internal** | Template | Reusable patterns | Draft→Approved→Active | No |
+| **Agent** | Skill | Agent capabilities | Draft→Tested→Active | No |
+| **Agent** | Persona | Agent context | Draft→Approved→Active | No |
+
+### Deliverable Architecture
+
+Deliverables are the core work product:
+
+```typescript
+interface Deliverable {
+  id: string;
+  organizationId: string;
+
+  // Relationship to brief
+  briefId: string;
+  brief: Brief;
+
+  // Identity
+  title: string;
+  type: DeliverableType;
+  version: number;
+
+  // Content (polymorphic based on type)
+  content: DeliverableContent;
+
+  // Files
+  files: DeliverableFile[];
+  primaryFile?: File;  // The main asset
+  supportingFiles: File[];  // Source files, extras
+
+  // Status
+  status: DeliverableStatus;
+
+  // Review & Approval
+  internalReviewStatus: ReviewStatus;
+  internalReviewedBy?: User;
+  internalReviewedAt?: Date;
+  internalFeedback?: string;
+
+  clientReviewStatus: ReviewStatus;
+  clientReviewedBy?: ClientPortalUser;
+  clientReviewedAt?: Date;
+  clientFeedback?: string;
+
+  // Revisions
+  revisionNumber: number;
+  parentDeliverableId?: string;  // If this is a revision
+  revisions: Deliverable[];      // Child revisions
+
+  // Metadata
+  createdAt: Date;
+  createdBy: User;
+  submittedAt?: Date;
+  approvedAt?: Date;
+
+  // AI metadata
+  aiGenerated: boolean;
+  aiAssisted: boolean;
+  aiMetadata?: {
+    model: string;
+    prompt?: string;
+    confidence?: number;
+  };
+}
+
+type DeliverableType =
+  | 'video'
+  | 'image'
+  | 'document'
+  | 'presentation'
+  | 'design_file'
+  | 'copy'
+  | 'report'
+  | 'code'
+  | 'other';
+
+type DeliverableStatus =
+  | 'draft'
+  | 'in_progress'
+  | 'internal_review'
+  | 'revision_needed'
+  | 'ready_for_client'
+  | 'client_review'
+  | 'client_revision'
+  | 'approved'
+  | 'delivered'
+  | 'archived';
+
+interface DeliverableContent {
+  // For text-based deliverables
+  text?: string;
+  richText?: string;  // HTML/Markdown
+
+  // For structured deliverables
+  structured?: Record<string, any>;
+
+  // For file-based deliverables
+  fileReference?: string;
+
+  // Metadata
+  wordCount?: number;
+  characterCount?: number;
+  pageCount?: number;
+  duration?: number;  // For video/audio
+  dimensions?: { width: number; height: number };
+}
+```
+
+---
+
+## Part 3: Database Schema
 
 ```prisma
 // ============================================
-// CONTENT MANAGEMENT SYSTEM
+// KNOWLEDGE MANAGEMENT
 // ============================================
 
-// Content type definitions (synced from config)
-model ContentType {
+model KnowledgeDocument {
   id              String   @id @default(cuid())
   organizationId  String
   organization    Organization @relation(fields: [organizationId], references: [id])
-
-  slug            String              // e.g., "blog_post", "case_study"
-  name            String              // e.g., "Blog Post", "Case Study"
-  description     String?
-  icon            String?             // Lucide icon name
-
-  // Schema definition
-  schema          Json                // Field definitions (from config)
-
-  // Settings
-  isPublishable   Boolean  @default(true)  // Can be published externally
-  isVersioned     Boolean  @default(true)  // Track version history
-  hasWorkflow     Boolean  @default(true)  // Requires approval workflow
-
-  // SEO defaults
-  seoEnabled      Boolean  @default(true)
-  slugPattern     String?             // e.g., "blog/{slug}"
-
-  // Permissions
-  createPermission   String  @default("content:create")
-  editPermission     String  @default("content:edit")
-  publishPermission  String  @default("content:publish")
-  deletePermission   String  @default("content:delete")
-
-  // Relations
-  entries         ContentEntry[]
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@unique([organizationId, slug])
-  @@index([organizationId])
-}
-
-// Individual content entries
-model ContentEntry {
-  id              String   @id @default(cuid())
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id])
-
-  contentTypeId   String
-  contentType     ContentType @relation(fields: [contentTypeId], references: [id])
 
   // Identity
+  path            String              // e.g., "/agents/skills/brief-creator"
+  slug            String
   title           String
-  slug            String              // URL-friendly identifier
+  description     String?
 
-  // Content storage
-  content         Json                // Structured content data
-  blocks          Json?               // Block-based content (optional)
-  excerpt         String?             // Summary/preview text
+  // Type & Classification
+  documentType    DocumentType
+  categories      String[]
+  tags            String[]
 
-  // Status & workflow
-  status          ContentStatus @default(DRAFT)
-  publishedAt     DateTime?
-  scheduledAt     DateTime?           // Schedule for future publish
-  expiresAt       DateTime?           // Auto-unpublish date
+  // Content
+  content         String   @db.Text    // Markdown content
+  frontmatter     Json                 // Parsed YAML frontmatter
 
-  // Version tracking
+  // Agent metadata (for skill/persona/orchestration docs)
+  agentMetadata   Json?               // whenToUse, inputs, outputs, etc.
+
+  // Relationships
+  parentId        String?
+  parent          KnowledgeDocument?  @relation("DocumentHierarchy", fields: [parentId], references: [id])
+  children        KnowledgeDocument[] @relation("DocumentHierarchy")
+
+  relatedDocIds   String[]
+  relatedDocs     KnowledgeDocument[] @relation("RelatedDocuments")
+  relatedTo       KnowledgeDocument[] @relation("RelatedDocuments")
+
+  // Versioning
   version         Int      @default(1)
+  isLatest        Boolean  @default(true)
+  previousVersionId String?
 
-  // SEO & Meta
-  seoTitle        String?
-  seoDescription  String?
-  seoKeywords     String[]
-  ogImage         String?
-  canonicalUrl    String?
-  noIndex         Boolean  @default(false)
+  // Status & Lifecycle
+  status          DocumentStatus @default(DRAFT)
+  effectiveDate   DateTime?
+  expirationDate  DateTime?
 
-  // Categorization
-  categories      ContentCategory[] @relation("ContentEntryCategories")
-  tags            ContentTag[]      @relation("ContentEntryTags")
-
-  // Relations
-  authorId        String
-  author          User     @relation("ContentAuthor", fields: [authorId], references: [id])
-
-  clientId        String?             // For client-specific content
-  client          Client?  @relation(fields: [clientId], references: [id])
-
-  projectId       String?
-  project         Project? @relation(fields: [projectId], references: [id])
-
-  // Media
-  featuredImageId String?
-  featuredImage   File?    @relation("ContentFeaturedImage", fields: [featuredImageId], references: [id])
-
-  // Tracking
-  viewCount       Int      @default(0)
+  // Access Control
+  visibility      Visibility @default(INTERNAL)
+  allowedRoles    PermissionLevel[]
 
   // Audit
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   createdById     String
-  createdBy       User     @relation("ContentCreator", fields: [createdById], references: [id])
+  createdBy       User     @relation("DocCreator", fields: [createdById], references: [id])
   lastEditedById  String?
-  lastEditedBy    User?    @relation("ContentEditor", fields: [lastEditedById], references: [id])
+  lastEditedBy    User?    @relation("DocEditor", fields: [lastEditedById], references: [id])
 
   // Relations
-  versions        ContentVersion[]
-  comments        ContentComment[]
-  approvals       ContentApproval[]
-  media           ContentMedia[]
+  versions        DocumentVersion[]
+  embeddings      DocumentEmbedding[]
+  usageLog        DocumentUsage[]
 
-  @@unique([organizationId, contentTypeId, slug])
+  @@unique([organizationId, path])
+  @@index([organizationId, documentType])
   @@index([organizationId, status])
-  @@index([organizationId, contentTypeId])
-  @@index([authorId])
-  @@index([clientId])
-  @@index([publishedAt])
+  @@index([tags])
 }
 
-enum ContentStatus {
-  DRAFT           // Being written
-  IN_REVIEW       // Submitted for approval
-  APPROVED        // Ready to publish
-  PUBLISHED       // Live/visible
-  SCHEDULED       // Will publish at scheduledAt
-  UNPUBLISHED     // Was published, now hidden
-  ARCHIVED        // Soft deleted
+enum DocumentType {
+  SKILL
+  PERSONA
+  ORCHESTRATION
+  PROCEDURE
+  POLICY
+  CHECKLIST
+  PLAYBOOK
+  TEMPLATE
+  REFERENCE
+  META
 }
 
-// Version history
-model ContentVersion {
+enum DocumentStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  PUBLISHED
+  DEPRECATED
+  ARCHIVED
+}
+
+enum Visibility {
+  PUBLIC      // Visible to clients via portal
+  INTERNAL    // All org members
+  RESTRICTED  // Specific roles only
+  PRIVATE     // Owner only
+}
+
+// Version history with full content snapshot
+model DocumentVersion {
   id              String   @id @default(cuid())
 
-  entryId         String
-  entry           ContentEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  documentId      String
+  document        KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   version         Int
-  title           String
-  content         Json
-  blocks          Json?
+  content         String   @db.Text
+  frontmatter     Json
 
-  // Snapshot of all fields at this version
-  snapshot        Json                // Complete entry state
+  changeLog       String?
+  changedSections String[]
 
-  // Change tracking
-  changeLog       String?             // Description of changes
-  changedFields   String[]            // Which fields changed
-
-  // Audit
   createdAt       DateTime @default(now())
   createdById     String
   createdBy       User     @relation(fields: [createdById], references: [id])
 
-  @@unique([entryId, version])
-  @@index([entryId])
+  @@unique([documentId, version])
+  @@index([documentId])
 }
 
-// Block-based content (for page builders)
-model ContentBlock {
+// Vector embeddings for semantic search & agent context
+model DocumentEmbedding {
+  id              String   @id @default(cuid())
+
+  documentId      String
+  document        KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  chunkIndex      Int                 // For chunked documents
+  chunkText       String   @db.Text
+  embedding       Float[]             // Vector embedding
+
+  model           String              // Embedding model used
+  createdAt       DateTime @default(now())
+
+  @@unique([documentId, chunkIndex])
+  @@index([documentId])
+}
+
+// Track how documents are used by agents
+model DocumentUsage {
+  id              String   @id @default(cuid())
+
+  documentId      String
+  document        KnowledgeDocument @relation(fields: [documentId], references: [id])
+
+  usedAt          DateTime @default(now())
+  usedBy          String              // Agent ID or user ID
+  usageType       String              // 'agent_context', 'user_reference', 'api_fetch'
+
+  // Context about usage
+  sessionId       String?
+  entityType      String?             // What entity triggered this
+  entityId        String?
+
+  // Feedback
+  wasHelpful      Boolean?
+  feedback        String?
+
+  @@index([documentId])
+  @@index([usedAt])
+}
+
+// ============================================
+// DELIVERABLES & WORK OUTPUT
+// ============================================
+
+model Deliverable {
   id              String   @id @default(cuid())
   organizationId  String
   organization    Organization @relation(fields: [organizationId], references: [id])
 
-  // Block definition
-  name            String              // e.g., "Hero Section", "Feature Grid"
-  slug            String
-  type            ContentBlockType
+  // Relationship
+  briefId         String
+  brief           Brief    @relation(fields: [briefId], references: [id])
 
-  // Block content
-  content         Json                // Block data
-  settings        Json?               // Display settings
+  projectId       String?
+  project         Project? @relation(fields: [projectId], references: [id])
 
-  // Reusability
-  isReusable      Boolean  @default(false)  // Can be used across entries
-  isGlobal        Boolean  @default(false)  // Org-wide (header/footer)
+  // Identity
+  title           String
+  description     String?
+  type            DeliverableType
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@unique([organizationId, slug])
-  @@index([organizationId, type])
-}
-
-enum ContentBlockType {
-  // Layout
-  HERO
-  SECTION
-  COLUMNS
-  GRID
+  // Version tracking
+  version         Int      @default(1)
+  revisionNumber  Int      @default(0)
+  parentDeliverableId String?
+  parentDeliverable Deliverable? @relation("DeliverableRevisions", fields: [parentDeliverableId], references: [id])
+  revisions       Deliverable[] @relation("DeliverableRevisions")
 
   // Content
-  TEXT
-  HEADING
-  IMAGE
+  content         Json?               // Structured content
+  textContent     String?  @db.Text   // Text-based content
+
+  // Status & Workflow
+  status          DeliverableStatus @default(DRAFT)
+
+  // Internal Review
+  internalReviewStatus ReviewStatus @default(PENDING)
+  internalReviewerId   String?
+  internalReviewer     User?    @relation("InternalReviewer", fields: [internalReviewerId], references: [id])
+  internalReviewedAt   DateTime?
+  internalFeedback     String?
+
+  // Client Review
+  clientReviewStatus   ReviewStatus @default(PENDING)
+  clientReviewerId     String?
+  clientReviewer       ClientPortalUser? @relation(fields: [clientReviewerId], references: [id])
+  clientReviewedAt     DateTime?
+  clientFeedback       String?
+
+  // Files
+  primaryFileId   String?
+  primaryFile     File?    @relation("PrimaryDeliverableFile", fields: [primaryFileId], references: [id])
+
+  // AI metadata
+  aiGenerated     Boolean  @default(false)
+  aiAssisted      Boolean  @default(false)
+  aiMetadata      Json?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  deliveredAt     DateTime?
+
+  // Audit
+  createdById     String
+  createdBy       User     @relation("DeliverableCreator", fields: [createdById], references: [id])
+
+  // Relations
+  files           DeliverableFile[]
+  comments        DeliverableComment[]
+  history         DeliverableHistory[]
+
+  @@index([organizationId, briefId])
+  @@index([status])
+}
+
+enum DeliverableType {
   VIDEO
-  GALLERY
-
-  // Interactive
-  CTA
-  FORM
-  ACCORDION
-  TABS
-
-  // Data
-  TEAM
-  TESTIMONIALS
-  CASE_STUDIES
-  POSTS
-
-  // Custom
-  EMBED
+  IMAGE
+  DOCUMENT
+  PRESENTATION
+  DESIGN_FILE
+  COPY
+  REPORT
   CODE
-  CUSTOM
+  AUDIO
+  OTHER
 }
 
-// Taxonomy: Categories
-model ContentCategory {
-  id              String   @id @default(cuid())
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id])
-
-  name            String
-  slug            String
-  description     String?
-
-  parentId        String?
-  parent          ContentCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children        ContentCategory[] @relation("CategoryHierarchy")
-
-  entries         ContentEntry[]    @relation("ContentEntryCategories")
-
-  @@unique([organizationId, slug])
-  @@index([organizationId, parentId])
+enum DeliverableStatus {
+  DRAFT
+  IN_PROGRESS
+  INTERNAL_REVIEW
+  REVISION_NEEDED
+  READY_FOR_CLIENT
+  CLIENT_REVIEW
+  CLIENT_REVISION
+  APPROVED
+  DELIVERED
+  ARCHIVED
 }
 
-// Taxonomy: Tags
-model ContentTag {
-  id              String   @id @default(cuid())
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id])
-
-  name            String
-  slug            String
-
-  entries         ContentEntry[] @relation("ContentEntryTags")
-
-  @@unique([organizationId, slug])
-  @@index([organizationId])
+enum ReviewStatus {
+  PENDING
+  IN_PROGRESS
+  APPROVED
+  REJECTED
+  REVISION_REQUESTED
 }
 
-// Content media attachments
-model ContentMedia {
+model DeliverableFile {
   id              String   @id @default(cuid())
 
-  entryId         String
-  entry           ContentEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  deliverableId   String
+  deliverable     Deliverable @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
 
   fileId          String
   file            File     @relation(fields: [fileId], references: [id])
 
-  // Placement
-  placement       String?             // e.g., "hero", "gallery", "inline"
+  role            FileRole @default(ASSET)
   order           Int      @default(0)
-  caption         String?
-  altText         String?
 
-  @@index([entryId])
+  @@index([deliverableId])
 }
 
-// Content comments/feedback
-model ContentComment {
+enum FileRole {
+  PRIMARY         // The main deliverable file
+  SOURCE          // Source/working files
+  REFERENCE       // Reference material
+  ASSET           // Supporting assets
+  PREVIEW         // Preview/thumbnail
+}
+
+model DeliverableComment {
   id              String   @id @default(cuid())
 
-  entryId         String
-  entry           ContentEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  deliverableId   String
+  deliverable     Deliverable @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
 
-  // Comment content
   content         String
 
-  // For inline comments
-  blockId         String?             // Which block this refers to
-  selection       Json?               // Text selection range
+  // For inline/annotation comments
+  annotationType  String?             // 'text', 'region', 'timestamp'
+  annotationData  Json?               // Selection/region/timestamp data
 
   // Resolution
   isResolved      Boolean  @default(false)
   resolvedAt      DateTime?
   resolvedById    String?
 
-  // Author
-  authorId        String
-  author          User     @relation(fields: [authorId], references: [id])
+  // Author (internal or client)
+  authorType      String              // 'user' or 'client'
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id])
+  clientUserId    String?
+  clientUser      ClientPortalUser? @relation(fields: [clientUserId], references: [id])
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  @@index([entryId])
+  @@index([deliverableId])
 }
 
-// Content approval workflow
-model ContentApproval {
+model DeliverableHistory {
   id              String   @id @default(cuid())
 
-  entryId         String
-  entry           ContentEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  deliverableId   String
+  deliverable     Deliverable @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
 
-  // Approval details
-  status          ApprovalStatus @default(PENDING)
-  decision        ApprovalDecision?
+  action          String              // 'created', 'submitted', 'reviewed', 'revised', etc.
+  fromStatus      DeliverableStatus?
+  toStatus        DeliverableStatus?
 
-  feedback        String?
+  metadata        Json?
 
-  // Actors
-  requestedById   String
-  requestedBy     User     @relation("ApprovalRequester", fields: [requestedById], references: [id])
+  performedAt     DateTime @default(now())
+  performedById   String
+  performedBy     User     @relation(fields: [performedById], references: [id])
 
-  reviewerId      String?
-  reviewer        User?    @relation("ApprovalReviewer", fields: [reviewerId], references: [id])
-
-  // Timing
-  requestedAt     DateTime @default(now())
-  reviewedAt      DateTime?
-
-  @@index([entryId])
-  @@index([reviewerId, status])
+  @@index([deliverableId])
 }
 
-enum ApprovalStatus {
-  PENDING
-  IN_REVIEW
-  COMPLETED
-}
+// ============================================
+// AGENT INFRASTRUCTURE
+// ============================================
 
-enum ApprovalDecision {
-  APPROVED
-  REJECTED
-  CHANGES_REQUESTED
-}
-
-// Content analytics
-model ContentAnalytics {
+model AgentSkill {
   id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
 
-  entryId         String
-  entry           ContentEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  // Identity
+  slug            String              // e.g., "brief-creator"
+  name            String
+  description     String
 
-  date            DateTime @db.Date
+  // Documentation link
+  documentId      String?             // Links to KnowledgeDocument
+  document        KnowledgeDocument? @relation("SkillDocument", fields: [documentId], references: [id])
+
+  // Capability definition
+  category        SkillCategory
+  triggers        Json                // Events/conditions that invoke this skill
+  inputs          Json                // Required inputs
+  outputs         Json                // Expected outputs
+
+  // Dependencies
+  dependsOn       String[]            // Other skill slugs this depends on
+
+  // Configuration
+  config          Json?               // Runtime configuration
+  isEnabled       Boolean  @default(true)
+
+  // Permissions
+  requiredPermissions String[]
 
   // Metrics
-  views           Int      @default(0)
-  uniqueViews     Int      @default(0)
-  avgTimeOnPage   Int?                // seconds
-  bounceRate      Float?
+  invocationCount Int      @default(0)
+  successRate     Float?
+  avgLatencyMs    Int?
+  lastInvokedAt   DateTime?
 
-  // Sources
-  sources         Json?               // { organic: 50, direct: 30, ... }
+  // Audit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  version         String   @default("1.0.0")
 
-  @@unique([entryId, date])
-  @@index([entryId])
+  // Relations
+  invocations     AgentInvocation[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, category])
 }
 
-// Published content cache (for fast delivery)
-model ContentCache {
+enum SkillCategory {
+  CONTENT_CREATION    // Creates content
+  CONTENT_ANALYSIS    // Analyzes content
+  WORKFLOW            // Manages workflows
+  COMMUNICATION       // Handles communication
+  DATA_PROCESSING     // Processes data
+  DECISION            // Makes decisions
+  INTEGRATION         // External integrations
+  UTILITY             // Helper functions
+}
+
+model AgentPersona {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  slug            String
+  name            String
+  description     String
+
+  // Persona definition
+  systemPrompt    String   @db.Text   // Base system prompt
+  personality     Json                // Tone, style, preferences
+  expertise       String[]            // Areas of expertise
+  constraints     String[]            // Things this persona should NOT do
+
+  // Skills this persona can use
+  allowedSkills   String[]            // Skill slugs
+
+  // Documentation
+  documentId      String?
+  document        KnowledgeDocument? @relation("PersonaDocument", fields: [documentId], references: [id])
+
+  isEnabled       Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, slug])
+}
+
+model AgentInvocation {
   id              String   @id @default(cuid())
   organizationId  String
 
-  entryId         String   @unique
+  // What was invoked
+  skillId         String?
+  skill           AgentSkill? @relation(fields: [skillId], references: [id])
 
-  // Cached output
-  html            String?  @db.Text    // Pre-rendered HTML
-  json            Json                 // API response cache
+  personaId       String?
 
-  // Invalidation
-  version         Int
-  cachedAt        DateTime @default(now())
-  expiresAt       DateTime?
+  // Context
+  triggeredBy     String              // 'event', 'schedule', 'manual', 'agent'
+  triggerEvent    String?             // Event type if triggered by event
+  sessionId       String?
 
-  @@index([organizationId])
+  // Entity context
+  entityType      String?
+  entityId        String?
+
+  // Execution
+  input           Json
+  output          Json?
+
+  status          InvocationStatus @default(PENDING)
+  error           String?
+
+  // Timing
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  durationMs      Int?
+
+  // Token usage (for LLM calls)
+  inputTokens     Int?
+  outputTokens    Int?
+
+  // User attribution
+  initiatedById   String?
+
+  @@index([organizationId, skillId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+enum InvocationStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// ============================================
+// CONTENT TEMPLATES
+// ============================================
+
+model ContentTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // Identity
+  slug            String
+  name            String
+  description     String?
+
+  // Classification
+  category        TemplateCategory
+  type            String              // Sub-type within category
+
+  // Template content
+  structure       Json                // Template structure/schema
+  defaultContent  Json?               // Default values
+  placeholders    Json?               // Dynamic placeholders
+
+  // Rendering
+  outputFormat    String              // 'markdown', 'html', 'pdf', 'docx'
+  template        String?  @db.Text   // Template string (handlebars, etc.)
+
+  // Usage
+  useCount        Int      @default(0)
+
+  // Status
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, category])
+}
+
+enum TemplateCategory {
+  BRIEF
+  PROPOSAL
+  REPORT
+  EMAIL
+  CONTRACT
+  PRESENTATION
+  SOCIAL_POST
+  SCRIPT
+  OTHER
+}
+
+// ============================================
+// CONTENT EVENTS & TRIGGERS
+// ============================================
+
+model ContentEvent {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Event identity
+  eventType       String              // e.g., 'brief.created', 'deliverable.approved'
+
+  // Source
+  sourceType      String              // 'brief', 'deliverable', 'document', etc.
+  sourceId        String
+
+  // Event data
+  payload         Json
+
+  // Processing
+  processedAt     DateTime?
+  processingError String?
+
+  // Triggers fired
+  triggersExecuted Int     @default(0)
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId, eventType])
+  @@index([createdAt])
+}
+
+model ContentTrigger {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  name            String
+  description     String?
+
+  // Trigger condition
+  eventType       String              // Event to listen for
+  conditions      Json?               // Additional conditions
+
+  // Action
+  actionType      String              // 'invoke_skill', 'webhook', 'notification', 'workflow'
+  actionConfig    Json                // Action-specific config
+
+  // Status
+  isEnabled       Boolean  @default(true)
+
+  // Metrics
+  executionCount  Int      @default(0)
+  lastExecutedAt  DateTime?
+  lastError       String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId, eventType])
 }
 ```
 
 ---
 
-## Configuration System
+## Part 4: Agent Integration Architecture
 
-### Content Type Configuration
+### Skill Registry
 
-Location: `/config/content/`
-
-```typescript
-// /config/content/blog-post.content.ts
-import { ContentTypeConfig } from "@/types/content";
-
-export const blogPostContent: ContentTypeConfig = {
-  slug: "blog_post",
-  name: "Blog Post",
-  description: "Articles for the company blog",
-  icon: "FileText",
-
-  // Content schema
-  schema: {
-    sections: [
-      {
-        id: "main",
-        title: "Content",
-        fields: [
-          {
-            id: "title",
-            label: "Title",
-            type: "text",
-            required: true,
-            maxLength: 100,
-            helpText: "Keep under 60 characters for SEO"
-          },
-          {
-            id: "excerpt",
-            label: "Excerpt",
-            type: "textarea",
-            required: true,
-            maxLength: 300,
-            helpText: "Brief summary for listings"
-          },
-          {
-            id: "body",
-            label: "Body",
-            type: "rich-text",
-            required: true,
-            features: ["headings", "lists", "links", "images", "code"]
-          },
-          {
-            id: "featuredImage",
-            label: "Featured Image",
-            type: "media-select",
-            accept: ["image/*"],
-            required: true
-          }
-        ]
-      },
-      {
-        id: "meta",
-        title: "Metadata",
-        fields: [
-          {
-            id: "author",
-            label: "Author",
-            type: "user-select",
-            filter: { permissionLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD", "STAFF"] }
-          },
-          {
-            id: "categories",
-            label: "Categories",
-            type: "category-select",
-            multiple: true
-          },
-          {
-            id: "tags",
-            label: "Tags",
-            type: "tag-select",
-            multiple: true
-          },
-          {
-            id: "publishedAt",
-            label: "Publish Date",
-            type: "datetime"
-          }
-        ]
-      }
-    ]
-  },
-
-  // Workflow settings
-  workflow: {
-    requireApproval: true,
-    approvers: ["LEADERSHIP", "ADMIN"],
-    autoPublish: false
-  },
-
-  // SEO settings
-  seo: {
-    enabled: true,
-    slugPattern: "blog/{slug}",
-    titlePattern: "{title} | TeamLMTD Blog",
-    generateSitemap: true
-  },
-
-  // Permissions
-  permissions: {
-    create: ["ADMIN", "LEADERSHIP", "TEAM_LEAD", "STAFF"],
-    edit: ["ADMIN", "LEADERSHIP", "TEAM_LEAD", "STAFF"],
-    publish: ["ADMIN", "LEADERSHIP"],
-    delete: ["ADMIN"]
-  },
-
-  // Listing settings
-  listing: {
-    defaultSort: "publishedAt:desc",
-    perPage: 12,
-    showExcerpt: true,
-    showAuthor: true,
-    showDate: true
-  }
-};
-```
-
-### Case Study Configuration
+The skill registry is the central hub for agent capabilities:
 
 ```typescript
-// /config/content/case-study.content.ts
-export const caseStudyContent: ContentTypeConfig = {
-  slug: "case_study",
-  name: "Case Study",
-  description: "Showcase client work and results",
-  icon: "Briefcase",
+// /src/lib/agents/skill-registry.ts
 
-  schema: {
-    sections: [
-      {
-        id: "overview",
-        title: "Overview",
-        fields: [
-          { id: "title", label: "Project Title", type: "text", required: true },
-          { id: "client", label: "Client", type: "client-select", required: true },
-          { id: "services", label: "Services Provided", type: "multi-select",
-            options: [
-              { value: "video_production", label: "Video Production" },
-              { value: "design", label: "Design" },
-              { value: "paid_media", label: "Paid Media" },
-              { value: "content", label: "Content" },
-              { value: "strategy", label: "Strategy" }
-            ]
-          },
-          { id: "duration", label: "Project Duration", type: "text" },
-          { id: "year", label: "Year", type: "number" }
-        ]
-      },
-      {
-        id: "challenge",
-        title: "The Challenge",
-        fields: [
-          { id: "challenge", label: "Challenge Description", type: "rich-text", required: true }
-        ]
-      },
-      {
-        id: "solution",
-        title: "Our Solution",
-        fields: [
-          { id: "solution", label: "Solution Description", type: "rich-text", required: true }
-        ]
-      },
-      {
-        id: "results",
-        title: "Results",
-        fields: [
-          {
-            id: "metrics",
-            label: "Key Metrics",
-            type: "repeater",
-            fields: [
-              { id: "value", label: "Value", type: "text" },
-              { id: "label", label: "Label", type: "text" }
-            ]
-          },
-          { id: "testimonial", label: "Client Testimonial", type: "textarea" },
-          { id: "testimonialAuthor", label: "Testimonial Author", type: "text" }
-        ]
-      },
-      {
-        id: "gallery",
-        title: "Project Gallery",
-        fields: [
-          { id: "gallery", label: "Images & Videos", type: "media-gallery" },
-          { id: "videoEmbed", label: "Video Embed URL", type: "url" }
-        ]
-      }
-    ]
-  },
+interface SkillRegistry {
+  // Load all skills from database + knowledge docs
+  loadSkills(): Promise<void>;
 
-  workflow: {
-    requireApproval: true,
-    requireClientApproval: true,  // Client must approve before publish
-    approvers: ["LEADERSHIP", "ADMIN"]
-  },
+  // Get skill by slug
+  getSkill(slug: string): Skill | undefined;
 
-  seo: {
-    enabled: true,
-    slugPattern: "work/{client-slug}/{slug}",
-    titlePattern: "{title} | Our Work | TeamLMTD"
-  }
-};
-```
+  // Find skills that match a trigger
+  findSkillsForTrigger(event: ContentEvent): Skill[];
 
-### Knowledge Base Configuration
+  // Invoke a skill
+  invoke(skillSlug: string, input: SkillInput): Promise<SkillOutput>;
 
-```typescript
-// /config/content/knowledge-base.content.ts
-export const knowledgeBaseContent: ContentTypeConfig = {
-  slug: "knowledge_base",
-  name: "Knowledge Base Article",
-  description: "Internal documentation and guides",
-  icon: "BookOpen",
-
-  schema: {
-    sections: [
-      {
-        id: "content",
-        title: "Article Content",
-        fields: [
-          { id: "title", label: "Title", type: "text", required: true },
-          { id: "category", label: "Category", type: "category-select", required: true },
-          { id: "body", label: "Content", type: "rich-text", required: true },
-          { id: "attachments", label: "Attachments", type: "file-upload", multiple: true }
-        ]
-      },
-      {
-        id: "access",
-        title: "Access Control",
-        fields: [
-          {
-            id: "visibility",
-            label: "Who can view this?",
-            type: "select",
-            options: [
-              { value: "all", label: "All team members" },
-              { value: "leadership", label: "Leadership only" },
-              { value: "department", label: "Specific departments" }
-            ]
-          },
-          {
-            id: "departments",
-            label: "Departments",
-            type: "multi-select",
-            dependsOn: { field: "visibility", value: "department" }
-          }
-        ]
-      }
-    ]
-  },
-
-  workflow: {
-    requireApproval: false,  // Internal docs don't need approval
-    autoPublish: true
-  },
-
-  seo: {
-    enabled: false  // Internal only
-  },
-
-  permissions: {
-    create: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
-    edit: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
-    view: ["ADMIN", "LEADERSHIP", "TEAM_LEAD", "STAFF"],
-    delete: ["ADMIN", "LEADERSHIP"]
-  }
-};
-```
-
----
-
-## Module Structure
-
-```
-/src/modules/cms/
-├── CLAUDE.md                   # Module documentation
-├── types.ts                    # CMS-specific types
-│
-├── actions/
-│   ├── content-types.ts        # CRUD for content types
-│   ├── entries.ts              # CRUD for content entries
-│   ├── versions.ts             # Version management
-│   ├── blocks.ts               # Block management
-│   ├── taxonomy.ts             # Categories & tags
-│   ├── workflow.ts             # Approval workflows
-│   ├── publishing.ts           # Publish/unpublish actions
-│   └── analytics.ts            # Content analytics
-│
-├── components/
-│   ├── content-list/
-│   │   ├── ContentTable.tsx
-│   │   ├── ContentFilters.tsx
-│   │   └── ContentActions.tsx
-│   │
-│   ├── content-editor/
-│   │   ├── ContentEditor.tsx   # Main editor container
-│   │   ├── EditorToolbar.tsx
-│   │   ├── EditorSidebar.tsx
-│   │   ├── FieldRenderer.tsx   # Dynamic field rendering
-│   │   └── AutoSave.tsx
-│   │
-│   ├── rich-text/
-│   │   ├── RichTextEditor.tsx  # WYSIWYG editor
-│   │   ├── Toolbar.tsx
-│   │   └── extensions/         # Editor extensions
-│   │
-│   ├── blocks/
-│   │   ├── BlockEditor.tsx     # Block-based page builder
-│   │   ├── BlockPalette.tsx
-│   │   ├── BlockWrapper.tsx
-│   │   └── block-types/        # Individual block components
-│   │
-│   ├── media/
-│   │   ├── MediaLibrary.tsx
-│   │   ├── MediaPicker.tsx
-│   │   ├── ImageEditor.tsx
-│   │   └── GalleryEditor.tsx
-│   │
-│   ├── seo/
-│   │   ├── SEOPanel.tsx
-│   │   ├── SEOPreview.tsx
-│   │   └── SlugEditor.tsx
-│   │
-│   ├── workflow/
-│   │   ├── WorkflowStatus.tsx
-│   │   ├── ApprovalRequest.tsx
-│   │   ├── ApprovalPanel.tsx
-│   │   └── VersionHistory.tsx
-│   │
-│   └── preview/
-│       ├── ContentPreview.tsx
-│       └── PreviewFrame.tsx
-│
-├── hooks/
-│   ├── useContentEditor.ts
-│   ├── useAutoSave.ts
-│   ├── useMediaLibrary.ts
-│   └── useContentPreview.ts
-│
-└── lib/
-    ├── schema-to-zod.ts        # Convert config to Zod
-    ├── slug-generator.ts
-    ├── version-diff.ts
-    └── seo-analyzer.ts
-```
-
----
-
-## App Routes
-
-```
-/src/app/(dashboard)/content/
-├── page.tsx                    # Content dashboard
-├── layout.tsx                  # Content section layout
-│
-├── [type]/
-│   ├── page.tsx               # List entries by type
-│   └── new/
-│       └── page.tsx           # Create new entry
-│
-├── edit/
-│   └── [id]/
-│       └── page.tsx           # Edit entry
-│
-├── preview/
-│   └── [id]/
-│       └── page.tsx           # Preview entry
-│
-├── media/
-│   └── page.tsx               # Media library
-│
-├── taxonomy/
-│   ├── categories/
-│   │   └── page.tsx
-│   └── tags/
-│       └── page.tsx
-│
-└── settings/
-    ├── page.tsx               # CMS settings
-    └── content-types/
-        └── page.tsx           # Manage content types
-```
-
----
-
-## API Routes
-
-```
-/src/app/api/v1/content/
-
-├── types/
-│   ├── route.ts               # GET: List types, POST: Create type
-│   └── [slug]/
-│       └── route.ts           # GET/PUT/DELETE type
-│
-├── entries/
-│   ├── route.ts               # GET: List, POST: Create
-│   └── [id]/
-│       ├── route.ts           # GET/PUT/DELETE entry
-│       ├── publish/
-│       │   └── route.ts       # POST: Publish
-│       ├── unpublish/
-│       │   └── route.ts       # POST: Unpublish
-│       └── versions/
-│           └── route.ts       # GET: Version history
-│
-├── blocks/
-│   ├── route.ts               # CRUD for reusable blocks
-│   └── [id]/
-│       └── route.ts
-│
-├── media/
-│   ├── route.ts               # Upload, list media
-│   └── [id]/
-│       └── route.ts           # GET/DELETE media
-│
-├── categories/
-│   └── route.ts               # CRUD categories
-│
-├── tags/
-│   └── route.ts               # CRUD tags
-│
-└── search/
-    └── route.ts               # Full-text search
-```
-
-### Public API (for frontend consumption)
-
-```
-/src/app/api/public/content/
-
-├── [type]/
-│   ├── route.ts               # GET: Published entries by type
-│   └── [slug]/
-│       └── route.ts           # GET: Single published entry
-│
-└── sitemap/
-    └── route.ts               # GET: Sitemap data
-```
-
----
-
-## Content Editor Architecture
-
-### Rich Text Editor (Tiptap-based)
-
-```typescript
-// /src/modules/cms/components/rich-text/RichTextEditor.tsx
-"use client";
-
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Image from "@tiptap/extension-image";
-import Link from "@tiptap/extension-link";
-import Placeholder from "@tiptap/extension-placeholder";
-
-interface RichTextEditorProps {
-  content: string;
-  onChange: (content: string) => void;
-  features?: string[];
+  // Get context documents for a skill
+  getSkillContext(skillSlug: string): Promise<KnowledgeDocument[]>;
 }
 
-export function RichTextEditor({ content, onChange, features }: RichTextEditorProps) {
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Image,
-      Link.configure({ openOnClick: false }),
-      Placeholder.configure({ placeholder: "Start writing..." }),
-    ],
-    content,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
-    },
-  });
-
-  return (
-    <div className="border rounded-lg">
-      <Toolbar editor={editor} features={features} />
-      <EditorContent editor={editor} className="prose max-w-none p-4" />
-    </div>
-  );
-}
-```
-
-### Block Editor (Page Builder)
-
-```typescript
-// Drag-and-drop page builder using @dnd-kit
-interface BlockEditorProps {
-  blocks: ContentBlock[];
-  onChange: (blocks: ContentBlock[]) => void;
-}
-
-export function BlockEditor({ blocks, onChange }: BlockEditorProps) {
-  // Uses existing @dnd-kit/core from the project
-  // Similar pattern to resource planning Kanban
-}
-```
-
----
-
-## Workflow System
-
-### Status Transitions
-
-```
-DRAFT ──────────────────────────────────────────────────┐
-  │                                                      │
-  ▼ (submit for review)                                  │
-IN_REVIEW ──────────────────────────────────────────────┤
-  │         │                                            │
-  │         ▼ (changes requested)                        │
-  │       DRAFT                                          │
-  │                                                      │
-  ▼ (approve)                                            │
-APPROVED ───────────────────────────────────────────────┤
-  │                                                      │
-  ▼ (publish)                                            │
-PUBLISHED ◄─────────────────────────────────────────────┤
-  │                                                      │
-  ▼ (unpublish)                                          │
-UNPUBLISHED ────────────────────────────────────────────┤
-  │                                                      │
-  ▼ (archive)                                            │
-ARCHIVED ───────────────────────────────────────────────┘
-```
-
-### Scheduled Publishing
-
-```typescript
-// Cron job or server action for scheduled content
-export async function processScheduledContent() {
-  const now = new Date();
-
-  // Publish scheduled entries
-  await db.contentEntry.updateMany({
-    where: {
-      status: "SCHEDULED",
-      scheduledAt: { lte: now }
-    },
-    data: {
-      status: "PUBLISHED",
-      publishedAt: now
-    }
-  });
-
-  // Unpublish expired entries
-  await db.contentEntry.updateMany({
-    where: {
-      status: "PUBLISHED",
-      expiresAt: { lte: now }
-    },
-    data: {
-      status: "UNPUBLISHED"
-    }
-  });
-}
-```
-
----
-
-## Integration Points
-
-### 1. Client Portal Integration
-
-```typescript
-// Clients can view published case studies about their work
-// Clients can request content via ClientBriefRequest
-// Clients can approve content via SubmissionApproval
-
-// Enable content approval in client portal
-export async function requestClientApproval(entryId: string, clientId: string) {
-  const entry = await db.contentEntry.findUnique({
-    where: { id: entryId },
-    include: { contentType: true }
-  });
-
-  if (entry?.contentType?.slug === "case_study") {
-    await db.submissionApproval.create({
-      data: {
-        contentEntryId: entryId,
-        clientId,
-        status: "PENDING",
-        // ... other fields
-      }
-    });
-
-    // Send notification to client
-    await NotificationService.send({
-      type: "content.approval_requested",
-      recipientId: clientId,
-      data: { entryId, title: entry.title }
-    });
-  }
-}
-```
-
-### 2. Brief System Integration
-
-```typescript
-// Link content to briefs/projects
-// Case studies can reference completed briefs
-// Proposals can be generated from RFPs
-
-interface ContentBriefLink {
-  contentEntryId: string;
-  briefId: string;
-  projectId?: string;
-}
-```
-
-### 3. Notification Integration
-
-```typescript
-// Leverage existing notification system
-const contentNotifications = [
-  "content.created",
-  "content.submitted_for_review",
-  "content.approved",
-  "content.changes_requested",
-  "content.published",
-  "content.comment_added",
-  "content.mentioned",
-];
-```
-
-### 4. File Management Integration
-
-```typescript
-// Use existing File system for media
-// ContentMedia links to File model
-// Reuse FileService for uploads
-
-import { FileService } from "@/lib/storage";
-
-export async function uploadContentMedia(
-  entryId: string,
-  file: File
-): Promise<string> {
-  const result = await FileService.createFile({
-    file,
-    category: "CONTENT_MEDIA",
-    organizationId: session.user.organizationId,
-  });
-
-  await db.contentMedia.create({
-    data: {
-      entryId,
-      fileId: result.id,
-    }
-  });
-
-  return result.url;
-}
-```
-
----
-
-## SEO & Publishing
-
-### Sitemap Generation
-
-```typescript
-// /src/app/api/public/content/sitemap/route.ts
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const domain = searchParams.get("domain");
-
-  const entries = await db.contentEntry.findMany({
-    where: {
-      status: "PUBLISHED",
-      organization: { domain }
-    },
-    select: {
-      slug: true,
-      contentType: { select: { slugPattern: true } },
-      updatedAt: true
-    }
-  });
-
-  return Response.json({
-    entries: entries.map(entry => ({
-      url: generateUrl(entry),
-      lastModified: entry.updatedAt
-    }))
-  });
-}
-```
-
-### Meta Tags Generation
-
-```typescript
-// Generate meta tags for frontend
-export function generateMetaTags(entry: ContentEntry) {
-  return {
-    title: entry.seoTitle || entry.title,
-    description: entry.seoDescription || entry.excerpt,
-    openGraph: {
-      title: entry.seoTitle || entry.title,
-      description: entry.seoDescription || entry.excerpt,
-      image: entry.ogImage || entry.featuredImage?.url,
-    },
-    robots: entry.noIndex ? "noindex,nofollow" : "index,follow",
-    canonical: entry.canonicalUrl,
-  };
-}
-```
-
----
-
-## Implementation Phases
-
-### Phase 12.1: Foundation (Week 1-2)
-- [ ] Database schema additions
-- [ ] Content type configuration system
-- [ ] Basic CRUD for content entries
-- [ ] Simple text/rich-text fields
-
-### Phase 12.2: Editor (Week 3-4)
-- [ ] Rich text editor (Tiptap)
-- [ ] Media picker integration
-- [ ] Auto-save functionality
-- [ ] Version history
-
-### Phase 12.3: Workflow (Week 5)
-- [ ] Approval workflow
-- [ ] Status transitions
-- [ ] Scheduled publishing
-- [ ] Notifications integration
-
-### Phase 12.4: Advanced Features (Week 6-7)
-- [ ] Block-based page builder
-- [ ] SEO panel
-- [ ] Content preview
-- [ ] Full-text search
-
-### Phase 12.5: API & Integration (Week 8)
-- [ ] Public API for frontend
-- [ ] Client portal integration
-- [ ] Analytics tracking
-- [ ] Cache layer
-
----
-
-## Recommended Dependencies
-
-```json
-{
-  "dependencies": {
-    "@tiptap/react": "^2.1.0",
-    "@tiptap/starter-kit": "^2.1.0",
-    "@tiptap/extension-image": "^2.1.0",
-    "@tiptap/extension-link": "^2.1.0",
-    "@tiptap/extension-placeholder": "^2.1.0",
-    "@tiptap/extension-code-block-lowlight": "^2.1.0"
-  }
-}
-```
-
-Note: The project already has `@dnd-kit/core` for drag-and-drop functionality.
-
----
-
-## Type Definitions
-
-```typescript
-// /src/types/content.ts
-
-export interface ContentTypeConfig {
+interface Skill {
   slug: string;
   name: string;
-  description: string;
-  icon: string;
+  category: SkillCategory;
 
-  schema: {
-    sections: ContentSection[];
-  };
+  // The actual implementation
+  execute: (input: SkillInput, context: SkillContext) => Promise<SkillOutput>;
 
-  workflow: {
-    requireApproval: boolean;
-    requireClientApproval?: boolean;
-    approvers: PermissionLevel[];
-    autoPublish?: boolean;
-  };
+  // Metadata from knowledge doc
+  documentation: string;
+  examples: Example[];
 
-  seo: {
-    enabled: boolean;
-    slugPattern?: string;
-    titlePattern?: string;
-    generateSitemap?: boolean;
-  };
-
-  permissions: {
-    create: PermissionLevel[];
-    edit: PermissionLevel[];
-    publish: PermissionLevel[];
-    delete: PermissionLevel[];
-    view?: PermissionLevel[];
-  };
-
-  listing?: {
-    defaultSort: string;
-    perPage: number;
-    showExcerpt?: boolean;
-    showAuthor?: boolean;
-    showDate?: boolean;
-  };
+  // Runtime config
+  triggers: TriggerConfig[];
+  permissions: string[];
+  dependencies: string[];
 }
 
-export interface ContentSection {
-  id: string;
-  title: string;
-  description?: string;
-  fields: ContentField[];
-}
+interface SkillContext {
+  organization: Organization;
+  user?: User;
+  session?: AgentSession;
 
-export interface ContentField {
-  id: string;
-  label: string;
-  type: ContentFieldType;
-  required?: boolean;
-  placeholder?: string;
-  helpText?: string;
-  maxLength?: number;
-  options?: SelectOption[];
-  filter?: FieldFilter;
-  multiple?: boolean;
-  accept?: string[];
-  defaultValue?: any;
-  dependsOn?: { field: string; value: any };
-  fields?: ContentField[];  // For repeater fields
-  features?: string[];      // For rich-text
-}
+  // Injected knowledge
+  relevantDocs: KnowledgeDocument[];
 
-export type ContentFieldType =
-  | "text"
-  | "textarea"
-  | "rich-text"
-  | "number"
-  | "select"
-  | "multi-select"
-  | "date"
-  | "datetime"
-  | "user-select"
-  | "client-select"
-  | "category-select"
-  | "tag-select"
-  | "media-select"
-  | "media-gallery"
-  | "file-upload"
-  | "url"
-  | "code"
-  | "repeater";
+  // Entity context
+  entity?: {
+    type: string;
+    id: string;
+    data: Record<string, any>;
+  };
+
+  // Services
+  db: PrismaClient;
+  notify: NotificationService;
+  files: FileService;
+}
+```
+
+### Context Injection
+
+Agents receive contextual knowledge automatically:
+
+```typescript
+// /src/lib/agents/context-injector.ts
+
+class ContextInjector {
+  // Build context for a skill invocation
+  async buildContext(
+    skillSlug: string,
+    entityType?: string,
+    entityId?: string
+  ): Promise<SkillContext> {
+    // 1. Get skill's required documents
+    const skillDoc = await this.getSkillDocument(skillSlug);
+
+    // 2. Get related procedures/playbooks
+    const relatedDocs = await this.getRelatedDocs(skillDoc);
+
+    // 3. Get entity-specific context
+    const entityDocs = entityType
+      ? await this.getEntityDocs(entityType, entityId)
+      : [];
+
+    // 4. Semantic search for relevant knowledge
+    const semanticDocs = await this.semanticSearch(
+      skillDoc.agentMetadata.whenToUse,
+      { limit: 5 }
+    );
+
+    // 5. Combine and deduplicate
+    return {
+      relevantDocs: this.rankAndDedupe([
+        skillDoc,
+        ...relatedDocs,
+        ...entityDocs,
+        ...semanticDocs
+      ]),
+      // ... other context
+    };
+  }
+
+  // Semantic search across knowledge base
+  async semanticSearch(
+    query: string,
+    options: { limit: number; documentTypes?: DocumentType[] }
+  ): Promise<KnowledgeDocument[]> {
+    // Use vector embeddings for semantic search
+    const embedding = await this.embedder.embed(query);
+
+    return db.$queryRaw`
+      SELECT d.*,
+             1 - (e.embedding <=> ${embedding}::vector) as similarity
+      FROM "DocumentEmbedding" e
+      JOIN "KnowledgeDocument" d ON d.id = e."documentId"
+      WHERE d."organizationId" = ${this.orgId}
+        AND d.status = 'PUBLISHED'
+      ORDER BY e.embedding <=> ${embedding}::vector
+      LIMIT ${options.limit}
+    `;
+  }
+}
+```
+
+### Event-Driven Orchestration
+
+Content events trigger agent actions:
+
+```typescript
+// /src/lib/agents/event-processor.ts
+
+class ContentEventProcessor {
+  async process(event: ContentEvent) {
+    // 1. Find triggers that match this event
+    const triggers = await db.contentTrigger.findMany({
+      where: {
+        organizationId: event.organizationId,
+        eventType: event.eventType,
+        isEnabled: true
+      }
+    });
+
+    // 2. Evaluate conditions
+    const matchingTriggers = triggers.filter(t =>
+      this.evaluateConditions(t.conditions, event.payload)
+    );
+
+    // 3. Execute actions
+    for (const trigger of matchingTriggers) {
+      try {
+        await this.executeAction(trigger, event);
+
+        await db.contentTrigger.update({
+          where: { id: trigger.id },
+          data: {
+            executionCount: { increment: 1 },
+            lastExecutedAt: new Date()
+          }
+        });
+      } catch (error) {
+        await db.contentTrigger.update({
+          where: { id: trigger.id },
+          data: { lastError: error.message }
+        });
+      }
+    }
+  }
+
+  private async executeAction(trigger: ContentTrigger, event: ContentEvent) {
+    switch (trigger.actionType) {
+      case 'invoke_skill':
+        return this.skillRegistry.invoke(
+          trigger.actionConfig.skillSlug,
+          { event, ...trigger.actionConfig.input }
+        );
+
+      case 'notification':
+        return this.notificationService.send(
+          trigger.actionConfig.notification
+        );
+
+      case 'webhook':
+        return this.webhookService.send(
+          trigger.actionConfig.url,
+          event
+        );
+
+      case 'workflow':
+        return this.workflowEngine.start(
+          trigger.actionConfig.workflowId,
+          event.payload
+        );
+    }
+  }
+}
 ```
 
 ---
 
-## Security Considerations
+## Part 5: Module Structure
 
-1. **Multi-Tenant Isolation**: All queries filter by `organizationId`
-2. **Permission Checks**: Every action validates user permissions
-3. **Content Sanitization**: Rich text is sanitized before storage
-4. **Rate Limiting**: API endpoints use existing rate limiting
-5. **Audit Trail**: All changes tracked with user attribution
+```
+/src/modules/content-engine/
+├── CLAUDE.md                       # Module documentation
+│
+├── /knowledge                      # Knowledge management
+│   ├── actions/
+│   │   ├── documents.ts           # CRUD for knowledge docs
+│   │   ├── versions.ts            # Version management
+│   │   ├── embeddings.ts          # Vector embedding management
+│   │   └── search.ts              # Semantic + full-text search
+│   ├── components/
+│   │   ├── DocumentEditor.tsx     # Markdown editor with frontmatter
+│   │   ├── DocumentTree.tsx       # Hierarchical navigation
+│   │   ├── DocumentViewer.tsx     # Rendered view
+│   │   └── SearchInterface.tsx    # Search UI
+│   └── lib/
+│       ├── parser.ts              # Frontmatter + markdown parsing
+│       └── embedder.ts            # Embedding generation
+│
+├── /deliverables                   # Work output management
+│   ├── actions/
+│   │   ├── deliverables.ts        # CRUD
+│   │   ├── reviews.ts             # Internal/client review
+│   │   ├── revisions.ts           # Revision management
+│   │   └── delivery.ts            # Final delivery actions
+│   ├── components/
+│   │   ├── DeliverableEditor.tsx
+│   │   ├── DeliverableViewer.tsx
+│   │   ├── ReviewPanel.tsx
+│   │   ├── RevisionHistory.tsx
+│   │   └── DeliveryConfirmation.tsx
+│   └── lib/
+│       └── diff.ts                # Content diffing
+│
+├── /templates                      # Content templates
+│   ├── actions/
+│   │   ├── templates.ts           # CRUD
+│   │   └── render.ts              # Template rendering
+│   ├── components/
+│   │   ├── TemplateEditor.tsx
+│   │   ├── TemplateSelector.tsx
+│   │   └── TemplatePreview.tsx
+│   └── lib/
+│       └── renderer.ts            # Handlebars/etc rendering
+│
+├── /agents                         # Agent infrastructure
+│   ├── registry/
+│   │   ├── skill-registry.ts
+│   │   └── persona-registry.ts
+│   ├── context/
+│   │   ├── context-injector.ts
+│   │   └── context-builder.ts
+│   ├── execution/
+│   │   ├── skill-executor.ts
+│   │   └── invocation-logger.ts
+│   └── triggers/
+│       ├── event-processor.ts
+│       └── trigger-evaluator.ts
+│
+├── /events                         # Event system
+│   ├── emitter.ts                 # Event emission
+│   ├── handlers.ts                # Event handlers
+│   └── types.ts                   # Event type definitions
+│
+└── types.ts                        # Shared types
+```
+
+---
+
+## Part 6: API Design
+
+### Knowledge API
+
+```
+/api/v1/knowledge
+
+# Documents
+GET    /documents                    # List/search documents
+POST   /documents                    # Create document
+GET    /documents/:path              # Get by path
+PUT    /documents/:path              # Update document
+DELETE /documents/:path              # Delete/archive
+
+# Search
+POST   /search                       # Full-text + semantic search
+POST   /search/semantic              # Pure semantic search
+
+# Versions
+GET    /documents/:path/versions     # Version history
+GET    /documents/:path/versions/:v  # Specific version
+POST   /documents/:path/revert/:v    # Revert to version
+
+# Agent context
+POST   /context/build                # Build context for skill
+```
+
+### Deliverables API
+
+```
+/api/v1/deliverables
+
+# CRUD
+GET    /                             # List deliverables
+POST   /                             # Create deliverable
+GET    /:id                          # Get deliverable
+PUT    /:id                          # Update deliverable
+
+# Workflow
+POST   /:id/submit                   # Submit for review
+POST   /:id/review                   # Internal review
+POST   /:id/client-submit            # Submit to client
+POST   /:id/revise                   # Create revision
+POST   /:id/approve                  # Final approval
+POST   /:id/deliver                  # Mark delivered
+
+# Files
+POST   /:id/files                    # Add files
+DELETE /:id/files/:fileId            # Remove file
+
+# Comments
+GET    /:id/comments                 # List comments
+POST   /:id/comments                 # Add comment
+PUT    /:id/comments/:commentId      # Update/resolve
+```
+
+### Agent API
+
+```
+/api/v1/agents
+
+# Skills
+GET    /skills                       # List skills
+GET    /skills/:slug                 # Get skill details
+POST   /skills/:slug/invoke          # Invoke skill
+
+# Personas
+GET    /personas                     # List personas
+GET    /personas/:slug               # Get persona
+
+# Invocations
+GET    /invocations                  # List invocations
+GET    /invocations/:id              # Get invocation details
+
+# Triggers
+GET    /triggers                     # List triggers
+POST   /triggers                     # Create trigger
+PUT    /triggers/:id                 # Update trigger
+DELETE /triggers/:id                 # Delete trigger
+```
+
+---
+
+## Part 7: Client Portal Integration
+
+### Client-Visible Content
+
+```typescript
+// What clients can see in the portal
+
+interface ClientContentAccess {
+  // Deliverables for their briefs
+  deliverables: {
+    list: true,                      // See all deliverables for their briefs
+    view: true,                      // View deliverable details
+    comment: true,                   // Add feedback
+    approve: true,                   // Approve deliverables
+    requestRevision: true,           // Request changes
+    download: true                   // Download files
+  };
+
+  // Knowledge (public docs only)
+  knowledge: {
+    publicDocs: true,                // View public knowledge docs
+    search: 'public_only'            // Search public docs
+  };
+
+  // Templates (none)
+  templates: false;
+
+  // Agent interaction
+  agents: {
+    chatWithPortalAssistant: true,   // AI assistant in portal
+    requestBrief: true               // AI-assisted brief creation
+  };
+}
+```
+
+### Portal Content Flow
+
+```
+Client Request (via Portal)
+       │
+       ▼
+   ┌───────────────────────────────────────────┐
+   │  AI Agent: Intake Processor               │
+   │  - Analyzes request                       │
+   │  - Suggests brief type                    │
+   │  - Estimates timeline                     │
+   └───────────────────────────────────────────┘
+       │
+       ▼
+   Brief Created (linked to client)
+       │
+       ▼
+   Work Happens (internal)
+       │
+       ▼
+   Deliverable Created
+       │
+       ▼
+   ┌───────────────────────────────────────────┐
+   │  Internal Review                          │
+   │  - Team lead reviews                      │
+   │  - QA checks                             │
+   │  - AI quality scoring                     │
+   └───────────────────────────────────────────┘
+       │
+       ▼
+   Submitted to Client Portal
+       │
+       ▼
+   ┌───────────────────────────────────────────┐
+   │  Client Review                            │
+   │  - Views deliverable                      │
+   │  - Downloads files                        │
+   │  - Adds comments                          │
+   │  - Approves OR requests revision          │
+   └───────────────────────────────────────────┘
+       │
+       ├──────────────────────┐
+       ▼                      ▼
+   APPROVED              REVISION REQUESTED
+       │                      │
+       ▼                      ▼
+   Delivered             New Revision Created
+                              │
+                              └──▶ (Back to work)
+```
+
+---
+
+## Part 8: Implementation Phases
+
+### Phase 12.1: Knowledge Foundation (2-3 weeks)
+- [ ] KnowledgeDocument schema + CRUD
+- [ ] Document versioning
+- [ ] Hierarchical document structure
+- [ ] Basic markdown editor with frontmatter
+- [ ] Document status workflow
+
+### Phase 12.2: Agent Infrastructure (2-3 weeks)
+- [ ] AgentSkill schema + registry
+- [ ] AgentPersona schema + registry
+- [ ] Skill invocation system
+- [ ] Context injection framework
+- [ ] Invocation logging
+
+### Phase 12.3: Deliverables System (2-3 weeks)
+- [ ] Deliverable schema + CRUD
+- [ ] Internal review workflow
+- [ ] Client review workflow
+- [ ] Revision management
+- [ ] File attachments
+
+### Phase 12.4: Event System (1-2 weeks)
+- [ ] Content events emission
+- [ ] Trigger system
+- [ ] Event-to-skill routing
+- [ ] Event history
+
+### Phase 12.5: Semantic Search (1-2 weeks)
+- [ ] Vector embeddings generation
+- [ ] Semantic search API
+- [ ] Hybrid search (semantic + full-text)
+- [ ] Context-aware search
+
+### Phase 12.6: Templates & Rendering (1-2 weeks)
+- [ ] Template schema + CRUD
+- [ ] Template editor
+- [ ] Dynamic rendering
+- [ ] Export to PDF/DOCX
+
+### Phase 12.7: Portal Integration (1-2 weeks)
+- [ ] Client deliverable views
+- [ ] Client review/approval UI
+- [ ] Client commenting
+- [ ] Public knowledge access
+
+### Phase 12.8: Agent Skills (Ongoing)
+- [ ] Brief Creator skill
+- [ ] Quality Scorer skill
+- [ ] Time Estimator skill
+- [ ] Resource Optimizer skill
+- [ ] Client Communicator skill
+- [ ] Report Generator skill
+- [ ] ... (dozens more)
+
+---
+
+## Part 9: Success Metrics
+
+### Knowledge System
+- Document count & coverage
+- Agent document usage rate
+- Search relevance scores
+- Time to find information
+
+### Deliverables
+- Time from brief to deliverable
+- Revision rate
+- Client approval rate
+- First-time approval rate
+
+### Agent Performance
+- Skill invocation success rate
+- Average latency
+- Human override rate
+- Token efficiency
+
+### Business Impact
+- Brief creation time (human vs AI-assisted)
+- Resource utilization improvement
+- Client satisfaction (NPS)
+- Revenue per employee
 
 ---
 
 ## Summary
 
-This CMS architecture:
+This Content Engine is the **nervous system** of the platform:
 
-1. **Follows existing patterns** - Config-driven, multi-tenant, server-first
-2. **Reuses infrastructure** - Forms, files, permissions, notifications
-3. **Supports multiple use cases** - Website, marketing, internal docs
-4. **Provides robust workflow** - Approvals, versioning, scheduling
-5. **Enables headless delivery** - API-first for any frontend
-6. **Integrates with existing modules** - Briefs, clients, portal
+1. **Knowledge Layer** - The agent's brain (skills, procedures, playbooks)
+2. **Content Layer** - The work itself (briefs, deliverables, proposals)
+3. **Delivery Layer** - How work reaches clients (portal, approvals, exports)
+4. **Agent Layer** - Intelligence that acts on content (skills, triggers, automation)
 
-The design allows for incremental implementation while maintaining consistency with the rest of the ERP platform.
+Every piece of content is:
+- **Versioned** - Full history, diffable, restorable
+- **Searchable** - Full-text + semantic search
+- **Triggerable** - Events fire when content changes
+- **Agent-Accessible** - Structured for AI consumption
+- **Workflow-Driven** - Status transitions with approvals
+- **Client-Deliverable** - Portal-ready when appropriate
+
+This is the foundation for hundreds of AI skills and thousands of knowledge documents that will drive career and business-altering results.
