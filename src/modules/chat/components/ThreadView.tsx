@@ -10,7 +10,7 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
-import { formatDistanceToNow, format, isToday, isYesterday } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -32,7 +32,6 @@ import {
   sendMessage,
   toggleReaction,
   type MessageWithDetails,
-  type SendMessageInput,
 } from "../actions/message-actions";
 import { useRef } from "react";
 
@@ -258,7 +257,7 @@ export function ThreadView({
     // Reaction updates
     channel.bind(
       PUSHER_EVENTS.REACTION_ADDED,
-      (data: { messageId: string; reaction: any }) => {
+      (data: { messageId: string; reaction: { id: string; emoji: string; userId: string; user: { id: string; name: string } } }) => {
         setReplies((prev) =>
           prev.map((m) =>
             m.id === data.messageId
