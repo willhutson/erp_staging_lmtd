@@ -31,6 +31,7 @@ import {
   FolderOpen,
   Zap,
   Gauge,
+  AlertTriangle,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -129,6 +130,18 @@ const navItems: NavItem[] = [
     href: "/rfp",
     icon: <FileStack className="w-5 h-5" />,
     requiredLevels: ["ADMIN", "LEADERSHIP"],
+  },
+  {
+    title: "WhatsApp",
+    href: "/whatsapp",
+    icon: <MessageSquare className="w-5 h-5" />,
+    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
+  },
+  {
+    title: "Complaints",
+    href: "/complaints",
+    icon: <AlertTriangle className="w-5 h-5" />,
+    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
   },
   {
     title: "NPS",

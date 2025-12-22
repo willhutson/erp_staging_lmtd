@@ -145,6 +145,11 @@ model User {
   // Events
   entityEvents            EntityEvent[]
 
+  // WhatsApp & Complaints (Phase 15)
+  whatsappConversations   WhatsAppConversation[]
+  whatsappMessages        WhatsAppMessage[]
+  complaintsAssigned      ClientComplaint[]
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([department])
@@ -234,6 +239,8 @@ model Client {
   clientFiles      ClientFile[]
   portalUsers      ClientPortalUser[]
   retainerPeriods  RetainerPeriod[]
+  whatsappConversations WhatsAppConversation[]
+  complaints       ClientComplaint[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
@@ -293,6 +300,8 @@ model ClientContact {
   npsSurveys   NPSSurvey[]
   npsResponses NPSResponse[]
   portalUsers  ClientPortalUser[]
+  whatsappConversations WhatsAppConversation[]
+  complaints   ClientComplaint[]
 
   @@index([clientId])
   @@map("client_contacts")
@@ -461,6 +470,8 @@ model Brief {
   submissionApprovals SubmissionApproval[]  // Client approval requests
   deliverables     Deliverable[]            // Work output from this brief
   scopeChanges     ScopeChange[]            // Mid-execution pivots
+  whatsappConversations WhatsAppConversation[]
+  complaints       ClientComplaint[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -955,6 +966,7 @@ model NPSResponse {
   survey      NPSSurvey          @relation(fields: [surveyId], references: [id], onDelete: Cascade)
   contact     ClientContact?     @relation(fields: [contactId], references: [id])
   portalUser  ClientPortalUser?  @relation(fields: [portalUserId], references: [id])
+  complaints  ClientComplaint[]
 
   @@index([surveyId])
   @@map("nps_responses")
@@ -3092,4 +3104,251 @@ enum RetainerPeriodStatus {
   ACTIVE      // Current period
   COMPLETED   // Past period, finalized
   RECONCILED  // Reviewed and closed out
+}
+
+// ============================================
+// WHATSAPP INTEGRATION (Phase 15)
+// ============================================
+
+// WhatsApp conversation thread
+model WhatsAppConversation {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Linked entities (optional)
+  clientId        String?
+  client          Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  briefId         String?
+  brief           Brief?   @relation(fields: [briefId], references: [id], onDelete: SetNull)
+  contactId       String?
+  contact         ClientContact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  // WhatsApp identifiers
+  waPhoneNumber   String            // The external WhatsApp number
+  waDisplayName   String?           // Contact name from WhatsApp
+  waProfilePic    String?           // Profile picture URL
+
+  // Conversation state
+  status          ConversationStatus @default(ACTIVE)
+  assignedToId    String?
+  assignedTo      User?    @relation(fields: [assignedToId], references: [id])
+
+  // Last activity
+  lastMessageAt   DateTime?
+  lastMessagePreview String?
+  unreadCount     Int      @default(0)
+
+  // Provider info
+  provider        String   @default("whatsapp_business") // whatsapp_business, gupshup, etc.
+  externalId      String?  // Provider's conversation ID
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  messages        WhatsAppMessage[]
+
+  @@unique([organizationId, waPhoneNumber])
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@index([lastMessageAt])
+  @@map("whatsapp_conversations")
+}
+
+enum ConversationStatus {
+  ACTIVE
+  ARCHIVED
+  BLOCKED
+}
+
+// Individual WhatsApp message
+model WhatsAppMessage {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  conversationId  String
+  conversation    WhatsAppConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // Message direction
+  direction       MessageDirection
+  senderId        String?  // User ID if outbound
+  sender          User?    @relation(fields: [senderId], references: [id])
+
+  // Content
+  messageType     MessageType @default(TEXT)
+  content         String?  @db.Text   // Text content or caption
+  mediaUrl        String?             // URL for media messages
+  mediaMimeType   String?
+  mediaSize       Int?                // File size in bytes
+
+  // Voice note specific
+  voiceDuration   Int?                // Duration in seconds
+  transcription   VoiceNoteTranscription?
+
+  // WhatsApp metadata
+  waMessageId     String?  @unique    // WhatsApp's message ID
+  waTimestamp     DateTime?           // WhatsApp's timestamp
+  waStatus        String?             // sent, delivered, read, failed
+
+  // Reply context
+  replyToId       String?
+  replyTo         WhatsAppMessage? @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies         WhatsAppMessage[] @relation("MessageReplies")
+
+  // Processing flags
+  isProcessed     Boolean  @default(false)  // For automation triggers
+  processedAt     DateTime?
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([conversationId])
+  @@index([createdAt])
+  @@index([messageType])
+  @@map("whatsapp_messages")
+}
+
+enum MessageDirection {
+  INBOUND   // From client to org
+  OUTBOUND  // From org to client
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  VOICE_NOTE
+  DOCUMENT
+  STICKER
+  LOCATION
+  CONTACT
+}
+
+// Voice note transcription
+model VoiceNoteTranscription {
+  id              String   @id @default(cuid())
+
+  messageId       String   @unique
+  message         WhatsAppMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  // Transcription result
+  transcription   String   @db.Text
+  language        String?             // Detected language (ar, en, etc.)
+  confidence      Decimal? @db.Decimal(3, 2)  // 0.00 to 1.00
+
+  // Provider info
+  provider        String              // openai_whisper, google_stt, azure_stt
+  durationMs      Int?                // Processing duration
+  cost            Decimal? @db.Decimal(8, 4)  // Cost in USD
+
+  // Manual corrections
+  correctedText   String?  @db.Text
+  correctedById   String?
+  correctedAt     DateTime?
+
+  createdAt       DateTime @default(now())
+
+  @@map("voice_note_transcriptions")
+}
+
+// ============================================
+// COMPLAINT & FEEDBACK INTEGRATION (Phase 15)
+// ============================================
+
+// Client complaint (integrates with NPS)
+model ClientComplaint {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  clientId        String
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  // Source of complaint
+  source          ComplaintSource
+  sourceId        String?             // WhatsApp message ID, email ID, etc.
+  sourceUrl       String?             // Link to original
+
+  // Contact who complained
+  contactId       String?
+  contact         ClientContact? @relation(fields: [contactId], references: [id])
+
+  // Complaint details
+  title           String
+  description     String   @db.Text
+  category        ComplaintCategory?
+
+  // Related entities
+  briefId         String?
+  brief           Brief?   @relation(fields: [briefId], references: [id])
+  npsResponseId   String?
+  npsResponse     NPSResponse? @relation(fields: [npsResponseId], references: [id])
+
+  // Severity and status
+  severity        ComplaintSeverity @default(MEDIUM)
+  status          ComplaintStatus @default(NEW)
+  priority        Int      @default(0)  // Higher = more urgent
+
+  // Assignment
+  assignedToId    String?
+  assignedTo      User?    @relation(fields: [assignedToId], references: [id])
+
+  // Resolution
+  resolution      String?  @db.Text
+  resolvedAt      DateTime?
+  resolvedById    String?
+
+  // Follow-up
+  followUpDate    DateTime?
+  followUpNotes   String?  @db.Text
+
+  // Sentiment analysis (if applicable)
+  sentimentScore  Decimal? @db.Decimal(3, 2)  // -1.00 to 1.00
+  keywords        String[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@index([severity])
+  @@index([createdAt])
+  @@map("client_complaints")
+}
+
+enum ComplaintSource {
+  EMAIL
+  WHATSAPP
+  PHONE_CALL
+  NPS_SURVEY
+  MEETING
+  PORTAL
+  OTHER
+}
+
+enum ComplaintCategory {
+  QUALITY
+  TIMELINE
+  COMMUNICATION
+  SCOPE
+  BILLING
+  PERSONNEL
+  OTHER
+}
+
+enum ComplaintSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ComplaintStatus {
+  NEW
+  ACKNOWLEDGED
+  IN_PROGRESS
+  PENDING_CLIENT
+  RESOLVED
+  CLOSED
 }
