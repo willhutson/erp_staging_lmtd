@@ -149,6 +149,12 @@ const navItems: NavItem[] = [
     requiredLevels: ["ADMIN", "LEADERSHIP"],
   },
   {
+    title: "Reports",
+    href: "/reports",
+    icon: <BarChart className="w-5 h-5" />,
+    requiredLevels: ["ADMIN", "LEADERSHIP"],
+  },
+  {
     title: "Settings",
     href: "/settings",
     icon: <Settings className="w-5 h-5" />,
