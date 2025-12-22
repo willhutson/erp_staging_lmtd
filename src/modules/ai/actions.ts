@@ -9,8 +9,7 @@
 
 "use server";
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import {
   executeAIAction,
   generateCaption,
@@ -45,7 +44,7 @@ export interface AIActionResponse {
  * Execute an AI action on text content
  */
 export async function performAIAction(request: AIActionRequest): Promise<AIActionResponse> {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user) {
     return { success: false, error: "Unauthorized" };
@@ -121,7 +120,7 @@ export async function polishText(text: string): Promise<AIActionResponse> {
 export async function generateSocialCaption(
   options: Omit<CaptionGeneratorOptions, "language">
 ): Promise<AIActionResponse> {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user) {
     return { success: false, error: "Unauthorized" };
@@ -150,7 +149,7 @@ export async function generateBilingualCaption(
   arabic?: string;
   error?: string;
 }> {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user) {
     return { success: false, error: "Unauthorized" };
@@ -191,7 +190,7 @@ export async function batchTranslate(
   translations?: Record<string, string>;
   error?: string;
 }> {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user) {
     return { success: false, error: "Unauthorized" };
