@@ -16,6 +16,7 @@ import {
   ArrowRightLeft
 } from "lucide-react";
 import type { SkillInput, SkillOutput, SkillTrigger } from "@/modules/content-engine/types";
+import type { AgentInvocation } from "@prisma/client";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -236,7 +237,7 @@ export default async function SkillDetailPage({ params }: PageProps) {
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              {skill.validationQuestions.map((q, i) => (
+              {skill.validationQuestions.map((q: string, i: number) => (
                 <li key={i} className="flex items-start gap-2 text-sm">
                   <span className="text-[#52EDC7]">•</span>
                   {q}
@@ -255,7 +256,7 @@ export default async function SkillDetailPage({ params }: PageProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {skill.invocations.map((inv) => (
+              {skill.invocations.map((inv: AgentInvocation) => (
                 <div
                   key={inv.id}
                   className="flex items-center justify-between border-b last:border-0 pb-3 last:pb-0"

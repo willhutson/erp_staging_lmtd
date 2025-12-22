@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { can } from "@/lib/permissions";
+import { isAdmin } from "@/lib/permissions";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import {
   Clock
 } from "lucide-react";
 import type { SkillCategory } from "@/modules/content-engine/types";
+import type { AgentSkill, AgentInvocation } from "@prisma/client";
 
 const CATEGORY_ICONS: Record<SkillCategory, React.ReactNode> = {
   BRIEF_MANAGEMENT: <FileText className="h-5 w-5" />,
@@ -33,7 +34,7 @@ export default async function ContentEnginePage() {
     return null;
   }
 
-  const isAdmin = can(session.user as Parameters<typeof can>[0], "admin:access");
+  const userIsAdmin = isAdmin(session.user as Parameters<typeof isAdmin>[0]);
 
   // Fetch skills and stats
   const [skills, recentInvocations] = await Promise.all([
@@ -50,18 +51,18 @@ export default async function ContentEnginePage() {
   ]);
 
   // Group skills by category
-  const skillsByCategory = skills.reduce((acc, skill) => {
+  const skillsByCategory = skills.reduce<Record<SkillCategory, AgentSkill[]>>((acc, skill) => {
     const category = skill.category as SkillCategory;
     if (!acc[category]) acc[category] = [];
     acc[category].push(skill);
     return acc;
-  }, {} as Record<SkillCategory, typeof skills>);
+  }, {} as Record<SkillCategory, AgentSkill[]>);
 
   // Calculate stats
-  const totalInvocations = skills.reduce((sum, s) => sum + s.invocationCount, 0);
-  const activeSkills = skills.filter((s) => s.status === "ACTIVE").length;
+  const totalInvocations = skills.reduce((sum: number, s: AgentSkill) => sum + s.invocationCount, 0);
+  const activeSkills = skills.filter((s: AgentSkill) => s.status === "ACTIVE").length;
   const avgSuccessRate = skills.length > 0
-    ? skills.reduce((sum, s) => sum + (s.successRate ?? 0), 0) / skills.length
+    ? skills.reduce((sum: number, s: AgentSkill) => sum + (s.successRate ?? 0), 0) / skills.length
     : 0;
 
   return (
@@ -74,7 +75,7 @@ export default async function ContentEnginePage() {
             AI-powered skills and knowledge management
           </p>
         </div>
-        {isAdmin && (
+        {userIsAdmin && (
           <Link
             href="/content-engine/sandbox"
             className="flex items-center gap-2 px-4 py-2 bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#1BA098] hover:text-white transition-colors"
@@ -210,7 +211,7 @@ export default async function ContentEnginePage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {categorySkills.map((skill) => (
+                      {categorySkills.map((skill: AgentSkill) => (
                         <Link
                           key={skill.id}
                           href={`/content-engine/skills/${skill.slug}`}
@@ -245,7 +246,7 @@ export default async function ContentEnginePage() {
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-4">
-                {recentInvocations.map((inv) => (
+                {recentInvocations.map((inv: AgentInvocation & { skill: AgentSkill | null }) => (
                   <div
                     key={inv.id}
                     className="flex items-center justify-between border-b last:border-0 pb-4 last:pb-0"
