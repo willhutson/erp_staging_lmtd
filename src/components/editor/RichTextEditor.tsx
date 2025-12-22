@@ -399,7 +399,8 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
     };
 
     // Build extensions based on features
-    const extensions = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const extensions: any[] = [
       StarterKit.configure({
         heading: features.headings ? { levels: [1, 2] } : false,
         bulletList: features.lists ? { HTMLAttributes: { class: "list-disc ml-4" } } : false,
