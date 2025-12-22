@@ -225,6 +225,7 @@ function createManualAdapter(platform: SocialPlatform): PlatformAdapter {
       };
     },
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async publish(_request: PublishRequest): Promise<PublishResult> {
       // Manual adapter doesn't actually publish
       // It returns a "pending manual" status

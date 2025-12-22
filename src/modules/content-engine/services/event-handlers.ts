@@ -186,6 +186,7 @@ async function handleDeliverableStatusChange(event: EntityEvent): Promise<void> 
 }
 
 async function handleDeliverableApproved(event: EntityEvent): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { entityId, metadata: _metadata } = event;
 
   console.log(`Deliverable ${entityId} approved`);
