@@ -47,12 +47,12 @@ export function RFPForm({ onClose }: RFPFormProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200">
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">New RFP</h2>
+    <div className="bg-ltd-surface-overlay rounded-xl border border-ltd-border-1">
+      <div className="flex items-center justify-between p-4 border-b border-ltd-border-1">
+        <h2 className="text-lg font-semibold text-ltd-text-1">New RFP</h2>
         {onClose && (
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
-            <X className="w-5 h-5 text-gray-500" />
+          <button onClick={onClose} className="p-1 hover:bg-ltd-surface-3 rounded">
+            <X className="w-5 h-5 text-ltd-text-2" />
           </button>
         )}
       </div>
@@ -60,7 +60,7 @@ export function RFPForm({ onClose }: RFPFormProps) {
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-ltd-text-2 mb-1">
               Client / Entity Name *
             </label>
             <input
@@ -69,12 +69,12 @@ export function RFPForm({ onClose }: RFPFormProps) {
               onChange={(e) => setClientName(e.target.value)}
               required
               placeholder="e.g., Dubai South"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              className="w-full px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-ltd-text-2 mb-1">
               Portal / Source
             </label>
             <input
@@ -82,12 +82,12 @@ export function RFPForm({ onClose }: RFPFormProps) {
               value={portal}
               onChange={(e) => setPortal(e.target.value)}
               placeholder="Where did you receive this RFP?"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              className="w-full px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-ltd-text-2 mb-1">
               Deadline *
             </label>
             <input
@@ -95,12 +95,12 @@ export function RFPForm({ onClose }: RFPFormProps) {
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              className="w-full px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-ltd-text-2 mb-1">
               Estimated Value (AED)
             </label>
             <input
@@ -108,13 +108,13 @@ export function RFPForm({ onClose }: RFPFormProps) {
               value={estimatedValue}
               onChange={(e) => setEstimatedValue(e.target.value)}
               placeholder="e.g., 500000"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              className="w-full px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-ltd-text-2 mb-1">
             Scope of Work
           </label>
           <textarea
@@ -122,12 +122,12 @@ export function RFPForm({ onClose }: RFPFormProps) {
             onChange={(e) => setScopeOfWork(e.target.value)}
             rows={4}
             placeholder="Describe the scope of work required..."
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7] resize-none"
+            className="w-full px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary resize-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-ltd-text-2 mb-1">
             Requirements
           </label>
           <textarea
@@ -135,7 +135,7 @@ export function RFPForm({ onClose }: RFPFormProps) {
             onChange={(e) => setRequirements(e.target.value)}
             rows={3}
             placeholder="Key requirements or criteria..."
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7] resize-none"
+            className="w-full px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary resize-none"
           />
         </div>
 
@@ -145,15 +145,15 @@ export function RFPForm({ onClose }: RFPFormProps) {
             id="bidBond"
             checked={bidBondRequired}
             onChange={(e) => setBidBondRequired(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300 text-[#52EDC7] focus:ring-[#52EDC7]"
+            className="w-4 h-4 rounded border-ltd-border-1 text-ltd-primary focus:ring-ltd-primary"
           />
-          <label htmlFor="bidBond" className="text-sm text-gray-700">
+          <label htmlFor="bidBond" className="text-sm text-ltd-text-2">
             Bid bond required
           </label>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-ltd-text-2 mb-1">
             Notes
           </label>
           <textarea
@@ -161,16 +161,16 @@ export function RFPForm({ onClose }: RFPFormProps) {
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder="Any additional notes..."
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7] resize-none"
+            className="w-full px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary resize-none"
           />
         </div>
 
-        <div className="flex gap-3 pt-4 border-t border-gray-200">
+        <div className="flex gap-3 pt-4 border-t border-ltd-border-1">
           {onClose && (
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50"
+              className="flex-1 px-4 py-2 border border-ltd-border-1 text-ltd-text-2 rounded-lg hover:bg-ltd-surface-3"
             >
               Cancel
             </button>
@@ -178,7 +178,7 @@ export function RFPForm({ onClose }: RFPFormProps) {
           <button
             type="submit"
             disabled={isPending || !clientName || !deadline}
-            className="flex-1 px-4 py-2 bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#1BA098] hover:text-white transition-colors disabled:opacity-50"
+            className="flex-1 px-4 py-2 bg-ltd-primary text-ltd-primary-text font-medium rounded-lg hover:bg-ltd-primary-hover transition-colors disabled:opacity-50"
           >
             {isPending ? "Creating..." : "Create RFP"}
           </button>

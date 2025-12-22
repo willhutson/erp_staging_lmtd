@@ -21,13 +21,13 @@ export default async function NewRFPPage() {
       <div className="flex items-center gap-4">
         <Link
           href="/rfp"
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-ltd-surface-3 rounded-lg transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-500" />
+          <ArrowLeft className="w-5 h-5 text-ltd-text-2" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">New RFP</h1>
-          <p className="text-gray-500 mt-1">Create a new RFP submission</p>
+          <h1 className="text-2xl font-bold text-ltd-text-1">New RFP</h1>
+          <p className="text-ltd-text-2 mt-1">Create a new RFP submission</p>
         </div>
       </div>
 

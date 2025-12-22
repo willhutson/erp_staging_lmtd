@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { PipelinePageClient } from "@/modules/crm/components/PipelinePageClient";
 import { TrendingUp, DollarSign, Target, Clock } from "lucide-react";
+import { PageShell } from "@/components/ltd/patterns/page-shell";
 
 // Inferred types from Prisma
 type DealWithRelations = Awaited<ReturnType<typeof db.deal.findMany<{
@@ -68,53 +69,56 @@ export default async function PipelinePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <PageShell
+      title="Pipeline"
+      description="Manage deals and opportunities"
+    >
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="flex items-center gap-2 text-gray-500 mb-1">
+        <div className="rounded-[var(--ltd-radius-lg)] border border-ltd-border-1 bg-ltd-surface-overlay p-4">
+          <div className="flex items-center gap-2 text-ltd-text-2 mb-1">
             <DollarSign className="w-4 h-4" />
             <span className="text-sm">Pipeline Value</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-2xl font-bold text-ltd-text-1">
             {formatCurrency(pipelineValue)}
           </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-ltd-text-3 mt-1">
             {activeDeals.length} active deals
           </p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="flex items-center gap-2 text-gray-500 mb-1">
+        <div className="rounded-[var(--ltd-radius-lg)] border border-ltd-border-1 bg-ltd-surface-overlay p-4">
+          <div className="flex items-center gap-2 text-ltd-text-2 mb-1">
             <Target className="w-4 h-4" />
             <span className="text-sm">Weighted Pipeline</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-2xl font-bold text-ltd-text-1">
             {formatCurrency(weightedPipeline)}
           </p>
-          <p className="text-xs text-gray-400 mt-1">Based on probability</p>
+          <p className="text-xs text-ltd-text-3 mt-1">Based on probability</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="flex items-center gap-2 text-green-600 mb-1">
+        <div className="rounded-[var(--ltd-radius-lg)] border border-ltd-border-1 bg-ltd-surface-overlay p-4">
+          <div className="flex items-center gap-2 text-ltd-success mb-1">
             <TrendingUp className="w-4 h-4" />
             <span className="text-sm">Won</span>
           </div>
-          <p className="text-2xl font-bold text-green-600">
+          <p className="text-2xl font-bold text-ltd-success">
             {formatCurrency(wonValue)}
           </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-ltd-text-3 mt-1">
             {wonDeals.length} deals won
           </p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="flex items-center gap-2 text-gray-500 mb-1">
+        <div className="rounded-[var(--ltd-radius-lg)] border border-ltd-border-1 bg-ltd-surface-overlay p-4">
+          <div className="flex items-center gap-2 text-ltd-text-2 mb-1">
             <Clock className="w-4 h-4" />
             <span className="text-sm">Win Rate</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{winRate}%</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-2xl font-bold text-ltd-text-1">{winRate}%</p>
+          <p className="text-xs text-ltd-text-3 mt-1">
             {wonDeals.length}W / {lostDeals.length}L
           </p>
         </div>
@@ -122,6 +126,6 @@ export default async function PipelinePage() {
 
       {/* Pipeline board */}
       <PipelinePageClient deals={deals} clients={clients} />
-    </div>
+    </PageShell>
   );
 }

@@ -6,6 +6,7 @@ import { LeaveBalanceCard } from "@/modules/leave/components/LeaveBalanceCard";
 import { LeaveRequestList } from "@/modules/leave/components/LeaveRequestList";
 import { BlackoutList } from "@/modules/leave/components/BlackoutList";
 import { initializeLeaveTypes } from "@/modules/leave/actions/leave-actions";
+import { PageShell } from "@/components/ltd/patterns/page-shell";
 
 export default async function LeavePage() {
   const session = await auth();
@@ -96,33 +97,29 @@ export default async function LeavePage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Leave</h1>
-          <p className="text-gray-500 mt-1">
-            Manage leave requests and time off
-          </p>
-        </div>
+    <PageShell
+      title="Leave"
+      description="Manage leave requests and time off"
+      actions={
         <Link
           href="/leave/request"
-          className="flex items-center gap-2 px-4 py-2 bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#1BA098] hover:text-white transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-ltd-primary text-ltd-primary-text font-medium rounded-[var(--ltd-radius-md)] hover:bg-ltd-primary-hover transition-colors"
         >
           <Plus className="w-5 h-5" />
           Request Leave
         </Link>
-      </div>
-
+      }
+    >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left column - Balance and Requests */}
         <div className="lg:col-span-2 space-y-6">
           {/* Pending Approvals (for managers) */}
           {pendingRequests.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200">
-              <div className="p-4 border-b border-gray-200">
-                <h2 className="font-semibold text-gray-900">
+            <div className="rounded-[var(--ltd-radius-lg)] border border-ltd-border-1 bg-ltd-surface-overlay">
+              <div className="p-4 border-b border-ltd-border-1">
+                <h2 className="font-semibold text-ltd-text-1">
                   Pending Approvals
-                  <span className="ml-2 px-2 py-0.5 text-xs bg-yellow-100 text-yellow-700 rounded-full">
+                  <span className="ml-2 px-2 py-0.5 text-xs bg-ltd-warning/20 text-ltd-warning rounded-full">
                     {pendingRequests.length}
                   </span>
                 </h2>
@@ -137,9 +134,9 @@ export default async function LeavePage() {
           )}
 
           {/* My Requests */}
-          <div className="bg-white rounded-xl border border-gray-200">
-            <div className="p-4 border-b border-gray-200">
-              <h2 className="font-semibold text-gray-900">My Requests</h2>
+          <div className="rounded-[var(--ltd-radius-lg)] border border-ltd-border-1 bg-ltd-surface-overlay">
+            <div className="p-4 border-b border-ltd-border-1">
+              <h2 className="font-semibold text-ltd-text-1">My Requests</h2>
             </div>
             <LeaveRequestList
               requests={myRequests}
@@ -158,6 +155,6 @@ export default async function LeavePage() {
           />
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }

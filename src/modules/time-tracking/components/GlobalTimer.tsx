@@ -70,15 +70,15 @@ export function GlobalTimer({ initialTimer, briefs }: GlobalTimerProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4">
+    <div className="bg-ltd-surface-overlay rounded-[var(--ltd-radius-lg)] border border-ltd-border-1 p-4">
       <div className="flex items-center gap-4">
         {/* Timer display */}
         <div className="flex items-center gap-2">
-          <Clock className="w-5 h-5 text-gray-400" />
+          <Clock className="w-5 h-5 text-ltd-text-3" />
           <span
             className={cn(
               "font-mono text-2xl font-bold",
-              timer ? "text-[#1BA098]" : "text-gray-400"
+              timer ? "text-ltd-primary" : "text-ltd-text-3"
             )}
           >
             {formatTime(elapsed)}
@@ -90,7 +90,7 @@ export function GlobalTimer({ initialTimer, briefs }: GlobalTimerProps) {
           <select
             value={selectedBriefId}
             onChange={(e) => setSelectedBriefId(e.target.value)}
-            className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+            className="flex-1 px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-[var(--ltd-radius-md)] text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
           >
             <option value="">Select a brief (optional)</option>
             {briefs.map((brief) => (
@@ -104,12 +104,12 @@ export function GlobalTimer({ initialTimer, briefs }: GlobalTimerProps) {
         {/* Running timer info */}
         {timer && (
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-ltd-text-1">
               {timer.brief
                 ? `${timer.brief.client.code} - ${timer.brief.title}`
                 : "No brief selected"}
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-ltd-text-2">
               Started at{" "}
               {new Date(timer.startTime!).toLocaleTimeString("en-GB", {
                 hour: "2-digit",
@@ -124,7 +124,7 @@ export function GlobalTimer({ initialTimer, briefs }: GlobalTimerProps) {
           <button
             onClick={handleStop}
             disabled={isPending}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-ltd-error text-white rounded-[var(--ltd-radius-md)] hover:opacity-90 transition-colors disabled:opacity-50"
           >
             <Square className="w-4 h-4" />
             Stop
@@ -133,7 +133,7 @@ export function GlobalTimer({ initialTimer, briefs }: GlobalTimerProps) {
           <button
             onClick={handleStart}
             disabled={isPending}
-            className="flex items-center gap-2 px-4 py-2 bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#1BA098] hover:text-white transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-ltd-primary text-ltd-primary-text font-medium rounded-[var(--ltd-radius-md)] hover:bg-ltd-primary-hover transition-colors disabled:opacity-50"
           >
             <Play className="w-4 h-4" />
             Start

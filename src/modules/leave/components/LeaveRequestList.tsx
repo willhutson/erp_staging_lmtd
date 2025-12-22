@@ -28,23 +28,23 @@ interface LeaveRequestListProps {
 const statusConfig: Record<LeaveStatus, { icon: React.ReactNode; color: string; bgColor: string }> = {
   PENDING: {
     icon: <Clock className="w-4 h-4" />,
-    color: "text-yellow-600",
-    bgColor: "bg-yellow-100",
+    color: "text-ltd-warning",
+    bgColor: "bg-ltd-warning/10",
   },
   APPROVED: {
     icon: <CheckCircle className="w-4 h-4" />,
-    color: "text-green-600",
-    bgColor: "bg-green-100",
+    color: "text-ltd-success",
+    bgColor: "bg-ltd-success/10",
   },
   REJECTED: {
     icon: <XCircle className="w-4 h-4" />,
-    color: "text-red-600",
-    bgColor: "bg-red-100",
+    color: "text-ltd-error",
+    bgColor: "bg-ltd-error/10",
   },
   CANCELLED: {
     icon: <Ban className="w-4 h-4" />,
-    color: "text-gray-500",
-    bgColor: "bg-gray-100",
+    color: "text-ltd-text-3",
+    bgColor: "bg-ltd-surface-3",
   },
 };
 
@@ -81,14 +81,14 @@ export function LeaveRequestList({
 
   if (requests.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500 text-sm">
+      <div className="text-center py-8 text-ltd-text-2 text-sm">
         No leave requests found
       </div>
     );
   }
 
   return (
-    <div className="divide-y divide-gray-100">
+    <div className="divide-y divide-ltd-border-1">
       {requests.map((request) => {
         const config = statusConfig[request.status];
         const isOwn = currentUserId === request.userId;
@@ -100,7 +100,7 @@ export function LeaveRequestList({
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   {showUser && (
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-ltd-text-1">
                       {request.user.name}
                     </span>
                   )}
@@ -115,27 +115,27 @@ export function LeaveRequestList({
                   </span>
                 </div>
 
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-ltd-text-2">
                   {formatDate(request.startDate)}
                   {request.startDate.getTime() !== request.endDate.getTime() && (
                     <> – {formatDate(request.endDate)}</>
                   )}
-                  <span className="text-gray-400 ml-2">
+                  <span className="text-ltd-text-3 ml-2">
                     ({Number(request.totalDays)} {Number(request.totalDays) === 1 ? "day" : "days"})
                   </span>
                   {request.isHalfDay && (
-                    <span className="text-gray-400 ml-1">
+                    <span className="text-ltd-text-3 ml-1">
                       ({request.halfDayPeriod?.toLowerCase()})
                     </span>
                   )}
                 </p>
 
                 {request.reason && (
-                  <p className="text-sm text-gray-500 mt-1">{request.reason}</p>
+                  <p className="text-sm text-ltd-text-2 mt-1">{request.reason}</p>
                 )}
 
                 {request.reviewedBy && (
-                  <p className="text-xs text-gray-400 mt-2">
+                  <p className="text-xs text-ltd-text-3 mt-2">
                     {request.status === "APPROVED" ? "Approved" : "Rejected"} by{" "}
                     {request.reviewedBy.name}
                     {request.reviewNotes && ` – "${request.reviewNotes}"`}
@@ -160,7 +160,7 @@ export function LeaveRequestList({
                     <button
                       onClick={() => handleReview(request.id, "APPROVED")}
                       disabled={isPending}
-                      className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
+                      className="p-1.5 text-ltd-success hover:bg-ltd-success/10 rounded-lg transition-colors disabled:opacity-50"
                       title="Approve"
                     >
                       <CheckCircle className="w-5 h-5" />
@@ -168,7 +168,7 @@ export function LeaveRequestList({
                     <button
                       onClick={() => handleReview(request.id, "REJECTED")}
                       disabled={isPending}
-                      className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                      className="p-1.5 text-ltd-error hover:bg-ltd-error/10 rounded-lg transition-colors disabled:opacity-50"
                       title="Reject"
                     >
                       <XCircle className="w-5 h-5" />
@@ -180,7 +180,7 @@ export function LeaveRequestList({
                   <button
                     onClick={() => handleCancel(request.id)}
                     disabled={isPending}
-                    className="text-xs text-gray-500 hover:text-red-600 transition-colors disabled:opacity-50"
+                    className="text-xs text-ltd-text-2 hover:text-ltd-error transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>
