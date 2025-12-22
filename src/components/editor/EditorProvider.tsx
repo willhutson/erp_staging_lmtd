@@ -6,12 +6,13 @@
  * Context provider for rich text editor that supplies:
  * - User list for @mentions
  * - Channel list for #mentions
- * - AI action handler
+ * - AI action handler with real OpenAI integration
  *
  * @module components/editor/EditorProvider
  */
 
-import { createContext, useContext, ReactNode, useCallback } from "react";
+import { createContext, useContext, ReactNode, useCallback, useState } from "react";
+import { performAIAction } from "@/modules/ai/actions";
 import type { MentionUser, MentionChannel, AIAction } from "./RichTextEditor";
 
 // ============================================
@@ -24,6 +25,7 @@ interface EditorContextValue {
   currentUserId: string;
   organizationId: string;
   enableAI: boolean;
+  isAILoading: boolean;
   handleAIAction: (action: AIAction, text?: string) => Promise<string>;
 }
 
@@ -47,6 +49,7 @@ export function useEditorContext() {
       currentUserId: "",
       organizationId: "",
       enableAI: false,
+      isAILoading: false,
       handleAIAction: async () => "",
     };
   }
@@ -74,35 +77,35 @@ export function EditorProvider({
   organizationId,
   enableAI = false,
 }: EditorProviderProps) {
-  // AI action handler - will be implemented in Phase 18.4
+  const [isAILoading, setIsAILoading] = useState(false);
+
+  // AI action handler - calls server action
   const handleAIAction = useCallback(
     async (action: AIAction, text?: string): Promise<string> => {
-      // Placeholder - will call Tiptap AI API or custom endpoint
-      console.log("AI Action:", action, "Text:", text);
+      if (!text || text.trim().length === 0) {
+        return "";
+      }
 
-      // For now, return the original text with a note
-      // This will be replaced with actual AI integration
-      switch (action) {
-        case "translate_ar":
-          return `[Arabic translation pending] ${text}`;
-        case "translate_en":
-          return `[English translation pending] ${text}`;
-        case "polish":
-          return text || "";
-        case "expand":
-          return `${text}\n\n[Expanded content pending]`;
-        case "summarize":
-          return `[Summary pending] ${text?.substring(0, 100)}...`;
-        case "simplify":
-          return text || "";
-        case "formal":
-          return text || "";
-        case "casual":
-          return text || "";
-        case "generate_caption":
-          return "[Generated caption pending]";
-        default:
-          return text || "";
+      setIsAILoading(true);
+
+      try {
+        const result = await performAIAction({
+          action,
+          text,
+        });
+
+        if (result.success && result.result) {
+          return result.result;
+        }
+
+        // If API fails, show error message
+        console.error("AI Action failed:", result.error);
+        return text; // Return original text on failure
+      } catch (error) {
+        console.error("AI Action error:", error);
+        return text; // Return original text on error
+      } finally {
+        setIsAILoading(false);
       }
     },
     []
@@ -116,12 +119,99 @@ export function EditorProvider({
         currentUserId,
         organizationId,
         enableAI,
+        isAILoading,
         handleAIAction,
       }}
     >
       {children}
     </EditorContext.Provider>
   );
+}
+
+// ============================================
+// STANDALONE AI HOOK (for use outside provider)
+// ============================================
+
+export function useAIActions() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const executeAction = useCallback(
+    async (action: AIAction, text: string): Promise<string | null> => {
+      if (!text || text.trim().length === 0) {
+        return null;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const result = await performAIAction({ action, text });
+
+        if (result.success && result.result) {
+          return result.result;
+        }
+
+        setError(result.error || "AI action failed");
+        return null;
+      } catch (err) {
+        setError("Failed to execute AI action");
+        console.error("AI Action error:", err);
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  const translateToArabic = useCallback(
+    (text: string) => executeAction("translate_ar", text),
+    [executeAction]
+  );
+
+  const translateToEnglish = useCallback(
+    (text: string) => executeAction("translate_en", text),
+    [executeAction]
+  );
+
+  const polish = useCallback(
+    (text: string) => executeAction("polish", text),
+    [executeAction]
+  );
+
+  const expand = useCallback(
+    (text: string) => executeAction("expand", text),
+    [executeAction]
+  );
+
+  const summarize = useCallback(
+    (text: string) => executeAction("summarize", text),
+    [executeAction]
+  );
+
+  const makeFormal = useCallback(
+    (text: string) => executeAction("formal", text),
+    [executeAction]
+  );
+
+  const makeCasual = useCallback(
+    (text: string) => executeAction("casual", text),
+    [executeAction]
+  );
+
+  return {
+    isLoading,
+    error,
+    executeAction,
+    translateToArabic,
+    translateToEnglish,
+    polish,
+    expand,
+    summarize,
+    makeFormal,
+    makeCasual,
+  };
 }
 
 // ============================================

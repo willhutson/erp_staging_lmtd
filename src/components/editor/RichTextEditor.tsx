@@ -16,8 +16,9 @@
  * @module components/editor/RichTextEditor
  */
 
-import { useCallback, useEffect, useImperativeHandle, forwardRef, useState } from "react";
+import { useCallback, useEffect, useImperativeHandle, forwardRef, useState, useTransition } from "react";
 import { useEditor, EditorContent, Editor, JSONContent } from "@tiptap/react";
+import { performAIAction } from "@/modules/ai/actions";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Mention from "@tiptap/extension-mention";
@@ -67,6 +68,7 @@ import {
   Heading1,
   Heading2,
   X,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -361,6 +363,7 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
   ) {
     const [linkUrl, setLinkUrl] = useState("");
     const [showLinkInput, setShowLinkInput] = useState(false);
+    const [isAILoading, setIsAILoading] = useState(false);
 
     // Determine which features to enable based on variant
     const features = {
@@ -496,9 +499,9 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       setLinkUrl("");
     };
 
-    // Handle AI action
+    // Handle AI action - uses provided handler or built-in server action
     const handleAIAction = async (action: AIAction) => {
-      if (!onAIAction || !editor) return;
+      if (!editor) return;
 
       const selectedText = editor.state.selection.empty
         ? editor.getText()
@@ -507,15 +510,46 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
             editor.state.selection.to
           );
 
-      const result = await onAIAction(action, selectedText);
+      if (!selectedText || selectedText.trim().length === 0) {
+        return;
+      }
 
-      if (editor.state.selection.empty) {
-        editor.commands.setContent(result);
-      } else {
-        editor.commands.insertContentAt(
-          { from: editor.state.selection.from, to: editor.state.selection.to },
-          result
-        );
+      setIsAILoading(true);
+
+      try {
+        let result: string;
+
+        if (onAIAction) {
+          // Use custom handler if provided
+          result = await onAIAction(action, selectedText);
+        } else {
+          // Use built-in server action
+          const response = await performAIAction({
+            action,
+            text: selectedText,
+          });
+
+          if (!response.success || !response.result) {
+            console.error("AI action failed:", response.error);
+            return;
+          }
+
+          result = response.result;
+        }
+
+        // Replace content
+        if (editor.state.selection.empty) {
+          editor.commands.setContent(result);
+        } else {
+          editor.commands.insertContentAt(
+            { from: editor.state.selection.from, to: editor.state.selection.to },
+            result
+          );
+        }
+      } catch (error) {
+        console.error("AI action error:", error);
+      } finally {
+        setIsAILoading(false);
       }
     };
 
@@ -731,52 +765,92 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
         </Popover>
 
         {/* AI Actions */}
-        {features.ai && onAIAction && (
+        {features.ai && (
           <>
             <ToolbarDivider />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 gap-1 px-2">
-                  <Sparkles className="h-4 w-4 text-purple-500" />
-                  <span className="text-xs">AI</span>
-                  <ChevronDown className="h-3 w-3" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-1 px-2"
+                  disabled={isAILoading}
+                >
+                  {isAILoading ? (
+                    <Loader2 className="h-4 w-4 text-purple-500 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 text-purple-500" />
+                  )}
+                  <span className="text-xs">{isAILoading ? "Processing..." : "AI"}</span>
+                  {!isAILoading && <ChevronDown className="h-3 w-3" />}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => handleAIAction("translate_ar")}>
+                <DropdownMenuItem
+                  onClick={() => handleAIAction("translate_ar")}
+                  disabled={isAILoading}
+                >
                   <Languages className="h-4 w-4 mr-2" />
                   Translate to Arabic
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleAIAction("translate_en")}>
+                <DropdownMenuItem
+                  onClick={() => handleAIAction("translate_en")}
+                  disabled={isAILoading}
+                >
                   <Languages className="h-4 w-4 mr-2" />
                   Translate to English
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => handleAIAction("polish")}>
+                <DropdownMenuItem
+                  onClick={() => handleAIAction("polish")}
+                  disabled={isAILoading}
+                >
                   <Wand2 className="h-4 w-4 mr-2" />
                   Polish & fix grammar
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleAIAction("expand")}>
+                <DropdownMenuItem
+                  onClick={() => handleAIAction("expand")}
+                  disabled={isAILoading}
+                >
                   <Wand2 className="h-4 w-4 mr-2" />
                   Expand content
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleAIAction("summarize")}>
+                <DropdownMenuItem
+                  onClick={() => handleAIAction("summarize")}
+                  disabled={isAILoading}
+                >
                   <Wand2 className="h-4 w-4 mr-2" />
                   Summarize
                 </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleAIAction("simplify")}
+                  disabled={isAILoading}
+                >
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Simplify language
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => handleAIAction("formal")}>
+                <DropdownMenuItem
+                  onClick={() => handleAIAction("formal")}
+                  disabled={isAILoading}
+                >
                   <Wand2 className="h-4 w-4 mr-2" />
                   Make formal
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleAIAction("casual")}>
+                <DropdownMenuItem
+                  onClick={() => handleAIAction("casual")}
+                  disabled={isAILoading}
+                >
                   <Wand2 className="h-4 w-4 mr-2" />
                   Make casual
                 </DropdownMenuItem>
                 {variant === "caption" && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => handleAIAction("generate_caption")}>
+                    <DropdownMenuItem
+                      onClick={() => handleAIAction("generate_caption")}
+                      disabled={isAILoading}
+                    >
                       <Sparkles className="h-4 w-4 mr-2" />
                       Generate caption
                     </DropdownMenuItem>

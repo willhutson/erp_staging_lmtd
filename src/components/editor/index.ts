@@ -16,4 +16,4 @@ export type {
   AIAction,
 } from "./RichTextEditor";
 
-export { EditorProvider, useEditorContext } from "./EditorProvider";
+export { EditorProvider, useEditorContext, useAIActions } from "./EditorProvider";

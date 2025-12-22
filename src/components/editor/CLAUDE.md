@@ -71,15 +71,30 @@ import { RichTextEditor } from "@/components/editor";
 />
 ```
 
-### With AI Features
+### With AI Features (Built-in)
 
 ```tsx
+// AI is built-in! Just enable it:
+<RichTextEditor
+  variant="full"
+  enableAI
+  value={content}
+  onChange={(html) => setContent(html)}
+/>
+```
+
+The editor automatically calls OpenAI when AI actions are triggered.
+No need to provide `onAIAction` - it uses the built-in server action.
+
+### With Custom AI Handler
+
+```tsx
+// Override with your own handler if needed:
 <RichTextEditor
   variant="full"
   enableAI
   onAIAction={async (action, text) => {
-    // Call AI API
-    const result = await translateText(text, action);
+    const result = await myCustomAI(action, text);
     return result;
   }}
 />
@@ -103,7 +118,7 @@ import { RichTextEditor } from "@/components/editor";
 
 ## AI Actions
 
-Available actions (implemented in Phase 18.4):
+Available actions (powered by OpenAI GPT-4):
 
 | Action | Description |
 |--------|-------------|
@@ -160,11 +175,18 @@ For `caption` variant:
 pnpm add @tiptap/react @tiptap/starter-kit @tiptap/extension-placeholder @tiptap/extension-mention @tiptap/extension-link @tiptap/extension-character-count @tiptap/extension-underline @tiptap/extension-text-align
 ```
 
+## Dependencies
+
+```bash
+pnpm add openai
+```
+
 ## Future Enhancements
 
-1. **Phase 18.4**: Tiptap AI integration
-2. **Image embeds**: Paste/drop images
-3. **Tables**: Table support for documentation
-4. **Collaborative editing**: Real-time co-editing
-5. **Comments**: Inline comment threads
-6. **Templates**: Insert pre-made content blocks
+1. **Image embeds**: Paste/drop images
+2. **Tables**: Table support for documentation
+3. **Collaborative editing**: Real-time co-editing
+4. **Comments**: Inline comment threads
+5. **Templates**: Insert pre-made content blocks
+6. **Streaming AI**: Show text as it generates
+7. **Brand voices**: Client-specific tone presets
