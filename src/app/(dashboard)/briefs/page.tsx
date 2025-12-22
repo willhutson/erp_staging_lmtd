@@ -5,7 +5,12 @@ import Link from "next/link";
 import { StatusBadge } from "@/modules/briefs/components/StatusBadge";
 import { briefTypeLabels } from "@/../config/forms";
 import { can } from "@/lib/permissions";
-import type { BriefStatus, BriefType } from "@prisma/client";
+
+// Inferred types from Prisma - avoids direct import issues
+type BriefRecord = Awaited<ReturnType<typeof db.brief.findMany<{ include: { client: true; assignee: true } }>>>[number];
+type ClientRecord = Awaited<ReturnType<typeof db.client.findMany>>[number];
+type BriefStatus = BriefRecord["status"];
+type BriefType = BriefRecord["type"];
 
 interface SearchParams {
   status?: string;
@@ -150,7 +155,7 @@ export default async function BriefsPage({ searchParams }: PageProps) {
             className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
           >
             <option value="">All Clients</option>
-            {clients.map((client) => (
+            {clients.map((client: ClientRecord) => (
               <option key={client.id} value={client.id}>
                 {client.name}
               </option>
@@ -191,7 +196,7 @@ export default async function BriefsPage({ searchParams }: PageProps) {
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {briefs.map((brief) => (
+            {briefs.map((brief: BriefRecord) => (
               <Link
                 key={brief.id}
                 href={`/briefs/${brief.id}`}

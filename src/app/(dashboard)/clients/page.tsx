@@ -4,6 +4,11 @@ import { Plus, Building2, User, FileText, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+// Inferred type from Prisma query
+type ClientWithRelations = Awaited<ReturnType<typeof db.client.findMany<{
+  include: { accountManager: { select: { id: true; name: true } }; _count: { select: { briefs: true; contacts: true } } }
+}>>>[number];
+
 const relationshipStatusConfig: Record<
   string,
   { label: string; color: string; bgColor: string }
@@ -39,10 +44,10 @@ export default async function ClientsPage() {
     orderBy: { name: "asc" },
   });
 
-  const activeClients = clients.filter((c) => c.relationshipStatus === "ACTIVE");
-  const atRiskClients = clients.filter((c) => c.relationshipStatus === "AT_RISK");
+  const activeClients = clients.filter((c: ClientWithRelations) => c.relationshipStatus === "ACTIVE");
+  const atRiskClients = clients.filter((c: ClientWithRelations) => c.relationshipStatus === "AT_RISK");
   const totalValue = clients.reduce(
-    (sum, c) => sum + Number(c.lifetimeValue || 0),
+    (sum: number, c: ClientWithRelations) => sum + Number(c.lifetimeValue || 0),
     0
   );
 
@@ -130,7 +135,7 @@ export default async function ClientsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {clients.map((client) => {
+              {clients.map((client: ClientWithRelations) => {
                 const statusConfig =
                   relationshipStatusConfig[client.relationshipStatus] ||
                   relationshipStatusConfig.ACTIVE;
@@ -179,7 +184,7 @@ export default async function ClientsPage() {
                           <div className="w-6 h-6 rounded-full bg-[#52EDC7] flex items-center justify-center text-xs font-medium text-gray-900">
                             {client.accountManager.name
                               .split(" ")
-                              .map((n) => n[0])
+                              .map((n: string) => n[0])
                               .join("")
                               .slice(0, 2)}
                           </div>
