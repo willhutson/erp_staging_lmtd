@@ -54,12 +54,15 @@ export default async function ContentEnginePage() {
   ]);
 
   // Group skills by category
-  const skillsByCategory = skills.reduce<Record<SkillCategory, SkillRecord[]>>((acc, skill) => {
-    const category = skill.category as SkillCategory;
-    if (!acc[category]) acc[category] = [];
-    acc[category].push(skill);
-    return acc;
-  }, {} as Record<SkillCategory, SkillRecord[]>);
+  const skillsByCategory = skills.reduce(
+    (acc: Record<SkillCategory, SkillRecord[]>, skill: SkillRecord) => {
+      const category = skill.category as SkillCategory;
+      if (!acc[category]) acc[category] = [];
+      acc[category].push(skill);
+      return acc;
+    },
+    {} as Record<SkillCategory, SkillRecord[]>
+  );
 
   // Calculate stats
   const totalInvocations = skills.reduce((sum: number, s: SkillRecord) => sum + s.invocationCount, 0);

@@ -6,6 +6,10 @@ import { NPSScoreCard } from "@/modules/nps/components/NPSScoreCard";
 import { NPSSurveyList } from "@/modules/nps/components/NPSSurveyList";
 import { getNPSStats } from "@/modules/nps/actions/nps-actions";
 
+// Type for stats from getNPSStats
+type NPSStats = Awaited<ReturnType<typeof getNPSStats>>;
+type ClientStat = NPSStats["byClient"][number];
+
 export default async function NPSPage() {
   const session = await auth();
 
@@ -145,7 +149,7 @@ export default async function NPSPage() {
             <h2 className="font-semibold text-gray-900 mb-4">By Client</h2>
             {stats.byClient.length > 0 ? (
               <div className="space-y-3">
-                {stats.byClient.map((item) => (
+                {stats.byClient.map((item: ClientStat) => (
                   <div key={item.client.id} className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">{item.client.code}</span>
                     <div className="flex items-center gap-2">
