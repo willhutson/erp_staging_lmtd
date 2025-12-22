@@ -44,6 +44,15 @@ model Organization {
   apiKeys              ApiKey[]
   webhookSubscriptions WebhookSubscription[]
 
+  // Content Engine (Phase 12)
+  knowledgeDocuments   KnowledgeDocument[]
+  agentSkills          AgentSkill[]
+  agentPersonas        AgentPersona[]
+  contentEvents        ContentEvent[]
+  contentTriggers      ContentTrigger[]
+  agentInvocations     AgentInvocation[]
+  deliverables         Deliverable[]
+
   @@map("organizations")
 }
 
@@ -2181,6 +2190,7 @@ model FormSubmissionFile {
 model KnowledgeDocument {
   id              String   @id @default(cuid())
   organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
 
   // Hierarchical path: "/agents/skills/brief-creator"
   path            String
@@ -2359,6 +2369,7 @@ enum DocumentUsageType {
 model AgentSkill {
   id              String   @id @default(cuid())
   organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
 
   // Identity
   slug            String              // "brief-creator", "quality-scorer"
@@ -2426,6 +2437,7 @@ enum SkillCategory {
 model AgentPersona {
   id              String   @id @default(cuid())
   organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
 
   // Identity
   slug            String              // "project-manager", "creative-director"
@@ -2469,6 +2481,7 @@ model AgentPersona {
 model ContentEvent {
   id              String   @id @default(cuid())
   organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
 
   // Event identity
   eventType       String              // "brief.created", "asset.uploaded", "deal.won"
@@ -2498,6 +2511,7 @@ model ContentEvent {
 model ContentTrigger {
   id              String   @id @default(cuid())
   organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
 
   // Identity
   name            String
@@ -2552,6 +2566,7 @@ enum TriggerActionType {
 model AgentInvocation {
   id              String   @id @default(cuid())
   organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
 
   // What was invoked
   skillId         String?
@@ -2665,6 +2680,7 @@ model InvocationStep {
 model Deliverable {
   id              String   @id @default(cuid())
   organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
 
   // Source
   briefId         String
