@@ -358,6 +358,90 @@ await celebrateBirthday({
 | Content published | Default | 🎉 |
 | Client feedback | Client channel | 💚/💬/🔴 |
 | Deadline reminder | DM to assignees | ⏰/⚠️ |
+| Holiday content reminder | Content channel | 💡/📝/⚡ |
+| Holiday leave reminder | Default | 📆/⏰ |
+
+## UAE Holiday Reminders (Phase 18.5)
+
+Automated reminders for UAE national holidays - for both content planning and leave requests.
+
+### Holiday Configuration
+
+Holidays are configured in `/config/holidays/uae.holidays.ts`:
+
+```typescript
+import { getUpcomingHolidays, getNextHoliday } from "@config/holidays";
+
+// Get holidays in the next 30 days
+const upcoming = getUpcomingHolidays(new Date(), 30);
+
+// Get the next holiday
+const next = getNextHoliday();
+console.log(next?.name, next?.date, next?.contentThemes);
+```
+
+### Reminder Schedule
+
+**Content Planning Reminders:**
+- 30 days before: Start brainstorming 💡
+- 14 days before: Finalize concepts 📝
+- 7 days before: Content should be ready ⚡
+
+**Leave Planning Reminders:**
+- 14 days before: Plan your time off 📆
+- 7 days before: Last call for requests ⏰
+
+### Cron Job Setup
+
+Trigger daily at 9 AM UAE time:
+
+```bash
+# Vercel Cron (vercel.json)
+{
+  "crons": [{
+    "path": "/api/cron/holiday-reminders",
+    "schedule": "0 5 * * *"  # 5 AM UTC = 9 AM UAE
+  }]
+}
+
+# Or curl with secret
+curl -X POST https://your-app.com/api/cron/holiday-reminders \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+### Manual Triggers
+
+```typescript
+import {
+  processHolidayReminders,
+  sendManualContentReminder,
+  previewUpcomingReminders,
+} from "@/modules/chat/services";
+
+// Preview what reminders would be sent
+const preview = previewUpcomingReminders(45);
+
+// Process today's reminders for an org
+await processHolidayReminders(organizationId);
+
+// Manually send a content reminder
+await sendManualContentReminder(organizationId, "Eid Al Fitr");
+```
+
+### UAE Holidays Included
+
+| Holiday | Date (2025) | Duration |
+|---------|-------------|----------|
+| New Year's Day | Jan 1 | 1 day |
+| Eid Al Fitr | ~Mar 30 | 4 days |
+| Arafat Day | ~Jun 5 | 1 day |
+| Eid Al Adha | ~Jun 6 | 4 days |
+| Islamic New Year | ~Jun 26 | 1 day |
+| Prophet's Birthday | ~Sep 4 | 1 day |
+| Commemoration Day | Nov 30 | 1 day |
+| UAE National Day | Dec 2-3 | 2 days |
+
+*Islamic holiday dates are approximations based on the lunar calendar.*
 
 ## Future Enhancements
 

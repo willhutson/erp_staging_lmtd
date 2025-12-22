@@ -33,3 +33,12 @@ export {
   celebrateBirthday,
   celebrateAnniversary,
 } from "./module-integrations";
+
+// Holiday Reminders
+export {
+  processHolidayReminders,
+  processAllOrganizationReminders,
+  celebrateHoliday,
+  previewUpcomingReminders,
+  sendManualContentReminder,
+} from "./holiday-reminders";
