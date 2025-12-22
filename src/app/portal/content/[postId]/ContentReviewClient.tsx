@@ -77,7 +77,7 @@ interface Post {
 interface ContentReviewClientProps {
   post: Post;
   approvalId: string | null;
-  contactId: string;
+  contactId: string | null;
   comments: Comment[];
 }
 
