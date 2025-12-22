@@ -10,6 +10,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { handleUploadRequest } from "@/modules/chat/actions/upload-actions";
 
+// Route segment config for App Router (Next.js 14+)
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   // Verify authentication
   const session = await auth();
@@ -20,10 +25,3 @@ export async function POST(request: NextRequest) {
 
   return handleUploadRequest(request);
 }
-
-// Configure max file size for this route
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};

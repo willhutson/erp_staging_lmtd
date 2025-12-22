@@ -380,7 +380,7 @@ export function MessageEditor({
 
     try {
       // Check for slash command
-      if (isSlashCommand(textContent) && currentUserId) {
+      if ((await isSlashCommand(textContent)) && currentUserId) {
         const context: CommandContext = {
           userId: currentUserId,
           userName: currentUserName,
