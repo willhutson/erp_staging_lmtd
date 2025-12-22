@@ -1,16 +1,14 @@
 // Content Engine Types
 
 export type SkillCategory =
-  | "BRIEF_MANAGEMENT"
-  | "RESOURCE_PLANNING"
-  | "CLIENT_RELATIONS"
   | "CONTENT_CREATION"
-  | "QUALITY_ASSURANCE"
-  | "ANALYTICS"
+  | "CONTENT_ANALYSIS"
   | "WORKFLOW"
-  | "KNOWLEDGE";
-
-export type SkillStatus = "ACTIVE" | "DRAFT" | "DEPRECATED" | "TESTING";
+  | "COMMUNICATION"
+  | "DATA_PROCESSING"
+  | "DECISION"
+  | "INTEGRATION"
+  | "UTILITY";
 
 export type TriggerType =
   | "MANUAL"           // User explicitly invokes
@@ -57,14 +55,12 @@ export interface Skill {
   name: string;
   description: string;
   category: SkillCategory;
-  status: SkillStatus;
+  isEnabled: boolean;
   triggers: SkillTrigger[];
   inputs: SkillInput[];
   outputs: SkillOutput[];
   dependsOn: string[];
-  systemPrompt?: string;
-  founderKnowledge?: string;
-  validationQuestions?: string[];
+  version: string;
   invocationCount: number;
   successRate: number | null;
   createdAt: Date;

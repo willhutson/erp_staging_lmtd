@@ -25,14 +25,14 @@ type SkillRecord = Awaited<ReturnType<typeof db.agentSkill.findMany>>[number];
 type InvocationWithSkill = Awaited<ReturnType<typeof db.agentInvocation.findMany<{ include: { skill: true } }>>>[number];
 
 const CATEGORY_ICONS: Record<SkillCategory, React.ReactNode> = {
-  BRIEF_MANAGEMENT: <FileText className="h-5 w-5" />,
-  RESOURCE_PLANNING: <Activity className="h-5 w-5" />,
-  CLIENT_RELATIONS: <TrendingUp className="h-5 w-5" />,
   CONTENT_CREATION: <Brain className="h-5 w-5" />,
-  QUALITY_ASSURANCE: <Zap className="h-5 w-5" />,
-  ANALYTICS: <TrendingUp className="h-5 w-5" />,
+  CONTENT_ANALYSIS: <Zap className="h-5 w-5" />,
   WORKFLOW: <Clock className="h-5 w-5" />,
-  KNOWLEDGE: <FileText className="h-5 w-5" />,
+  COMMUNICATION: <TrendingUp className="h-5 w-5" />,
+  DATA_PROCESSING: <Activity className="h-5 w-5" />,
+  DECISION: <FileText className="h-5 w-5" />,
+  INTEGRATION: <Zap className="h-5 w-5" />,
+  UTILITY: <FileText className="h-5 w-5" />,
 };
 
 export default async function ContentEnginePage() {

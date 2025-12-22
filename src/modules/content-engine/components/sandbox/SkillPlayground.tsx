@@ -140,8 +140,8 @@ export function SkillPlayground({ skill, onTestComplete }: SkillPlaygroundProps)
                 </CardTitle>
                 <CardDescription className="mt-1">{skill.description}</CardDescription>
               </div>
-              <Badge variant={skill.status === "ACTIVE" ? "default" : "secondary"}>
-                {skill.status}
+              <Badge variant={skill.isEnabled ? "default" : "secondary"}>
+                {skill.isEnabled ? "Active" : "Disabled"}
               </Badge>
             </div>
           </CardHeader>
@@ -291,20 +291,6 @@ export function SkillPlayground({ skill, onTestComplete }: SkillPlaygroundProps)
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {skill.validationQuestions && skill.validationQuestions.length > 0 && (
-                  <div className="space-y-2 mb-4">
-                    <p className="text-sm font-medium">Check-in Questions:</p>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      {skill.validationQuestions.map((q, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <span className="text-[#52EDC7]">•</span>
-                          {q}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
                 <div className="space-y-2">
                   <Label htmlFor="founder-notes">Your Notes</Label>
                   <Textarea

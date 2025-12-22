@@ -22,8 +22,8 @@ const DEMO_SKILLS: Skill[] = [
     slug: "brief-creator",
     name: "Brief Creator",
     description: "Transforms client requests into actionable, complete briefs with proper structure and validation",
-    category: "BRIEF_MANAGEMENT",
-    status: "ACTIVE",
+    category: "WORKFLOW",
+    isEnabled: true,
     triggers: [{ type: "MANUAL" }, { type: "EVENT", eventType: "client.request.received" }],
     inputs: [
       { name: "clientRequest", type: "string", required: true, description: "Raw client request or email" },
@@ -36,12 +36,7 @@ const DEMO_SKILLS: Skill[] = [
       { name: "suggestedTimeline", type: "object", description: "Recommended dates based on scope" },
     ],
     dependsOn: [],
-    founderKnowledge: "Complete brief = actionable deliverables + timelines + comparable past work",
-    validationQuestions: [
-      "Does this brief include comparable past work as reference?",
-      "Would a junior know exactly what to deliver?",
-      "Is the timeline realistic for this scope?",
-    ],
+    version: "1.0.0",
     invocationCount: 47,
     successRate: 94,
     createdAt: new Date(),
@@ -52,8 +47,8 @@ const DEMO_SKILLS: Skill[] = [
     slug: "resource-scanner",
     name: "Resource Scanner",
     description: "Analyzes team capacity and recommends optimal resource allocation",
-    category: "RESOURCE_PLANNING",
-    status: "ACTIVE",
+    category: "DATA_PROCESSING",
+    isEnabled: true,
     triggers: [{ type: "MANUAL" }, { type: "SCHEDULE" }],
     inputs: [
       { name: "briefId", type: "string", required: false, description: "Specific brief to staff" },
@@ -66,12 +61,7 @@ const DEMO_SKILLS: Skill[] = [
       { name: "conflicts", type: "array", description: "Scheduling conflicts to resolve" },
     ],
     dependsOn: [],
-    founderKnowledge: "80% utilization is real capacity. Right person = speed + client knowledge + discipline.",
-    validationQuestions: [
-      "Does this account for client relationship history?",
-      "Are we respecting the 80% capacity threshold?",
-      "Would this person actually be available?",
-    ],
+    version: "1.0.0",
     invocationCount: 23,
     successRate: 87,
     createdAt: new Date(),
@@ -198,8 +188,8 @@ export default function SandboxPage() {
                         {skill.description}
                       </CardDescription>
                     </div>
-                    <Badge variant={skill.status === "ACTIVE" ? "default" : "secondary"}>
-                      {skill.status}
+                    <Badge variant={skill.isEnabled ? "default" : "secondary"}>
+                      {skill.isEnabled ? "Active" : "Disabled"}
                     </Badge>
                   </div>
                 </CardHeader>

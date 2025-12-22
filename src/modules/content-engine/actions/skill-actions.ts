@@ -26,14 +26,12 @@ export async function getSkills(): Promise<Skill[]> {
     name: skill.name,
     description: skill.description,
     category: skill.category as SkillCategory,
-    status: skill.status as Skill["status"],
-    triggers: skill.triggers as SkillTrigger[],
-    inputs: skill.inputs as SkillInput[],
-    outputs: skill.outputs as SkillOutput[],
+    isEnabled: skill.isEnabled,
+    triggers: skill.triggers as unknown as SkillTrigger[],
+    inputs: skill.inputs as unknown as SkillInput[],
+    outputs: skill.outputs as unknown as SkillOutput[],
     dependsOn: skill.dependsOn,
-    systemPrompt: skill.systemPrompt ?? undefined,
-    founderKnowledge: skill.founderKnowledge ?? undefined,
-    validationQuestions: skill.validationQuestions,
+    version: skill.version,
     invocationCount: skill.invocationCount,
     successRate: skill.successRate,
     createdAt: skill.createdAt,
@@ -65,14 +63,12 @@ export async function getSkill(slug: string): Promise<Skill | null> {
     name: skill.name,
     description: skill.description,
     category: skill.category as SkillCategory,
-    status: skill.status as Skill["status"],
-    triggers: skill.triggers as SkillTrigger[],
-    inputs: skill.inputs as SkillInput[],
-    outputs: skill.outputs as SkillOutput[],
+    isEnabled: skill.isEnabled,
+    triggers: skill.triggers as unknown as SkillTrigger[],
+    inputs: skill.inputs as unknown as SkillInput[],
+    outputs: skill.outputs as unknown as SkillOutput[],
     dependsOn: skill.dependsOn,
-    systemPrompt: skill.systemPrompt ?? undefined,
-    founderKnowledge: skill.founderKnowledge ?? undefined,
-    validationQuestions: skill.validationQuestions,
+    version: skill.version,
     invocationCount: skill.invocationCount,
     successRate: skill.successRate,
     createdAt: skill.createdAt,
@@ -90,9 +86,6 @@ interface CreateSkillInput {
   inputs?: SkillInput[];
   outputs?: SkillOutput[];
   dependsOn?: string[];
-  systemPrompt?: string;
-  founderKnowledge?: string;
-  validationQuestions?: string[];
 }
 
 export async function createSkill(input: CreateSkillInput): Promise<Skill> {
@@ -112,14 +105,11 @@ export async function createSkill(input: CreateSkillInput): Promise<Skill> {
       name: input.name,
       description: input.description,
       category: input.category,
-      status: "DRAFT",
-      triggers: input.triggers ?? [],
-      inputs: input.inputs ?? [],
-      outputs: input.outputs ?? [],
+      isEnabled: false,
+      triggers: JSON.parse(JSON.stringify(input.triggers ?? [])),
+      inputs: JSON.parse(JSON.stringify(input.inputs ?? [])),
+      outputs: JSON.parse(JSON.stringify(input.outputs ?? [])),
       dependsOn: input.dependsOn ?? [],
-      systemPrompt: input.systemPrompt,
-      founderKnowledge: input.founderKnowledge,
-      validationQuestions: input.validationQuestions ?? [],
     },
   });
 
@@ -131,14 +121,12 @@ export async function createSkill(input: CreateSkillInput): Promise<Skill> {
     name: skill.name,
     description: skill.description,
     category: skill.category as SkillCategory,
-    status: skill.status as Skill["status"],
-    triggers: skill.triggers as SkillTrigger[],
-    inputs: skill.inputs as SkillInput[],
-    outputs: skill.outputs as SkillOutput[],
+    isEnabled: skill.isEnabled,
+    triggers: skill.triggers as unknown as SkillTrigger[],
+    inputs: skill.inputs as unknown as SkillInput[],
+    outputs: skill.outputs as unknown as SkillOutput[],
     dependsOn: skill.dependsOn,
-    systemPrompt: skill.systemPrompt ?? undefined,
-    founderKnowledge: skill.founderKnowledge ?? undefined,
-    validationQuestions: skill.validationQuestions,
+    version: skill.version,
     invocationCount: skill.invocationCount,
     successRate: skill.successRate,
     createdAt: skill.createdAt,
@@ -151,14 +139,12 @@ interface UpdateSkillInput {
   name?: string;
   description?: string;
   category?: SkillCategory;
-  status?: Skill["status"];
+  isEnabled?: boolean;
   triggers?: SkillTrigger[];
   inputs?: SkillInput[];
   outputs?: SkillOutput[];
   dependsOn?: string[];
-  systemPrompt?: string;
-  founderKnowledge?: string;
-  validationQuestions?: string[];
+  version?: string;
 }
 
 export async function updateSkill(slug: string, input: UpdateSkillInput): Promise<Skill> {
@@ -182,14 +168,12 @@ export async function updateSkill(slug: string, input: UpdateSkillInput): Promis
       name: input.name,
       description: input.description,
       category: input.category,
-      status: input.status,
-      triggers: input.triggers,
-      inputs: input.inputs,
-      outputs: input.outputs,
+      isEnabled: input.isEnabled,
+      triggers: input.triggers ? JSON.parse(JSON.stringify(input.triggers)) : undefined,
+      inputs: input.inputs ? JSON.parse(JSON.stringify(input.inputs)) : undefined,
+      outputs: input.outputs ? JSON.parse(JSON.stringify(input.outputs)) : undefined,
       dependsOn: input.dependsOn,
-      systemPrompt: input.systemPrompt,
-      founderKnowledge: input.founderKnowledge,
-      validationQuestions: input.validationQuestions,
+      version: input.version,
     },
   });
 
@@ -202,14 +186,12 @@ export async function updateSkill(slug: string, input: UpdateSkillInput): Promis
     name: skill.name,
     description: skill.description,
     category: skill.category as SkillCategory,
-    status: skill.status as Skill["status"],
-    triggers: skill.triggers as SkillTrigger[],
-    inputs: skill.inputs as SkillInput[],
-    outputs: skill.outputs as SkillOutput[],
+    isEnabled: skill.isEnabled,
+    triggers: skill.triggers as unknown as SkillTrigger[],
+    inputs: skill.inputs as unknown as SkillInput[],
+    outputs: skill.outputs as unknown as SkillOutput[],
     dependsOn: skill.dependsOn,
-    systemPrompt: skill.systemPrompt ?? undefined,
-    founderKnowledge: skill.founderKnowledge ?? undefined,
-    validationQuestions: skill.validationQuestions,
+    version: skill.version,
     invocationCount: skill.invocationCount,
     successRate: skill.successRate,
     createdAt: skill.createdAt,
@@ -217,9 +199,9 @@ export async function updateSkill(slug: string, input: UpdateSkillInput): Promis
   };
 }
 
-// Activate a skill (move from DRAFT to ACTIVE)
+// Activate a skill (enable it)
 export async function activateSkill(slug: string): Promise<Skill> {
-  return updateSkill(slug, { status: "ACTIVE" });
+  return updateSkill(slug, { isEnabled: true });
 }
 
 // Get skill categories with counts
@@ -261,7 +243,7 @@ export async function getSkillStats(slug: string) {
     },
     include: {
       invocations: {
-        orderBy: { createdAt: "desc" },
+        orderBy: { startedAt: "desc" },
         take: 10,
       },
     },
@@ -292,7 +274,7 @@ export async function getSkillStats(slug: string) {
       status: inv.status,
       triggeredBy: inv.triggeredBy,
       durationMs: inv.durationMs,
-      createdAt: inv.createdAt,
+      startedAt: inv.startedAt,
     })),
   };
 }

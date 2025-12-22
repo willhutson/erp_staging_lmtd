@@ -12,12 +12,9 @@ import { getSkillBySlug, checkDependencies } from "./skill-registry";
 export interface InvocationInput {
   skillSlug: string;
   inputs: Record<string, unknown>;
-  triggeredBy: "MANUAL" | "EVENT" | "SCHEDULE" | "DEPENDENCY";
-  triggerContext?: {
-    eventType?: string;
-    entityType?: string;
-    entityId?: string;
-  };
+  triggeredBy: "MANUAL" | "EVENT" | "SCHEDULE" | "AGENT" | "API" | "WEBHOOK";
+  entityType?: string;
+  entityId?: string;
 }
 
 export interface InvocationResult {
@@ -34,8 +31,8 @@ export interface InvocationResult {
 }
 
 export interface SkillContext {
-  systemPrompt: string;
-  founderKnowledge: string | null;
+  skillName: string;
+  skillDescription: string;
   relevantDocuments: Array<{
     path: string;
     title: string;
@@ -73,10 +70,11 @@ export async function invokeSkill(input: InvocationInput): Promise<InvocationRes
   const invocation = await db.agentInvocation.create({
     data: {
       organizationId,
-      skillId: "", // Will update after loading skill
+      skillSlug: input.skillSlug,
       triggeredBy: input.triggeredBy,
-      triggerContext: input.triggerContext ?? {},
-      inputData: input.inputs,
+      entityType: input.entityType,
+      entityId: input.entityId,
+      input: JSON.parse(JSON.stringify(input.inputs)),
       status: "PENDING",
     },
   });
@@ -88,7 +86,7 @@ export async function invokeSkill(input: InvocationInput): Promise<InvocationRes
       throw new Error(`Skill not found: ${input.skillSlug}`);
     }
 
-    if (skill.status !== "ACTIVE") {
+    if (!skill.isEnabled) {
       throw new Error(`Skill is not active: ${input.skillSlug}`);
     }
 
@@ -124,14 +122,14 @@ export async function invokeSkill(input: InvocationInput): Promise<InvocationRes
       where: { id: invocation.id },
       data: {
         status: "COMPLETED",
-        outputData: outputs,
+        output: JSON.parse(JSON.stringify(outputs)),
         durationMs: duration,
         completedAt: new Date(),
       },
     });
 
     // 7. Update skill stats
-    await updateSkillStats(skill.id, true, duration);
+    await updateSkillStats(skill.id, true);
 
     return {
       success: true,
@@ -139,7 +137,7 @@ export async function invokeSkill(input: InvocationInput): Promise<InvocationRes
       outputs,
       duration,
       metadata: {
-        contextSize: context.systemPrompt.length + (context.founderKnowledge?.length ?? 0),
+        contextSize: context.skillDescription.length,
       },
     };
   } catch (error) {
@@ -159,7 +157,7 @@ export async function invokeSkill(input: InvocationInput): Promise<InvocationRes
 
     // Update skill stats
     if (invocation.skillId) {
-      await updateSkillStats(invocation.skillId, false, duration);
+      await updateSkillStats(invocation.skillId, false);
     }
 
     return {
@@ -221,9 +219,6 @@ async function buildSkillContext(
   inputs: Record<string, unknown>,
   organizationId: string
 ): Promise<SkillContext> {
-  // Build the system prompt
-  const systemPrompt = buildSystemPrompt(skill, inputs);
-
   // Get relevant knowledge documents
   const relevantDocuments = await getRelevantDocuments(skill, organizationId);
 
@@ -231,45 +226,11 @@ async function buildSkillContext(
   const entityContext = await buildEntityContext(inputs);
 
   return {
-    systemPrompt,
-    founderKnowledge: skill.founderKnowledge ?? null,
+    skillName: skill.name,
+    skillDescription: skill.description,
     relevantDocuments,
     entityContext,
   };
-}
-
-function buildSystemPrompt(skill: Skill, inputs: Record<string, unknown>): string {
-  const parts: string[] = [];
-
-  // Skill identity
-  parts.push(`You are executing the "${skill.name}" skill.`);
-  parts.push(`Description: ${skill.description}`);
-  parts.push("");
-
-  // Custom system prompt
-  if (skill.systemPrompt) {
-    parts.push("## Instructions");
-    parts.push(skill.systemPrompt);
-    parts.push("");
-  }
-
-  // Expected outputs
-  if (skill.outputs && skill.outputs.length > 0) {
-    parts.push("## Expected Outputs");
-    for (const output of skill.outputs) {
-      parts.push(`- ${output.name} (${output.type}): ${output.description ?? ""}`);
-    }
-    parts.push("");
-  }
-
-  // Input context
-  parts.push("## Provided Inputs");
-  for (const [key, value] of Object.entries(inputs)) {
-    const displayValue = typeof value === "object" ? JSON.stringify(value, null, 2) : String(value);
-    parts.push(`- ${key}: ${displayValue}`);
-  }
-
-  return parts.join("\n");
 }
 
 async function getRelevantDocuments(
@@ -372,7 +333,7 @@ async function executeSkill(
 ): Promise<Record<string, unknown>> {
   // TODO: Implement actual skill execution with LLM
   // For now, log context and inputs to satisfy linter, will be used when LLM integration is added
-  console.debug("Executing skill with context:", context.invocationId, "inputs:", Object.keys(inputs));
+  console.debug("Executing skill with context:", context.skillName, "inputs:", Object.keys(inputs));
 
   // Placeholder: Return mock outputs based on skill outputs definition
   const outputs: Record<string, unknown> = {};
@@ -405,8 +366,7 @@ async function executeSkill(
   outputs._meta = {
     executedAt: new Date().toISOString(),
     skillSlug: skill.slug,
-    contextSize: context.systemPrompt.length,
-    hasFounderKnowledge: !!context.founderKnowledge,
+    contextSize: context.skillDescription.length,
     relevantDocsCount: context.relevantDocuments.length,
     placeholder: true, // Indicates this is a placeholder response
   };
@@ -420,8 +380,7 @@ async function executeSkill(
 
 async function updateSkillStats(
   skillId: string,
-  success: boolean,
-  durationMs: number
+  success: boolean
 ): Promise<void> {
   const skill = await db.agentSkill.findUnique({
     where: { id: skillId },
@@ -443,9 +402,6 @@ async function updateSkillStats(
       invocationCount: newCount,
       successRate: Math.round(newSuccessRate * 100) / 100,
       lastInvokedAt: new Date(),
-      avgDurationMs: skill.avgDurationMs
-        ? Math.round((skill.avgDurationMs * (newCount - 1) + durationMs) / newCount)
-        : durationMs,
     },
   });
 }
@@ -468,7 +424,7 @@ export async function invokeSkillChain(
     const result = await invokeSkill({
       skillSlug: slug,
       inputs: currentInputs,
-      triggeredBy: "DEPENDENCY",
+      triggeredBy: "AGENT",
     });
 
     results.push(result);

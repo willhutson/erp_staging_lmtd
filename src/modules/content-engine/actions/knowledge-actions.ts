@@ -165,7 +165,7 @@ export async function syncSkillsFromFilesystem() {
       try {
         const filePath = path.join(skillsDir, file);
         const content = await fs.readFile(filePath, "utf-8");
-        const { data, content: body } = matter(content);
+        const { data } = matter(content);
         const fm = data as SkillFrontmatter;
 
         const slug = fm.slug || file.replace(".md", "");
@@ -180,29 +180,29 @@ export async function syncSkillsFromFilesystem() {
           },
         });
 
-        // Map category to enum
-        const categoryMap: Record<string, string> = {
-          BRIEF_MANAGEMENT: "BRIEF_MANAGEMENT",
-          RESOURCE_PLANNING: "RESOURCE_PLANNING",
-          CLIENT_RELATIONS: "CLIENT_RELATIONS",
+        // Map category to enum (SkillCategory values)
+        type SkillCategoryType = "CONTENT_CREATION" | "CONTENT_ANALYSIS" | "WORKFLOW" | "COMMUNICATION" | "DATA_PROCESSING" | "DECISION" | "INTEGRATION" | "UTILITY";
+        const categoryMap: Record<string, SkillCategoryType> = {
+          BRIEF_MANAGEMENT: "WORKFLOW",
+          RESOURCE_PLANNING: "WORKFLOW",
+          CLIENT_RELATIONS: "COMMUNICATION",
           CONTENT_CREATION: "CONTENT_CREATION",
-          QUALITY_ASSURANCE: "QUALITY_ASSURANCE",
-          ANALYTICS: "ANALYTICS",
+          QUALITY_ASSURANCE: "CONTENT_ANALYSIS",
+          ANALYTICS: "DATA_PROCESSING",
           WORKFLOW: "WORKFLOW",
-          KNOWLEDGE: "KNOWLEDGE",
+          KNOWLEDGE: "UTILITY",
         };
-        const category = categoryMap[fm.category ?? "WORKFLOW"] ?? "WORKFLOW";
+        const category: SkillCategoryType = categoryMap[fm.category ?? "WORKFLOW"] ?? "WORKFLOW";
 
         const skillData = {
           name: fm.title,
           description: fm.description ?? "",
           category,
-          status: fm.status === "PUBLISHED" ? "ACTIVE" : "DRAFT",
-          triggers: fm.triggers ?? [],
-          inputs: fm.inputs ?? [],
-          outputs: fm.outputs ?? [],
+          isEnabled: fm.status === "PUBLISHED",
+          triggers: JSON.parse(JSON.stringify(fm.triggers ?? [])),
+          inputs: JSON.parse(JSON.stringify(fm.inputs ?? [])),
+          outputs: JSON.parse(JSON.stringify(fm.outputs ?? [])),
           dependsOn: fm.dependencies ?? [],
-          founderKnowledge: body,
           version: fm.version ?? "1.0.0",
         };
 
@@ -245,7 +245,7 @@ export interface SkillOverview {
   name: string;
   description: string;
   category: string;
-  status: string;
+  isEnabled: boolean;
   invocationCount: number;
   successRate: number | null;
   lastInvokedAt: Date | null;
@@ -266,7 +266,7 @@ export async function getSkillsOverview(): Promise<SkillOverview[]> {
       organizationId: session.user.organizationId,
     },
     orderBy: [
-      { status: "asc" },
+      { isEnabled: "desc" },
       { invocationCount: "desc" },
     ],
   });
@@ -277,7 +277,7 @@ export async function getSkillsOverview(): Promise<SkillOverview[]> {
     name: skill.name,
     description: skill.description,
     category: skill.category,
-    status: skill.status,
+    isEnabled: skill.isEnabled,
     invocationCount: skill.invocationCount,
     successRate: skill.successRate,
     lastInvokedAt: skill.lastInvokedAt,
@@ -288,14 +288,14 @@ export async function getSkillsOverview(): Promise<SkillOverview[]> {
 
 function getSkillUsageContext(category: string): string[] {
   const usageMap: Record<string, string[]> = {
-    BRIEF_MANAGEMENT: ["Brief Creation", "Brief Assignment", "Brief Routing"],
-    RESOURCE_PLANNING: ["Team Assignment", "Capacity Planning", "Workload Balancing"],
-    CLIENT_RELATIONS: ["Client Health Monitoring", "Relationship Scoring", "Churn Prediction"],
-    QUALITY_ASSURANCE: ["Deliverable Review", "Quality Scoring", "Pre-delivery Checks"],
-    WORKFLOW: ["Deadline Tracking", "Status Updates", "Escalations"],
     CONTENT_CREATION: ["Copy Generation", "Report Building", "Template Filling"],
-    ANALYTICS: ["Performance Reports", "Trend Analysis", "Forecasting"],
-    KNOWLEDGE: ["Document Retrieval", "Context Building", "Knowledge Search"],
+    CONTENT_ANALYSIS: ["Deliverable Review", "Quality Scoring", "Pre-delivery Checks"],
+    WORKFLOW: ["Brief Creation", "Brief Assignment", "Deadline Tracking", "Status Updates"],
+    COMMUNICATION: ["Client Health Monitoring", "Notifications", "Emails"],
+    DATA_PROCESSING: ["Performance Reports", "Trend Analysis", "Aggregation"],
+    DECISION: ["Recommendations", "Approvals", "Routing"],
+    INTEGRATION: ["API Calls", "Syncs", "External Services"],
+    UTILITY: ["Formatting", "Validation", "Document Retrieval"],
   };
   return usageMap[category] ?? ["General Operations"];
 }
@@ -345,7 +345,7 @@ export async function getSkillsByUsageArea() {
       name: skill.name,
       description: skill.description,
       category: skill.category,
-      status: skill.status,
+      isEnabled: skill.isEnabled,
       invocationCount: skill.invocationCount,
       successRate: skill.successRate,
       lastInvokedAt: skill.lastInvokedAt,
@@ -353,22 +353,22 @@ export async function getSkillsByUsageArea() {
     };
 
     switch (skill.category) {
-      case "BRIEF_MANAGEMENT":
+      case "WORKFLOW":
         areas["Brief & Project Management"].skills.push(overview);
         break;
-      case "RESOURCE_PLANNING":
+      case "DATA_PROCESSING":
         areas["Team & Resources"].skills.push(overview);
         break;
-      case "CLIENT_RELATIONS":
+      case "COMMUNICATION":
         areas["Client Relations"].skills.push(overview);
         break;
-      case "QUALITY_ASSURANCE":
-      case "WORKFLOW":
+      case "CONTENT_ANALYSIS":
+      case "DECISION":
         areas["Quality & Delivery"].skills.push(overview);
         break;
-      case "ANALYTICS":
       case "CONTENT_CREATION":
-      case "KNOWLEDGE":
+      case "INTEGRATION":
+      case "UTILITY":
       default:
         areas["Reporting & Analytics"].skills.push(overview);
         break;

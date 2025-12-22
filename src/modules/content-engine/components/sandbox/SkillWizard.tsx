@@ -48,14 +48,14 @@ interface SkillDraft {
 }
 
 const CATEGORIES: { value: SkillCategory; label: string; description: string }[] = [
-  { value: "BRIEF_MANAGEMENT", label: "Brief Management", description: "Creating, reviewing, and managing client briefs" },
-  { value: "RESOURCE_PLANNING", label: "Resource Planning", description: "Team capacity, assignments, and scheduling" },
-  { value: "CLIENT_RELATIONS", label: "Client Relations", description: "Client communication and relationship management" },
   { value: "CONTENT_CREATION", label: "Content Creation", description: "Video, design, copy, and creative production" },
-  { value: "QUALITY_ASSURANCE", label: "Quality Assurance", description: "Review, feedback, and approval workflows" },
-  { value: "ANALYTICS", label: "Analytics", description: "Reporting, metrics, and performance analysis" },
-  { value: "WORKFLOW", label: "Workflow", description: "Process automation and orchestration" },
-  { value: "KNOWLEDGE", label: "Knowledge", description: "Documentation and institutional knowledge" },
+  { value: "CONTENT_ANALYSIS", label: "Content Analysis", description: "Review, feedback, and quality assurance workflows" },
+  { value: "WORKFLOW", label: "Workflow", description: "Process automation, briefs, and orchestration" },
+  { value: "COMMUNICATION", label: "Communication", description: "Client communication and relationship management" },
+  { value: "DATA_PROCESSING", label: "Data Processing", description: "Reporting, metrics, and performance analysis" },
+  { value: "DECISION", label: "Decision", description: "Approval workflows and decision-making automation" },
+  { value: "INTEGRATION", label: "Integration", description: "External service connections and API integrations" },
+  { value: "UTILITY", label: "Utility", description: "Helper functions and general-purpose tools" },
 ];
 
 const STEPS = [
