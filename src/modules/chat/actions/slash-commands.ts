@@ -172,6 +172,7 @@ registerCommand({
     "/remind 2h Review PR",
     "/remind tomorrow Submit report",
   ],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   handler: async (args, _context) => {
     if (!args) {
       return {

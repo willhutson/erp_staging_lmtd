@@ -86,7 +86,8 @@ export function MessageSearch({
   channels,
   users,
   onSelectMessage,
-  currentChannelId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  currentChannelId: _currentChannelId,
 }: MessageSearchProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
