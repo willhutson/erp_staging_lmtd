@@ -16,11 +16,17 @@ Internal communication platform with Slack-like features:
 /src/modules/chat
 ├── actions/
 │   ├── channel-actions.ts      # Channel CRUD, members, DMs
-│   └── message-actions.ts      # Messages, reactions, pins
+│   ├── message-actions.ts      # Messages, reactions, pins
+│   └── presence-actions.ts     # User presence management
 ├── components/
 │   ├── ChannelSidebar.tsx      # Channel list sidebar
 │   ├── MessageEditor.tsx       # Tiptap-based message composer
-│   └── MessageList.tsx         # Message display with reactions
+│   ├── MessageList.tsx         # Message display with reactions
+│   ├── ThreadView.tsx          # Thread conversation panel
+│   ├── PresenceIndicator.tsx   # Online/away/offline dots
+│   └── TypingIndicator.tsx     # "X is typing..." component
+├── hooks/
+│   └── usePresence.ts          # Automatic presence tracking
 └── CLAUDE.md                   # This file
 
 /src/app/(dashboard)/chat
@@ -93,13 +99,15 @@ NEXT_PUBLIC_PUSHER_CLUSTER=ap2
 | `reaction:added` | `{ messageId, reaction }` | Reaction added |
 | `reaction:removed` | `{ messageId, emoji, userId }` | Reaction removed |
 | `user:typing` | `{ user, channelId }` | Typing indicator |
+| `user:stop-typing` | `{ userId, channelId }` | Stopped typing |
+| `presence:changed` | `{ userId, status, ... }` | User presence update |
 | `mention:received` | `{ message, mentionedBy }` | User mentioned |
 
 ### Channel Names
 
 - `channel-{channelId}` - Messages in a channel
 - `user-{userId}` - Personal notifications
-- `presence-channel-{channelId}` - Who's online (future)
+- `presence-global` - Global presence updates
 
 ## Tiptap Editor
 
@@ -170,15 +178,94 @@ const dm = await findOrCreateDM(organizationId, [userId1, userId2]);
 - DMs are restricted to participants
 - Channel owners/admins can manage members
 
-## Future Enhancements (Phase 18.2+)
+## Threads (Phase 18.3)
 
-1. **Threads** - Full thread view and notifications
-2. **Presence** - Online/away/offline status
-3. **Search** - Full-text message search
-4. **File Uploads** - Direct file sharing
-5. **Module Integrations**:
+```tsx
+import { ThreadView } from "@/modules/chat/components/ThreadView";
+
+<ThreadView
+  open={showThread}
+  onClose={() => setShowThread(false)}
+  parentMessage={selectedMessage}
+  channelId={channelId}
+  organizationId={orgId}
+  currentUserId={userId}
+  users={users}
+/>
+```
+
+## Presence (Phase 18.3)
+
+### Automatic Tracking
+
+```tsx
+import { usePresence } from "@/modules/chat/hooks/usePresence";
+
+// In your layout or chat page
+usePresence({
+  userId: currentUserId,
+  idleTimeoutMs: 5 * 60 * 1000, // 5 min to away
+  heartbeatIntervalMs: 60 * 1000, // 1 min heartbeat
+});
+```
+
+### Presence Indicator
+
+```tsx
+import {
+  PresenceIndicator,
+  AvatarWithPresence,
+  PresenceBadge,
+} from "@/modules/chat/components/PresenceIndicator";
+
+// Simple dot
+<PresenceIndicator userId="user-123" initialStatus="ONLINE" />
+
+// Avatar with presence dot
+<AvatarWithPresence
+  userId="user-123"
+  name="John Doe"
+  avatarUrl="/avatar.jpg"
+  initialStatus="ONLINE"
+/>
+
+// Badge for lists
+<PresenceBadge status="AWAY" />
+```
+
+### Typing Indicator
+
+```tsx
+import {
+  TypingIndicator,
+  useTyping,
+} from "@/modules/chat/components/TypingIndicator";
+
+// Show who's typing
+<TypingIndicator
+  channelId={channelId}
+  currentUserId={userId}
+/>
+
+// In message composer
+const { handleTyping, stopTyping } = useTyping({
+  channelId,
+  userId,
+  userName: "John",
+});
+
+// Call handleTyping() on input change
+// Call stopTyping() after sending
+```
+
+## Future Enhancements
+
+1. **Search** - Full-text message search
+2. **File Uploads** - Direct file sharing
+3. **Module Integrations**:
    - Brief created → Post to channel
    - Approval needed → DM assignee
    - Content published → Celebrate in team channel
-6. **Mobile Push** - Push notifications
-7. **Slash Commands** - `/giphy`, `/poll`, etc.
+4. **Mobile Push** - Push notifications
+5. **Slash Commands** - `/giphy`, `/poll`, etc.
+6. **Read Receipts** - See who's read messages

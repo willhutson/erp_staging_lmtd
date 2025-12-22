@@ -85,6 +85,7 @@ export const PUSHER_EVENTS = {
   USER_ONLINE: "user:online",
   USER_OFFLINE: "user:offline",
   USER_AWAY: "user:away",
+  PRESENCE_CHANGED: "presence:changed",
 
   // Channel events
   CHANNEL_CREATED: "channel:created",
@@ -205,4 +206,12 @@ export interface MentionReceivedEvent {
     id: string;
     name: string;
   };
+}
+
+export interface PresenceChangedEvent {
+  userId: string;
+  status: "ONLINE" | "AWAY" | "DND" | "OFFLINE";
+  statusText?: string | null;
+  statusEmoji?: string | null;
+  lastSeenAt: string;
 }
