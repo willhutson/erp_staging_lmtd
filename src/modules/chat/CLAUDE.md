@@ -557,11 +557,71 @@ await createAttachment({
 });
 ```
 
+## Notification Preferences (Phase 18.6)
+
+User-configurable notification settings.
+
+### Features
+- Global enable/disable
+- Sound & desktop notification toggles
+- Notify on: DMs, @mentions, all messages, threads, reactions
+- Quiet hours with timezone support (UAE default)
+- Channel-specific overrides (all/mentions/muted)
+- Custom keywords (always notify)
+
+### Usage
+
+```typescript
+import { NotificationSettings } from "@/modules/chat/components";
+
+<NotificationSettings
+  userId={userId}
+  initialPreferences={preferences}
+  channels={userChannels}
+/>
+```
+
+### Server Actions
+
+```typescript
+import {
+  getNotificationPreferences,
+  updateNotificationPreferences,
+  muteChannel,
+  addKeyword,
+  shouldNotify,
+} from "@/modules/chat/actions/notification-preferences";
+
+// Get user preferences
+const prefs = await getNotificationPreferences(userId);
+
+// Update preferences
+await updateNotificationPreferences(userId, {
+  quietHoursEnabled: true,
+  quietHoursStart: "22:00",
+  quietHoursEnd: "08:00",
+});
+
+// Mute a channel
+await muteChannel(userId, channelId);
+
+// Add alert keyword
+await addKeyword(userId, "urgent");
+
+// Check if should notify
+const { notify, reason } = await shouldNotify({
+  userId,
+  type: "mention",
+  channelId,
+  messageContent: "Hey, this is urgent!",
+});
+```
+
 ## Future Enhancements
 
 1. ~~**Search** - Full-text message search~~ ✅ Phase 18.6
 2. ~~**File Uploads** - Direct file sharing~~ ✅ Phase 18.6
-3. **Notification Preferences** - User-configurable notification settings
+3. ~~**Notification Preferences** - User-configurable settings~~ ✅ Phase 18.6
 4. **Mobile Push** - Push notifications
 5. **Slash Commands** - `/giphy`, `/poll`, etc.
 6. **Read Receipts** - See who's read messages

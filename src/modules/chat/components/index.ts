@@ -25,3 +25,6 @@ export {
   type FileUploadItem,
   type MessageAttachment,
 } from "./FileUpload";
+
+// Settings
+export { NotificationSettings } from "./NotificationSettings";
