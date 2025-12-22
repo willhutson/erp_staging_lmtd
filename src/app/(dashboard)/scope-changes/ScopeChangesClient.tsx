@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ScopeChangeImpact, ScopeApprovalStatus } from "@/modules/scope-changes/actions/scope-change-actions";
+import type { Decimal } from "@prisma/client/runtime/library";
 
 interface ScopeChange {
   id: string;
@@ -25,9 +26,9 @@ interface ScopeChange {
   newDirection: string;
   reason: string | null;
   impactLevel: ScopeChangeImpact;
-  hoursSpentBefore: number | null;
-  estimatedAdditionalHours: number | null;
-  costImpact: number | null;
+  hoursSpentBefore: Decimal | null;
+  estimatedAdditionalHours: Decimal | null;
+  costImpact: Decimal | null;
   requiresApproval: boolean;
   approvalStatus: ScopeApprovalStatus;
   clientNotes: string | null;
@@ -74,7 +75,7 @@ export function ScopeChangesClient({ scopeChanges }: ScopeChangesClientProps) {
     total: scopeChanges.length,
     pending: scopeChanges.filter((c) => c.approvalStatus === "PENDING").length,
     critical: scopeChanges.filter((c) => c.impactLevel === "CRITICAL" || c.impactLevel === "MAJOR").length,
-    totalHoursAdded: scopeChanges.reduce((sum, c) => sum + (c.estimatedAdditionalHours || 0), 0),
+    totalHoursAdded: scopeChanges.reduce((sum, c) => sum + (Number(c.estimatedAdditionalHours) || 0), 0),
     totalCostImpact: scopeChanges.reduce((sum, c) => sum + (Number(c.costImpact) || 0), 0),
   };
 
@@ -231,7 +232,7 @@ export function ScopeChangesClient({ scopeChanges }: ScopeChangesClientProps) {
                   <div className="text-right text-sm space-y-1">
                     {change.estimatedAdditionalHours && (
                       <div className="text-gray-500">
-                        +{change.estimatedAdditionalHours}h added
+                        +{Number(change.estimatedAdditionalHours)}h added
                       </div>
                     )}
                     {change.costImpact && (
