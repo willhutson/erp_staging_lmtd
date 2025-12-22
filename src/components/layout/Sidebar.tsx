@@ -29,6 +29,7 @@ import {
   MessageSquare,
   Inbox,
   FolderOpen,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -126,6 +127,12 @@ const navItems: NavItem[] = [
     title: "NPS",
     href: "/nps",
     icon: <Star className="w-5 h-5" />,
+    requiredLevels: ["ADMIN", "LEADERSHIP"],
+  },
+  {
+    title: "Content Engine",
+    href: "/content-engine",
+    icon: <Zap className="w-5 h-5" />,
     requiredLevels: ["ADMIN", "LEADERSHIP"],
   },
   {

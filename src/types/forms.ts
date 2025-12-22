@@ -1,4 +1,12 @@
-import type { BriefType } from "@prisma/client";
+// Brief types - defined locally to avoid @prisma/client import issues
+export type BriefType =
+  | "VIDEO_SHOOT"
+  | "VIDEO_EDIT"
+  | "DESIGN"
+  | "COPYWRITING_EN"
+  | "COPYWRITING_AR"
+  | "PAID_MEDIA"
+  | "REPORT";
 
 export type FieldType =
   | "text"

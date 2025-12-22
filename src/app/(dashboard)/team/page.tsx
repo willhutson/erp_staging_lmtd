@@ -4,6 +4,11 @@ import { Users, Mail, Phone } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+// Inferred type from Prisma query
+type UserWithDetails = Awaited<ReturnType<typeof db.user.findMany<{
+  include: { teamLead: { select: { id: true; name: true } }; _count: { select: { briefsAssigned: true; managedClients: true } } }
+}>>>[number];
+
 const departmentColors: Record<string, string> = {
   "Creative & Design": "bg-purple-100 text-purple-700",
   "Video Production": "bg-blue-100 text-blue-700",
@@ -43,18 +48,18 @@ export default async function TeamPage() {
 
   // Group by department
   const departments = users.reduce(
-    (acc, user) => {
+    (acc: Record<string, UserWithDetails[]>, user: UserWithDetails) => {
       if (!acc[user.department]) {
         acc[user.department] = [];
       }
       acc[user.department].push(user);
       return acc;
     },
-    {} as Record<string, typeof users>
+    {} as Record<string, UserWithDetails[]>
   );
 
   const totalUsers = users.length;
-  const freelancers = users.filter((u) => u.isFreelancer).length;
+  const freelancers = users.filter((u: UserWithDetails) => u.isFreelancer).length;
 
   return (
     <div className="space-y-6">
@@ -95,7 +100,7 @@ export default async function TeamPage() {
       </div>
 
       {/* Department sections */}
-      {Object.entries(departments).map(([department, members]) => (
+      {Object.entries(departments).map(([department, members]: [string, UserWithDetails[]]) => (
         <div key={department} className="space-y-3">
           <div className="flex items-center gap-2">
             <span
@@ -110,7 +115,7 @@ export default async function TeamPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {members.map((user) => (
+            {members.map((user: UserWithDetails) => (
               <Link
                 key={user.id}
                 href={`/team/${user.id}`}
@@ -128,7 +133,7 @@ export default async function TeamPage() {
                     ) : (
                       user.name
                         .split(" ")
-                        .map((n) => n[0])
+                        .map((n: string) => n[0])
                         .join("")
                         .slice(0, 2)
                     )}

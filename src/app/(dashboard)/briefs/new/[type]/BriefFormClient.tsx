@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DynamicForm } from "@/components/forms/DynamicForm";
-import type { FormConfig } from "@/types/forms";
-import type { BriefType } from "@prisma/client";
+import type { FormConfig, BriefType } from "@/types/forms";
 import { createBrief } from "@/modules/briefs/actions/create-brief";
 
 interface User {

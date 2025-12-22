@@ -100,7 +100,24 @@ export async function submitNPSResponse(data: {
   return response;
 }
 
-export async function getNPSStats(organizationId: string, year?: number) {
+// Explicit return type for getNPSStats to ensure proper type inference
+export interface NPSStatsResult {
+  total: number;
+  promoters: number;
+  passives: number;
+  detractors: number;
+  npsScore: number;
+  avgScore: number;
+  byQuarter: Array<{ quarter: number; responses: number; npsScore: number | null }>;
+  byClient: Array<{
+    client: { id: string; name: string; code: string };
+    responses: number;
+    npsScore: number;
+    avgScore: number;
+  }>;
+}
+
+export async function getNPSStats(organizationId: string, year?: number): Promise<NPSStatsResult> {
   const currentYear = year ?? new Date().getFullYear();
 
   const responses = await db.nPSResponse.findMany({

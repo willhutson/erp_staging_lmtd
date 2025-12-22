@@ -44,6 +44,15 @@ model Organization {
   apiKeys              ApiKey[]
   webhookSubscriptions WebhookSubscription[]
 
+  // Content Engine (Phase 12)
+  knowledgeDocuments   KnowledgeDocument[]
+  agentSkills          AgentSkill[]
+  agentPersonas        AgentPersona[]
+  contentEvents        ContentEvent[]
+  contentTriggers      ContentTrigger[]
+  agentInvocations     AgentInvocation[]
+  deliverables         Deliverable[]
+
   @@map("organizations")
 }
 
@@ -446,6 +455,7 @@ model Brief {
   formSubmission   FormSubmission?  // Link to original form submission
   briefFiles       BriefFile[]
   submissionApprovals SubmissionApproval[]  // Client approval requests
+  deliverables     Deliverable[]            // Work output from this brief
 
   @@index([organizationId])
   @@index([clientId])
@@ -2170,4 +2180,702 @@ model FormSubmissionFile {
 
   @@id([submissionId, fileId])
   @@map("form_submission_files")
+}
+
+// ============================================
+// KNOWLEDGE MANAGEMENT (Phase 12 - Agent Intelligence)
+// ============================================
+
+// Knowledge documents that agents read for context
+model KnowledgeDocument {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // Hierarchical path: "/agents/skills/brief-creator"
+  path            String
+  slug            String
+  title           String
+  description     String?
+
+  // Document classification
+  documentType    KnowledgeDocumentType
+
+  // Content (Markdown with YAML frontmatter)
+  content         String   @db.Text
+  frontmatter     Json     @default("{}")
+
+  // Agent-specific metadata (for SKILL, PERSONA, ORCHESTRATION types)
+  agentMetadata   Json?
+  // Example for SKILL:
+  // {
+  //   "whenToUse": "When client submits a brief request via portal",
+  //   "requiredInputs": ["client_context", "request_details", "available_resources"],
+  //   "expectedOutputs": ["draft_brief", "resource_suggestions", "timeline_estimate"],
+  //   "permissions": ["brief:create", "client:read", "user:read"],
+  //   "dependencies": ["skill_time_estimator", "skill_resource_optimizer"]
+  // }
+
+  // Hierarchy
+  parentId        String?
+  parent          KnowledgeDocument? @relation("DocHierarchy", fields: [parentId], references: [id])
+  children        KnowledgeDocument[] @relation("DocHierarchy")
+
+  // Related documents
+  relatedDocIds   String[]  @default([])
+
+  // Versioning
+  version         Int       @default(1)
+  isLatest        Boolean   @default(true)
+  previousVersionId String?
+
+  // Status & lifecycle
+  status          KnowledgeDocumentStatus @default(DRAFT)
+  effectiveDate   DateTime?
+  expirationDate  DateTime?
+
+  // Access control
+  visibility      DocumentVisibility @default(INTERNAL)
+  allowedRoles    String[]  @default([])
+
+  // Audit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdById     String
+  lastEditedById  String?
+
+  // Relations
+  versions        DocumentVersion[]
+  embeddings      DocumentEmbedding[]
+  usageLog        DocumentUsage[]
+  linkedSkill     AgentSkill?   @relation("SkillDocument")
+  linkedPersona   AgentPersona? @relation("PersonaDocument")
+
+  @@unique([organizationId, path])
+  @@index([organizationId, documentType])
+  @@index([organizationId, status])
+  @@map("knowledge_documents")
+}
+
+enum KnowledgeDocumentType {
+  SKILL           // Agent capability definition
+  PERSONA         // Agent personality/context definition
+  ORCHESTRATION   // Multi-agent workflow definition
+  PROCEDURE       // Step-by-step process (SOPs)
+  POLICY          // Rules and constraints
+  CHECKLIST       // Quality gates
+  PLAYBOOK        // Situational guides (crisis, client types)
+  TEMPLATE        // Reusable content patterns
+  REFERENCE       // Static information (glossary, tools)
+  META            // System documentation (API, schemas)
+}
+
+enum KnowledgeDocumentStatus {
+  DRAFT           // Being written
+  IN_REVIEW       // Submitted for approval
+  APPROVED        // Ready but not active
+  PUBLISHED       // Active and in use
+  DEPRECATED      // Being phased out
+  ARCHIVED        // No longer active
+}
+
+enum DocumentVisibility {
+  PUBLIC          // Visible to clients via portal
+  INTERNAL        // All team members
+  RESTRICTED      // Specific roles only
+  PRIVATE         // Owner only
+}
+
+// Full snapshot versioning for knowledge documents
+model DocumentVersion {
+  id              String   @id @default(cuid())
+
+  documentId      String
+  document        KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  version         Int
+  content         String   @db.Text
+  frontmatter     Json
+
+  changeLog       String?
+  changedSections String[] @default([])
+
+  createdAt       DateTime @default(now())
+  createdById     String
+
+  @@unique([documentId, version])
+  @@index([documentId])
+  @@map("document_versions")
+}
+
+// Vector embeddings for semantic search
+model DocumentEmbedding {
+  id              String   @id @default(cuid())
+
+  documentId      String
+  document        KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  chunkIndex      Int                 // For chunked documents
+  chunkText       String   @db.Text
+  embedding       Bytes               // Store as bytes, deserialize in application
+
+  model           String              // "text-embedding-3-small"
+  dimensions      Int      @default(1536)
+  createdAt       DateTime @default(now())
+
+  @@unique([documentId, chunkIndex])
+  @@index([documentId])
+  @@map("document_embeddings")
+}
+
+// Track how documents are used by agents and humans
+model DocumentUsage {
+  id              String   @id @default(cuid())
+
+  documentId      String
+  document        KnowledgeDocument @relation(fields: [documentId], references: [id])
+
+  usedAt          DateTime @default(now())
+  usedBy          String              // Agent slug or user ID
+  usageType       DocumentUsageType
+
+  // Context
+  sessionId       String?
+  entityType      String?             // What entity triggered this
+  entityId        String?
+  invocationId    String?             // If used during skill invocation
+
+  // Feedback
+  wasHelpful      Boolean?
+  feedback        String?
+
+  @@index([documentId])
+  @@index([usedAt])
+  @@map("document_usage")
+}
+
+enum DocumentUsageType {
+  AGENT_CONTEXT   // Injected into agent context
+  AGENT_RETRIEVAL // Retrieved via semantic search
+  USER_REFERENCE  // Human looked it up
+  API_FETCH       // Fetched via API
+}
+
+// ============================================
+// AGENT SKILLS & PERSONAS (Phase 12)
+// ============================================
+
+// A registered agent capability
+model AgentSkill {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // Identity
+  slug            String              // "brief-creator", "quality-scorer"
+  name            String              // "Brief Creator"
+  description     String
+
+  // Link to knowledge document
+  documentId      String?  @unique
+  document        KnowledgeDocument? @relation("SkillDocument", fields: [documentId], references: [id])
+
+  // Classification
+  category        SkillCategory
+
+  // Capability definition
+  triggers        Json     @default("[]")   // Events/conditions that invoke this skill
+  inputs          Json     @default("[]")   // Required inputs
+  outputs         Json     @default("[]")   // Expected outputs
+
+  // Dependencies
+  dependsOn       String[] @default([])     // Other skill slugs this depends on
+
+  // Configuration
+  config          Json?                     // Runtime configuration
+
+  // Permissions required to invoke
+  requiredPermissions String[] @default([])
+
+  // Status
+  isEnabled       Boolean  @default(true)
+  version         String   @default("1.0.0")
+
+  // Metrics (updated on each invocation)
+  invocationCount Int      @default(0)
+  successCount    Int      @default(0)
+  failureCount    Int      @default(0)
+  successRate     Float?
+  avgLatencyMs    Int?
+  lastInvokedAt   DateTime?
+
+  // Audit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  invocations     AgentInvocation[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, category])
+  @@index([isEnabled])
+  @@map("agent_skills")
+}
+
+enum SkillCategory {
+  CONTENT_CREATION    // Creates content (briefs, copy, reports)
+  CONTENT_ANALYSIS    // Analyzes content (quality scoring, sentiment)
+  WORKFLOW            // Manages workflows (routing, status updates)
+  COMMUNICATION       // Handles communication (notifications, emails)
+  DATA_PROCESSING     // Processes data (aggregation, transformation)
+  DECISION            // Makes decisions (recommendations, approvals)
+  INTEGRATION         // External integrations (API calls, syncs)
+  UTILITY             // Helper functions (formatting, validation)
+}
+
+// Agent personality/context definition
+model AgentPersona {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // Identity
+  slug            String              // "project-manager", "creative-director"
+  name            String              // "Project Manager"
+  description     String
+
+  // Link to knowledge document
+  documentId      String?  @unique
+  document        KnowledgeDocument? @relation("PersonaDocument", fields: [documentId], references: [id])
+
+  // Persona definition
+  systemPrompt    String   @db.Text   // Base system prompt
+
+  personality     Json     @default("{}")  // Tone, style, communication preferences
+  expertise       String[] @default([])    // Areas of expertise
+  constraints     String[] @default([])    // Things this persona should NOT do
+
+  // Skills this persona can use
+  allowedSkills   String[] @default([])    // Skill slugs
+
+  // Context injection
+  defaultContext  Json?                    // Default context always included
+
+  // Status
+  isEnabled       Boolean  @default(true)
+
+  // Audit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@map("agent_personas")
+}
+
+// ============================================
+// TRIGGERS & EVENTS (Phase 12)
+// ============================================
+
+// Content event log (what happened)
+model ContentEvent {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // Event identity
+  eventType       String              // "brief.created", "asset.uploaded", "deal.won"
+
+  // Source
+  sourceType      String              // "brief", "asset", "deal", "content_entry"
+  sourceId        String
+
+  // Event data
+  payload         Json
+
+  // Processing status
+  processedAt     DateTime?
+  processingError String?
+  triggersMatched Int      @default(0)
+  triggersExecuted Int     @default(0)
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId, eventType])
+  @@index([createdAt])
+  @@index([sourceType, sourceId])
+  @@map("content_events")
+}
+
+// Trigger definitions (when X happens, do Y)
+model ContentTrigger {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // Identity
+  name            String
+  description     String?
+
+  // Trigger condition
+  eventType       String              // Event to listen for
+  conditions      Json?               // Additional filtering conditions
+
+  // Action to take
+  actionType      TriggerActionType
+  actionConfig    Json
+
+  // Execution settings
+  isEnabled       Boolean  @default(true)
+  priority        Int      @default(0)  // Higher = runs first
+  debounceMs      Int?                  // Debounce rapid events
+  maxRetries      Int      @default(3)
+
+  // Metrics
+  executionCount  Int      @default(0)
+  successCount    Int      @default(0)
+  failureCount    Int      @default(0)
+  lastExecutedAt  DateTime?
+  lastError       String?
+
+  // Audit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdById     String
+
+  @@index([organizationId, eventType])
+  @@index([isEnabled])
+  @@map("content_triggers")
+}
+
+enum TriggerActionType {
+  INVOKE_SKILL    // Call an agent skill
+  NOTIFICATION    // Send a notification
+  WEBHOOK         // Call external webhook
+  WORKFLOW        // Start/advance a workflow
+  UPDATE_ENTITY   // Update the source entity
+  CREATE_ENTITY   // Create a related entity
+  CUSTOM          // Custom action handler
+}
+
+// ============================================
+// INVOCATION LOGGING (Phase 12)
+// ============================================
+
+// Log of agent skill invocations
+model AgentInvocation {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // What was invoked
+  skillId         String?
+  skill           AgentSkill? @relation(fields: [skillId], references: [id])
+  skillSlug       String              // Denormalized for queries
+
+  personaId       String?
+  personaSlug     String?
+
+  // Trigger context
+  triggeredBy     InvocationTrigger
+  triggerEventId  String?             // ContentEvent ID if triggered by event
+  triggerId       String?             // ContentTrigger ID if via trigger
+  sessionId       String?             // For conversational context
+
+  // Entity context
+  entityType      String?             // What entity this relates to
+  entityId        String?
+
+  // Execution
+  input           Json                // Input provided to skill
+  output          Json?               // Output from skill
+  error           String?             // Error message if failed
+
+  status          InvocationStatus @default(PENDING)
+
+  // Timing
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  durationMs      Int?
+
+  // Token usage (for LLM-based skills)
+  inputTokens     Int?
+  outputTokens    Int?
+  totalTokens     Int?
+  estimatedCost   Float?              // In USD
+
+  // Context used
+  documentsUsed   String[] @default([])  // KnowledgeDocument IDs
+  contextTokens   Int?                   // Tokens in context
+
+  // Human attribution
+  initiatedById   String?             // User who triggered (if manual)
+
+  // Retry tracking
+  attemptNumber   Int      @default(1)
+  parentInvocationId String?          // If this is a retry
+
+  // Relations
+  steps           InvocationStep[]
+
+  @@index([organizationId, skillId])
+  @@index([organizationId, skillSlug])
+  @@index([status])
+  @@index([startedAt])
+  @@index([entityType, entityId])
+  @@map("agent_invocations")
+}
+
+enum InvocationTrigger {
+  EVENT           // Triggered by ContentEvent
+  SCHEDULE        // Triggered by cron schedule
+  MANUAL          // Manually invoked by user
+  AGENT           // Invoked by another agent/skill
+  API             // Invoked via API
+  WEBHOOK         // Triggered by external webhook
+}
+
+enum InvocationStatus {
+  PENDING         // Queued
+  RUNNING         // In progress
+  COMPLETED       // Finished successfully
+  FAILED          // Finished with error
+  CANCELLED       // Cancelled before completion
+  TIMEOUT         // Timed out
+}
+
+// Detailed step-by-step log for complex invocations
+model InvocationStep {
+  id              String   @id @default(cuid())
+
+  invocationId    String
+  invocation      AgentInvocation @relation(fields: [invocationId], references: [id], onDelete: Cascade)
+
+  stepNumber      Int
+  stepName        String              // "retrieve_context", "generate_response", "validate_output"
+
+  input           Json?
+  output          Json?
+  error           String?
+
+  status          InvocationStatus
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  durationMs      Int?
+
+  // For LLM steps
+  promptTokens    Int?
+  completionTokens Int?
+
+  @@unique([invocationId, stepNumber])
+  @@index([invocationId])
+  @@map("invocation_steps")
+}
+
+// ============================================
+// DELIVERABLES (Phase 12 - Work Output)
+// ============================================
+
+// A piece of work output from a brief
+model Deliverable {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // Source
+  briefId         String
+  brief           Brief    @relation(fields: [briefId], references: [id])
+
+  projectId       String?
+
+  // Identity
+  title           String
+  description     String?
+  type            DeliverableType
+
+  // Version tracking
+  version         Int      @default(1)
+  revisionNumber  Int      @default(0)
+
+  // For revision chains
+  parentId        String?
+  parent          Deliverable? @relation("DeliverableRevisions", fields: [parentId], references: [id])
+  revisions       Deliverable[] @relation("DeliverableRevisions")
+
+  // Content (polymorphic based on type)
+  content         Json?               // Structured content
+  textContent     String?  @db.Text   // Text-based content (for search)
+
+  // Primary file
+  primaryFileId   String?
+
+  // Status
+  status          DeliverableStatus @default(DRAFT)
+
+  // Internal review
+  internalReviewStatus   ReviewStatus @default(PENDING)
+  internalReviewerId     String?
+  internalReviewedAt     DateTime?
+  internalFeedback       String?  @db.Text
+
+  // Client review
+  clientReviewStatus     ReviewStatus @default(PENDING)
+  clientReviewerId       String?
+  clientReviewedAt       DateTime?
+  clientFeedback         String?  @db.Text
+
+  // AI tracking
+  aiGenerated     Boolean  @default(false)
+  aiAssisted      Boolean  @default(false)
+  aiMetadata      Json?
+
+  // Quality
+  qualityScore    Int?                // 0-100
+  qualityMetadata Json?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  submittedAt     DateTime?           // Submitted for internal review
+  approvedAt      DateTime?           // Final approval
+  deliveredAt     DateTime?           // Sent to client
+
+  // Audit
+  createdById     String
+
+  // Relations
+  files           DeliverableFile[]
+  comments        DeliverableComment[]
+  history         DeliverableHistory[]
+
+  @@index([organizationId, briefId])
+  @@index([status])
+  @@index([clientReviewStatus])
+  @@map("deliverables")
+}
+
+enum DeliverableType {
+  VIDEO           // Video content
+  IMAGE           // Static images
+  DOCUMENT        // Documents (PDF, DOCX)
+  PRESENTATION    // Slide decks
+  DESIGN_FILE     // Source design files
+  COPY            // Written copy
+  REPORT          // Reports and analysis
+  CODE            // Code/technical deliverables
+  AUDIO           // Audio content
+  SOCIAL_PACKAGE  // Social media package
+  OTHER
+}
+
+enum DeliverableStatus {
+  DRAFT           // Being created
+  IN_PROGRESS     // Work in progress
+  INTERNAL_REVIEW // Internal review
+  REVISION_NEEDED // Changes required (internal)
+  READY_FOR_CLIENT // Ready to send to client
+  CLIENT_REVIEW   // Client reviewing
+  CLIENT_REVISION // Client requested changes
+  APPROVED        // Final approval
+  DELIVERED       // Sent to client
+  ARCHIVED        // Archived
+}
+
+enum ReviewStatus {
+  PENDING         // Not yet reviewed
+  IN_PROGRESS     // Being reviewed
+  APPROVED        // Approved
+  REJECTED        // Rejected
+  REVISION_REQUESTED // Changes requested
+}
+
+// Files attached to deliverable
+model DeliverableFile {
+  id              String   @id @default(cuid())
+
+  deliverableId   String
+  deliverable     Deliverable @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
+
+  fileId          String
+
+  role            DeliverableFileRole @default(ASSET)
+  order           Int      @default(0)
+  caption         String?
+  notes           String?
+
+  createdAt       DateTime @default(now())
+
+  @@index([deliverableId])
+  @@map("deliverable_files")
+}
+
+enum DeliverableFileRole {
+  PRIMARY         // The main deliverable file
+  SOURCE          // Source/working files
+  REFERENCE       // Reference material used
+  ASSET           // Supporting assets
+  PREVIEW         // Preview/thumbnail
+  EXPORT          // Export versions (different formats)
+}
+
+// Comments on deliverables (internal + client)
+model DeliverableComment {
+  id              String   @id @default(cuid())
+
+  deliverableId   String
+  deliverable     Deliverable @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
+
+  content         String   @db.Text
+
+  // Thread support
+  parentId        String?
+  parent          DeliverableComment? @relation("CommentThread", fields: [parentId], references: [id])
+  replies         DeliverableComment[] @relation("CommentThread")
+
+  // Annotation (for visual feedback)
+  annotationType  String?             // "text_selection", "region", "timestamp", "page"
+  annotationData  Json?
+
+  // Resolution
+  isResolved      Boolean  @default(false)
+  resolvedAt      DateTime?
+  resolvedById    String?
+
+  // Author (internal or client)
+  authorType      CommentAuthorType
+  userId          String?
+  clientUserId    String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([deliverableId])
+  @@index([parentId])
+  @@map("deliverable_comments")
+}
+
+enum CommentAuthorType {
+  USER            // Internal team member
+  CLIENT          // Client via portal
+  AGENT           // AI agent
+}
+
+// Status history for deliverables
+model DeliverableHistory {
+  id              String   @id @default(cuid())
+
+  deliverableId   String
+  deliverable     Deliverable @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
+
+  action          String              // "created", "submitted", "reviewed", "approved", etc.
+  fromStatus      DeliverableStatus?
+  toStatus        DeliverableStatus?
+
+  metadata        Json?               // Additional context
+
+  performedAt     DateTime @default(now())
+  performedById   String
+
+  @@index([deliverableId])
+  @@map("deliverable_history")
 }
