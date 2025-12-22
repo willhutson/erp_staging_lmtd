@@ -8,6 +8,7 @@
  * - Emoji support
  * - Markdown shortcuts
  * - File attachments
+ * - Slash commands
  *
  * @module chat/components/MessageEditor
  */
@@ -26,7 +27,6 @@ import {
 } from "@/components/ui/popover";
 import {
   Send,
-  Paperclip,
   Smile,
   Bold,
   Italic,
@@ -34,8 +34,21 @@ import {
   List,
   AtSign,
   X,
+  Slash,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  FileUploadButton,
+  FilePreviewStrip,
+  type FileUploadItem,
+} from "./FileUpload";
+import {
+  isSlashCommand,
+  getCommandSuggestions,
+  executeSlashCommand,
+  type CommandContext,
+} from "../actions/slash-commands";
+import { uploadChatFile, createAttachment } from "../actions/upload-actions";
 
 // ============================================
 // TYPES
@@ -43,7 +56,11 @@ import { cn } from "@/lib/utils";
 
 interface MessageEditorProps {
   channelId: string;
-  onSend: (content: string, mentions: string[]) => Promise<void>;
+  channelName?: string;
+  organizationId?: string;
+  currentUserId?: string;
+  currentUserName?: string;
+  onSend: (content: string, mentions: string[], attachmentIds?: string[]) => Promise<void>;
   onTyping?: () => void;
   onStopTyping?: () => void;
   placeholder?: string;
@@ -102,6 +119,10 @@ const EnterKeyExtension = Extension.create({
 
 export function MessageEditor({
   channelId,
+  channelName = "",
+  organizationId = "",
+  currentUserId = "",
+  currentUserName = "",
   onSend,
   onTyping,
   onStopTyping,
@@ -114,6 +135,10 @@ export function MessageEditor({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [mentionedUsers, setMentionedUsers] = useState<string[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<FileUploadItem[]>([]);
+  const [slashSuggestions, setSlashSuggestions] = useState<Array<{ name: string; description: string }>>([]);
+  const [showSlashMenu, setShowSlashMenu] = useState(false);
+  const [slashQuery, setSlashQuery] = useState("");
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isTypingRef = useRef(false);
 
@@ -269,6 +294,79 @@ export function MessageEditor({
     },
   });
 
+  // Handle file selection
+  const handleFilesSelected = useCallback((files: FileUploadItem[]) => {
+    setPendingFiles((prev) => [...prev, ...files]);
+  }, []);
+
+  // Handle file removal
+  const handleFileRemove = useCallback((fileId: string) => {
+    setPendingFiles((prev) => prev.filter((f) => f.id !== fileId));
+  }, []);
+
+  // Upload pending files
+  const uploadPendingFiles = useCallback(async (): Promise<string[]> => {
+    const attachmentIds: string[] = [];
+
+    for (const file of pendingFiles) {
+      if (file.error || file.uploaded) continue;
+
+      // Mark as uploading
+      setPendingFiles((prev) =>
+        prev.map((f) => (f.id === file.id ? { ...f, uploading: true } : f))
+      );
+
+      try {
+        // Create FormData and upload
+        const formData = new FormData();
+        formData.append("file", file.file);
+
+        const response = await fetch("/api/chat/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) throw new Error("Upload failed");
+
+        const result = await response.json();
+
+        // Create attachment record
+        const attachment = await createAttachment({
+          organizationId,
+          channelId,
+          userId: currentUserId,
+          fileName: file.file.name,
+          fileType: file.file.type,
+          fileSize: file.file.size,
+          fileUrl: result.url,
+          thumbnailUrl: result.thumbnailUrl,
+        });
+
+        attachmentIds.push(attachment.id);
+
+        // Mark as uploaded
+        setPendingFiles((prev) =>
+          prev.map((f) =>
+            f.id === file.id
+              ? { ...f, uploading: false, uploaded: { url: result.url } }
+              : f
+          )
+        );
+      } catch {
+        // Mark as failed
+        setPendingFiles((prev) =>
+          prev.map((f) =>
+            f.id === file.id
+              ? { ...f, uploading: false, error: "Upload failed" }
+              : f
+          )
+        );
+      }
+    }
+
+    return attachmentIds;
+  }, [pendingFiles, organizationId, channelId, currentUserId]);
+
   // Handle submit
   const handleSubmit = useCallback(async () => {
     if (!editor || isSubmitting || disabled) return;
@@ -276,19 +374,65 @@ export function MessageEditor({
     const content = editor.getHTML();
     const textContent = editor.getText().trim();
 
-    if (!textContent) return;
+    if (!textContent && pendingFiles.length === 0) return;
 
     setIsSubmitting(true);
 
     try {
-      await onSend(content, mentionedUsers);
+      // Check for slash command
+      if (isSlashCommand(textContent) && currentUserId) {
+        const context: CommandContext = {
+          userId: currentUserId,
+          userName: currentUserName,
+          channelId,
+          channelName,
+          organizationId,
+        };
+
+        const result = await executeSlashCommand(textContent, context);
+
+        if (result.success && result.message && !result.ephemeral) {
+          // Send the command result as a message
+          await onSend(result.message, [], []);
+        } else if (result.ephemeral && result.message) {
+          // Show ephemeral message (toast or local display)
+          console.log("[Ephemeral]", result.message);
+        } else if (!result.success && result.error) {
+          console.error("[Command Error]", result.error);
+        }
+
+        editor.commands.clearContent();
+        setMentionedUsers([]);
+        return;
+      }
+
+      // Upload files first
+      const attachmentIds = await uploadPendingFiles();
+
+      // Send the message with attachments
+      await onSend(content, mentionedUsers, attachmentIds);
       editor.commands.clearContent();
       setMentionedUsers([]);
+      setPendingFiles([]);
       onCancelReply?.();
     } finally {
       setIsSubmitting(false);
     }
-  }, [editor, isSubmitting, disabled, onSend, mentionedUsers, onCancelReply]);
+  }, [
+    editor,
+    isSubmitting,
+    disabled,
+    onSend,
+    mentionedUsers,
+    pendingFiles,
+    onCancelReply,
+    currentUserId,
+    currentUserName,
+    channelId,
+    channelName,
+    organizationId,
+    uploadPendingFiles,
+  ]);
 
   // Listen for enter key submit
   useEffect(() => {
@@ -397,12 +541,16 @@ export function MessageEditor({
       {/* Editor */}
       <EditorContent editor={editor} />
 
+      {/* File preview strip */}
+      <FilePreviewStrip files={pendingFiles} onRemove={handleFileRemove} />
+
       {/* Actions bar */}
       <div className="flex items-center justify-between px-2 py-1 border-t">
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8" title="Attach file">
-            <Paperclip className="h-4 w-4" />
-          </Button>
+          <FileUploadButton
+            onFilesSelected={handleFilesSelected}
+            disabled={disabled}
+          />
           <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8" title="Add emoji">
@@ -423,17 +571,31 @@ export function MessageEditor({
               </div>
             </PopoverContent>
           </Popover>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            title="Slash commands"
+            onClick={() => editor?.chain().focus().insertContent("/").run()}
+          >
+            <Slash className="h-4 w-4" />
+          </Button>
         </div>
 
-        <Button
-          size="sm"
-          onClick={handleSubmit}
-          disabled={isSubmitting || disabled || !editor.getText().trim()}
-          className="gap-2"
-        >
-          <Send className="h-4 w-4" />
-          Send
-        </Button>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground hidden sm:inline">
+            Type / for commands
+          </span>
+          <Button
+            size="sm"
+            onClick={handleSubmit}
+            disabled={isSubmitting || disabled || (!editor.getText().trim() && pendingFiles.length === 0)}
+            className="gap-2"
+          >
+            <Send className="h-4 w-4" />
+            Send
+          </Button>
+        </div>
       </div>
     </div>
   );
