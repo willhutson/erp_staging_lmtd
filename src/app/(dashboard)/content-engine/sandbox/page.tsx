@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +14,6 @@ import {
 import { SkillPlayground, KnowledgeCapture, SkillWizard } from "@/modules/content-engine/components/sandbox";
 import type { Skill } from "@/modules/content-engine/types";
 import { Zap, Brain, Plus, ArrowLeft } from "lucide-react";
-import Link from "next/link";
 
 // Mock skills for demo (replace with real data fetch)
 const DEMO_SKILLS: Skill[] = [

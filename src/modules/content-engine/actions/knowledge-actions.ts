@@ -9,7 +9,6 @@ import path from "path";
 import matter from "gray-matter";
 
 // Inferred types
-type KnowledgeDocRecord = Awaited<ReturnType<typeof db.knowledgeDocument.findMany>>[number];
 type AgentSkillRecord = Awaited<ReturnType<typeof db.agentSkill.findMany>>[number];
 
 // ============================================
