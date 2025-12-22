@@ -3871,7 +3871,7 @@ model ContentAsset {
   post            ContentPost @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   // Asset details
-  type            AssetType
+  type            ContentAssetType
   fileName        String
   fileUrl         String              // Storage URL
   thumbnailUrl    String?             // Thumbnail for videos
@@ -3904,7 +3904,7 @@ model ContentAsset {
   @@map("content_assets")
 }
 
-enum AssetType {
+enum ContentAssetType {
   IMAGE
   VIDEO
   GIF
