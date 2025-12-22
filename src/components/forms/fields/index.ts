@@ -1,5 +1,6 @@
 export { TextField } from "./TextField";
 export { TextareaField } from "./TextareaField";
+export { RichTextField } from "./RichTextField";
 export { SelectField } from "./SelectField";
 export { MultiSelectField } from "./MultiSelectField";
 export { DateField, DateRangeField } from "./DateField";
