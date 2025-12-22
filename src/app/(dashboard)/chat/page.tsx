@@ -6,9 +6,8 @@
  * @module app/(dashboard)/chat
  */
 
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { getChannels, getDirectMessages } from "@/modules/chat/actions/channel-actions";
 import { getAllUnreadCounts } from "@/modules/chat/actions/message-actions";
 import { ChatLayout } from "./ChatLayout";
@@ -19,7 +18,7 @@ export const metadata = {
 };
 
 export default async function ChatPage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user) {
     redirect("/login");
