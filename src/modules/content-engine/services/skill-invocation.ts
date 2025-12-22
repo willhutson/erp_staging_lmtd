@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
-import type { Skill, SkillInput, SkillOutput } from "../types";
+import type { Skill } from "../types";
 import { getSkillBySlug, checkDependencies } from "./skill-registry";
 
 // ============================================
@@ -370,6 +370,10 @@ async function executeSkill(
   context: SkillContext,
   inputs: Record<string, unknown>
 ): Promise<Record<string, unknown>> {
+  // TODO: Implement actual skill execution with LLM
+  // For now, log context and inputs to satisfy linter, will be used when LLM integration is added
+  console.debug("Executing skill with context:", context.invocationId, "inputs:", Object.keys(inputs));
+
   // Placeholder: Return mock outputs based on skill outputs definition
   const outputs: Record<string, unknown> = {};
 

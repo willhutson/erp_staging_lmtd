@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import fs from "fs/promises";
 import path from "path";
 import matter from "gray-matter";
+import type { Prisma, KnowledgeDocumentType, KnowledgeDocumentStatus } from "@prisma/client";
 
 // Inferred types
 type AgentSkillRecord = Awaited<ReturnType<typeof db.agentSkill.findMany>>[number];
@@ -24,17 +25,12 @@ export async function getKnowledgeDocuments(options?: {
   const session = await auth();
   if (!session?.user) throw new Error("Unauthorized");
 
-  const where: {
-    organizationId: string;
-    documentType?: string;
-    status?: string;
-    OR?: Array<{ title: { contains: string; mode: "insensitive" } } | { content: { contains: string; mode: "insensitive" } }>;
-  } = {
+  const where: Prisma.KnowledgeDocumentWhereInput = {
     organizationId: session.user.organizationId,
   };
 
-  if (options?.documentType) where.documentType = options.documentType;
-  if (options?.status) where.status = options.status;
+  if (options?.documentType) where.documentType = options.documentType as KnowledgeDocumentType;
+  if (options?.status) where.status = options.status as KnowledgeDocumentStatus;
   if (options?.search) {
     where.OR = [
       { title: { contains: options.search, mode: "insensitive" } },
@@ -65,17 +61,17 @@ interface CreateDocumentInput {
   slug: string;
   title: string;
   path: string;
-  documentType: string;
+  documentType: KnowledgeDocumentType;
   content: string;
   description?: string;
-  status?: string;
+  status?: KnowledgeDocumentStatus;
 }
 
 export async function createKnowledgeDocument(input: CreateDocumentInput) {
   const session = await auth();
   if (!session?.user) throw new Error("Unauthorized");
 
-  if (!can(session.user as Parameters<typeof can>[0], "admin:access")) {
+  if (!can(session.user as Parameters<typeof can>[0], "settings:manage")) {
     throw new Error("Only admins can create knowledge documents");
   }
 
@@ -104,7 +100,7 @@ export async function updateKnowledgeDocument(
   const session = await auth();
   if (!session?.user) throw new Error("Unauthorized");
 
-  if (!can(session.user as Parameters<typeof can>[0], "admin:access")) {
+  if (!can(session.user as Parameters<typeof can>[0], "settings:manage")) {
     throw new Error("Only admins can update knowledge documents");
   }
 
@@ -149,7 +145,7 @@ export async function syncSkillsFromFilesystem() {
   const session = await auth();
   if (!session?.user) throw new Error("Unauthorized");
 
-  if (!can(session.user as Parameters<typeof can>[0], "admin:access")) {
+  if (!can(session.user as Parameters<typeof can>[0], "settings:manage")) {
     throw new Error("Only admins can sync skills");
   }
 

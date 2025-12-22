@@ -41,7 +41,7 @@ export default async function SkillDetailPage({ params }: PageProps) {
     },
     include: {
       invocations: {
-        orderBy: { createdAt: "desc" },
+        orderBy: { startedAt: "desc" },
         take: 10,
       },
     },
@@ -51,9 +51,9 @@ export default async function SkillDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const triggers = skill.triggers as SkillTrigger[];
-  const inputs = skill.inputs as SkillInput[];
-  const outputs = skill.outputs as SkillOutput[];
+  const triggers = skill.triggers as unknown as SkillTrigger[];
+  const inputs = skill.inputs as unknown as SkillInput[];
+  const outputs = skill.outputs as unknown as SkillOutput[];
 
   return (
     <div className="space-y-6">
@@ -75,8 +75,8 @@ export default async function SkillDetailPage({ params }: PageProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant={skill.status === "ACTIVE" ? "default" : "secondary"}>
-            {skill.status}
+          <Badge variant={skill.isEnabled ? "default" : "secondary"}>
+            {skill.isEnabled ? "Active" : "Disabled"}
           </Badge>
           <Link href={`/content-engine/sandbox?skill=${skill.slug}`}>
             <Button className="bg-[#52EDC7] hover:bg-[#1BA098] text-black">
@@ -213,43 +213,6 @@ export default async function SkillDetailPage({ params }: PageProps) {
         </Card>
       </div>
 
-      {/* Founder Knowledge */}
-      {skill.founderKnowledge && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Founder Knowledge</CardTitle>
-            <CardDescription>
-              Expertise captured from 15+ years of agency experience
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm whitespace-pre-wrap">{skill.founderKnowledge}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Validation Questions */}
-      {skill.validationQuestions && skill.validationQuestions.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Validation Questions</CardTitle>
-            <CardDescription>
-              Check-in questions to verify skill output quality
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {skill.validationQuestions.map((q: string, i: number) => (
-                <li key={i} className="flex items-start gap-2 text-sm">
-                  <span className="text-[#52EDC7]">•</span>
-                  {q}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Recent Invocations */}
       {skill.invocations.length > 0 && (
         <Card>
@@ -281,7 +244,7 @@ export default async function SkillDetailPage({ params }: PageProps) {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(inv.createdAt).toLocaleString("en-GB", {
+                    {new Date(inv.startedAt).toLocaleString("en-GB", {
                       day: "numeric",
                       month: "short",
                       hour: "2-digit",

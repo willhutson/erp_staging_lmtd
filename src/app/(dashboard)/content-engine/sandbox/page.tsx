@@ -240,7 +240,6 @@ export default function SandboxPage() {
 
       {viewMode === "capture" && selectedSkill && (
         <KnowledgeCapture
-          skillSlug={selectedSkill.slug}
           skillName={selectedSkill.name}
           onComplete={(knowledge) => {
             console.log("Captured knowledge:", knowledge);

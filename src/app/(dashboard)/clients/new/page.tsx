@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Building2 } from "lucide-react";
 import Link from "next/link";
 import { createClient, getAccountManagers } from "@/modules/crm/actions/client-actions";
-import type { CompanySize, RelationshipStatus, LeadSource } from "@/types/prisma-types";
+import type { CompanySize, RelationshipStatus, LeadSource } from "@prisma/client";
 
 const companySizes = [
   { value: "STARTUP", label: "Startup (1-10)" },

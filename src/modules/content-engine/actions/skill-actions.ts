@@ -101,7 +101,7 @@ export async function createSkill(input: CreateSkillInput): Promise<Skill> {
     throw new Error("Unauthorized");
   }
 
-  if (!can(session.user as Parameters<typeof can>[0], "admin:access")) {
+  if (!can(session.user as Parameters<typeof can>[0], "settings:manage")) {
     throw new Error("Only admins can create skills");
   }
 
@@ -167,7 +167,7 @@ export async function updateSkill(slug: string, input: UpdateSkillInput): Promis
     throw new Error("Unauthorized");
   }
 
-  if (!can(session.user as Parameters<typeof can>[0], "admin:access")) {
+  if (!can(session.user as Parameters<typeof can>[0], "settings:manage")) {
     throw new Error("Only admins can update skills");
   }
 

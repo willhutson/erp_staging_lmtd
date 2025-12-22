@@ -47,7 +47,7 @@ export default async function ContentEnginePage() {
     }),
     db.agentInvocation.findMany({
       where: { organizationId: session.user.organizationId },
-      orderBy: { createdAt: "desc" },
+      orderBy: { startedAt: "desc" },
       take: 5,
       include: { skill: true },
     }),
@@ -66,7 +66,7 @@ export default async function ContentEnginePage() {
 
   // Calculate stats
   const totalInvocations = skills.reduce((sum: number, s: SkillRecord) => sum + s.invocationCount, 0);
-  const activeSkills = skills.filter((s: SkillRecord) => s.status === "ACTIVE").length;
+  const activeSkills = skills.filter((s: SkillRecord) => s.isEnabled).length;
   const avgSuccessRate = skills.length > 0
     ? skills.reduce((sum: number, s: SkillRecord) => sum + (s.successRate ?? 0), 0) / skills.length
     : 0;
@@ -230,9 +230,9 @@ export default async function ContentEnginePage() {
                             </p>
                           </div>
                           <Badge
-                            variant={skill.status === "ACTIVE" ? "default" : "secondary"}
+                            variant={skill.isEnabled ? "default" : "secondary"}
                           >
-                            {skill.status}
+                            {skill.isEnabled ? "Active" : "Disabled"}
                           </Badge>
                         </Link>
                       ))}
@@ -277,7 +277,7 @@ export default async function ContentEnginePage() {
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(inv.createdAt).toLocaleString("en-GB", {
+                      {new Date(inv.startedAt).toLocaleString("en-GB", {
                         day: "numeric",
                         month: "short",
                         hour: "2-digit",
