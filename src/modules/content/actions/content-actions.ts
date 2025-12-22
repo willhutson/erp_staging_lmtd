@@ -7,6 +7,12 @@ import type {
   ContentType,
   ContentPostStatus,
 } from "@prisma/client";
+import {
+  onContentSubmitted,
+  onContentApproved,
+  onContentRevisionRequested,
+  onContentPublished,
+} from "@/modules/chat/services/module-integrations";
 
 // ============================================
 // TYPES
@@ -320,6 +326,9 @@ export async function submitForInternalReview(postId: string, userId: string) {
   const post = await db.contentPost.update({
     where: { id: postId },
     data: { status: "INTERNAL_REVIEW" },
+    include: {
+      client: { select: { id: true, name: true } },
+    },
   });
 
   // Create approval record
@@ -330,6 +339,16 @@ export async function submitForInternalReview(postId: string, userId: string) {
       requestedById: userId,
       status: "PENDING",
     },
+  });
+
+  // Post to SpokeChat
+  await onContentSubmitted({
+    id: post.id,
+    organizationId: post.organizationId,
+    title: post.title,
+    platform: post.platforms[0] || "INSTAGRAM",
+    clientId: post.clientId,
+    submittedById: userId,
   });
 
   revalidatePath("/content-engine");
@@ -344,6 +363,9 @@ export async function submitForClientReview(
   const post = await db.contentPost.update({
     where: { id: postId },
     data: { status: "CLIENT_REVIEW" },
+    include: {
+      client: { select: { id: true, name: true } },
+    },
   });
 
   // Create approval record
@@ -357,11 +379,21 @@ export async function submitForClientReview(
     },
   });
 
+  // Post to SpokeChat
+  await onContentSubmitted({
+    id: post.id,
+    organizationId: post.organizationId,
+    title: post.title,
+    platform: post.platforms[0] || "INSTAGRAM",
+    clientId: post.clientId,
+    submittedById: userId,
+  });
+
   revalidatePath("/content-engine");
   return post;
 }
 
-export async function approvePost(postId: string) {
+export async function approvePost(postId: string, approvedById?: string) {
   const post = await db.contentPost.update({
     where: { id: postId },
     data: { status: "APPROVED" },
@@ -377,6 +409,16 @@ export async function approvePost(postId: string) {
       status: "APPROVED",
       respondedAt: new Date(),
     },
+  });
+
+  // Post to SpokeChat
+  await onContentApproved({
+    id: post.id,
+    organizationId: post.organizationId,
+    title: post.title,
+    platform: post.platforms[0] || "INSTAGRAM",
+    approvedById,
+    scheduledFor: post.scheduledFor || undefined,
   });
 
   revalidatePath("/content-engine");
@@ -418,6 +460,17 @@ export async function requestRevisions(
     },
   });
 
+  // Post to SpokeChat
+  await onContentRevisionRequested({
+    id: post.id,
+    organizationId: post.organizationId,
+    title: post.title,
+    platform: post.platforms[0] || "INSTAGRAM",
+    submittedById: post.createdById,
+    feedback,
+    requestedById: userId,
+  });
+
   revalidatePath("/content-engine");
   return post;
 }
@@ -443,6 +496,15 @@ export async function publishPost(postId: string) {
       status: "PUBLISHED",
       publishedAt: new Date(),
     },
+  });
+
+  // Celebrate in SpokeChat! 🎉
+  await onContentPublished({
+    id: post.id,
+    organizationId: post.organizationId,
+    title: post.title,
+    platform: post.platforms[0] || "INSTAGRAM",
+    clientId: post.clientId,
   });
 
   revalidatePath("/content-engine");

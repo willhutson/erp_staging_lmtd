@@ -258,14 +258,112 @@ const { handleTyping, stopTyping } = useTyping({
 // Call stopTyping() after sending
 ```
 
+## Module Integrations (Phase 18.5)
+
+SpokeChat integrates with other modules to provide automated notifications.
+
+### Brief Integrations
+
+```typescript
+import { onBriefCreated, onBriefCompleted } from "@/modules/chat/services/module-integrations";
+
+// In your brief action
+await onBriefCreated({
+  id: brief.id,
+  organizationId,
+  title: brief.title,
+  type: brief.type,
+  clientId: brief.clientId,
+  createdById: session.user.id,
+  assigneeId: brief.assigneeId,
+});
+```
+
+### Content Engine Integrations
+
+```typescript
+import {
+  onContentSubmitted,
+  onContentApproved,
+  onContentRevisionRequested,
+  onContentPublished,
+} from "@/modules/chat/services/module-integrations";
+
+// When content is submitted for review
+await onContentSubmitted({
+  id: post.id,
+  organizationId,
+  title: post.title,
+  platform: post.platforms[0],
+  clientId: post.clientId,
+  submittedById: userId,
+});
+
+// When content is approved
+await onContentApproved({
+  id: post.id,
+  organizationId,
+  title: post.title,
+  platform: post.platforms[0],
+  approvedById: userId,
+  scheduledFor: post.scheduledFor,
+});
+
+// When content is published (celebration!)
+await onContentPublished({
+  id: post.id,
+  organizationId,
+  title: post.title,
+  platform: post.platforms[0],
+  clientId: post.clientId,
+});
+```
+
+### Celebration Functions
+
+```typescript
+import {
+  celebrateMilestone,
+  celebrateAchievement,
+  celebrateBirthday,
+  celebrateAnniversary,
+} from "@/modules/chat/services/module-integrations";
+
+// Celebrate milestones
+await celebrateMilestone({
+  organizationId,
+  title: "100 Posts for CCAD!",
+  description: "Amazing work, team!",
+  userIds: [userId1, userId2],
+});
+
+// Birthdays
+await celebrateBirthday({
+  organizationId,
+  userName: "Sarah",
+  userId: sarahId,
+});
+```
+
+### Available Notification Types
+
+| Event | Channel | Emoji |
+|-------|---------|-------|
+| Brief created | Default | 📋 |
+| Brief assigned | DM to assignee | 📌 |
+| Brief completed | Default | ✅ |
+| Content submitted | Client channel | 📤 |
+| Content approved | Default | 👍 |
+| Content revision | Default | ✏️ |
+| Content published | Default | 🎉 |
+| Client feedback | Client channel | 💚/💬/🔴 |
+| Deadline reminder | DM to assignees | ⏰/⚠️ |
+
 ## Future Enhancements
 
 1. **Search** - Full-text message search
 2. **File Uploads** - Direct file sharing
-3. **Module Integrations**:
-   - Brief created → Post to channel
-   - Approval needed → DM assignee
-   - Content published → Celebrate in team channel
+3. **Notification Preferences** - User-configurable notification settings
 4. **Mobile Push** - Push notifications
 5. **Slash Commands** - `/giphy`, `/poll`, etc.
 6. **Read Receipts** - See who's read messages
