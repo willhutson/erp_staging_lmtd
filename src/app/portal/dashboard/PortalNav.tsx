@@ -9,6 +9,7 @@ import {
   PlusCircle,
   FolderOpen,
   Star,
+  Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +23,11 @@ const navItems = [
     title: "Your Briefs",
     href: "/portal/dashboard/briefs",
     icon: FileText,
+  },
+  {
+    title: "Deliverables",
+    href: "/portal/dashboard/deliverables",
+    icon: Package,
   },
   {
     title: "Approvals",

@@ -2,6 +2,15 @@ import { getPortalUser } from "@/lib/portal/auth";
 import { db } from "@/lib/db";
 import { PortalDashboardClient } from "./PortalDashboardClient";
 
+// Inferred types
+type BriefWithAssignee = Awaited<ReturnType<typeof db.brief.findMany<{
+  include: { assignee: { select: { name: true } } }
+}>>>[number];
+
+type DeliverableWithBrief = Awaited<ReturnType<typeof db.deliverable.findMany<{
+  include: { brief: { select: { title: true } } }
+}>>>[number];
+
 export async function PortalDashboardContent() {
   const user = await getPortalUser();
 
@@ -30,19 +39,37 @@ export async function PortalDashboardContent() {
     },
   });
 
+  // Get deliverables for this client (visible statuses only)
+  const deliverables = await db.deliverable.findMany({
+    where: {
+      brief: { clientId: user.clientId },
+      status: { in: ["CLIENT_REVIEW", "CLIENT_REVISION", "APPROVED", "DELIVERED"] },
+    },
+    orderBy: { updatedAt: "desc" },
+    take: 5,
+    include: {
+      brief: { select: { title: true } },
+    },
+  });
+
+  // Deliverables awaiting client review
+  const deliverablesAwaitingReview = deliverables.filter(
+    (d: DeliverableWithBrief) => d.status === "CLIENT_REVIEW"
+  );
+
   // Stats
-  const inProgressCount = briefs.filter((b) =>
+  const inProgressCount = briefs.filter((b: BriefWithAssignee) =>
     ["IN_PROGRESS", "INTERNAL_REVIEW"].includes(b.status)
   ).length;
   const awaitingReviewCount = briefs.filter(
-    (b) => b.status === "CLIENT_REVIEW"
+    (b: BriefWithAssignee) => b.status === "CLIENT_REVIEW"
   ).length;
-  const completedCount = briefs.filter((b) => b.status === "COMPLETED").length;
+  const completedCount = briefs.filter((b: BriefWithAssignee) => b.status === "COMPLETED").length;
 
   return (
     <PortalDashboardClient
       userName={user.name.split(" ")[0]}
-      briefs={briefs.map((b) => ({
+      briefs={briefs.map((b: BriefWithAssignee) => ({
         id: b.id,
         title: b.title,
         type: b.type,
@@ -54,6 +81,13 @@ export async function PortalDashboardContent() {
       inProgressCount={inProgressCount}
       awaitingReviewCount={awaitingReviewCount}
       completedCount={completedCount}
+      deliverablesAwaitingReview={deliverablesAwaitingReview.map((d: DeliverableWithBrief) => ({
+        id: d.id,
+        title: d.title,
+        type: d.type,
+        briefTitle: d.brief.title,
+        updatedAt: d.updatedAt,
+      }))}
     />
   );
 }
