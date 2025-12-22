@@ -14,7 +14,10 @@ import {
   Clock
 } from "lucide-react";
 import type { SkillCategory } from "@/modules/content-engine/types";
-import type { AgentSkill, AgentInvocation } from "@prisma/client";
+
+// Inferred types from Prisma queries
+type SkillRecord = Awaited<ReturnType<typeof db.agentSkill.findMany>>[number];
+type InvocationWithSkill = Awaited<ReturnType<typeof db.agentInvocation.findMany<{ include: { skill: true } }>>>[number];
 
 const CATEGORY_ICONS: Record<SkillCategory, React.ReactNode> = {
   BRIEF_MANAGEMENT: <FileText className="h-5 w-5" />,
@@ -51,18 +54,18 @@ export default async function ContentEnginePage() {
   ]);
 
   // Group skills by category
-  const skillsByCategory = skills.reduce<Record<SkillCategory, AgentSkill[]>>((acc, skill) => {
+  const skillsByCategory = skills.reduce<Record<SkillCategory, SkillRecord[]>>((acc, skill) => {
     const category = skill.category as SkillCategory;
     if (!acc[category]) acc[category] = [];
     acc[category].push(skill);
     return acc;
-  }, {} as Record<SkillCategory, AgentSkill[]>);
+  }, {} as Record<SkillCategory, SkillRecord[]>);
 
   // Calculate stats
-  const totalInvocations = skills.reduce((sum: number, s: AgentSkill) => sum + s.invocationCount, 0);
-  const activeSkills = skills.filter((s: AgentSkill) => s.status === "ACTIVE").length;
+  const totalInvocations = skills.reduce((sum: number, s: SkillRecord) => sum + s.invocationCount, 0);
+  const activeSkills = skills.filter((s: SkillRecord) => s.status === "ACTIVE").length;
   const avgSuccessRate = skills.length > 0
-    ? skills.reduce((sum: number, s: AgentSkill) => sum + (s.successRate ?? 0), 0) / skills.length
+    ? skills.reduce((sum: number, s: SkillRecord) => sum + (s.successRate ?? 0), 0) / skills.length
     : 0;
 
   return (
@@ -211,7 +214,7 @@ export default async function ContentEnginePage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {categorySkills.map((skill: AgentSkill) => (
+                      {categorySkills.map((skill: SkillRecord) => (
                         <Link
                           key={skill.id}
                           href={`/content-engine/skills/${skill.slug}`}
@@ -246,7 +249,7 @@ export default async function ContentEnginePage() {
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-4">
-                {recentInvocations.map((inv: AgentInvocation & { skill: AgentSkill | null }) => (
+                {recentInvocations.map((inv: InvocationWithSkill) => (
                   <div
                     key={inv.id}
                     className="flex items-center justify-between border-b last:border-0 pb-4 last:pb-0"

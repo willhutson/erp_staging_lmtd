@@ -16,7 +16,9 @@ import {
   ArrowRightLeft
 } from "lucide-react";
 import type { SkillInput, SkillOutput, SkillTrigger } from "@/modules/content-engine/types";
-import type { AgentInvocation } from "@prisma/client";
+
+// Inferred type from Prisma query
+type InvocationRecord = Awaited<ReturnType<typeof db.agentInvocation.findMany>>[number];
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -256,7 +258,7 @@ export default async function SkillDetailPage({ params }: PageProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {skill.invocations.map((inv: AgentInvocation) => (
+              {skill.invocations.map((inv: InvocationRecord) => (
                 <div
                   key={inv.id}
                   className="flex items-center justify-between border-b last:border-0 pb-3 last:pb-0"

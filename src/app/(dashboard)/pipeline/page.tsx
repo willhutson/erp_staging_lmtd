@@ -3,6 +3,11 @@ import { db } from "@/lib/db";
 import { PipelinePageClient } from "@/modules/crm/components/PipelinePageClient";
 import { TrendingUp, DollarSign, Target, Clock } from "lucide-react";
 
+// Inferred types from Prisma
+type DealWithRelations = Awaited<ReturnType<typeof db.deal.findMany<{
+  include: { client: true; owner: true; convertedToClient: true }
+}>>>[number];
+
 export default async function PipelinePage() {
   const session = await auth();
 
@@ -31,20 +36,20 @@ export default async function PipelinePage() {
 
   // Calculate metrics
   const activeDeals = deals.filter(
-    (d) => !["WON", "LOST"].includes(d.stage)
+    (d: DealWithRelations) => !["WON", "LOST"].includes(d.stage)
   );
-  const wonDeals = deals.filter((d) => d.stage === "WON");
-  const lostDeals = deals.filter((d) => d.stage === "LOST");
+  const wonDeals = deals.filter((d: DealWithRelations) => d.stage === "WON");
+  const lostDeals = deals.filter((d: DealWithRelations) => d.stage === "LOST");
 
   const pipelineValue = activeDeals.reduce(
-    (sum, d) => sum + Number(d.value || 0),
+    (sum: number, d: DealWithRelations) => sum + Number(d.value || 0),
     0
   );
   const weightedPipeline = activeDeals.reduce(
-    (sum, d) => sum + Number(d.value || 0) * (d.probability || 0) / 100,
+    (sum: number, d: DealWithRelations) => sum + Number(d.value || 0) * (d.probability || 0) / 100,
     0
   );
-  const wonValue = wonDeals.reduce((sum, d) => sum + Number(d.value || 0), 0);
+  const wonValue = wonDeals.reduce((sum: number, d: DealWithRelations) => sum + Number(d.value || 0), 0);
   const winRate =
     wonDeals.length + lostDeals.length > 0
       ? Math.round(

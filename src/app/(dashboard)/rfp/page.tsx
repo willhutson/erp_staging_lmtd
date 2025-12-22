@@ -6,6 +6,11 @@ import Link from "next/link";
 import { RFPPipeline } from "@/modules/rfp/components/RFPPipeline";
 import { RFPConvertButton } from "@/modules/rfp/components/RFPConvertButton";
 
+// Inferred type from Prisma
+type RFPWithRelations = Awaited<ReturnType<typeof db.rFP.findMany<{
+  include: { subitems: true; convertedToClient: true }
+}>>>[number];
+
 export default async function RFPPage() {
   const session = await auth();
 
@@ -28,24 +33,24 @@ export default async function RFPPage() {
   });
 
   const statusGroups = {
-    active: rfps.filter((r) =>
+    active: rfps.filter((r: RFPWithRelations) =>
       ["VETTING", "ACTIVE", "AWAITING_REVIEW", "READY_TO_SUBMIT"].includes(
         r.status
       )
     ),
-    submitted: rfps.filter((r) =>
+    submitted: rfps.filter((r: RFPWithRelations) =>
       ["SUBMITTED", "AWAITING_RESPONSE"].includes(r.status)
     ),
-    won: rfps.filter((r) => r.status === "WON"),
-    lost: rfps.filter((r) => r.status === "LOST"),
+    won: rfps.filter((r: RFPWithRelations) => r.status === "WON"),
+    lost: rfps.filter((r: RFPWithRelations) => r.status === "LOST"),
   };
 
   const totalValue = rfps
-    .filter((r) => !["LOST", "ABANDONED"].includes(r.status) && r.estimatedValue)
-    .reduce((sum, r) => sum + Number(r.estimatedValue || 0), 0);
+    .filter((r: RFPWithRelations) => !["LOST", "ABANDONED"].includes(r.status) && r.estimatedValue)
+    .reduce((sum: number, r: RFPWithRelations) => sum + Number(r.estimatedValue || 0), 0);
 
   const wonValue = statusGroups.won.reduce(
-    (sum, r) => sum + Number(r.estimatedValue || 0),
+    (sum: number, r: RFPWithRelations) => sum + Number(r.estimatedValue || 0),
     0
   );
 
@@ -58,7 +63,7 @@ export default async function RFPPage() {
   };
 
   const pipelineRFPs = rfps.filter(
-    (r) => !["WON", "LOST", "ABANDONED"].includes(r.status)
+    (r: RFPWithRelations) => !["WON", "LOST", "ABANDONED"].includes(r.status)
   );
 
   return (
