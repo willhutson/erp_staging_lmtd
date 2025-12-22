@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { can } from "@/lib/permissions";
 import type { BriefType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { emitBriefCreated } from "@/modules/content-engine/services/workflow-events";
 
 interface CreateBriefInput {
   type: BriefType;
@@ -68,6 +69,16 @@ export async function createBrief(input: CreateBriefInput) {
       changedById: session.user.id,
       notes: "Brief created and submitted",
     },
+  });
+
+  // Emit creation event
+  await emitBriefCreated({
+    id: brief.id,
+    title: brief.title,
+    type: brief.type,
+    status: brief.status,
+    clientId: brief.clientId,
+    assigneeId: brief.assigneeId,
   });
 
   revalidatePath("/briefs");

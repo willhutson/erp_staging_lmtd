@@ -4,6 +4,14 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { can } from "@/lib/permissions";
 import { revalidatePath } from "next/cache";
+import {
+  emitDeliverableCreated,
+  emitDeliverableStatusChanged,
+  emitDeliverableSubmitted,
+  emitDeliverableApproved,
+  emitDeliverableRevisionRequested,
+  emitDeliverableCompleted,
+} from "@/modules/content-engine/services/workflow-events";
 
 // Inferred types
 type DeliverableRecord = Awaited<ReturnType<typeof db.deliverable.findMany>>[number];
@@ -166,6 +174,15 @@ export async function createDeliverable(input: CreateDeliverableInput) {
     },
   });
 
+  // Emit creation event
+  await emitDeliverableCreated({
+    id: deliverable.id,
+    title: deliverable.title,
+    type: deliverable.type,
+    status: deliverable.status,
+    briefId: deliverable.briefId,
+  });
+
   revalidatePath("/content-engine/deliverables");
   revalidatePath(`/briefs/${input.briefId}`);
 
@@ -258,6 +275,8 @@ export async function submitForInternalReview(id: string) {
     throw new Error(`Cannot submit for review from ${deliverable.status} status`);
   }
 
+  const previousStatus = deliverable.status;
+
   await db.deliverable.update({
     where: { id },
     data: {
@@ -265,6 +284,10 @@ export async function submitForInternalReview(id: string) {
       submittedForReviewAt: new Date(),
     },
   });
+
+  // Emit events
+  await emitDeliverableStatusChanged(id, previousStatus, "INTERNAL_REVIEW");
+  await emitDeliverableSubmitted(id, "INTERNAL");
 
   revalidatePath("/content-engine/deliverables");
   revalidatePath(`/content-engine/deliverables/${id}`);
@@ -294,6 +317,7 @@ export async function completeInternalReview(id: string, input: ReviewInput) {
     throw new Error("Deliverable is not in internal review");
   }
 
+  const previousStatus = deliverable.status;
   const newStatus: DeliverableStatus =
     input.decision === "APPROVE" ? "READY_FOR_CLIENT" : "REVISION_NEEDED";
 
@@ -307,6 +331,14 @@ export async function completeInternalReview(id: string, input: ReviewInput) {
       reviewedAt: new Date(),
     },
   });
+
+  // Emit events
+  await emitDeliverableStatusChanged(id, previousStatus, newStatus);
+  if (input.decision === "APPROVE") {
+    await emitDeliverableApproved(id, "INTERNAL", input.feedback);
+  } else {
+    await emitDeliverableRevisionRequested(id, "INTERNAL", input.feedback);
+  }
 
   revalidatePath("/content-engine/deliverables");
   revalidatePath(`/content-engine/deliverables/${id}`);
@@ -328,6 +360,8 @@ export async function submitToClient(id: string) {
     throw new Error("Deliverable must be approved internally first");
   }
 
+  const previousStatus = deliverable.status;
+
   await db.deliverable.update({
     where: { id },
     data: {
@@ -335,6 +369,10 @@ export async function submitToClient(id: string) {
       sentToClientAt: new Date(),
     },
   });
+
+  // Emit events
+  await emitDeliverableStatusChanged(id, previousStatus, "CLIENT_REVIEW");
+  await emitDeliverableSubmitted(id, "CLIENT");
 
   revalidatePath("/content-engine/deliverables");
   revalidatePath(`/content-engine/deliverables/${id}`);
@@ -363,6 +401,7 @@ export async function recordClientFeedback(
     throw new Error("Deliverable is not in client review");
   }
 
+  const previousStatus = deliverable.status;
   const newStatus: DeliverableStatus =
     input.decision === "APPROVE" ? "APPROVED" : "CLIENT_REVISION";
 
@@ -382,6 +421,14 @@ export async function recordClientFeedback(
       where: { id },
       data: { version: { increment: 1 } },
     });
+  }
+
+  // Emit events
+  await emitDeliverableStatusChanged(id, previousStatus, newStatus);
+  if (input.decision === "APPROVE") {
+    await emitDeliverableApproved(id, "CLIENT", input.feedback);
+  } else {
+    await emitDeliverableRevisionRequested(id, "CLIENT", input.feedback);
   }
 
   revalidatePath("/content-engine/deliverables");
@@ -404,6 +451,8 @@ export async function markAsDelivered(id: string) {
     throw new Error("Deliverable must be approved before marking as delivered");
   }
 
+  const previousStatus = deliverable.status;
+
   await db.deliverable.update({
     where: { id },
     data: {
@@ -411,6 +460,10 @@ export async function markAsDelivered(id: string) {
       deliveredAt: new Date(),
     },
   });
+
+  // Emit events
+  await emitDeliverableStatusChanged(id, previousStatus, "DELIVERED");
+  await emitDeliverableCompleted(id);
 
   revalidatePath("/content-engine/deliverables");
   revalidatePath(`/content-engine/deliverables/${id}`);

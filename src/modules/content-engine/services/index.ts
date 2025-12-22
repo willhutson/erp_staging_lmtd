@@ -4,6 +4,7 @@
  * Phase 12.2 - Agent Infrastructure
  * Phase 12.4 - Event System
  * Phase 12.5 - Semantic Search
+ * Phase 12.7 - Workflow Integration
  */
 
 // Skill Registry - Load and manage skills
@@ -122,3 +123,22 @@ export type {
   SearchResult,
   SearchResponse,
 } from "./semantic-search";
+
+// Workflow Events - Pre-built event emitters for common workflows
+export {
+  emitBriefCreated,
+  emitBriefStatusChanged,
+  emitBriefAssigned,
+  emitBriefUpdated,
+  emitDeliverableCreated,
+  emitDeliverableStatusChanged,
+  emitDeliverableSubmitted,
+  emitDeliverableApproved,
+  emitDeliverableRevisionRequested,
+  emitDeliverableCompleted,
+  emitClientCreated,
+  emitClientUpdated,
+  emitRfpStatusChanged,
+  emitKnowledgePublished,
+  emitWorkflowEvent,
+} from "./workflow-events";
