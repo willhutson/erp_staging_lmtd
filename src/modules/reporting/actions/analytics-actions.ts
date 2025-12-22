@@ -318,11 +318,10 @@ export async function getClientReport(
     throw new Error("Client not found");
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [
     briefsByStatus,
     briefsByType,
-    _timeByDepartment,
+    _timeByDepartment, // eslint-disable-line @typescript-eslint/no-unused-vars
     totalTime,
     contentByStatus,
     npsScore,

@@ -365,11 +365,10 @@ async function buildEntityContext(inputs: Record<string, unknown>): Promise<Reco
  * 2. Parse the response into structured outputs
  * 3. Validate the outputs against the skill definition
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function executeSkill(
   skill: Skill,
   context: SkillContext,
-  _inputs: Record<string, unknown>
+  _inputs: Record<string, unknown> // eslint-disable-line @typescript-eslint/no-unused-vars
 ): Promise<Record<string, unknown>> {
   // Placeholder: Return mock outputs based on skill outputs definition
   const outputs: Record<string, unknown> = {};
