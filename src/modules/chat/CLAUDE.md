@@ -16,17 +16,22 @@ Internal communication platform with Slack-like features:
 /src/modules/chat
 ├── actions/
 │   ├── channel-actions.ts      # Channel CRUD, members, DMs
-│   ├── message-actions.ts      # Messages, reactions, pins
+│   ├── message-actions.ts      # Messages, reactions, pins, search
 │   └── presence-actions.ts     # User presence management
 ├── components/
 │   ├── ChannelSidebar.tsx      # Channel list sidebar
 │   ├── MessageEditor.tsx       # Tiptap-based message composer
 │   ├── MessageList.tsx         # Message display with reactions
+│   ├── MessageSearch.tsx       # Full-text search with filters
 │   ├── ThreadView.tsx          # Thread conversation panel
 │   ├── PresenceIndicator.tsx   # Online/away/offline dots
 │   └── TypingIndicator.tsx     # "X is typing..." component
 ├── hooks/
 │   └── usePresence.ts          # Automatic presence tracking
+├── services/
+│   ├── chat-notifications.ts   # System notification messages
+│   ├── module-integrations.ts  # Hooks for other modules
+│   └── holiday-reminders.ts    # UAE holiday reminders
 └── CLAUDE.md                   # This file
 
 /src/app/(dashboard)/chat
@@ -258,6 +263,55 @@ const { handleTyping, stopTyping } = useTyping({
 // Call stopTyping() after sending
 ```
 
+## Message Search (Phase 18.6)
+
+Full-text search across all messages with advanced filters.
+
+### Features
+- Search across all channels or filter by specific channel
+- Filter by sender, date range, attachments
+- Keyboard shortcut: `⌘K` / `Ctrl+K`
+- Highlighted snippets in results
+- Quick navigation to message context
+
+### Usage
+
+```typescript
+import { MessageSearch } from "@/modules/chat/components";
+
+<MessageSearch
+  organizationId={organizationId}
+  channels={channels}
+  users={users}
+  onSelectMessage={(result) => {
+    // Navigate to message
+    router.push(`/chat/${result.channel.slug}?message=${result.id}`);
+  }}
+/>
+```
+
+### Server Actions
+
+```typescript
+import { searchMessages, quickSearchMessages } from "@/modules/chat/actions/message-actions";
+
+// Full search with filters
+const { results, total, hasMore } = await searchMessages({
+  organizationId,
+  query: "project deadline",
+  channelId: "optional-channel-id",
+  userId: "optional-sender-id",
+  fromDate: new Date("2025-01-01"),
+  toDate: new Date("2025-12-31"),
+  hasAttachments: true,
+  limit: 20,
+  offset: 0,
+});
+
+// Quick search for autocomplete
+const results = await quickSearchMessages(organizationId, "deadline", 5);
+```
+
 ## Module Integrations (Phase 18.5)
 
 SpokeChat integrates with other modules to provide automated notifications.
@@ -446,8 +500,8 @@ await sendManualContentReminder(organizationId, "Eid Al Fitr");
 
 ## Future Enhancements
 
-1. **Search** - Full-text message search
-2. **File Uploads** - Direct file sharing
+1. ~~**Search** - Full-text message search~~ ✅ Phase 18.6
+2. **File Uploads** - Direct file sharing (in progress)
 3. **Notification Preferences** - User-configurable notification settings
 4. **Mobile Push** - Push notifications
 5. **Slash Commands** - `/giphy`, `/poll`, etc.
