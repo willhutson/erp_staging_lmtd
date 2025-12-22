@@ -47,6 +47,7 @@ export default async function ContentEnginePage() {
         initialPosts={calendarPosts}
         stats={stats}
         socialAccounts={socialAccounts}
+        organizationId={organizationId}
       />
     </div>
   );
