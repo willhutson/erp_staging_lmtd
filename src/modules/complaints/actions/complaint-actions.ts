@@ -426,8 +426,8 @@ export async function getComplaintStats(clientId?: string) {
     bySource: Object.fromEntries(bySource.map((s: { source: string; _count: number }) => [s.source, s._count])),
     byCategory: Object.fromEntries(
       byCategory
-        .filter((c: { category: string | null }) => c.category)
-        .map((c: { category: string; _count: number }) => [c.category, c._count])
+        .filter((c) => c.category !== null)
+        .map((c) => [c.category!, c._count])
     ),
     avgResolutionDays: avgResolutionTime[0]?.avgDays ?? null,
   };

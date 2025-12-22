@@ -48,7 +48,7 @@ export interface RecentInvocation {
   status: string;
   triggeredBy: string;
   durationMs: number | null;
-  createdAt: Date;
+  startedAt: Date;
   error: string | null;
 }
 
@@ -76,7 +76,7 @@ export async function getDashboardMetrics(
   // Base query conditions
   const whereCondition = {
     organizationId,
-    createdAt: { gte: startDate },
+    startedAt: { gte: startDate },
     ...(options?.skillSlugs && {
       skill: { slug: { in: options.skillSlugs } },
     }),
@@ -95,7 +95,7 @@ export async function getDashboardMetrics(
         },
       },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { startedAt: "desc" },
   });
 
   // Calculate overall metrics
@@ -113,7 +113,7 @@ export async function getDashboardMetrics(
   }
 
   const bySkill: SkillMetrics[] = [];
-  for (const [skillId, skillInvocations] of bySkillMap) {
+  for (const [skillId, skillInvocations] of Array.from(bySkillMap.entries())) {
     const skill = skillInvocations[0].skill!;
     const metrics = calculateMetrics(skillInvocations);
     bySkill.push({
@@ -122,7 +122,7 @@ export async function getDashboardMetrics(
       skillSlug: skill.slug,
       skillName: skill.name,
       category: skill.category,
-      lastInvokedAt: skillInvocations[0].createdAt,
+      lastInvokedAt: skillInvocations[0].startedAt,
     });
   }
 
@@ -131,7 +131,7 @@ export async function getDashboardMetrics(
 
   // Group by category
   const byCategory: Record<string, InvocationMetrics> = {};
-  for (const [, skillInvocations] of bySkillMap) {
+  for (const [, skillInvocations] of Array.from(bySkillMap.entries())) {
     const category = skillInvocations[0].skill?.category ?? "UNKNOWN";
     if (!byCategory[category]) {
       byCategory[category] = calculateMetrics([]);
@@ -151,7 +151,7 @@ export async function getDashboardMetrics(
   }
 
   const byTriggerType: Record<string, InvocationMetrics> = {};
-  for (const [triggerType, triggerInvocations] of byTriggerMap) {
+  for (const [triggerType, triggerInvocations] of Array.from(byTriggerMap.entries())) {
     byTriggerType[triggerType] = calculateMetrics(triggerInvocations);
   }
 
@@ -166,7 +166,7 @@ export async function getDashboardMetrics(
     status: inv.status,
     triggeredBy: inv.triggeredBy,
     durationMs: inv.durationMs,
-    createdAt: inv.createdAt,
+    startedAt: inv.startedAt,
     error: inv.error,
   }));
 
@@ -220,9 +220,9 @@ export async function getSkillMetrics(
     where: {
       organizationId,
       skillId: skill.id,
-      createdAt: { gte: startDate },
+      startedAt: { gte: startDate },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { startedAt: "desc" },
   });
 
   const baseMetrics = calculateMetrics(invocations);
@@ -232,7 +232,7 @@ export async function getSkillMetrics(
     skillSlug: skill.slug,
     skillName: skill.name,
     category: skill.category,
-    lastInvokedAt: invocations[0]?.createdAt ?? null,
+    lastInvokedAt: invocations[0]?.startedAt ?? null,
   };
 
   const timeSeries = buildTimeSeries(invocations, days);
@@ -244,7 +244,7 @@ export async function getSkillMetrics(
     status: inv.status,
     triggeredBy: inv.triggeredBy,
     durationMs: inv.durationMs,
-    createdAt: inv.createdAt,
+    startedAt: inv.startedAt,
     error: inv.error,
   }));
 
@@ -299,13 +299,12 @@ export async function getInvocationDetails(invocationId: string) {
     skill: invocation.skill,
     status: invocation.status,
     triggeredBy: invocation.triggeredBy,
-    triggerContext: invocation.triggerContext,
-    inputData: invocation.inputData,
-    outputData: invocation.outputData,
+    input: invocation.input,
+    output: invocation.output,
     error: invocation.error,
     durationMs: invocation.durationMs,
-    tokensUsed: invocation.tokensUsed,
-    createdAt: invocation.createdAt,
+    totalTokens: invocation.totalTokens,
+    startedAt: invocation.startedAt,
     completedAt: invocation.completedAt,
   };
 }
@@ -320,14 +319,14 @@ export async function getEntityInvocations(
   const session = await auth();
   if (!session?.user) throw new Error("Unauthorized");
 
-  // Search in triggerContext for entity references
+  // Search for entity references
   const invocations = await db.agentInvocation.findMany({
     where: {
       organizationId: session.user.organizationId,
       OR: [
-        { triggerContext: { path: ["entityId"], equals: entityId } },
-        { triggerContext: { path: ["entityType"], equals: entityType } },
-        { inputData: { path: [`${entityType}Id`], equals: entityId } },
+        { entityId: entityId },
+        { entityType: entityType },
+        { input: { path: [`${entityType}Id`], equals: entityId } },
       ],
     },
     include: {
@@ -335,7 +334,7 @@ export async function getEntityInvocations(
         select: { name: true, slug: true },
       },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { startedAt: "desc" },
     take: 50,
   });
 
@@ -346,7 +345,7 @@ export async function getEntityInvocations(
     status: inv.status,
     triggeredBy: inv.triggeredBy,
     durationMs: inv.durationMs,
-    createdAt: inv.createdAt,
+    startedAt: inv.startedAt,
     error: inv.error,
   }));
 }
@@ -408,7 +407,7 @@ function buildTimeSeries(
     const dateStr = date.toISOString().split("T")[0];
 
     const dayInvocations = invocations.filter((inv) => {
-      const invDate = inv.createdAt.toISOString().split("T")[0];
+      const invDate = inv.startedAt.toISOString().split("T")[0];
       return invDate === dateStr;
     });
 

@@ -19,6 +19,7 @@ import {
   emitContentWebhook,
   emitStatusChanged,
 } from "@/modules/content/webhooks/content-webhooks";
+import { validateApiKey } from "@/lib/api/keys";
 
 // ============================================
 // VALIDATION SCHEMAS
@@ -93,20 +94,12 @@ async function authenticateRequest(
 ): Promise<{ organizationId: string; userId: string } | null> {
   const apiKey = req.headers.get("X-API-Key");
   if (apiKey) {
-    const key = await db.apiKey.findFirst({
-      where: {
-        key: apiKey,
-        isActive: true,
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      },
-    });
-
-    if (key) {
-      await db.apiKey.update({
-        where: { id: key.id },
-        data: { lastUsedAt: new Date() },
-      });
-      return { organizationId: key.organizationId, userId: key.createdById };
+    const result = await validateApiKey(apiKey);
+    if (result) {
+      return {
+        organizationId: result.organizationId,
+        userId: result.apiKey.createdById
+      };
     }
   }
 

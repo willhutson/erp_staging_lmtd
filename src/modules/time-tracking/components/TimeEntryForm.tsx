@@ -61,28 +61,28 @@ export function TimeEntryForm({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
+      <div className="bg-ltd-surface-overlay rounded-[var(--ltd-radius-lg)] border border-ltd-border-1 w-full max-w-md mx-4">
+        <div className="flex items-center justify-between p-4 border-b border-ltd-border-1">
+          <h2 className="text-lg font-semibold text-ltd-text-1">
             {entry ? "Edit Time Entry" : "Add Time Entry"}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded"
+            className="p-1 hover:bg-ltd-surface-3 rounded"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-ltd-text-2" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-ltd-text-2 mb-1">
               Brief
             </label>
             <select
               value={briefId}
               onChange={(e) => setBriefId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              className="w-full px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-[var(--ltd-radius-md)] text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
             >
               <option value="">No brief (general time)</option>
               {briefs.map((brief) => (
@@ -95,7 +95,7 @@ export function TimeEntryForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-ltd-text-2 mb-1">
                 Date
               </label>
               <input
@@ -103,11 +103,11 @@ export function TimeEntryForm({
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+                className="w-full px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-[var(--ltd-radius-md)] text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-ltd-text-2 mb-1">
                 Hours
               </label>
               <input
@@ -119,13 +119,13 @@ export function TimeEntryForm({
                 onChange={(e) => setHours(e.target.value)}
                 required
                 placeholder="2.5"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+                className="w-full px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-[var(--ltd-radius-md)] text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-ltd-text-2 mb-1">
               Description
             </label>
             <textarea
@@ -133,7 +133,7 @@ export function TimeEntryForm({
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder="What did you work on?"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7] resize-none"
+              className="w-full px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-[var(--ltd-radius-md)] text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary resize-none"
             />
           </div>
 
@@ -143,9 +143,9 @@ export function TimeEntryForm({
               id="billable"
               checked={isBillable}
               onChange={(e) => setIsBillable(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 text-[#52EDC7] focus:ring-[#52EDC7]"
+              className="w-4 h-4 rounded border-ltd-border-1 text-ltd-primary focus:ring-ltd-primary"
             />
-            <label htmlFor="billable" className="text-sm text-gray-700">
+            <label htmlFor="billable" className="text-sm text-ltd-text-2">
               Billable time
             </label>
           </div>
@@ -154,14 +154,14 @@ export function TimeEntryForm({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50"
+              className="flex-1 px-4 py-2 border border-ltd-border-1 text-ltd-text-2 rounded-[var(--ltd-radius-md)] hover:bg-ltd-surface-3"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending || !hours}
-              className="flex-1 px-4 py-2 bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#1BA098] hover:text-white transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-ltd-primary text-ltd-primary-text font-medium rounded-[var(--ltd-radius-md)] hover:bg-ltd-primary-hover transition-colors disabled:opacity-50"
             >
               {isPending ? "Saving..." : entry ? "Update" : "Add Entry"}
             </button>

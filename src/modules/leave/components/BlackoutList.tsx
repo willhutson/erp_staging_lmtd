@@ -67,13 +67,13 @@ export function BlackoutList({ blackouts, clients, canManage = false }: Blackout
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200">
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        <h2 className="font-semibold text-gray-900">Blackout Periods</h2>
+    <div className="bg-ltd-surface-overlay rounded-[var(--ltd-radius-lg)] border border-ltd-border-1">
+      <div className="p-4 border-b border-ltd-border-1 flex items-center justify-between">
+        <h2 className="font-semibold text-ltd-text-1">Blackout Periods</h2>
         {canManage && (
           <button
             onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-1 text-sm text-[#1BA098] hover:underline"
+            className="flex items-center gap-1 text-sm text-ltd-primary hover:underline"
           >
             <Plus className="w-4 h-4" />
             Add Blackout
@@ -82,14 +82,14 @@ export function BlackoutList({ blackouts, clients, canManage = false }: Blackout
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="p-4 border-b border-gray-100 bg-gray-50 space-y-3">
+        <form onSubmit={handleSubmit} className="p-4 border-b border-ltd-border-1 bg-ltd-surface-2 space-y-3">
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Blackout name (e.g., Ramadan Coverage)"
             required
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+            className="w-full px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-[var(--ltd-radius-md)] text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
           />
           <div className="grid grid-cols-2 gap-3">
             <input
@@ -97,7 +97,7 @@ export function BlackoutList({ blackouts, clients, canManage = false }: Blackout
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               required
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              className="px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-[var(--ltd-radius-md)] text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
             />
             <input
               type="date"
@@ -105,13 +105,13 @@ export function BlackoutList({ blackouts, clients, canManage = false }: Blackout
               onChange={(e) => setEndDate(e.target.value)}
               min={startDate}
               required
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              className="px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-[var(--ltd-radius-md)] text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
             />
           </div>
           <select
             value={clientId}
             onChange={(e) => setClientId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+            className="w-full px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-[var(--ltd-radius-md)] text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
           >
             <option value="">All clients (company-wide)</option>
             {clients.map((client) => (
@@ -125,29 +125,29 @@ export function BlackoutList({ blackouts, clients, canManage = false }: Blackout
             onChange={(e) => setReason(e.target.value)}
             placeholder="Reason (optional)"
             rows={2}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7] resize-none"
+            className="w-full px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay text-ltd-text-1 rounded-[var(--ltd-radius-md)] text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary resize-none"
           />
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
               checked={isRecurring}
               onChange={(e) => setIsRecurring(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 text-[#52EDC7] focus:ring-[#52EDC7]"
+              className="w-4 h-4 rounded border-ltd-border-1 text-ltd-primary focus:ring-ltd-primary"
             />
-            <span className="text-sm text-gray-700">Repeats annually</span>
+            <span className="text-sm text-ltd-text-2">Repeats annually</span>
           </label>
           <div className="flex gap-2 justify-end">
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
+              className="px-3 py-1.5 text-sm text-ltd-text-2 hover:text-ltd-text-1"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="px-4 py-1.5 text-sm bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#1BA098] hover:text-white transition-colors disabled:opacity-50"
+              className="px-4 py-1.5 text-sm bg-ltd-primary text-ltd-primary-text font-medium rounded-[var(--ltd-radius-md)] hover:bg-ltd-primary-hover transition-colors disabled:opacity-50"
             >
               {isPending ? "Adding..." : "Add Blackout"}
             </button>
@@ -156,23 +156,23 @@ export function BlackoutList({ blackouts, clients, canManage = false }: Blackout
       )}
 
       {blackouts.length === 0 ? (
-        <div className="p-8 text-center text-gray-500 text-sm">
+        <div className="p-8 text-center text-ltd-text-2 text-sm">
           No blackout periods defined
         </div>
       ) : (
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-ltd-border-1">
           {blackouts.map((blackout) => (
             <div key={blackout.id} className="p-4 flex items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-medium text-gray-900">{blackout.name}</span>
+                  <span className="font-medium text-ltd-text-1">{blackout.name}</span>
                   {blackout.isRecurring && (
                     <span title="Repeats annually">
-                      <Repeat className="w-4 h-4 text-gray-400" />
+                      <Repeat className="w-4 h-4 text-ltd-text-3" />
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-4 text-sm text-gray-500">
+                <div className="flex items-center gap-4 text-sm text-ltd-text-2">
                   <span className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
                     {formatDate(blackout.startDate)} – {formatDate(blackout.endDate)}
@@ -185,14 +185,14 @@ export function BlackoutList({ blackouts, clients, canManage = false }: Blackout
                   )}
                 </div>
                 {blackout.reason && (
-                  <p className="text-sm text-gray-400 mt-1">{blackout.reason}</p>
+                  <p className="text-sm text-ltd-text-3 mt-1">{blackout.reason}</p>
                 )}
               </div>
               {canManage && (
                 <button
                   onClick={() => handleDelete(blackout.id)}
                   disabled={isPending}
-                  className="p-1.5 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
+                  className="p-1.5 text-ltd-text-3 hover:text-ltd-error transition-colors disabled:opacity-50"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

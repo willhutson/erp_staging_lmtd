@@ -59,7 +59,7 @@ export async function performAIAction(request: AIActionRequest): Promise<AIActio
         action: "AI_ACTION",
         entityType: "AI",
         entityId: request.action,
-        metadata: {
+        changes: {
           action: request.action,
           textLength: request.text.length,
           platform: request.platform,

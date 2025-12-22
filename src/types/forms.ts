@@ -11,6 +11,7 @@ export type BriefType =
 export type FieldType =
   | "text"
   | "textarea"
+  | "richtext"
   | "select"
   | "multi-select"
   | "date"
@@ -31,12 +32,20 @@ export interface ValidationRule {
   message?: string;
   min?: number;
   max?: number;
+  maxLength?: number;
 }
 
 export interface FieldFilter {
   departments?: string[];
   roles?: string[];
   permissionLevels?: string[];
+}
+
+export interface RichTextConfig {
+  mentions?: boolean;
+  enableAI?: boolean;
+  variant?: "minimal" | "standard" | "mentions" | "full" | "caption";
+  minHeight?: string;
 }
 
 export interface FormField {
@@ -46,6 +55,7 @@ export interface FormField {
   required: boolean;
   placeholder?: string;
   helpText?: string;
+  description?: string;
   maxLength?: number;
   options?: SelectOption[];
   filter?: FieldFilter;
@@ -53,6 +63,7 @@ export interface FormField {
   multiple?: boolean;
   accept?: string[];
   defaultValue?: string | string[] | number | boolean;
+  config?: RichTextConfig;
 }
 
 export interface FormSection {

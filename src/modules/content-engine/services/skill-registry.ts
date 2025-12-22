@@ -1,5 +1,3 @@
-"use server";
-
 import { db } from "@/lib/db";
 import type { Skill, SkillCategory, SkillTrigger } from "../types";
 
@@ -27,7 +25,7 @@ export async function getActiveSkills(organizationId: string): Promise<Skill[]> 
   const skills = await db.agentSkill.findMany({
     where: {
       organizationId,
-      status: "ACTIVE",
+      isEnabled: true,
     },
     orderBy: { name: "asc" },
   });
@@ -62,7 +60,7 @@ export async function getSkillsByCategory(
     where: {
       organizationId,
       category,
-      status: "ACTIVE",
+      isEnabled: true,
     },
     orderBy: { name: "asc" },
   });
@@ -81,14 +79,14 @@ export async function getSkillsByTrigger(
   const skills = await db.agentSkill.findMany({
     where: {
       organizationId,
-      status: "ACTIVE",
+      isEnabled: true,
     },
   });
 
   // Filter by trigger type in the JSON array
   return skills
     .filter((skill) => {
-      const triggers = skill.triggers as SkillTrigger[];
+      const triggers = skill.triggers as unknown as SkillTrigger[];
       return triggers.some((t) => {
         if (t.type !== triggerType) return false;
         if (eventType && t.type === "EVENT") {
@@ -110,7 +108,7 @@ export async function getDependentSkills(
   const skills = await db.agentSkill.findMany({
     where: {
       organizationId,
-      status: "ACTIVE",
+      isEnabled: true,
       dependsOn: { has: skillSlug },
     },
   });
@@ -160,9 +158,9 @@ export async function validateSkill(skill: Skill): Promise<SkillValidationResult
     errors.push("Skill cannot depend on itself");
   }
 
-  // System prompt
-  if (!skill.systemPrompt && !skill.founderKnowledge) {
-    warnings.push("No system prompt or founder knowledge - skill may produce generic results");
+  // Description check
+  if (!skill.description) {
+    warnings.push("No skill description - skill may produce generic results");
   }
 
   return {
@@ -187,7 +185,7 @@ export async function checkDependencies(
 
   for (const dep of skill.dependsOn) {
     const depSkill = await getSkillBySlug(organizationId, dep);
-    if (!depSkill || depSkill.status !== "ACTIVE") {
+    if (!depSkill || !depSkill.isEnabled) {
       missing.push(dep);
     }
   }
@@ -232,11 +230,11 @@ export async function discoverSkillsForScenario(
     // Check category relevance
     if (scenario.entityType) {
       const categoryMap: Record<string, SkillCategory[]> = {
-        brief: ["BRIEF_MANAGEMENT", "WORKFLOW"],
-        client: ["CLIENT_RELATIONS", "ANALYTICS"],
-        rfp: ["BRIEF_MANAGEMENT", "CONTENT_CREATION"],
-        team: ["RESOURCE_PLANNING"],
-        deliverable: ["QUALITY_ASSURANCE", "CONTENT_CREATION"],
+        brief: ["WORKFLOW", "DECISION"],
+        client: ["COMMUNICATION", "DATA_PROCESSING"],
+        rfp: ["WORKFLOW", "CONTENT_CREATION"],
+        team: ["DATA_PROCESSING"],
+        deliverable: ["CONTENT_ANALYSIS", "CONTENT_CREATION"],
       };
       if (categoryMap[scenario.entityType]?.includes(skill.category)) {
         score += 3;
@@ -264,14 +262,12 @@ function mapSkillRecord(record: SkillRecord): Skill {
     name: record.name,
     description: record.description,
     category: record.category as SkillCategory,
-    status: record.status as Skill["status"],
-    triggers: record.triggers as SkillTrigger[],
-    inputs: record.inputs as Skill["inputs"],
-    outputs: record.outputs as Skill["outputs"],
+    isEnabled: record.isEnabled,
+    triggers: record.triggers as unknown as SkillTrigger[],
+    inputs: record.inputs as unknown as Skill["inputs"],
+    outputs: record.outputs as unknown as Skill["outputs"],
     dependsOn: record.dependsOn,
-    systemPrompt: record.systemPrompt ?? undefined,
-    founderKnowledge: record.founderKnowledge ?? undefined,
-    validationQuestions: record.validationQuestions,
+    version: record.version,
     invocationCount: record.invocationCount,
     successRate: record.successRate,
     createdAt: record.createdAt,

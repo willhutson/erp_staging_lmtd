@@ -23,12 +23,12 @@ export function PipelinePageClient({ deals, clients }: PipelinePageClientProps) 
     <>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Deal Pipeline</h1>
-          <p className="text-gray-500 mt-1">Track leads and opportunities</p>
+          <h1 className="text-2xl font-bold text-ltd-text-1">Deal Pipeline</h1>
+          <p className="text-ltd-text-2 mt-1">Track leads and opportunities</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#1BA098] hover:text-white transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-ltd-primary text-ltd-primary-text font-medium rounded-[var(--ltd-radius-md)] hover:bg-ltd-primary-hover transition-colors"
         >
           <Plus className="w-5 h-5" />
           New Deal

@@ -14,9 +14,9 @@ import {
 import { FileUploader } from "@/components/files/FileUploader";
 import { FileGrid } from "@/components/files/FileGrid";
 import { createFolder } from "@/modules/files/actions/file-actions";
-import type { FileRecord, FileCategory, FolderRecord } from "@/types/prisma-types";
+import type { File as FileType, FileCategory, Folder as FolderType } from "@prisma/client";
 
-interface FileWithUploader extends FileRecord {
+interface FileWithUploader extends FileType {
   uploadedBy?: {
     id: string;
     name: string | null;
@@ -29,7 +29,7 @@ interface FileWithUploader extends FileRecord {
   } | null;
 }
 
-interface FolderWithCounts extends FolderRecord {
+interface FolderWithCounts extends FolderType {
   _count: {
     files: number;
     children: number;

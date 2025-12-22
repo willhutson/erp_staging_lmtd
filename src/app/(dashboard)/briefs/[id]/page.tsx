@@ -4,6 +4,7 @@ import { redirect, notFound } from "next/navigation";
 import { getFormConfig, briefTypeLabels } from "@/../config/forms";
 import { StatusBadge } from "@/modules/briefs/components/StatusBadge";
 import { BriefScopeChangesSection } from "@/modules/scope-changes/components";
+import { DocumentUpload } from "@/components/documents";
 import { ArrowLeft, Calendar, User, Building2, Clock } from "lucide-react";
 import Link from "next/link";
 
@@ -32,6 +33,9 @@ export default async function BriefDetailPage({ params }: PageProps) {
       scopeChanges: {
         orderBy: { createdAt: "desc" },
       },
+      attachments: {
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
 
@@ -49,16 +53,16 @@ export default async function BriefDetailPage({ params }: PageProps) {
         <div className="flex items-center gap-4">
           <Link
             href="/briefs"
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-ltd-surface-3 rounded-lg transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-500" />
+            <ArrowLeft className="w-5 h-5 text-ltd-text-2" />
           </Link>
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl font-bold text-gray-900">{brief.title}</h1>
+              <h1 className="text-2xl font-bold text-ltd-text-1">{brief.title}</h1>
               <StatusBadge status={brief.status} size="md" />
             </div>
-            <p className="text-gray-500">
+            <p className="text-ltd-text-2">
               {brief.briefNumber} • {briefTypeLabels[brief.type]}
             </p>
           </div>
@@ -67,30 +71,30 @@ export default async function BriefDetailPage({ params }: PageProps) {
 
       {/* Meta info */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center gap-2 text-gray-500 mb-1">
+        <div className="bg-ltd-surface-overlay rounded-lg border border-ltd-border-1 p-4">
+          <div className="flex items-center gap-2 text-ltd-text-2 mb-1">
             <Building2 className="w-4 h-4" />
             <span className="text-sm">Client</span>
           </div>
-          <p className="font-medium">{brief.client.name}</p>
+          <p className="font-medium text-ltd-text-1">{brief.client.name}</p>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center gap-2 text-gray-500 mb-1">
+        <div className="bg-ltd-surface-overlay rounded-lg border border-ltd-border-1 p-4">
+          <div className="flex items-center gap-2 text-ltd-text-2 mb-1">
             <User className="w-4 h-4" />
             <span className="text-sm">Assignee</span>
           </div>
-          <p className="font-medium">
+          <p className="font-medium text-ltd-text-1">
             {brief.assignee?.name || "Unassigned"}
           </p>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center gap-2 text-gray-500 mb-1">
+        <div className="bg-ltd-surface-overlay rounded-lg border border-ltd-border-1 p-4">
+          <div className="flex items-center gap-2 text-ltd-text-2 mb-1">
             <Calendar className="w-4 h-4" />
             <span className="text-sm">Created</span>
           </div>
-          <p className="font-medium">
+          <p className="font-medium text-ltd-text-1">
             {new Date(brief.createdAt).toLocaleDateString("en-GB", {
               day: "numeric",
               month: "short",
@@ -99,12 +103,12 @@ export default async function BriefDetailPage({ params }: PageProps) {
           </p>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center gap-2 text-gray-500 mb-1">
+        <div className="bg-ltd-surface-overlay rounded-lg border border-ltd-border-1 p-4">
+          <div className="flex items-center gap-2 text-ltd-text-2 mb-1">
             <Clock className="w-4 h-4" />
             <span className="text-sm">Deadline</span>
           </div>
-          <p className="font-medium">
+          <p className="font-medium text-ltd-text-1">
             {formData.deadline
               ? new Date(formData.deadline as string).toLocaleDateString("en-GB", {
                   day: "numeric",
@@ -120,9 +124,9 @@ export default async function BriefDetailPage({ params }: PageProps) {
       {formConfig.sections.map((section) => (
         <div
           key={section.id}
-          className="bg-white rounded-xl border border-gray-200 p-6"
+          className="bg-ltd-surface-overlay rounded-xl border border-ltd-border-1 p-6"
         >
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 className="text-lg font-semibold text-ltd-text-1 mb-4">
             {section.title}
           </h2>
           <dl className="space-y-4">
@@ -149,10 +153,10 @@ export default async function BriefDetailPage({ params }: PageProps) {
 
               return (
                 <div key={field.id}>
-                  <dt className="text-sm font-medium text-gray-500">
+                  <dt className="text-sm font-medium text-ltd-text-2">
                     {field.label}
                   </dt>
-                  <dd className="mt-1 text-gray-900 whitespace-pre-wrap">
+                  <dd className="mt-1 text-ltd-text-1 whitespace-pre-wrap">
                     {displayValue}
                   </dd>
                 </div>
@@ -183,10 +187,18 @@ export default async function BriefDetailPage({ params }: PageProps) {
         canEdit={brief.status !== "COMPLETED" && brief.status !== "CANCELLED"}
       />
 
+      {/* Supporting Documents */}
+      <DocumentUpload
+        attachments={brief.attachments}
+        entityType="brief"
+        entityId={brief.id}
+        canUpload={brief.status !== "COMPLETED" && brief.status !== "CANCELLED"}
+      />
+
       {/* Status History */}
       {brief.statusHistory.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-ltd-surface-overlay rounded-xl border border-ltd-border-1 p-6">
+          <h2 className="text-lg font-semibold text-ltd-text-1 mb-4">
             Status History
           </h2>
           <div className="space-y-3">
@@ -196,7 +208,7 @@ export default async function BriefDetailPage({ params }: PageProps) {
                 className="flex items-center gap-3 text-sm"
               >
                 <StatusBadge status={history.toStatus} />
-                <span className="text-gray-500">
+                <span className="text-ltd-text-2">
                   {new Date(history.createdAt).toLocaleString("en-GB", {
                     day: "numeric",
                     month: "short",
@@ -205,7 +217,7 @@ export default async function BriefDetailPage({ params }: PageProps) {
                   })}
                 </span>
                 {history.notes && (
-                  <span className="text-gray-400">– {history.notes}</span>
+                  <span className="text-ltd-text-3">– {history.notes}</span>
                 )}
               </div>
             ))}
@@ -214,7 +226,7 @@ export default async function BriefDetailPage({ params }: PageProps) {
       )}
 
       {/* Created by */}
-      <div className="text-sm text-gray-500">
+      <div className="text-sm text-ltd-text-2">
         Created by {brief.createdBy.name} on{" "}
         {new Date(brief.createdAt).toLocaleDateString("en-GB", {
           day: "numeric",

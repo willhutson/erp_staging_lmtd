@@ -5,6 +5,7 @@ import Link from "next/link";
 import { StatusBadge } from "@/modules/briefs/components/StatusBadge";
 import { briefTypeLabels } from "@/../config/forms";
 import { can } from "@/lib/permissions";
+import { PageShell } from "@/components/ltd/patterns/page-shell";
 
 // Inferred types from Prisma - avoids direct import issues
 type BriefRecord = Awaited<ReturnType<typeof db.brief.findMany<{ include: { client: true; assignee: true } }>>>[number];
@@ -88,35 +89,33 @@ export default async function BriefsPage({ searchParams }: PageProps) {
   const types = Object.keys(briefTypeLabels) as BriefType[];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Briefs</h1>
-          <p className="text-gray-500 mt-1">Manage all project briefs</p>
-        </div>
-        {canCreate && (
+    <PageShell
+      title="Briefs"
+      description="Manage all project briefs"
+      actions={
+        canCreate ? (
           <Link
             href="/briefs/new"
-            className="flex items-center gap-2 px-4 py-2 bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#1BA098] hover:text-white transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-ltd-primary text-ltd-primary-text font-medium rounded-[var(--ltd-radius-md)] hover:bg-ltd-primary-hover transition-colors"
           >
             <Plus className="w-5 h-5" />
             New Brief
           </Link>
-        )}
-      </div>
-
+        ) : undefined
+      }
+    >
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
+      <div className="rounded-[var(--ltd-radius-lg)] border border-ltd-border-1 bg-ltd-surface-overlay p-4">
         <form className="flex flex-wrap gap-4">
           {/* Search */}
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ltd-text-3" />
             <input
               type="text"
               name="q"
               defaultValue={params.q}
               placeholder="Search briefs..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              className="w-full pl-10 pr-4 py-2 border border-ltd-border-1 bg-ltd-surface-overlay rounded-[var(--ltd-radius-md)] text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
             />
           </div>
 
@@ -124,7 +123,7 @@ export default async function BriefsPage({ searchParams }: PageProps) {
           <select
             name="status"
             defaultValue={params.status}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+            className="px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay rounded-[var(--ltd-radius-md)] text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
           >
             <option value="">All Statuses</option>
             {statuses.map((status) => (
@@ -138,7 +137,7 @@ export default async function BriefsPage({ searchParams }: PageProps) {
           <select
             name="type"
             defaultValue={params.type}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+            className="px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay rounded-[var(--ltd-radius-md)] text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
           >
             <option value="">All Types</option>
             {types.map((type) => (
@@ -152,7 +151,7 @@ export default async function BriefsPage({ searchParams }: PageProps) {
           <select
             name="client"
             defaultValue={params.client}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+            className="px-3 py-2 border border-ltd-border-1 bg-ltd-surface-overlay rounded-[var(--ltd-radius-md)] text-sm focus:outline-none focus:ring-2 focus:ring-ltd-primary"
           >
             <option value="">All Clients</option>
             {clients.map((client: ClientRecord) => (
@@ -164,7 +163,7 @@ export default async function BriefsPage({ searchParams }: PageProps) {
 
           <button
             type="submit"
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+            className="px-4 py-2 bg-ltd-surface-3 text-ltd-text-1 rounded-[var(--ltd-radius-md)] hover:bg-ltd-surface-2 text-sm transition-colors"
           >
             Filter
           </button>
@@ -172,7 +171,7 @@ export default async function BriefsPage({ searchParams }: PageProps) {
           {(params.status || params.type || params.client || params.q) && (
             <Link
               href="/briefs"
-              className="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm"
+              className="px-4 py-2 text-ltd-text-2 hover:text-ltd-text-1 text-sm transition-colors"
             >
               Clear
             </Link>
@@ -181,13 +180,13 @@ export default async function BriefsPage({ searchParams }: PageProps) {
       </div>
 
       {/* Briefs list */}
-      <div className="bg-white rounded-xl border border-gray-200">
+      <div className="rounded-[var(--ltd-radius-lg)] border border-ltd-border-1 bg-ltd-surface-overlay">
         {briefs.length === 0 ? (
           <div className="p-12 text-center">
-            <p className="text-gray-500">No briefs found.</p>
+            <p className="text-ltd-text-2">No briefs found.</p>
             {canCreate && (
-              <p className="text-sm text-gray-400 mt-1">
-                <Link href="/briefs/new" className="text-[#52EDC7] hover:underline">
+              <p className="text-sm text-ltd-text-3 mt-1">
+                <Link href="/briefs/new" className="text-ltd-primary hover:underline">
                   Create your first brief
                 </Link>{" "}
                 to get started.
@@ -195,31 +194,31 @@ export default async function BriefsPage({ searchParams }: PageProps) {
             )}
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-ltd-border-1">
             {briefs.map((brief: BriefRecord) => (
               <Link
                 key={brief.id}
                 href={`/briefs/${brief.id}`}
-                className="block p-4 hover:bg-gray-50 transition-colors"
+                className="block p-4 hover:bg-ltd-surface-2 transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-1">
-                      <p className="font-medium text-gray-900 truncate">
+                      <p className="font-medium text-ltd-text-1 truncate">
                         {brief.title}
                       </p>
                       <StatusBadge status={brief.status} />
                     </div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-ltd-text-2">
                       {brief.briefNumber} • {brief.client.name} •{" "}
                       {briefTypeLabels[brief.type]}
                     </p>
                   </div>
                   <div className="text-right ml-4">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-ltd-text-2">
                       {brief.assignee?.name || "Unassigned"}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-ltd-text-3">
                       {new Date(brief.createdAt).toLocaleDateString("en-GB", {
                         day: "numeric",
                         month: "short",
@@ -232,6 +231,6 @@ export default async function BriefsPage({ searchParams }: PageProps) {
           </div>
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

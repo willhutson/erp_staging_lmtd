@@ -15,6 +15,7 @@ import {
 } from "@/modules/dashboard/components/widgets";
 import { WidgetWrapper } from "@/modules/dashboard/components/WidgetWrapper";
 import { widgetRegistry } from "@/modules/dashboard/types";
+import { PageShell } from "@/components/ltd/patterns/page-shell";
 
 // Server-rendered widget component
 function ServerWidget({ type }: { type: string }) {
@@ -65,9 +66,15 @@ export default async function DashboardPage() {
   }
 
   return (
-    <DashboardGrid
-      initialLayout={layout}
-      renderedWidgets={renderedWidgets}
-    />
+    <PageShell
+      title="Dashboard"
+      description="Overview of your agency performance"
+      maxWidth="full"
+    >
+      <DashboardGrid
+        initialLayout={layout}
+        renderedWidgets={renderedWidgets}
+      />
+    </PageShell>
   );
 }

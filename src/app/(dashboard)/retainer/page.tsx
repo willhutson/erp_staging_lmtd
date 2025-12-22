@@ -16,10 +16,26 @@ export default async function RetainerDashboardPage() {
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
 
-  const [dashboard, trends] = await Promise.all([
+  const [dashboardData, trends] = await Promise.all([
     getRetainerDashboard(currentYear, currentMonth),
     getRetainerTrends(6),
   ]);
+
+  // Transform periods to match client component types
+  const dashboard = {
+    ...dashboardData,
+    periods: dashboardData.periods.map((p) => ({
+      ...p,
+      budgetHours: p.budgetHours ? Number(p.budgetHours) : null,
+      budgetValue: p.budgetValue ? Number(p.budgetValue) : null,
+      contractValue: p.contractValue ? Number(p.contractValue) : null,
+      actualHours: Number(p.actualHours),
+      actualCost: Number(p.actualCost),
+      burnRate: p.burnRate ? Number(p.burnRate) : null,
+      marginPercent: p.marginPercent ? Number(p.marginPercent) : null,
+      deliverableBreakdown: p.deliverableBreakdown as Record<string, number> | null,
+    })),
+  };
 
   return (
     <div className="space-y-6">

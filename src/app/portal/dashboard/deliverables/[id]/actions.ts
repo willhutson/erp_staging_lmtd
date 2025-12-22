@@ -50,7 +50,8 @@ export async function submitDeliverableFeedback(
     data: {
       status: newStatus,
       clientFeedback: feedback || null,
-      clientApprovedAt: action === "approve" ? new Date() : null,
+      clientReviewedAt: new Date(),
+      approvedAt: action === "approve" ? new Date() : null,
       // Increment version if requesting revisions
       ...(action === "revisions" && { version: { increment: 1 } }),
     },

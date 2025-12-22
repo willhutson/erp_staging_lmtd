@@ -19,10 +19,6 @@ export function DashboardGrid({ initialLayout, renderedWidgets }: DashboardGridP
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-      </div>
-
       {/* Grid layout using CSS Grid */}
       <div className="grid grid-cols-12 gap-4 auto-rows-[100px]">
         {sortedWidgets.map((widget) => (

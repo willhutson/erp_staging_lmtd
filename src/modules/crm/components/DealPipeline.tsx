@@ -32,11 +32,11 @@ interface DealPipelineProps {
 }
 
 const stages: { id: DealStage; label: string; color: string }[] = [
-  { id: "LEAD", label: "Lead", color: "bg-gray-100" },
-  { id: "PITCH", label: "Pitch", color: "bg-blue-50" },
-  { id: "NEGOTIATION", label: "Negotiation", color: "bg-purple-50" },
-  { id: "WON", label: "Won", color: "bg-green-50" },
-  { id: "LOST", label: "Lost", color: "bg-red-50" },
+  { id: "LEAD", label: "Lead", color: "bg-ltd-surface-2" },
+  { id: "PITCH", label: "Pitch", color: "bg-blue-500/10 dark:bg-blue-500/20" },
+  { id: "NEGOTIATION", label: "Negotiation", color: "bg-purple-500/10 dark:bg-purple-500/20" },
+  { id: "WON", label: "Won", color: "bg-ltd-success/10" },
+  { id: "LOST", label: "Lost", color: "bg-ltd-error/10" },
 ];
 
 function PipelineColumn({
@@ -61,16 +61,16 @@ function PipelineColumn({
   };
 
   return (
-    <div className={cn("flex-shrink-0 w-72 rounded-xl", stage.color)}>
-      <div className="p-3 border-b border-gray-200/50">
+    <div className={cn("flex-shrink-0 w-72 rounded-[var(--ltd-radius-lg)]", stage.color)}>
+      <div className="p-3 border-b border-ltd-border-1">
         <div className="flex items-center justify-between">
-          <h3 className="font-medium text-gray-900 text-sm">{stage.label}</h3>
-          <span className="text-xs text-gray-500 bg-white px-2 py-0.5 rounded-full">
+          <h3 className="font-medium text-ltd-text-1 text-sm">{stage.label}</h3>
+          <span className="text-xs text-ltd-text-2 bg-ltd-surface-overlay px-2 py-0.5 rounded-full">
             {deals.length}
           </span>
         </div>
         {totalValue > 0 && (
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-ltd-text-2 mt-1">
             {formatCurrency(totalValue)}
           </p>
         )}
@@ -80,7 +80,7 @@ function PipelineColumn({
         ref={setNodeRef}
         className={cn(
           "p-2 space-y-2 min-h-[300px] transition-colors",
-          isOver && "bg-gray-200/50"
+          isOver && "bg-ltd-surface-3/50"
         )}
       >
         <SortableContext
@@ -93,7 +93,7 @@ function PipelineColumn({
         </SortableContext>
 
         {deals.length === 0 && (
-          <div className="text-center py-8 text-sm text-gray-400">
+          <div className="text-center py-8 text-sm text-ltd-text-3">
             No deals
           </div>
         )}

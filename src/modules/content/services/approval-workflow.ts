@@ -1,5 +1,3 @@
-"use server";
-
 /**
  * Content Approval Workflow Service
  *

@@ -17,12 +17,10 @@ import {
   File,
   Clock,
   CheckCircle,
-  AlertCircle,
   Send,
   Eye,
   User,
   Calendar,
-  ExternalLink
 } from "lucide-react";
 import { DeliverableActions } from "./DeliverableActions";
 
@@ -71,10 +69,12 @@ export default async function DeliverableDetailPage({ params }: PageProps) {
         include: {
           client: true,
           assignee: { select: { id: true, name: true, email: true } },
+          createdBy: { select: { id: true, name: true } },
         },
       },
-      createdBy: { select: { id: true, name: true, email: true } },
-      reviewedBy: { select: { id: true, name: true } },
+      files: {
+        orderBy: { order: "asc" },
+      },
     },
   });
 
@@ -137,20 +137,21 @@ export default async function DeliverableDetailPage({ params }: PageProps) {
               <CardDescription>Attached deliverable files</CardDescription>
             </CardHeader>
             <CardContent>
-              {deliverable.fileUrls && (deliverable.fileUrls as string[]).length > 0 ? (
+              {deliverable.files.length > 0 ? (
                 <div className="space-y-2">
-                  {(deliverable.fileUrls as string[]).map((url: string, index: number) => (
-                    <a
-                      key={index}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+                  {deliverable.files.map((file) => (
+                    <div
+                      key={file.id}
+                      className="flex items-center gap-3 p-3 rounded-lg border"
                     >
                       <File className="h-5 w-5 text-gray-400" />
-                      <span className="flex-1 truncate text-sm">{url.split("/").pop() || url}</span>
-                      <ExternalLink className="h-4 w-4 text-gray-400" />
-                    </a>
+                      <div className="flex-1">
+                        <span className="text-sm font-medium">{file.role}</span>
+                        {file.caption && (
+                          <p className="text-xs text-gray-500">{file.caption}</p>
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -172,10 +173,9 @@ export default async function DeliverableDetailPage({ params }: PageProps) {
                     <p className="text-gray-600 bg-gray-50 p-3 rounded-lg">
                       {deliverable.internalFeedback}
                     </p>
-                    {deliverable.reviewedBy && (
+                    {deliverable.internalReviewedAt && (
                       <p className="text-xs text-gray-400 mt-2">
-                        by {deliverable.reviewedBy.name} on{" "}
-                        {deliverable.reviewedAt?.toLocaleDateString()}
+                        Reviewed on {deliverable.internalReviewedAt.toLocaleDateString()}
                       </p>
                     )}
                   </div>
@@ -192,27 +192,6 @@ export default async function DeliverableDetailPage({ params }: PageProps) {
             </Card>
           )}
 
-          {/* Revision Notes */}
-          {deliverable.revisionNotes && (deliverable.revisionNotes as string[]).length > 0 && (
-            <Card className="border-orange-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-orange-700">
-                  <AlertCircle className="h-5 w-5" />
-                  Revision Notes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  {(deliverable.revisionNotes as string[]).map((note: string, index: number) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <span className="text-orange-500 mt-1">•</span>
-                      <span className="text-gray-700">{note}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Actions */}
           <DeliverableActions
@@ -256,13 +235,15 @@ export default async function DeliverableDetailPage({ params }: PageProps) {
                 <p className="text-xs text-gray-500 uppercase tracking-wide">Version</p>
                 <p className="font-medium text-gray-900">v{deliverable.version}</p>
               </div>
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">Created By</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <User className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-900">{deliverable.createdBy.name}</span>
+              {deliverable.brief.createdBy && (
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide">Brief Created By</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <User className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-900">{deliverable.brief.createdBy.name}</span>
+                  </div>
                 </div>
-              </div>
+              )}
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wide">Created</p>
                 <div className="flex items-center gap-2 mt-1">
@@ -310,28 +291,28 @@ export default async function DeliverableDetailPage({ params }: PageProps) {
                     <span>Delivered: {deliverable.deliveredAt.toLocaleDateString()}</span>
                   </div>
                 )}
-                {deliverable.clientApprovedAt && (
+                {deliverable.approvedAt && (
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>Approved: {deliverable.clientApprovedAt.toLocaleDateString()}</span>
+                    <span>Approved: {deliverable.approvedAt.toLocaleDateString()}</span>
                   </div>
                 )}
-                {deliverable.sentToClientAt && (
+                {deliverable.clientReviewedAt && (
                   <div className="flex items-center gap-2">
                     <Send className="h-4 w-4 text-purple-500" />
-                    <span>Sent to client: {deliverable.sentToClientAt.toLocaleDateString()}</span>
+                    <span>Client reviewed: {deliverable.clientReviewedAt.toLocaleDateString()}</span>
                   </div>
                 )}
-                {deliverable.reviewedAt && (
+                {deliverable.internalReviewedAt && (
                   <div className="flex items-center gap-2">
                     <Eye className="h-4 w-4 text-yellow-500" />
-                    <span>Reviewed: {deliverable.reviewedAt.toLocaleDateString()}</span>
+                    <span>Internal review: {deliverable.internalReviewedAt.toLocaleDateString()}</span>
                   </div>
                 )}
-                {deliverable.submittedForReviewAt && (
+                {deliverable.submittedAt && (
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-blue-500" />
-                    <span>Submitted: {deliverable.submittedForReviewAt.toLocaleDateString()}</span>
+                    <span>Submitted: {deliverable.submittedAt.toLocaleDateString()}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2 text-gray-400">

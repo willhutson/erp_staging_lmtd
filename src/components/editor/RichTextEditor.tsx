@@ -193,7 +193,8 @@ interface MentionCommandProps {
   props: MentionUser;
 }
 
-function createMentionSuggestion(users: MentionUser[]) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function createMentionSuggestion(users: MentionUser[]): any {
   return {
     items: ({ query }: { query: string }) => {
       return users

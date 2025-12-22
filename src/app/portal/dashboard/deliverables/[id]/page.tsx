@@ -19,7 +19,6 @@ import {
   CheckCircle,
   AlertCircle,
   Eye,
-  ExternalLink,
   User,
   Calendar,
 } from "lucide-react";
@@ -66,9 +65,12 @@ export default async function PortalDeliverableDetailPage({ params }: PageProps)
       brief: {
         include: {
           client: { select: { id: true, name: true, code: true } },
+          createdBy: { select: { id: true, name: true } },
         },
       },
-      createdBy: { select: { id: true, name: true } },
+      files: {
+        orderBy: { order: "asc" },
+      },
     },
   });
 
@@ -85,7 +87,6 @@ export default async function PortalDeliverableDetailPage({ params }: PageProps)
 
   const statusConfig = STATUS_CONFIG[deliverable.status] || STATUS_CONFIG.CLIENT_REVIEW;
   const isAwaitingReview = deliverable.status === "CLIENT_REVIEW";
-  const fileUrls = (deliverable.fileUrls as string[]) || [];
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -135,7 +136,7 @@ export default async function PortalDeliverableDetailPage({ params }: PageProps)
               <User className="h-4 w-4 text-gray-400" />
               <div>
                 <p className="text-xs text-gray-500">Created by</p>
-                <p className="text-sm font-medium">{deliverable.createdBy?.name || "Unknown"}</p>
+                <p className="text-sm font-medium">{deliverable.brief.createdBy?.name || "Unknown"}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -143,8 +144,8 @@ export default async function PortalDeliverableDetailPage({ params }: PageProps)
               <div>
                 <p className="text-xs text-gray-500">Submitted</p>
                 <p className="text-sm font-medium">
-                  {deliverable.sentToClientAt
-                    ? new Date(deliverable.sentToClientAt).toLocaleDateString("en-GB", {
+                  {deliverable.submittedAt
+                    ? new Date(deliverable.submittedAt).toLocaleDateString("en-GB", {
                         day: "numeric",
                         month: "short",
                         year: "numeric",
@@ -170,32 +171,26 @@ export default async function PortalDeliverableDetailPage({ params }: PageProps)
           </div>
 
           {/* Files */}
-          {fileUrls.length > 0 && (
+          {deliverable.files.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-3">Attached Files</h3>
               <div className="space-y-2">
-                {fileUrls.map((url: string, index: number) => {
-                  const fileName = url.split("/").pop() || `File ${index + 1}`;
-                  return (
-                    <a
-                      key={index}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 border rounded-lg hover:border-[#52EDC7] hover:bg-gray-50 transition-all"
-                    >
-                      <div className="flex items-center gap-3">
-                        <File className="h-5 w-5 text-gray-400" />
-                        <span className="text-sm font-medium truncate max-w-[300px]">
-                          {fileName}
-                        </span>
+                {deliverable.files.map((file) => (
+                  <div
+                    key={file.id}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <File className="h-5 w-5 text-gray-400" />
+                      <div>
+                        <span className="text-sm font-medium">{file.role}</span>
+                        {file.caption && (
+                          <p className="text-xs text-gray-500">{file.caption}</p>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <ExternalLink className="h-4 w-4 text-gray-400" />
-                      </div>
-                    </a>
-                  );
-                })}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -256,8 +251,8 @@ export default async function PortalDeliverableDetailPage({ params }: PageProps)
             <p className="font-medium text-green-700">Approved</p>
             <p className="text-sm text-green-600 mt-1">
               You approved this deliverable on{" "}
-              {deliverable.clientApprovedAt
-                ? new Date(deliverable.clientApprovedAt).toLocaleDateString("en-GB", {
+              {deliverable.approvedAt
+                ? new Date(deliverable.approvedAt).toLocaleDateString("en-GB", {
                     day: "numeric",
                     month: "long",
                     year: "numeric",

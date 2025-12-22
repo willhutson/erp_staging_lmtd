@@ -1,7 +1,6 @@
-"use server";
-
 import { db } from "@/lib/db";
-import type { Skill } from "../types";
+import type { KnowledgeDocumentType } from "@prisma/client";
+import type { Skill, SkillCategory } from "../types";
 
 // ============================================
 // TYPES
@@ -28,8 +27,6 @@ export interface SkillContext {
   skill: {
     name: string;
     description: string;
-    systemPrompt: string | null;
-    founderKnowledge: string | null;
   };
 
   // Knowledge base
@@ -99,8 +96,6 @@ export async function buildContext(
     skill: {
       name: skill.name,
       description: skill.description,
-      systemPrompt: skill.systemPrompt ?? null,
-      founderKnowledge: skill.founderKnowledge ?? null,
     },
     documents: trimmedDocuments,
     entities,
@@ -166,19 +161,19 @@ async function getRelevantDocuments(
     }
   }
 
-  // Strategy 2: Category-based procedures and checklists
-  const categoryMap: Record<string, string[]> = {
-    BRIEF_MANAGEMENT: ["PROCEDURE", "CHECKLIST", "TEMPLATE"],
-    RESOURCE_PLANNING: ["PROCEDURE", "POLICY"],
-    CLIENT_RELATIONS: ["PLAYBOOK", "PROCEDURE"],
-    QUALITY_ASSURANCE: ["CHECKLIST", "PROCEDURE"],
+  // Strategy 2: Category-based procedures and templates
+  const categoryMap: Record<SkillCategory, KnowledgeDocumentType[]> = {
     CONTENT_CREATION: ["TEMPLATE", "PLAYBOOK"],
-    WORKFLOW: ["PROCEDURE", "CHECKLIST"],
-    ANALYTICS: ["PROCEDURE", "REFERENCE"],
-    KNOWLEDGE: ["REFERENCE", "PLAYBOOK"],
+    CONTENT_ANALYSIS: ["PROCEDURE", "REFERENCE"],
+    WORKFLOW: ["PROCEDURE", "TEMPLATE"],
+    COMMUNICATION: ["PLAYBOOK", "PROCEDURE"],
+    DATA_PROCESSING: ["PROCEDURE", "REFERENCE"],
+    DECISION: ["PROCEDURE", "PLAYBOOK"],
+    INTEGRATION: ["REFERENCE", "PROCEDURE"],
+    UTILITY: ["REFERENCE", "TEMPLATE"],
   };
 
-  const relevantTypes = categoryMap[skill.category] ?? ["PROCEDURE"];
+  const relevantTypes: KnowledgeDocumentType[] = categoryMap[skill.category] ?? ["PROCEDURE"];
 
   const categoryDocs = await db.knowledgeDocument.findMany({
     where: {
@@ -261,7 +256,7 @@ function extractKeywords(inputs: Record<string, unknown>): string[] {
   }
 
   // Deduplicate and limit
-  return [...new Set(keywords)].slice(0, 5);
+  return Array.from(new Set(keywords)).slice(0, 5);
 }
 
 // ============================================
@@ -328,7 +323,6 @@ async function buildEntityContext(
           industry: client.industry,
           companySize: client.companySize,
           relationshipStatus: client.relationshipStatus,
-          healthScore: client.healthScore,
           contacts: client.contacts,
           accountManager: client.accountManager,
           briefCount: client._count.briefs,
@@ -378,7 +372,6 @@ async function buildEntityContext(
     const rfp = await db.rFP.findUnique({
       where: { id: inputs.rfpId },
       include: {
-        leadOwner: { select: { id: true, name: true } },
         subitems: true,
       },
     });
@@ -388,13 +381,12 @@ async function buildEntityContext(
         type: "rfp",
         id: rfp.id,
         data: {
-          title: rfp.title,
-          entity: rfp.entity,
+          name: rfp.name,
+          clientName: rfp.clientName,
           status: rfp.status,
-          submissionDeadline: rfp.submissionDeadline,
+          deadline: rfp.deadline,
           estimatedValue: rfp.estimatedValue,
-          probability: rfp.probability,
-          leadOwner: rfp.leadOwner,
+          winProbability: rfp.winProbability,
           subitems: rfp.subitems,
         },
       });
@@ -422,23 +414,23 @@ async function getHistoricalContext(
       skillId,
       status: "COMPLETED",
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { startedAt: "desc" },
     take: 3,
     select: {
       id: true,
-      inputData: true,
-      outputData: true,
-      createdAt: true,
+      input: true,
+      output: true,
+      startedAt: true,
     },
   });
 
   return recentInvocations.map((inv) => ({
     id: inv.id,
     path: `/history/${skillId}/${inv.id}`,
-    title: `Previous invocation from ${inv.createdAt.toISOString()}`,
+    title: `Previous invocation from ${inv.startedAt.toISOString()}`,
     content: JSON.stringify({
-      inputs: inv.inputData,
-      outputs: inv.outputData,
+      inputs: inv.input,
+      outputs: inv.output,
     }, null, 2),
     documentType: "HISTORY",
     relevanceScore: 0.3,
@@ -524,18 +516,6 @@ export async function serializeContextForPrompt(context: SkillContext): Promise<
   parts.push("## Skill: " + context.skill.name);
   parts.push(context.skill.description);
   parts.push("");
-
-  if (context.skill.systemPrompt) {
-    parts.push("## Instructions");
-    parts.push(context.skill.systemPrompt);
-    parts.push("");
-  }
-
-  if (context.skill.founderKnowledge) {
-    parts.push("## Expert Knowledge");
-    parts.push(context.skill.founderKnowledge);
-    parts.push("");
-  }
 
   // Entity context
   if (context.entities.length > 0) {

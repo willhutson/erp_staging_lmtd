@@ -5,7 +5,7 @@ export type User = Awaited<ReturnType<typeof db.user.findFirst>>;
 export type Organization = Awaited<ReturnType<typeof db.organization.findFirst>>;
 
 // Permission levels as const for type-safety
-export type PermissionLevel = "ADMIN" | "LEADERSHIP" | "TEAM_LEAD" | "STAFF" | "FREELANCER";
+export type PermissionLevel = "ADMIN" | "LEADERSHIP" | "TEAM_LEAD" | "STAFF" | "FREELANCER" | "CLIENT";
 
 export interface SessionUser {
   id: string;

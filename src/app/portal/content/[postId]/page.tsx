@@ -114,7 +114,6 @@ export default async function PortalContentReviewPage({
           })),
         }}
         approvalId={pendingApproval?.id || null}
-        contactId={portalUser.contactId}
         comments={post.contentComments.map((c) => ({
           id: c.id,
           content: c.content,

@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import type { KnowledgeDocumentType, Prisma } from "@prisma/client";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -48,16 +49,12 @@ export default async function KnowledgePage({ searchParams }: PageProps) {
   }
 
   // Build filter
-  const where: {
-    organizationId: string;
-    documentType?: string;
-    OR?: Array<{ title: { contains: string; mode: "insensitive" } } | { content: { contains: string; mode: "insensitive" } }>;
-  } = {
+  const where: Prisma.KnowledgeDocumentWhereInput = {
     organizationId: session.user.organizationId,
   };
 
   if (params.type) {
-    where.documentType = params.type;
+    where.documentType = params.type as KnowledgeDocumentType;
   }
 
   if (params.q) {

@@ -196,15 +196,17 @@ export function MessageEditor({
         HTMLAttributes: {
           class: "bg-blue-100 text-blue-700 px-1 rounded",
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         suggestion: {
-          items: ({ query }) => {
+          items: ({ query }: { query: string }) => {
             return users
               .filter((user) =>
                 user.name.toLowerCase().includes(query.toLowerCase())
               )
               .slice(0, 5);
           },
-          render: () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          render: (): any => {
             let popup: HTMLElement | null = null;
             let component: MentionComponent | null = null;
 
@@ -278,7 +280,8 @@ export function MessageEditor({
               },
             };
           },
-          command: ({ editor, range, props }: MentionCommandProps) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          command: ({ editor, range, props }: any) => {
             editor
               .chain()
               .focus()
@@ -362,7 +365,7 @@ export function MessageEditor({
         const result = await response.json();
 
         // Create attachment record
-        const attachment = await createAttachment({
+        const attachmentResult = await createAttachment({
           organizationId,
           channelId,
           userId: currentUserId,
@@ -373,7 +376,9 @@ export function MessageEditor({
           thumbnailUrl: result.thumbnailUrl,
         });
 
-        attachmentIds.push(attachment.id);
+        if (attachmentResult.success && attachmentResult.attachment) {
+          attachmentIds.push(attachmentResult.attachment.id);
+        }
 
         // Mark as uploaded
         setPendingFiles((prev) =>

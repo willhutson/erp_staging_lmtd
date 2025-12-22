@@ -31,7 +31,7 @@ export default async function NewSubscriptionPage() {
     db.agentSkill.findMany({
       where: {
         organizationId: session.user.organizationId,
-        status: "ACTIVE",
+        isEnabled: true,
       },
       select: { slug: true, name: true },
       orderBy: { name: "asc" },

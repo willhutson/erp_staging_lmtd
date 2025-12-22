@@ -326,11 +326,11 @@ export function Sidebar({ permissionLevel, dynamicMenuItems = [] }: SidebarProps
     >
       <div className="p-4 flex items-center justify-between border-b border-gray-800">
         {!collapsed && (
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-[#52EDC7] flex items-center justify-center">
-              <span className="text-gray-900 font-bold text-sm">SS</span>
+              <span className="text-gray-900 font-bold text-sm">L</span>
             </div>
-            <span className="font-semibold text-lg">SpokeStack</span>
+            <span className="font-semibold text-lg">TeamLMTD</span>
           </Link>
         )}
         <button

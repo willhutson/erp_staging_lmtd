@@ -67,15 +67,15 @@ export function RFPPipeline({ rfps }: RFPPipelineProps) {
         return (
           <div
             key={stage.status}
-            className="flex-shrink-0 w-72 bg-gray-50 rounded-xl"
+            className="flex-shrink-0 w-72 bg-ltd-surface-2 rounded-xl"
           >
             {/* Column header */}
-            <div className="p-3 border-b border-gray-200">
+            <div className="p-3 border-b border-ltd-border-1">
               <div className="flex items-center justify-between">
-                <h3 className="font-medium text-gray-900 text-sm">
+                <h3 className="font-medium text-ltd-text-1 text-sm">
                   {stage.label}
                 </h3>
-                <span className="text-xs text-gray-500 bg-white px-2 py-0.5 rounded-full">
+                <span className="text-xs text-ltd-text-2 bg-ltd-surface-overlay px-2 py-0.5 rounded-full">
                   {stageRFPs.length}
                 </span>
               </div>
@@ -93,24 +93,24 @@ export function RFPPipeline({ rfps }: RFPPipelineProps) {
                 return (
                   <div
                     key={rfp.id}
-                    className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm"
+                    className="bg-ltd-surface-overlay rounded-lg border border-ltd-border-1 p-3 shadow-sm"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <Link
                         href={`/rfp/${rfp.id}`}
-                        className="font-medium text-gray-900 text-sm hover:text-[#1BA098]"
+                        className="font-medium text-ltd-text-1 text-sm hover:text-ltd-primary"
                       >
                         {rfp.name}
                       </Link>
                     </div>
 
-                    <div className="space-y-2 text-xs text-gray-500">
+                    <div className="space-y-2 text-xs text-ltd-text-2">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         <span
                           className={cn(
-                            daysLeft < 3 && "text-red-500 font-medium",
-                            daysLeft >= 3 && daysLeft <= 7 && "text-yellow-600"
+                            daysLeft < 3 && "text-ltd-error font-medium",
+                            daysLeft >= 3 && daysLeft <= 7 && "text-ltd-warning"
                           )}
                         >
                           {daysLeft < 0
@@ -130,9 +130,9 @@ export function RFPPipeline({ rfps }: RFPPipelineProps) {
 
                       {totalSubitems > 0 && (
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="flex-1 h-1.5 bg-ltd-surface-3 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-[#52EDC7] rounded-full"
+                              className="h-full bg-ltd-primary rounded-full"
                               style={{
                                 width: `${(completedSubitems / totalSubitems) * 100}%`,
                               }}
@@ -145,12 +145,12 @@ export function RFPPipeline({ rfps }: RFPPipelineProps) {
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-100">
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-ltd-border-1">
                       <RFPStatusBadge status={rfp.status} />
                       {stage.status !== "AWAITING_RESPONSE" && (
                         <button
                           onClick={() => handleMoveNext(rfp)}
-                          className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-600"
+                          className="p-1 hover:bg-ltd-surface-3 rounded text-ltd-text-3 hover:text-ltd-text-1"
                           title="Move to next stage"
                         >
                           <ChevronRight className="w-4 h-4" />
@@ -162,7 +162,7 @@ export function RFPPipeline({ rfps }: RFPPipelineProps) {
               })}
 
               {stageRFPs.length === 0 && (
-                <div className="text-center py-8 text-sm text-gray-400">
+                <div className="text-center py-8 text-sm text-ltd-text-3">
                   No RFPs
                 </div>
               )}

@@ -26,8 +26,11 @@ export interface UploadResult {
 }
 
 export interface CreateAttachmentInput {
-  messageId: string;
-  uploadedById: string;
+  messageId?: string;
+  organizationId?: string;
+  channelId?: string;
+  userId?: string;
+  uploadedById?: string;
   fileName: string;
   fileType: string;
   fileSize: number;
@@ -35,6 +38,15 @@ export interface CreateAttachmentInput {
   thumbnailUrl?: string;
   width?: number;
   height?: number;
+}
+
+// Simplified return type for attachments created before message exists
+export interface PendingAttachment {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize: number;
 }
 
 // ============================================
@@ -210,19 +222,21 @@ export async function createAttachment(
   input: CreateAttachmentInput
 ): Promise<{ success: boolean; attachment?: { id: string }; error?: string }> {
   try {
-    const attachment = await db.messageAttachment.create({
-      data: {
-        messageId: input.messageId,
-        uploadedById: input.uploadedById,
-        fileName: input.fileName,
-        fileType: input.fileType,
-        fileSize: input.fileSize,
-        fileUrl: input.fileUrl,
-        thumbnailUrl: input.thumbnailUrl,
-        width: input.width,
-        height: input.height,
-      },
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data: any = {
+      fileName: input.fileName,
+      fileType: input.fileType,
+      fileSize: input.fileSize,
+      fileUrl: input.fileUrl,
+      thumbnailUrl: input.thumbnailUrl,
+      width: input.width,
+      height: input.height,
+    };
+    if (input.messageId) data.messageId = input.messageId;
+    if (input.uploadedById) data.uploadedById = input.uploadedById;
+    if (input.userId) data.uploadedById = input.userId;
+
+    const attachment = await db.messageAttachment.create({ data });
 
     return { success: true, attachment: { id: attachment.id } };
   } catch (error) {

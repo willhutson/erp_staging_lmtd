@@ -105,12 +105,15 @@ async function transcribeWithWhisper(
  * Transcribe using Google Cloud Speech-to-Text
  * Placeholder - would use @google-cloud/speech
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function transcribeWithGoogle(
   _audioUrl: string, // eslint-disable-line @typescript-eslint/no-unused-vars
   _config: TranscriptionConfig // eslint-disable-line @typescript-eslint/no-unused-vars
 ): Promise<TranscriptionResult> {
   // This would use the Google Cloud Speech-to-Text API
   // For now, return a placeholder
+  void audioUrl;
+  void config;
   throw new Error("Google Speech-to-Text not yet implemented");
 }
 
@@ -118,12 +121,15 @@ async function transcribeWithGoogle(
  * Transcribe using Azure Speech Services
  * Placeholder - would use @azure/cognitiveservices-speech-sdk
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function transcribeWithAzure(
   _audioUrl: string, // eslint-disable-line @typescript-eslint/no-unused-vars
   _config: TranscriptionConfig // eslint-disable-line @typescript-eslint/no-unused-vars
 ): Promise<TranscriptionResult> {
   // This would use the Azure Speech Services SDK
   // For now, return a placeholder
+  void audioUrl;
+  void config;
   throw new Error("Azure Speech Services not yet implemented");
 }
 

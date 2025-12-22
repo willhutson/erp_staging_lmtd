@@ -2,26 +2,232 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* shadcn defaults */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 160 84% 63%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 160 84% 63%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+
+    /* LMTD Design System - Light Mode */
+    /* Brand Colors - TeamLMTD Turquoise */
+    --ltd-primary: #52EDC7;
+    --ltd-primary-hover: #3DD4B0;
+    --ltd-primary-active: #2BBF9C;
+    --ltd-primary-text: #0A1628;
+
+    /* Accent Colors */
+    --ltd-brand-accent: #7B61FF;
+    --ltd-brand-accent-hover: #6B51EF;
+    --ltd-brand-accent-secondary: #FF6B9D;
+    --ltd-brand-accent-tertiary: #FFB547;
+
+    /* Surface Colors - Light */
+    --ltd-surface-1: #FFFFFF;
+    --ltd-surface-2: #F8FAFB;
+    --ltd-surface-3: #F1F4F7;
+    --ltd-surface-overlay: #FFFFFF;
+
+    /* Text Colors - Light */
+    --ltd-text-1: #0A1628;
+    --ltd-text-2: #4A5568;
+    --ltd-text-3: #A0AEC0;
+
+    /* Border Colors - Light */
+    --ltd-border-1: #E2E8F0;
+    --ltd-border-2: #CBD5E0;
+    --ltd-border-focus: #52EDC7;
+    --ltd-ring-focus: #52EDC7;
+
+    /* State Colors */
+    --ltd-state-success: #00D68F;
+    --ltd-state-warning: #FFB547;
+    --ltd-state-error: #FF4757;
+    --ltd-state-info: #4D9CFF;
+
+    --ltd-success: #00D68F;
+    --ltd-success-bg: #E5FFF6;
+    --ltd-warning: #FFB547;
+    --ltd-warning-bg: #FFF5E5;
+    --ltd-error: #FF4757;
+    --ltd-error-bg: #FFE8EB;
+    --ltd-info: #4D9CFF;
+    --ltd-info-bg: #E8F4FF;
+
+    /* Table */
+    --ltd-table-header: #F8FAFB;
+    --ltd-table-border: #E2E8F0;
+    --ltd-table-row-hover: #F1F4F7;
+
+    /* Density - Standard (default) */
+    --ltd-density-control-height: 40px;
+    --ltd-density-control-paddingX: 16px;
+    --ltd-density-control-paddingY: 10px;
+    --ltd-density-control-gap: 8px;
+    --ltd-density-table-row: 48px;
+    --ltd-density-card-padding: 24px;
+    --ltd-density-page-padding: 32px;
+
+    /* Radius */
+    --ltd-radius-sm: 8px;
+    --ltd-radius-md: 12px;
+    --ltd-radius-lg: 16px;
+    --ltd-radius-xl: 24px;
+  }
+
+  .dark {
+    /* shadcn dark mode */
+    --background: 222 47% 11%;
+    --foreground: 0 0% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 0 0% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 160 84% 63%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 160 84% 63%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    /* LMTD Design System - Dark Mode */
+    --ltd-primary: #52EDC7;
+    --ltd-primary-hover: #6BFFD8;
+    --ltd-primary-active: #3DD4B0;
+    --ltd-primary-text: #0A1628;
+
+    /* Surface Colors - Dark */
+    --ltd-surface-1: #0A1628;
+    --ltd-surface-2: #111D32;
+    --ltd-surface-3: #1A2942;
+    --ltd-surface-overlay: #152238;
+
+    /* Text Colors - Dark */
+    --ltd-text-1: #F7FAFC;
+    --ltd-text-2: #A0AEC0;
+    --ltd-text-3: #718096;
+
+    /* Border Colors - Dark */
+    --ltd-border-1: #2D3748;
+    --ltd-border-2: #4A5568;
+    --ltd-border-focus: #52EDC7;
+    --ltd-ring-focus: #52EDC7;
+
+    /* Table - Dark */
+    --ltd-table-header: #111D32;
+    --ltd-table-border: #2D3748;
+    --ltd-table-row-hover: #1A2942;
+
+    /* State backgrounds - Dark */
+    --ltd-success-bg: #0A2922;
+    --ltd-warning-bg: #2A2010;
+    --ltd-error-bg: #2A1215;
+    --ltd-info-bg: #0A1A2A;
+  }
+
+  /* Density Modes */
+  [data-density="compact"] {
+    --ltd-density-control-height: 32px;
+    --ltd-density-control-paddingX: 12px;
+    --ltd-density-control-paddingY: 6px;
+    --ltd-density-control-gap: 6px;
+    --ltd-density-table-row: 40px;
+    --ltd-density-card-padding: 16px;
+    --ltd-density-page-padding: 24px;
+  }
+
+  [data-density="comfortable"] {
+    --ltd-density-control-height: 44px;
+    --ltd-density-control-paddingX: 20px;
+    --ltd-density-control-paddingY: 12px;
+    --ltd-density-control-gap: 10px;
+    --ltd-density-table-row: 56px;
+    --ltd-density-card-padding: 28px;
+    --ltd-density-page-padding: 40px;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+/* Animations */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
+}
+
+.animation-delay-100 {
+  animation-delay: 100ms;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animation-delay-400 {
+  animation-delay: 400ms;
 }

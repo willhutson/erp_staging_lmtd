@@ -1,303 +1,158 @@
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import {
-  ArrowLeft,
-  Building2,
-  Globe,
-  Linkedin,
-  FileText,
-  Clock,
-} from "lucide-react";
-import { ContactList } from "@/modules/crm/components/ContactList";
-import { ActivityTimeline } from "@/modules/crm/components/ActivityTimeline";
-import { ClientOnboardingChecklist } from "@/modules/onboarding/components/ClientOnboardingChecklist";
-import { cn } from "@/lib/utils";
+"use client"
 
-interface PageProps {
-  params: Promise<{ id: string }>;
+import { use } from "react"
+import { PageShell } from "@/components/ltd/patterns/page-shell"
+import { ObjectHeader } from "@/components/ltd/patterns/object-header"
+import { LtdButton } from "@/components/ltd/primitives/ltd-button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card } from "@/components/ui/card"
+import { ActivityFeed, type ActivityItem } from "@/components/ltd/patterns/activity-feed"
+import { MomentumIndicator, type MomentumLevel } from "@/components/ltd/agency/momentum-indicator"
+import { mockClients } from "@/lib/data/mock-clients"
+import { mockCampaigns } from "@/lib/data/mock-campaigns"
+import type { Status } from "@/components/ltd/patterns/status-badge"
+
+// Map client status to ObjectHeader Status
+function mapClientStatus(status: string): Status {
+  const statusMap: Record<string, Status> = {
+    active: "active",
+    "in-review": "in-review",
+    paused: "blocked",
+  }
+  return statusMap[status] || "draft"
 }
 
-const relationshipStatusConfig: Record<
-  string,
-  { label: string; color: string; bgColor: string }
-> = {
-  LEAD: { label: "Lead", color: "text-gray-600", bgColor: "bg-gray-100" },
-  PROSPECT: { label: "Prospect", color: "text-blue-600", bgColor: "bg-blue-100" },
-  ACTIVE: { label: "Active", color: "text-green-600", bgColor: "bg-green-100" },
-  AT_RISK: { label: "At Risk", color: "text-red-600", bgColor: "bg-red-100" },
-  CHURNED: { label: "Churned", color: "text-gray-500", bgColor: "bg-gray-100" },
-  DORMANT: { label: "Dormant", color: "text-yellow-600", bgColor: "bg-yellow-100" },
-};
+const mockActivity: ActivityItem[] = [
+  {
+    id: "1",
+    timestamp: "2 hours ago",
+    actor: "Sarah Johnson",
+    action: "updated campaign budget",
+    metadata: { Campaign: "Q4 Product Launch", "New Budget": "$50,000" },
+  },
+  {
+    id: "2",
+    timestamp: "1 day ago",
+    actor: "Michael Chen",
+    action: "approved creative asset",
+    metadata: { Asset: "Hero Banner v3" },
+  },
+  {
+    id: "3",
+    timestamp: "2 days ago",
+    actor: "Sarah Johnson",
+    action: "created new campaign",
+    metadata: { Campaign: "Brand Awareness EMEA" },
+  },
+]
 
-export default async function ClientDetailPage({ params }: PageProps) {
-  const { id } = await params;
-  const session = await auth();
+function calculateMomentum(clientId: string): { level: MomentumLevel; daysInStatus: number } {
+  // Simple mock logic - in production this would be based on actual activity data
+  const mockMomentum: Record<string, { level: MomentumLevel; daysInStatus: number }> = {
+    "1": { level: "accelerating", daysInStatus: 2 },
+    "2": { level: "steady", daysInStatus: 5 },
+    "3": { level: "slow", daysInStatus: 12 },
+    "4": { level: "stalled", daysInStatus: 21 },
+  }
+  return mockMomentum[clientId] || { level: "steady", daysInStatus: 7 }
+}
 
-  if (!session?.user) {
-    return null;
+export default function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
+  const client = mockClients.find((c) => c.id === id)
+
+  if (!client) {
+    return <div>Client not found</div>
   }
 
-  const client = await db.client.findUnique({
-    where: { id },
-    include: {
-      accountManager: {
-        select: { id: true, name: true, email: true },
-      },
-      contacts: {
-        where: { isActive: true },
-        orderBy: [{ isPrimary: "desc" }, { name: "asc" }],
-      },
-      activities: {
-        include: {
-          user: {
-            select: { id: true, name: true, avatarUrl: true },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-        take: 20,
-      },
-      briefs: {
-        orderBy: { createdAt: "desc" },
-        take: 5,
-        select: {
-          id: true,
-          title: true,
-          briefNumber: true,
-          status: true,
-          createdAt: true,
-        },
-      },
-      onboarding: {
-        include: {
-          tasks: {
-            orderBy: { sortOrder: "asc" },
-          },
-        },
-      },
-      _count: {
-        select: {
-          briefs: true,
-          projects: true,
-        },
-      },
-    },
-  });
-
-  if (!client || client.organizationId !== session.user.organizationId) {
-    notFound();
-  }
-
-  const statusConfig =
-    relationshipStatusConfig[client.relationshipStatus] ||
-    relationshipStatusConfig.ACTIVE;
-
-  // Calculate total hours from briefs
-  const timeEntries = await db.timeEntry.aggregate({
-    where: {
-      brief: {
-        clientId: client.id,
-      },
-    },
-    _sum: {
-      hours: true,
-    },
-  });
-
-  const totalHours = Number(timeEntries._sum.hours || 0);
+  const clientCampaigns = mockCampaigns.filter((c) => c.clientId === id)
+  const momentum = calculateMomentum(id)
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start gap-4">
-        <Link
-          href="/clients"
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors mt-1"
-        >
-          <ArrowLeft className="w-5 h-5 text-gray-500" />
-        </Link>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
-              {client.logoUrl ? (
-                <Image
-                  src={client.logoUrl}
-                  alt={client.name}
-                  width={48}
-                  height={48}
-                  className="rounded-lg object-cover"
-                />
-              ) : (
-                <Building2 className="w-6 h-6 text-gray-600" />
-              )}
+    <PageShell breadcrumbs={[{ label: "Clients", href: "/clients" }, { label: client.name }]}>
+      <div className="space-y-6">
+        <ObjectHeader
+          title={client.name}
+          subtitle={`${client.region} • ${client.activeCampaigns} active campaigns`}
+          status={mapClientStatus(client.status)}
+          meta={[
+            { label: "Spend MTD", value: `$${client.spendMTD.toLocaleString()}` },
+            { label: "Health", value: client.health },
+          ]}
+          owner={client.owner}
+          actions={
+            <>
+              <LtdButton variant="outline">Edit</LtdButton>
+              <LtdButton>New Campaign</LtdButton>
+            </>
+          }
+        />
+
+        <Card className="p-[var(--ltd-density-card-padding)] bg-ltd-surface-overlay border-ltd-border-1 rounded-[var(--ltd-radius-lg)]">
+          <MomentumIndicator level={momentum.level} daysInStatus={momentum.daysInStatus} />
+        </Card>
+
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card className="p-[var(--ltd-density-card-padding)] bg-ltd-surface-overlay border-ltd-border-1 rounded-[var(--ltd-radius-lg)]">
+                <div className="text-sm text-ltd-text-2 mb-1">Total Spend</div>
+                <div className="text-2xl font-bold text-ltd-text-1 tabular-nums">
+                  ${client.spendMTD.toLocaleString()}
+                </div>
+              </Card>
+              <Card className="p-[var(--ltd-density-card-padding)] bg-ltd-surface-overlay border-ltd-border-1 rounded-[var(--ltd-radius-lg)]">
+                <div className="text-sm text-ltd-text-2 mb-1">Active Campaigns</div>
+                <div className="text-2xl font-bold text-ltd-text-1 tabular-nums">{client.activeCampaigns}</div>
+              </Card>
+              <Card className="p-[var(--ltd-density-card-padding)] bg-ltd-surface-overlay border-ltd-border-1 rounded-[var(--ltd-radius-lg)]">
+                <div className="text-sm text-ltd-text-2 mb-1">Account Health</div>
+                <div className="text-2xl font-bold text-ltd-text-1 capitalize">{client.health}</div>
+              </Card>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{client.name}</h1>
-              <p className="text-gray-500">{client.code}</p>
-            </div>
-            <span
-              className={cn(
-                "px-3 py-1 text-sm font-medium rounded-full ml-2",
-                statusConfig.bgColor,
-                statusConfig.color
-              )}
-            >
-              {statusConfig.label}
-            </span>
-          </div>
-        </div>
-      </div>
+          </TabsContent>
 
-      {/* Quick stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="flex items-center gap-2 text-gray-500 mb-1">
-            <FileText className="w-4 h-4" />
-            <span className="text-sm">Briefs</span>
-          </div>
-          <p className="text-2xl font-bold text-gray-900">
-            {client._count.briefs}
-          </p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="flex items-center gap-2 text-gray-500 mb-1">
-            <Clock className="w-4 h-4" />
-            <span className="text-sm">Hours Logged</span>
-          </div>
-          <p className="text-2xl font-bold text-gray-900">
-            {totalHours.toFixed(0)}h
-          </p>
-        </div>
-        {client.isRetainer && client.retainerHours && (
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">Monthly Retainer</p>
-            <p className="text-2xl font-bold text-purple-600">
-              {client.retainerHours}h
-            </p>
-          </div>
-        )}
-        {client.lifetimeValue && (
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">Lifetime Value</p>
-            <p className="text-2xl font-bold text-gray-900">
-              AED {Number(client.lifetimeValue).toLocaleString()}
-            </p>
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column - Details & Contacts */}
-        <div className="lg:col-span-1 space-y-6">
-          {/* Client details */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <h2 className="font-semibold text-gray-900 mb-4">Details</h2>
-            <dl className="space-y-3 text-sm">
-              {client.industry && (
-                <div>
-                  <dt className="text-gray-500">Industry</dt>
-                  <dd className="text-gray-900">{client.industry}</dd>
-                </div>
-              )}
-              {client.accountManager && (
-                <div>
-                  <dt className="text-gray-500">Account Manager</dt>
-                  <dd className="text-gray-900">{client.accountManager.name}</dd>
-                </div>
-              )}
-              {client.website && (
-                <div>
-                  <dt className="text-gray-500">Website</dt>
-                  <dd>
-                    <a
-                      href={client.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#1BA098] hover:underline flex items-center gap-1"
-                    >
-                      <Globe className="w-3 h-3" />
-                      {client.website.replace(/^https?:\/\//, "")}
-                    </a>
-                  </dd>
-                </div>
-              )}
-              {client.linkedIn && (
-                <div>
-                  <dt className="text-gray-500">LinkedIn</dt>
-                  <dd>
-                    <a
-                      href={client.linkedIn}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#1BA098] hover:underline flex items-center gap-1"
-                    >
-                      <Linkedin className="w-3 h-3" />
-                      View Profile
-                    </a>
-                  </dd>
-                </div>
-              )}
-              {client.leadSource && (
-                <div>
-                  <dt className="text-gray-500">Lead Source</dt>
-                  <dd className="text-gray-900">
-                    {client.leadSource.replace(/_/g, " ")}
-                  </dd>
-                </div>
-              )}
-            </dl>
-          </div>
-
-          {/* Contacts */}
-          <ContactList contacts={client.contacts} clientId={client.id} />
-
-          {/* Onboarding */}
-          <ClientOnboardingChecklist
-            clientId={client.id}
-            onboarding={client.onboarding}
-          />
-        </div>
-
-        {/* Right column - Activity & Recent briefs */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Activity timeline */}
-          <ActivityTimeline activities={client.activities} clientId={client.id} />
-
-          {/* Recent briefs */}
-          {client.briefs.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200">
-              <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                <h2 className="font-semibold text-gray-900">Recent Briefs</h2>
-                <Link
-                  href={`/briefs?client=${client.id}`}
-                  className="text-sm text-[#1BA098] hover:underline"
-                >
-                  View all
-                </Link>
-              </div>
-              <div className="divide-y divide-gray-100">
-                {client.briefs.map((brief) => (
-                  <Link
-                    key={brief.id}
-                    href={`/briefs/${brief.id}`}
-                    className="flex items-center justify-between p-4 hover:bg-gray-50"
-                  >
+          <TabsContent value="campaigns">
+            <Card className="p-[var(--ltd-density-card-padding)] bg-ltd-surface-overlay border-ltd-border-1 rounded-[var(--ltd-radius-lg)]">
+              <div className="space-y-3">
+                {clientCampaigns.map((campaign) => (
+                  <div key={campaign.id} className="flex items-center justify-between py-2">
                     <div>
-                      <p className="font-medium text-gray-900">{brief.title}</p>
-                      <p className="text-xs text-gray-500">{brief.briefNumber}</p>
+                      <div className="font-medium text-ltd-text-1">{campaign.name}</div>
+                      <div className="text-sm text-ltd-text-2">{campaign.channel}</div>
                     </div>
-                    <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded">
-                      {brief.status.replace(/_/g, " ")}
-                    </span>
-                  </Link>
+                    <div className="text-end">
+                      <div className="text-sm font-medium text-ltd-text-1 tabular-nums">
+                        ${campaign.spend.toLocaleString()} / ${campaign.budget.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-ltd-text-2">{campaign.status}</div>
+                    </div>
+                  </div>
                 ))}
               </div>
-            </div>
-          )}
-        </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <Card className="p-[var(--ltd-density-card-padding)] bg-ltd-surface-overlay border-ltd-border-1 rounded-[var(--ltd-radius-lg)]">
+              <ActivityFeed activities={mockActivity} />
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Card className="p-[var(--ltd-density-card-padding)] bg-ltd-surface-overlay border-ltd-border-1 rounded-[var(--ltd-radius-lg)]">
+              <p className="text-ltd-text-2">Settings panel coming soon</p>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
-    </div>
-  );
+    </PageShell>
+  )
 }

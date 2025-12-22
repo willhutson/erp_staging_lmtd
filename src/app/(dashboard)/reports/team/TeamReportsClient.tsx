@@ -101,7 +101,7 @@ export function TeamReportsClient({
   const [sortBy, setSortBy] = useState<"utilization" | "hours" | "load">("utilization");
 
   // Get unique departments
-  const departments = [...new Set(productivity.map((p) => p.department))].filter(Boolean);
+  const departments = Array.from(new Set(productivity.map((p) => p.department))).filter(Boolean);
 
   // Filter and sort
   const filteredProductivity = productivity

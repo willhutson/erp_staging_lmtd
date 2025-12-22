@@ -51,7 +51,7 @@ export default async function SkillsListPage() {
 
   const skills = await db.agentSkill.findMany({
     where: { organizationId: session.user.organizationId },
-    orderBy: [{ status: "asc" }, { category: "asc" }, { name: "asc" }],
+    orderBy: [{ isEnabled: "desc" }, { category: "asc" }, { name: "asc" }],
   });
 
   // Group by category
@@ -66,8 +66,8 @@ export default async function SkillsListPage() {
   );
 
   const totalSkills = skills.length;
-  const activeSkills = skills.filter((s: SkillRecord) => s.status === "ACTIVE").length;
-  const draftSkills = skills.filter((s: SkillRecord) => s.status === "DRAFT").length;
+  const activeSkills = skills.filter((s: SkillRecord) => s.isEnabled).length;
+  const disabledSkills = skills.filter((s: SkillRecord) => !s.isEnabled).length;
 
   return (
     <div className="space-y-6">
@@ -120,11 +120,11 @@ export default async function SkillsListPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-yellow-500" />
-              In Development
+              Disabled
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-yellow-600">{draftSkills}</div>
+            <div className="text-3xl font-bold text-yellow-600">{disabledSkills}</div>
           </CardContent>
         </Card>
       </div>
@@ -175,10 +175,10 @@ export default async function SkillsListPage() {
                         <div className="flex items-start justify-between mb-2">
                           <h3 className="font-medium text-gray-900">{skill.name}</h3>
                           <Badge
-                            variant={skill.status === "ACTIVE" ? "default" : "secondary"}
-                            className={skill.status === "ACTIVE" ? "bg-green-100 text-green-700" : ""}
+                            variant={skill.isEnabled ? "default" : "secondary"}
+                            className={skill.isEnabled ? "bg-green-100 text-green-700" : ""}
                           >
-                            {skill.status}
+                            {skill.isEnabled ? "Active" : "Disabled"}
                           </Badge>
                         </div>
                         <p className="text-sm text-gray-500 line-clamp-2 mb-3">

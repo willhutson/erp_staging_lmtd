@@ -15,8 +15,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { emitPostCreated } from "@/modules/content/webhooks/content-webhooks";
+import { validateApiKey } from "@/lib/api/keys";
 
 // ============================================
 // REQUEST VALIDATION SCHEMAS
@@ -108,28 +110,11 @@ async function authenticateRequest(
   // Try API key first
   const apiKey = req.headers.get("X-API-Key");
   if (apiKey) {
-    const key = await db.apiKey.findFirst({
-      where: {
-        key: apiKey,
-        isActive: true,
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      },
-      include: {
-        organization: { select: { id: true } },
-        createdBy: { select: { id: true } },
-      },
-    });
-
-    if (key) {
-      // Update last used
-      await db.apiKey.update({
-        where: { id: key.id },
-        data: { lastUsedAt: new Date() },
-      });
-
+    const result = await validateApiKey(apiKey);
+    if (result) {
       return {
-        organizationId: key.organizationId,
-        userId: key.createdById,
+        organizationId: result.organizationId,
+        userId: result.apiKey.createdById
       };
     }
   }
@@ -203,7 +188,7 @@ export async function GET(req: NextRequest) {
     } = parsed.data;
 
     // Build where clause
-    const where: Parameters<typeof db.contentPost.findMany>[0]["where"] = {
+    const where: Prisma.ContentPostWhereInput = {
       organizationId: auth.organizationId,
     };
 
