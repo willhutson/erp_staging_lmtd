@@ -1,5 +1,3 @@
-"use server";
-
 import { db } from "@/lib/db";
 import type { KnowledgeDocumentType } from "@prisma/client";
 import type { Skill, SkillCategory } from "../types";

@@ -39,12 +39,6 @@ export interface UpdateRetainerPeriodInput {
   rolloverHours?: number;
 }
 
-// Inferred types
-type RetainerPeriodRecord = Awaited<ReturnType<typeof db.retainerPeriod.findMany>>[number];
-type RetainerWithClient = Awaited<ReturnType<typeof db.retainerPeriod.findFirst<{
-  include: { client: true }
-}>>>;
-
 // ============================================
 // CRUD OPERATIONS
 // ============================================
@@ -303,7 +297,7 @@ export async function recalculateRetainerActuals(clientId: string, year: number,
         organizationId: session.user.organizationId,
       },
       status: { in: ["APPROVED", "DELIVERED"] },
-      clientApprovedAt: {
+      approvedAt: {
         gte: startDate,
         lte: endDate,
       },
@@ -372,7 +366,7 @@ export async function getRetainerDashboard(year?: number, month?: number) {
   const allClients = await db.client.findMany({
     where: {
       organizationId: session.user.organizationId,
-      status: "ACTIVE",
+      isActive: true,
     },
     select: { id: true, name: true, code: true },
   });
@@ -411,8 +405,8 @@ export async function getRetainerDashboard(year?: number, month?: number) {
   }
 
   if (periods.length > 0) {
-    const totalBurnRate = periods.reduce((sum: number, p: { burnRate: number | null }) => sum + Number(p.burnRate ?? 0), 0);
-    const totalMargin = periods.reduce((sum: number, p: { marginPercent: number | null }) => sum + Number(p.marginPercent ?? 0), 0);
+    const totalBurnRate = periods.reduce((sum, p) => sum + Number(p.burnRate ?? 0), 0);
+    const totalMargin = periods.reduce((sum, p) => sum + Number(p.marginPercent ?? 0), 0);
     summary.averageBurnRate = totalBurnRate / periods.length;
     summary.averageMargin = totalMargin / periods.length;
   }
@@ -479,8 +473,8 @@ export async function getClientYTDSummary(clientId: string) {
   }
 
   if (periods.length > 0) {
-    const totalBurnRate = periods.reduce((sum: number, p: { burnRate: number | null }) => sum + Number(p.burnRate ?? 0), 0);
-    const totalMargin = periods.reduce((sum: number, p: { marginPercent: number | null }) => sum + Number(p.marginPercent ?? 0), 0);
+    const totalBurnRate = periods.reduce((sum, p) => sum + Number(p.burnRate ?? 0), 0);
+    const totalMargin = periods.reduce((sum, p) => sum + Number(p.marginPercent ?? 0), 0);
     ytd.averageMonthlyBurn = totalBurnRate / periods.length;
     ytd.averageMargin = totalMargin / periods.length;
   }

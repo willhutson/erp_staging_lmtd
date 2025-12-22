@@ -2,7 +2,6 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { can } from "@/lib/permissions";
 import { revalidatePath } from "next/cache";
 import {
   emitDeliverableCreated,
@@ -12,16 +11,6 @@ import {
   emitDeliverableRevisionRequested,
   emitDeliverableCompleted,
 } from "@/modules/content-engine/services/workflow-events";
-
-// Inferred types
-type DeliverableRecord = Awaited<ReturnType<typeof db.deliverable.findMany>>[number];
-type DeliverableWithRelations = Awaited<ReturnType<typeof db.deliverable.findFirst<{
-  include: {
-    brief: { include: { client: true; assignee: true } };
-    createdBy: true;
-    reviewedBy: true;
-  }
-}>>>;
 
 // ============================================
 // TYPES
@@ -56,22 +45,17 @@ export interface CreateDeliverableInput {
   title: string;
   type: DeliverableType;
   description?: string;
-  fileUrls?: string[];
-  metadata?: Record<string, unknown>;
 }
 
 export interface UpdateDeliverableInput {
   title?: string;
   description?: string;
   type?: DeliverableType;
-  fileUrls?: string[];
-  metadata?: Record<string, unknown>;
 }
 
 export interface ReviewInput {
   decision: "APPROVE" | "REQUEST_REVISION";
   feedback?: string;
-  revisionNotes?: string[];
 }
 
 // ============================================
@@ -107,8 +91,6 @@ export async function getDeliverables(options?: {
           assignee: { select: { id: true, name: true } },
         },
       },
-      createdBy: { select: { id: true, name: true } },
-      reviewedBy: { select: { id: true, name: true } },
     },
     orderBy: { updatedAt: "desc" },
     take: options?.limit ?? 50,
@@ -131,8 +113,6 @@ export async function getDeliverable(id: string) {
           assignee: { select: { id: true, name: true, email: true } },
         },
       },
-      createdBy: { select: { id: true, name: true, email: true } },
-      reviewedBy: { select: { id: true, name: true } },
     },
   });
 
@@ -166,8 +146,6 @@ export async function createDeliverable(input: CreateDeliverableInput) {
       title: input.title,
       type: input.type,
       description: input.description,
-      fileUrls: input.fileUrls ?? [],
-      metadata: input.metadata ?? {},
       status: "DRAFT",
       version: 1,
       createdById: session.user.id,
@@ -219,8 +197,6 @@ export async function updateDeliverable(id: string, input: UpdateDeliverableInpu
       title: input.title,
       description: input.description,
       type: input.type,
-      fileUrls: input.fileUrls,
-      metadata: input.metadata,
     },
   });
 
@@ -237,7 +213,7 @@ export async function deleteDeliverable(id: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Unauthorized");
 
-  if (!can(session.user as Parameters<typeof can>[0], "admin:access")) {
+  if (!["ADMIN", "LEADERSHIP"].includes(session.user.permissionLevel)) {
     throw new Error("Only admins can delete deliverables");
   }
 
@@ -281,7 +257,7 @@ export async function submitForInternalReview(id: string) {
     where: { id },
     data: {
       status: "INTERNAL_REVIEW",
-      submittedForReviewAt: new Date(),
+      submittedAt: new Date(),
     },
   });
 
@@ -326,9 +302,8 @@ export async function completeInternalReview(id: string, input: ReviewInput) {
     data: {
       status: newStatus,
       internalFeedback: input.feedback,
-      revisionNotes: input.revisionNotes ?? [],
-      reviewedById: session.user.id,
-      reviewedAt: new Date(),
+      internalReviewerId: session.user.id,
+      internalReviewedAt: new Date(),
     },
   });
 
@@ -366,7 +341,6 @@ export async function submitToClient(id: string) {
     where: { id },
     data: {
       status: "CLIENT_REVIEW",
-      sentToClientAt: new Date(),
     },
   });
 
@@ -386,7 +360,6 @@ export async function recordClientFeedback(
   input: {
     decision: "APPROVE" | "REQUEST_REVISION";
     feedback?: string;
-    revisionNotes?: string[];
   }
 ) {
   const session = await auth();
@@ -410,8 +383,7 @@ export async function recordClientFeedback(
     data: {
       status: newStatus,
       clientFeedback: input.feedback,
-      revisionNotes: input.revisionNotes ?? deliverable.revisionNotes,
-      clientApprovedAt: input.decision === "APPROVE" ? new Date() : null,
+      approvedAt: input.decision === "APPROVE" ? new Date() : null,
     },
   });
 
@@ -491,9 +463,8 @@ export async function getPendingReviews() {
           client: { select: { id: true, name: true, code: true } },
         },
       },
-      createdBy: { select: { id: true, name: true } },
     },
-    orderBy: { submittedForReviewAt: "asc" },
+    orderBy: { submittedAt: "asc" },
   });
 }
 

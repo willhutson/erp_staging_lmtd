@@ -10,7 +10,6 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  ArrowRight
 } from "lucide-react";
 import {
   submitForInternalReview,

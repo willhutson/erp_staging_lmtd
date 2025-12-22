@@ -25,7 +25,6 @@ import {
 type DeliverableWithRelations = Awaited<ReturnType<typeof db.deliverable.findMany<{
   include: {
     brief: { include: { client: { select: { id: true; name: true; code: true } } } };
-    createdBy: { select: { id: true; name: true } };
   }
 }>>>[number];
 
@@ -70,7 +69,6 @@ export default async function DeliverablesPage() {
           client: { select: { id: true, name: true, code: true } },
         },
       },
-      createdBy: { select: { id: true, name: true } },
     },
     orderBy: { updatedAt: "desc" },
     take: 100,
@@ -239,7 +237,7 @@ export default async function DeliverablesPage() {
                           {d.brief.client.code} &middot; {d.brief.title}
                         </p>
                         <p className="text-xs text-gray-400 mt-1">
-                          by {d.createdBy.name} &middot; v{d.version}
+                          v{d.version}
                         </p>
                       </div>
                     </div>

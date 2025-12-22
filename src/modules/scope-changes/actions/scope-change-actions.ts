@@ -38,12 +38,6 @@ export interface UpdateScopeChangeInput {
   clientNotes?: string;
 }
 
-// Inferred types
-type ScopeChangeRecord = Awaited<ReturnType<typeof db.scopeChange.findMany>>[number];
-type ScopeChangeWithBrief = Awaited<ReturnType<typeof db.scopeChange.findFirst<{
-  include: { brief: { include: { client: true } } }
-}>>>;
-
 // ============================================
 // CRUD OPERATIONS
 // ============================================

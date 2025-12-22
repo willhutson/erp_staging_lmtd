@@ -278,7 +278,7 @@ export async function getRelevantContext(
   }> = [];
   let totalTokens = 0;
 
-  for (const [, { document, chunks }] of documentChunks) {
+  for (const [, { document, chunks }] of Array.from(documentChunks)) {
     if (documents.length >= maxResults) break;
 
     // Sort chunks by score and combine
@@ -377,7 +377,7 @@ export async function hybridSearch(
   }
 
   // Sort and filter
-  const results = [...combinedScores.values()]
+  const results = Array.from(combinedScores.values())
     .sort((a, b) => b.score - a.score)
     .filter((r) => r.score >= minScore)
     .slice(0, limit)

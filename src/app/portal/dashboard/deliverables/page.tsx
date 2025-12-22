@@ -24,7 +24,6 @@ export const dynamic = "force-dynamic";
 type DeliverableWithBrief = Awaited<ReturnType<typeof db.deliverable.findMany<{
   include: {
     brief: { include: { client: { select: { id: true; name: true; code: true } } } };
-    createdBy: { select: { id: true; name: true } };
   }
 }>>>[number];
 
@@ -71,7 +70,6 @@ export default async function PortalDeliverablesPage() {
           client: { select: { id: true, name: true, code: true } },
         },
       },
-      createdBy: { select: { id: true, name: true } },
     },
     orderBy: { updatedAt: "desc" },
   });

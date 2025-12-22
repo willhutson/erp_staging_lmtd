@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { Prisma } from "@prisma/client";
 
 // ============================================
 // TYPES
@@ -76,7 +77,7 @@ export async function publishEvent(event: Omit<EntityEvent, "timestamp">): Promi
       entityId: event.entityId,
       action: event.action,
       userId: event.userId,
-      metadata: event.metadata,
+      metadata: event.metadata as Prisma.InputJsonValue,
     },
   });
 
@@ -197,11 +198,8 @@ async function executeHandler(
         metadata: event.metadata,
       },
       triggeredBy: "EVENT",
-      triggerContext: {
-        eventType: event.action,
-        entityType: event.entityType,
-        entityId: event.entityId,
-      },
+      entityType: event.entityType,
+      entityId: event.entityId,
     });
   }
 

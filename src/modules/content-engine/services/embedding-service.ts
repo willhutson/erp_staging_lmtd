@@ -1,5 +1,3 @@
-"use server";
-
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 
@@ -134,7 +132,6 @@ export function chunkDocument(
   config: Partial<ChunkConfig> = {}
 ): DocumentChunk[] {
   const fullConfig = { ...DEFAULT_CHUNK_CONFIG, ...config };
-  const chunks: DocumentChunk[] = [];
 
   switch (fullConfig.strategy) {
     case "paragraph":
@@ -315,12 +312,12 @@ export async function embedDocument(
     })),
   });
 
-  // Update document metadata
+  // Update document agentMetadata with embedding info
   await db.knowledgeDocument.update({
     where: { id: documentId },
     data: {
-      metadata: {
-        ...(document.metadata as object || {}),
+      agentMetadata: {
+        ...(document.agentMetadata as object || {}),
         embedding: {
           model: config.model,
           dimensions: config.dimensions,
@@ -445,7 +442,7 @@ export async function getEmbeddingStats(): Promise<{
   ]);
 
   const uniqueDocs = new Set(embeddingStats.map((e) => e.documentId));
-  const models = [...new Set(embeddingStats.map((e) => e.model))];
+  const models = Array.from(new Set(embeddingStats.map((e) => e.model)));
 
   return {
     totalDocuments: totalDocs,
