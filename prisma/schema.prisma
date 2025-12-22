@@ -158,6 +158,10 @@ model User {
   contentApprovalsAssigned  ContentApproval[] @relation("ApprovalAssignee")
   contentComments         ContentComment[]
 
+  // Deliverables
+  deliverablesCreated     Deliverable[] @relation("DeliverableCreator")
+  deliverablesReviewed    Deliverable[] @relation("DeliverableReviewer")
+
   // Chat (Phase 18)
   channelsCreated         Channel[]          @relation("ChannelCreator")
   channelMemberships      ChannelMember[]
@@ -2765,6 +2769,7 @@ model Deliverable {
   // Internal review
   internalReviewStatus   ReviewStatus @default(PENDING)
   internalReviewerId     String?
+  reviewedBy             User?    @relation("DeliverableReviewer", fields: [internalReviewerId], references: [id])
   internalReviewedAt     DateTime?
   internalFeedback       String?  @db.Text
 
@@ -2792,6 +2797,7 @@ model Deliverable {
 
   // Audit
   createdById     String
+  createdBy       User     @relation("DeliverableCreator", fields: [createdById], references: [id])
 
   // Relations
   files           DeliverableFile[]
