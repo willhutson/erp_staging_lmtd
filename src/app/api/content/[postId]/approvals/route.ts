@@ -12,14 +12,14 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import {
   createApprovalRequest,
   processApprovalResponse,
 } from "@/modules/content/services/approval-workflow";
+import { validateApiKey } from "@/lib/api/keys";
 
 // ============================================
 // VALIDATION SCHEMAS
@@ -50,24 +50,16 @@ async function authenticateRequest(
 ): Promise<{ organizationId: string; userId: string } | null> {
   const apiKey = req.headers.get("X-API-Key");
   if (apiKey) {
-    const key = await db.apiKey.findFirst({
-      where: {
-        key: apiKey,
-        isActive: true,
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      },
-    });
-
-    if (key) {
-      await db.apiKey.update({
-        where: { id: key.id },
-        data: { lastUsedAt: new Date() },
-      });
-      return { organizationId: key.organizationId, userId: key.createdById };
+    const result = await validateApiKey(apiKey);
+    if (result) {
+      return {
+        organizationId: result.organizationId,
+        userId: result.apiKey.createdById
+      };
     }
   }
 
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   if (session?.user) {
     return {
       organizationId: session.user.organizationId,

@@ -17,7 +17,6 @@ import {
   Check,
   X,
   MessageSquare,
-  Send,
   Instagram,
   Facebook,
   Linkedin,
@@ -40,7 +39,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import type { SocialPlatform, ContentType, ContentPostStatus } from "@prisma/client";
 
@@ -78,7 +77,6 @@ interface Post {
 interface ContentReviewClientProps {
   post: Post;
   approvalId: string | null;
-  contactId: string;
   comments: Comment[];
 }
 
@@ -341,7 +339,6 @@ function XPreview({ post }: { post: Post }) {
 export function ContentReviewClient({
   post,
   approvalId,
-  contactId,
   comments,
 }: ContentReviewClientProps) {
   const router = useRouter();

@@ -1,5 +1,3 @@
-"use server";
-
 /**
  * Content Webhook System
  *
@@ -192,10 +190,11 @@ export async function emitContentWebhook(
         await db.webhookSubscription.update({
           where: { id: subscription.id },
           data: {
-            lastTriggeredAt: new Date(),
+            lastDeliveryAt: new Date(),
+            lastStatus: response.status,
             ...(response.ok
-              ? { consecutiveFailures: 0 }
-              : { consecutiveFailures: { increment: 1 } }),
+              ? { failureCount: 0 }
+              : { failureCount: { increment: 1 } }),
           },
         });
 
@@ -203,18 +202,15 @@ export async function emitContentWebhook(
         if (!response.ok) {
           const updated = await db.webhookSubscription.findUnique({
             where: { id: subscription.id },
-            select: { consecutiveFailures: true },
+            select: { failureCount: true },
           });
 
-          if (updated && updated.consecutiveFailures >= 10) {
+          if (updated && updated.failureCount >= 10) {
             await db.webhookSubscription.update({
               where: { id: subscription.id },
               data: {
                 isActive: false,
-                metadata: {
-                  disabledAt: new Date().toISOString(),
-                  disabledReason: "Too many consecutive failures",
-                },
+                disabledAt: new Date(),
               },
             });
           }

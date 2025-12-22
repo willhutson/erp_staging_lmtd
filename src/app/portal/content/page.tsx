@@ -6,8 +6,7 @@
  * @module portal/content
  */
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
@@ -24,7 +23,6 @@ import {
   Globe,
   Music2,
   CheckCircle,
-  AlertCircle,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +39,7 @@ const platformIcons: Record<string, React.ReactNode> = {
 };
 
 export default async function PortalContentPage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user) {
     redirect("/portal/login");
@@ -144,7 +142,7 @@ export default async function PortalContentPage() {
             <CardContent className="p-8 text-center text-gray-500">
               <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-500" />
               <p>No content pending your approval</p>
-              <p className="text-sm mt-1">You're all caught up!</p>
+              <p className="text-sm mt-1">You&apos;re all caught up!</p>
             </CardContent>
           </Card>
         ) : (
