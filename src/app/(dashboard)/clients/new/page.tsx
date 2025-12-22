@@ -86,12 +86,12 @@ export default function NewClientPage() {
         primaryContactEmail: formData.primaryContactEmail || undefined,
         primaryContactPhone: formData.primaryContactPhone || undefined,
         primaryContactTitle: formData.primaryContactTitle || undefined,
-        companySize: formData.companySize as CompanySize || undefined,
+        companySize: formData.companySize ? (formData.companySize as CompanySize) : undefined,
         website: formData.website || undefined,
         linkedIn: formData.linkedIn || undefined,
         accountManagerId: formData.accountManagerId || undefined,
         relationshipStatus: formData.relationshipStatus as RelationshipStatus,
-        leadSource: formData.leadSource as LeadSource || undefined,
+        leadSource: formData.leadSource ? (formData.leadSource as LeadSource) : undefined,
         notes: formData.notes || undefined,
       });
       router.push("/clients");
