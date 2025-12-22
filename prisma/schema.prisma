@@ -2314,19 +2314,22 @@ model DocumentVersion {
 // Vector embeddings for semantic search
 model DocumentEmbedding {
   id              String   @id @default(cuid())
+  organizationId  String
 
   documentId      String
   document        KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   chunkIndex      Int                 // For chunked documents
-  chunkText       String   @db.Text
-  embedding       Bytes               // Store as bytes, deserialize in application
+  chunkContent    String   @db.Text   // The text content of this chunk
+  embedding       Json                // Vector as JSON array of numbers
+  tokens          Int      @default(0) // Token count for this chunk
 
   model           String              // "text-embedding-3-small"
   dimensions      Int      @default(1536)
   createdAt       DateTime @default(now())
 
   @@unique([documentId, chunkIndex])
+  @@index([organizationId])
   @@index([documentId])
   @@map("document_embeddings")
 }

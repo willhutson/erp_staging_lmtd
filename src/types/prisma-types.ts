@@ -289,6 +289,23 @@ export interface StatusTransitionRecord {
   createdAt: Date;
 }
 
+// ============================================
+// SEMANTIC SEARCH (Phase 12.5)
+// ============================================
+
+export interface DocumentEmbeddingRecord {
+  id: string;
+  organizationId: string;
+  documentId: string;
+  chunkIndex: number;
+  chunkContent: string;
+  embedding: number[];
+  tokens: number;
+  model: string;
+  dimensions: number;
+  createdAt: Date;
+}
+
 // Aliases for backwards compatibility
 export type File = FileRecord;
 export type Folder = FolderRecord;
@@ -298,3 +315,4 @@ export type EntityEvent = EntityEventRecord;
 export type EventSubscription = EventSubscriptionRecord;
 export type EventHandlerLog = EventHandlerLogRecord;
 export type StatusTransition = StatusTransitionRecord;
+export type DocumentEmbedding = DocumentEmbeddingRecord;

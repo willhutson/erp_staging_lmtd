@@ -3,6 +3,7 @@
  *
  * Phase 12.2 - Agent Infrastructure
  * Phase 12.4 - Event System
+ * Phase 12.5 - Semantic Search
  */
 
 // Skill Registry - Load and manage skills
@@ -87,3 +88,37 @@ export {
   emitEntityCreated,
   emitEntityUpdated,
 } from "./event-handlers";
+
+// Embedding Service - Generate and manage document embeddings
+export {
+  generateEmbedding,
+  generateEmbeddings,
+  chunkDocument,
+  estimateTokens,
+  embedDocument,
+  embedDocumentsByPath,
+  getEmbeddingStatus,
+  getEmbeddingStats,
+} from "./embedding-service";
+
+export type {
+  EmbeddingConfig,
+  EmbeddingResult,
+  ChunkConfig,
+  DocumentChunk,
+} from "./embedding-service";
+
+// Semantic Search - AI-powered search across knowledge
+export {
+  semanticSearch,
+  findSimilarDocuments,
+  getRelevantContext,
+  hybridSearch,
+  getSearchSuggestions,
+} from "./semantic-search";
+
+export type {
+  SearchOptions,
+  SearchResult,
+  SearchResponse,
+} from "./semantic-search";
