@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import {
   AlertTriangle,
   MessageSquare,
@@ -17,9 +16,8 @@ import {
   Search,
   Building2,
   User,
-  ChevronRight,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -56,7 +54,7 @@ interface Stats {
   avgResolutionDays: number | null;
 }
 
-interface ComplaintsDashboardClientProps {
+interface IssuesDashboardClientProps {
   complaints: Complaint[];
   stats: Stats;
 }
@@ -87,7 +85,7 @@ const STATUS_CONFIG: Record<ComplaintStatus, { label: string; color: string; ico
   CLOSED: { label: "Closed", color: "bg-gray-100 text-gray-700", icon: <XCircle className="h-3 w-3" /> },
 };
 
-function ComplaintCard({ complaint }: { complaint: Complaint }) {
+function IssueCard({ complaint }: { complaint: Complaint }) {
   const severityConfig = SEVERITY_CONFIG[complaint.severity];
   const statusConfig = STATUS_CONFIG[complaint.status];
 
@@ -103,7 +101,6 @@ function ComplaintCard({ complaint }: { complaint: Complaint }) {
           </div>
           <p className="text-sm text-gray-500 line-clamp-2">{complaint.description}</p>
 
-          {/* Tags */}
           <div className="flex flex-wrap gap-2 mt-3">
             <Badge variant="outline" className="text-xs">
               <Building2 className="h-3 w-3 mr-1" />
@@ -140,10 +137,10 @@ function ComplaintCard({ complaint }: { complaint: Complaint }) {
   );
 }
 
-export function ComplaintsDashboardClient({
+export function IssuesDashboardClient({
   complaints,
   stats,
-}: ComplaintsDashboardClientProps) {
+}: IssuesDashboardClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [severityFilter, setSeverityFilter] = useState<string>("all");
@@ -247,7 +244,7 @@ export function ComplaintsDashboardClient({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search complaints..."
+            placeholder="Search issues..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -301,22 +298,22 @@ export function ComplaintsDashboardClient({
         </div>
       </div>
 
-      {/* Complaint List */}
+      {/* Issue List */}
       {filteredComplaints.length > 0 ? (
         <div className="space-y-3">
           {filteredComplaints.map((complaint) => (
-            <ComplaintCard key={complaint.id} complaint={complaint} />
+            <IssueCard key={complaint.id} complaint={complaint} />
           ))}
         </div>
       ) : (
         <Card className="border-dashed">
           <CardContent className="py-12 text-center">
             <AlertTriangle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Complaints</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No Issues</h3>
             <p className="text-gray-500 max-w-md mx-auto">
               {searchQuery || statusFilter !== "all" || severityFilter !== "all"
-                ? "No complaints match your filters."
-                : "No complaints have been logged yet. Complaints can be created from NPS surveys, WhatsApp, or manually."}
+                ? "No issues match your filters."
+                : "No issues have been logged yet. Issues can be created from NPS surveys, WhatsApp, or manually."}
             </p>
           </CardContent>
         </Card>

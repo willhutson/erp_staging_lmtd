@@ -15,7 +15,6 @@ import {
   TrendingUp,
   UserCircle,
   CalendarDays,
-  Star,
   Video,
   Image,
   PenTool,
@@ -31,7 +30,7 @@ import {
   FolderOpen,
   Zap,
   Gauge,
-  AlertTriangle,
+  HeartPulse,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -138,16 +137,10 @@ const navItems: NavItem[] = [
     requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
   },
   {
-    title: "Complaints",
-    href: "/complaints",
-    icon: <AlertTriangle className="w-5 h-5" />,
+    title: "Client Health",
+    href: "/feedback",
+    icon: <HeartPulse className="w-5 h-5" />,
     requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
-  },
-  {
-    title: "NPS",
-    href: "/nps",
-    icon: <Star className="w-5 h-5" />,
-    requiredLevels: ["ADMIN", "LEADERSHIP"],
   },
   {
     title: "Content Engine",
