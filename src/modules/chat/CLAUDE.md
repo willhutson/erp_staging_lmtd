@@ -498,10 +498,69 @@ await sendManualContentReminder(organizationId, "Eid Al Fitr");
 
 *Islamic holiday dates are approximations based on the lunar calendar.*
 
+## File Uploads (Phase 18.6)
+
+Upload and share files in chat messages.
+
+### Components
+
+```typescript
+import {
+  FileUploadButton,
+  FilePreviewStrip,
+  MessageAttachments,
+} from "@/modules/chat/components";
+
+// In message composer
+<FileUploadButton
+  onFilesSelected={(files) => setAttachments([...attachments, ...files])}
+  maxFiles={10}
+  maxSizeBytes={25 * 1024 * 1024}
+/>
+
+// Show pending uploads
+<FilePreviewStrip
+  files={attachments}
+  onRemove={(id) => setAttachments(a => a.filter(f => f.id !== id))}
+/>
+
+// Display attachments in messages
+<MessageAttachments attachments={message.attachments} />
+```
+
+### Supported File Types
+- Images: JPEG, PNG, GIF, WebP
+- Videos: MP4, WebM, QuickTime
+- Documents: PDF, Word, Excel, PowerPoint
+- Text: Plain text, CSV
+
+### Server Actions
+
+```typescript
+import {
+  uploadChatFile,
+  createAttachment,
+  deleteAttachment,
+} from "@/modules/chat/actions/upload-actions";
+
+// Upload file via FormData
+const result = await uploadChatFile(formData);
+
+// Create attachment record
+await createAttachment({
+  messageId,
+  uploadedById: userId,
+  fileName: "report.pdf",
+  fileType: "application/pdf",
+  fileSize: 1024000,
+  fileUrl: result.fileUrl,
+});
+```
+
 ## Future Enhancements
 
 1. ~~**Search** - Full-text message search~~ ✅ Phase 18.6
-2. **File Uploads** - Direct file sharing (in progress)
+2. ~~**File Uploads** - Direct file sharing~~ ✅ Phase 18.6
 3. **Notification Preferences** - User-configurable notification settings
 4. **Mobile Push** - Push notifications
 5. **Slash Commands** - `/giphy`, `/poll`, etc.

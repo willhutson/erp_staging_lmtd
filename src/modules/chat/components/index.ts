@@ -16,3 +16,12 @@ export { TypingIndicator, useTyping } from "./TypingIndicator";
 
 // Search
 export { MessageSearch, SearchTrigger } from "./MessageSearch";
+
+// File Uploads
+export {
+  FileUploadButton,
+  FilePreviewStrip,
+  MessageAttachments,
+  type FileUploadItem,
+  type MessageAttachment,
+} from "./FileUpload";
