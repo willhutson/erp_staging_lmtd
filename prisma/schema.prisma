@@ -233,6 +233,7 @@ model Client {
   driveFolders     GoogleDriveFolder[]
   clientFiles      ClientFile[]
   portalUsers      ClientPortalUser[]
+  retainerPeriods  RetainerPeriod[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
@@ -459,6 +460,7 @@ model Brief {
   briefFiles       BriefFile[]
   submissionApprovals SubmissionApproval[]  // Client approval requests
   deliverables     Deliverable[]            // Work output from this brief
+  scopeChanges     ScopeChange[]            // Mid-execution pivots
 
   @@index([organizationId])
   @@index([clientId])
@@ -2972,4 +2974,122 @@ model StatusTransition {
   @@index([organizationId, entityType])
   @@index([entityId])
   @@map("status_transitions")
+}
+
+// ============================================
+// SCOPE CHANGE MANAGEMENT (Phase 14)
+// ============================================
+
+// Track mid-execution pivots on briefs
+model ScopeChange {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  briefId         String
+  brief           Brief    @relation(fields: [briefId], references: [id], onDelete: Cascade)
+
+  // What changed
+  title           String              // Short summary: "Pivot from Instagram to TikTok"
+  originalDirection   String   @db.Text   // What we were doing
+  newDirection        String   @db.Text   // What we're now doing
+  reason              String?  @db.Text   // Why the change happened
+
+  // Impact assessment
+  impactLevel         ScopeChangeImpact @default(MODERATE)
+  hoursSpentBefore    Decimal? @db.Decimal(6, 2)  // Hours already invested
+  estimatedAdditionalHours Decimal? @db.Decimal(6, 2)  // Extra hours needed
+  costImpact          Decimal? @db.Decimal(12, 2) // Estimated cost impact
+
+  // Client acknowledgment (optional workflow)
+  requiresApproval    Boolean  @default(false)
+  approvalStatus      ScopeApprovalStatus @default(NOT_REQUIRED)
+  clientApprovedAt    DateTime?
+  clientApprovedById  String?  // ClientPortalUser ID
+  clientNotes         String?  @db.Text
+
+  // Audit
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([briefId])
+  @@index([createdAt])
+  @@map("scope_changes")
+}
+
+enum ScopeChangeImpact {
+  MINOR       // Small adjustment, minimal timeline/cost impact
+  MODERATE    // Noticeable impact, some rework needed
+  MAJOR       // Significant rework, timeline affected
+  CRITICAL    // Complete pivot, substantial cost/timeline impact
+}
+
+enum ScopeApprovalStatus {
+  NOT_REQUIRED    // Internal scope change, no client approval needed
+  PENDING         // Awaiting client acknowledgment
+  ACKNOWLEDGED    // Client acknowledged
+  APPROVED        // Client formally approved
+  DISPUTED        // Client disputes the characterization
+}
+
+// ============================================
+// RETAINER TRACKING (Phase 14)
+// ============================================
+
+// Monthly retainer period tracking
+model RetainerPeriod {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  clientId        String
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  // Period
+  year            Int
+  month           Int      // 1-12
+
+  // Contract terms (deliverable-based)
+  plannedDeliverables Int?        // Number of deliverables committed
+  deliverableBreakdown Json?      // { "VIDEO_EDIT": 5, "DESIGN": 10, ... }
+
+  // Internal budget (hours-based, not shown to client)
+  budgetHours         Decimal?    @db.Decimal(6, 2)
+  budgetValue         Decimal?    @db.Decimal(12, 2) // Internal cost budget
+
+  // Contract value
+  contractValue       Decimal?    @db.Decimal(12, 2) // What client pays
+
+  // Actuals (calculated from briefs/deliverables)
+  actualDeliverables  Int         @default(0)
+  actualHours         Decimal     @default(0) @db.Decimal(6, 2)
+  actualCost          Decimal     @default(0) @db.Decimal(12, 2)
+
+  // Derived metrics (updated periodically)
+  burnRate            Decimal?    @db.Decimal(5, 2) // % of deliverables complete
+  marginPercent       Decimal?    @db.Decimal(5, 2) // (contract - cost) / contract * 100
+
+  // Status
+  status              RetainerPeriodStatus @default(ACTIVE)
+
+  // Notes
+  notes               String?     @db.Text
+  rolloverDeliverables Int?       // Deliverables rolled from previous month
+  rolloverHours       Decimal?    @db.Decimal(6, 2)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([clientId, year, month])
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([year, month])
+  @@map("retainer_periods")
+}
+
+enum RetainerPeriodStatus {
+  PLANNED     // Future period
+  ACTIVE      // Current period
+  COMPLETED   // Past period, finalized
+  RECONCILED  // Reviewed and closed out
 }

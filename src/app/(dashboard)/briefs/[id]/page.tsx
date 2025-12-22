@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { redirect, notFound } from "next/navigation";
 import { getFormConfig, briefTypeLabels } from "@/../config/forms";
 import { StatusBadge } from "@/modules/briefs/components/StatusBadge";
+import { BriefScopeChangesSection } from "@/modules/scope-changes/components";
 import { ArrowLeft, Calendar, User, Building2, Clock } from "lucide-react";
 import Link from "next/link";
 
@@ -27,6 +28,9 @@ export default async function BriefDetailPage({ params }: PageProps) {
       statusHistory: {
         orderBy: { createdAt: "desc" },
         take: 10,
+      },
+      scopeChanges: {
+        orderBy: { createdAt: "desc" },
       },
     },
   });
@@ -157,6 +161,27 @@ export default async function BriefDetailPage({ params }: PageProps) {
           </dl>
         </div>
       ))}
+
+      {/* Scope Changes */}
+      <BriefScopeChangesSection
+        briefId={brief.id}
+        scopeChanges={brief.scopeChanges.map((sc) => ({
+          id: sc.id,
+          title: sc.title,
+          originalDirection: sc.originalDirection,
+          newDirection: sc.newDirection,
+          reason: sc.reason,
+          impactLevel: sc.impactLevel as "MINOR" | "MODERATE" | "MAJOR" | "CRITICAL",
+          hoursSpentBefore: sc.hoursSpentBefore ? Number(sc.hoursSpentBefore) : null,
+          estimatedAdditionalHours: sc.estimatedAdditionalHours ? Number(sc.estimatedAdditionalHours) : null,
+          costImpact: sc.costImpact ? Number(sc.costImpact) : null,
+          requiresApproval: sc.requiresApproval,
+          approvalStatus: sc.approvalStatus as "NOT_REQUIRED" | "PENDING" | "ACKNOWLEDGED" | "APPROVED" | "DISPUTED",
+          clientNotes: sc.clientNotes,
+          createdAt: sc.createdAt,
+        }))}
+        canEdit={brief.status !== "COMPLETED" && brief.status !== "CANCELLED"}
+      />
 
       {/* Status History */}
       {brief.statusHistory.length > 0 && (

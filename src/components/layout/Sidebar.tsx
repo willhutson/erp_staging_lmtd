@@ -30,6 +30,7 @@ import {
   Inbox,
   FolderOpen,
   Zap,
+  Gauge,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -94,6 +95,12 @@ const navItems: NavItem[] = [
     title: "Clients",
     href: "/clients",
     icon: <Building2 className="w-5 h-5" />,
+    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
+  },
+  {
+    title: "Retainer",
+    href: "/retainer",
+    icon: <Gauge className="w-5 h-5" />,
     requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
   },
   {
