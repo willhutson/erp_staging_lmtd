@@ -95,6 +95,7 @@ export function ChannelSidebar({
   directMessages,
   unreadCounts,
   currentUserId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   organizationId: _organizationId,
   onCreateChannel,
 }: ChannelSidebarProps) {

@@ -362,7 +362,9 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       className,
       editorClassName,
       users = [],
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       channels: _channels = [],
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       onMention: _onMention,
       maxLength,
       showCharCount = false,

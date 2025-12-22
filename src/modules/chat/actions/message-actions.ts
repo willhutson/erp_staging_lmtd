@@ -9,7 +9,6 @@
  */
 
 import { db } from "@/lib/db";
-import { revalidatePath } from "next/cache";
 import { pusherServer, PUSHER_EVENTS } from "@/lib/pusher";
 import type { MessageFormat } from "@prisma/client";
 

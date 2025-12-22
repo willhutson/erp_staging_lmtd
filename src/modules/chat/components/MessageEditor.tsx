@@ -44,11 +44,10 @@ import {
 } from "./FileUpload";
 import {
   isSlashCommand,
-  getCommandSuggestions,
   executeSlashCommand,
   type CommandContext,
 } from "../actions/slash-commands";
-import { uploadChatFile, createAttachment } from "../actions/upload-actions";
+import { createAttachment } from "../actions/upload-actions";
 
 // ============================================
 // TYPES
@@ -74,6 +73,32 @@ interface MessageEditorProps {
   onCancelReply?: () => void;
 }
 
+// Tiptap mention suggestion types
+interface MentionUser {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+}
+
+interface MentionSuggestionProps {
+  clientRect: (() => DOMRect | null) | null;
+  items: MentionUser[];
+  selectedIndex: number;
+  command: (item: MentionUser) => void;
+  event?: KeyboardEvent;
+}
+
+interface MentionCommandProps {
+  editor: { chain: () => { focus: () => { deleteRange: (range: { from: number; to: number }) => { insertContent: (content: unknown[]) => { run: () => void } } } } };
+  range: { from: number; to: number };
+  props: MentionUser;
+}
+
+interface MentionComponent {
+  updateProps: (props: MentionSuggestionProps) => void;
+  destroy: () => void;
+}
+
 // ============================================
 // EMOJI PICKER DATA
 // ============================================
@@ -93,7 +118,8 @@ const EnterKeyExtension = Extension.create({
 
   addKeyboardShortcuts() {
     return {
-      Enter: ({ editor }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      Enter: ({ editor: _editor }) => {
         // Shift+Enter for new line
         if (this.editor.view.state.selection.$from.parent.type.name === "codeBlock") {
           return false; // Let default behavior handle code blocks
@@ -136,8 +162,12 @@ export function MessageEditor({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [mentionedUsers, setMentionedUsers] = useState<string[]>([]);
   const [pendingFiles, setPendingFiles] = useState<FileUploadItem[]>([]);
+  // Slash command state (reserved for future implementation)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [slashSuggestions, setSlashSuggestions] = useState<Array<{ name: string; description: string }>>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showSlashMenu, setShowSlashMenu] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [slashQuery, setSlashQuery] = useState("");
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isTypingRef = useRef(false);
@@ -176,10 +206,10 @@ export function MessageEditor({
           },
           render: () => {
             let popup: HTMLElement | null = null;
-            let component: any = null;
+            let component: MentionComponent | null = null;
 
             return {
-              onStart: (props: any) => {
+              onStart: (props: MentionSuggestionProps) => {
                 // Create mention popup
                 popup = document.createElement("div");
                 popup.className =
@@ -194,11 +224,11 @@ export function MessageEditor({
                 }
 
                 component = {
-                  updateProps: (newProps: any) => {
+                  updateProps: (newProps: MentionSuggestionProps) => {
                     if (!popup) return;
                     popup.innerHTML = newProps.items
                       .map(
-                        (item: any, index: number) => `
+                        (item: MentionUser, index: number) => `
                         <div
                           class="px-3 py-2 cursor-pointer hover:bg-gray-100 rounded ${
                             index === newProps.selectedIndex ? "bg-gray-100" : ""
@@ -227,7 +257,7 @@ export function MessageEditor({
 
                 component.updateProps(props);
               },
-              onUpdate: (props: any) => {
+              onUpdate: (props: MentionSuggestionProps) => {
                 component?.updateProps(props);
 
                 const rect = props.clientRect?.();
@@ -236,8 +266,8 @@ export function MessageEditor({
                   popup.style.top = `${rect.bottom + 4}px`;
                 }
               },
-              onKeyDown: (props: any) => {
-                if (props.event.key === "Escape") {
+              onKeyDown: (props: MentionSuggestionProps) => {
+                if (props.event?.key === "Escape") {
                   component?.destroy();
                   return true;
                 }
@@ -248,7 +278,7 @@ export function MessageEditor({
               },
             };
           },
-          command: ({ editor, range, props }: any) => {
+          command: ({ editor, range, props }: MentionCommandProps) => {
             editor
               .chain()
               .focus()
@@ -275,7 +305,8 @@ export function MessageEditor({
           "prose prose-sm max-w-none focus:outline-none min-h-[40px] max-h-[200px] overflow-y-auto px-3 py-2",
       },
     },
-    onUpdate: ({ editor }) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onUpdate: ({ editor: _editorInstance }) => {
       // Handle typing indicator
       if (onTyping && !isTypingRef.current) {
         isTypingRef.current = true;

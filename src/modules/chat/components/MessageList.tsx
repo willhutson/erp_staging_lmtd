@@ -12,7 +12,7 @@
  */
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { formatDistanceToNow, format, isToday, isYesterday } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -386,7 +386,7 @@ export function MessageList({
     // Reaction added
     channel.bind(
       PUSHER_EVENTS.REACTION_ADDED,
-      (data: { messageId: string; reaction: any }) => {
+      (data: { messageId: string; reaction: { id: string; emoji: string; userId: string; user: { id: string; name: string } } }) => {
         setMessages((prev) =>
           prev.map((m) =>
             m.id === data.messageId
