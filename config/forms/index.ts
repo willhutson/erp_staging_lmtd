@@ -1,5 +1,4 @@
-import type { FormConfig } from "@/types/forms";
-import type { BriefType } from "@prisma/client";
+import type { FormConfig, BriefType } from "@/types/forms";
 
 import { videoShootForm } from "./video-shoot.form";
 import { videoEditForm } from "./video-edit.form";

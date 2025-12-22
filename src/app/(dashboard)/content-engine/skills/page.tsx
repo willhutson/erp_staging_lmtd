@@ -142,7 +142,7 @@ export default async function SkillsListPage() {
         </Card>
       ) : (
         <div className="space-y-6">
-          {Object.entries(skillsByCategory).map(([category, categorySkills]: [string, SkillRecord[]]) => {
+          {(Object.entries(skillsByCategory) as [string, SkillRecord[]][]).map(([category, categorySkills]) => {
             const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG.KNOWLEDGE;
             const usedFor = USAGE_CONTEXT[category] || [];
 

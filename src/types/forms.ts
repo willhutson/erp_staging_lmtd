@@ -6,7 +6,7 @@ export type BriefType =
   | "COPYWRITING_EN"
   | "COPYWRITING_AR"
   | "PAID_MEDIA"
-  | "RFP";
+  | "REPORT";
 
 export type FieldType =
   | "text"
