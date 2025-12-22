@@ -6,9 +6,8 @@
  * @module app/(dashboard)/chat/[slug]
  */
 
-import { getServerSession } from "next-auth";
 import { redirect, notFound } from "next/navigation";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import {
   getChannelBySlug,
   getChannels,
@@ -36,7 +35,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function ChannelPage({ params }: PageProps) {
   const { slug } = await params;
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user) {
     redirect("/login");
