@@ -6,8 +6,7 @@
  * @module portal/content/[postId]
  */
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
@@ -19,7 +18,7 @@ export default async function PortalContentReviewPage({
 }: {
   params: Promise<{ postId: string }>;
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user) {
     redirect("/portal/login");

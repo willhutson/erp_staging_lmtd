@@ -41,8 +41,6 @@ import {
   Clock,
   Zap,
   AlertTriangle,
-  TrendingUp,
-  TrendingDown,
   CheckCircle,
   AlertCircle,
 } from "lucide-react";

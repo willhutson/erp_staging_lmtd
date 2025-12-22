@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import type { EntityEvent, EntityType, EventAction } from "./event-bus";
+import type { EntityEvent, EntityType } from "./event-bus";
 
 // ============================================
 // BUILT-IN HANDLERS
@@ -186,7 +186,7 @@ async function handleDeliverableStatusChange(event: EntityEvent): Promise<void> 
 }
 
 async function handleDeliverableApproved(event: EntityEvent): Promise<void> {
-  const { entityId, metadata } = event;
+  const { entityId, metadata: _metadata } = event;
 
   console.log(`Deliverable ${entityId} approved`);
 

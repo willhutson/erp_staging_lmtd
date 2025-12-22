@@ -14,7 +14,9 @@ import {
 } from "@/modules/content-engine/services/workflow-events";
 
 // Inferred types
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type DeliverableRecord = Awaited<ReturnType<typeof db.deliverable.findMany>>[number];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type DeliverableWithRelations = Awaited<ReturnType<typeof db.deliverable.findFirst<{
   include: {
     brief: { include: { client: true; assignee: true } };

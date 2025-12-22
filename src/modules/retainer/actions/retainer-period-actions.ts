@@ -40,7 +40,9 @@ export interface UpdateRetainerPeriodInput {
 }
 
 // Inferred types
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type RetainerPeriodRecord = Awaited<ReturnType<typeof db.retainerPeriod.findMany>>[number];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type RetainerWithClient = Awaited<ReturnType<typeof db.retainerPeriod.findFirst<{
   include: { client: true }
 }>>>;

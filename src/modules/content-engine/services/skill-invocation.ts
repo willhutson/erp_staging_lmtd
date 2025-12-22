@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
-import type { Skill, SkillInput, SkillOutput } from "../types";
+import type { Skill } from "../types";
 import { getSkillBySlug, checkDependencies } from "./skill-registry";
 
 // ============================================
@@ -368,7 +368,7 @@ async function buildEntityContext(inputs: Record<string, unknown>): Promise<Reco
 async function executeSkill(
   skill: Skill,
   context: SkillContext,
-  inputs: Record<string, unknown>
+  _inputs: Record<string, unknown>
 ): Promise<Record<string, unknown>> {
   // Placeholder: Return mock outputs based on skill outputs definition
   const outputs: Record<string, unknown> = {};

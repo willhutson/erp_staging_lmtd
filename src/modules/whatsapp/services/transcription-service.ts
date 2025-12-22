@@ -106,8 +106,8 @@ async function transcribeWithWhisper(
  * Placeholder - would use @google-cloud/speech
  */
 async function transcribeWithGoogle(
-  audioUrl: string,
-  config: TranscriptionConfig
+  _audioUrl: string,
+  _config: TranscriptionConfig
 ): Promise<TranscriptionResult> {
   // This would use the Google Cloud Speech-to-Text API
   // For now, return a placeholder
@@ -119,8 +119,8 @@ async function transcribeWithGoogle(
  * Placeholder - would use @azure/cognitiveservices-speech-sdk
  */
 async function transcribeWithAzure(
-  audioUrl: string,
-  config: TranscriptionConfig
+  _audioUrl: string,
+  _config: TranscriptionConfig
 ): Promise<TranscriptionResult> {
   // This would use the Azure Speech Services SDK
   // For now, return a placeholder

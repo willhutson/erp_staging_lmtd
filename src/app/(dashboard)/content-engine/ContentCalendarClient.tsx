@@ -8,7 +8,6 @@ import {
   ChevronRight,
   Calendar,
   List,
-  Filter,
   Instagram,
   Facebook,
   Linkedin,
@@ -176,7 +175,8 @@ export function ContentCalendarClient({
   initialPosts,
   stats,
   socialAccounts,
-  organizationId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  organizationId: _organizationId,
 }: ContentCalendarClientProps) {
   const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
   const [currentDate, setCurrentDate] = useState(new Date());

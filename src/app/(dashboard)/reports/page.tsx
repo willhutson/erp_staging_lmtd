@@ -6,9 +6,8 @@
  * @module app/(dashboard)/reports
  */
 
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { getExecutiveKPIs } from "@/modules/reporting/actions/analytics-actions";
 import { ReportsDashboardClient } from "./ReportsDashboardClient";
 
@@ -18,7 +17,7 @@ export const metadata = {
 };
 
 export default async function ReportsPage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user) {
     redirect("/login");

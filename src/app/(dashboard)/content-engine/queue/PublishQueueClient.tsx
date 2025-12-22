@@ -21,7 +21,6 @@ import {
   Calendar,
   Loader2,
   Image,
-  Video,
   ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";

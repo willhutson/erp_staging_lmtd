@@ -14,6 +14,7 @@
  */
 
 import { db } from "@/lib/db";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { BriefStatus, BriefType } from "@prisma/client";
 
 // ============================================
@@ -320,7 +321,7 @@ export async function getClientReport(
   const [
     briefsByStatus,
     briefsByType,
-    timeByDepartment,
+    _timeByDepartment,
     totalTime,
     contentByStatus,
     npsScore,

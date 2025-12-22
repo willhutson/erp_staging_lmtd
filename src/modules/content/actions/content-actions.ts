@@ -19,6 +19,7 @@ import {
 // ============================================
 
 // Inferred types from Prisma
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ContentPostWithRelations = Awaited<
   ReturnType<typeof db.contentPost.findFirst>
 > & {

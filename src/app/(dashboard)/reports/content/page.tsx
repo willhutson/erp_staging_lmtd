@@ -6,9 +6,8 @@
  * @module app/(dashboard)/reports/content
  */
 
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { getContentMetrics } from "@/modules/reporting/actions/analytics-actions";
 import { ContentReportsClient } from "./ContentReportsClient";
 
@@ -18,7 +17,7 @@ export const metadata = {
 };
 
 export default async function ContentReportsPage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user) {
     redirect("/login");

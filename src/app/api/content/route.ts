@@ -13,8 +13,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { emitPostCreated } from "@/modules/content/webhooks/content-webhooks";
@@ -136,7 +135,7 @@ async function authenticateRequest(
   }
 
   // Fall back to session auth
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   if (session?.user) {
     return {
       organizationId: session.user.organizationId,

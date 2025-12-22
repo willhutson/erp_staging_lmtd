@@ -15,7 +15,6 @@ import type { SocialPlatform, PublishJobStatus } from "@prisma/client";
 import { getAdapter } from "../adapters/types";
 import type { PublishRequest, MediaAsset } from "../adapters/types";
 import {
-  emitContentWebhook,
   emitPostPublished,
   emitPublishFailed,
 } from "../webhooks/content-webhooks";

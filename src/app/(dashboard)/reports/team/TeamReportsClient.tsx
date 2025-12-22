@@ -41,7 +41,6 @@ import {
   Users,
   Clock,
   Target,
-  TrendingUp,
   AlertTriangle,
 } from "lucide-react";
 import type { TeamProductivity } from "@/modules/reporting/actions/analytics-actions";

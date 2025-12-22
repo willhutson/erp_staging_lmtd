@@ -134,7 +134,6 @@ export async function chunkDocument(
   config: Partial<ChunkConfig> = {}
 ): Promise<DocumentChunk[]> {
   const fullConfig = { ...DEFAULT_CHUNK_CONFIG, ...config };
-  const chunks: DocumentChunk[] = [];
 
   switch (fullConfig.strategy) {
     case "paragraph":

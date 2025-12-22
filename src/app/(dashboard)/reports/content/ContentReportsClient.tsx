@@ -23,7 +23,6 @@ import {
   Zap,
   Clock,
   CheckCircle,
-  AlertCircle,
   Calendar,
   TrendingUp,
   BarChart3,

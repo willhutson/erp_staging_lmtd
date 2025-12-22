@@ -4,8 +4,6 @@ import Link from "next/link";
 import {
   Star,
   AlertTriangle,
-  ThumbsUp,
-  ThumbsDown,
   TrendingUp,
   MessageSquare,
   Mail,

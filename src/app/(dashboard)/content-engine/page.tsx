@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { ContentCalendarClient } from "./ContentCalendarClient";
@@ -7,7 +6,7 @@ import { getCalendarPosts, getPostStats } from "@/modules/content/actions/conten
 import { getSocialAccounts } from "@/modules/content/actions/social-account-actions";
 
 export default async function ContentEnginePage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user) {
     redirect("/login");
