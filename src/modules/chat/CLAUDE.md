@@ -617,11 +617,57 @@ const { notify, reason } = await shouldNotify({
 });
 ```
 
-## Future Enhancements
+## Push Notifications (Phase 18.7)
 
-1. ~~**Search** - Full-text message search~~ ✅ Phase 18.6
-2. ~~**File Uploads** - Direct file sharing~~ ✅ Phase 18.6
-3. ~~**Notification Preferences** - User-configurable settings~~ ✅ Phase 18.6
-4. **Mobile Push** - Push notifications
-5. **Slash Commands** - `/giphy`, `/poll`, etc.
-6. **Read Receipts** - See who's read messages
+Web Push notifications for desktop and mobile (PWA).
+
+### Setup
+```env
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+VAPID_SUBJECT=mailto:admin@teamlmtd.com
+```
+
+### Usage
+```typescript
+import { savePushSubscription, notifyNewDM, notifyMention } from "@/modules/chat/actions/push-notifications";
+
+await savePushSubscription(userId, subscription, { platform: "web" });
+await notifyNewDM(recipientId, "Sarah", "Hey!", channelId, messageId);
+```
+
+## Slash Commands (Phase 18.7)
+
+| Command | Description |
+|---------|-------------|
+| `/help` | Show commands |
+| `/me [action]` | Action message |
+| `/status [emoji] [msg]` | Set status |
+| `/away` / `/back` | Toggle away |
+| `/poll "Q" "A" "B"` | Create poll |
+| `/remind [time] [msg]` | Set reminder |
+| `/shrug` `/tableflip` | Fun emotes |
+
+```typescript
+import { executeSlashCommand, isSlashCommand } from "@/modules/chat/actions/slash-commands";
+
+if (isSlashCommand(message)) {
+  const result = await executeSlashCommand(message, context);
+}
+```
+
+## Read Receipts (Phase 18.7)
+
+```typescript
+import { markMessageAsRead, getMessageReadReceipts } from "@/modules/chat/actions/read-receipts";
+
+await markMessageAsRead(messageId, userId);
+await markChannelAsRead(channelId, userId);
+const receipts = await getMessageReadReceipts(messageId);
+```
+
+## SpokeChat Complete! ✅
+
+All features: Channels, DMs, Rich text, Reactions, Threads, Presence, Typing,
+AI actions, Module integrations, Holiday reminders, Search, File uploads,
+Notification prefs, Push notifications, Slash commands, Read receipts
