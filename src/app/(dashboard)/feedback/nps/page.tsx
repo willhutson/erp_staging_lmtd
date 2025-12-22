@@ -1,27 +1,26 @@
 import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { Plus, TrendingUp, Users, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Plus, Star, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { NPSScoreCard } from "@/modules/nps/components/NPSScoreCard";
 import { NPSSurveyList } from "@/modules/nps/components/NPSSurveyList";
 import { getNPSStats, type NPSStatsResult } from "@/modules/nps/actions/nps-actions";
+import { Button } from "@/components/ui/button";
 
-// Type for client stats
+export const dynamic = "force-dynamic";
+
 type ClientStat = NPSStatsResult["byClient"][number];
 
 export default async function NPSPage() {
   const session = await auth();
 
   if (!session?.user) {
-    return null;
+    redirect("/login");
   }
 
-  if (!["ADMIN", "LEADERSHIP"].includes(session.user.permissionLevel)) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">You don&apos;t have access to this page.</p>
-      </div>
-    );
+  if (!["ADMIN", "LEADERSHIP", "TEAM_LEAD"].includes(session.user.permissionLevel)) {
+    redirect("/dashboard");
   }
 
   const currentYear = new Date().getFullYear();
@@ -41,19 +40,43 @@ export default async function NPSPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Client NPS</h1>
-          <p className="text-gray-500 mt-1">
-            Track client satisfaction and feedback
-          </p>
+        <div className="flex items-center gap-4">
+          <Link href="/feedback">
+            <Button variant="ghost" size="sm">
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Client Health
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">NPS Surveys</h1>
+            <p className="text-gray-500 mt-1">
+              Track client satisfaction with Net Promoter Score
+            </p>
+          </div>
         </div>
-        <Link
-          href="/nps/new"
-          className="flex items-center gap-2 px-4 py-2 bg-[#52EDC7] text-gray-900 font-medium rounded-lg hover:bg-[#1BA098] hover:text-white transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          New Survey
+        <Link href="/feedback/nps/new">
+          <Button className="bg-[#52EDC7] text-gray-900 hover:bg-[#1BA098] hover:text-white">
+            <Plus className="w-5 h-5 mr-2" />
+            New Survey
+          </Button>
+        </Link>
+      </div>
+
+      {/* Navigation Tabs */}
+      <div className="flex gap-2 border-b border-gray-200 pb-4">
+        <Link href="/feedback">
+          <Button variant="outline">Overview</Button>
+        </Link>
+        <Link href="/feedback/nps">
+          <Button variant="default" className="bg-[#52EDC7] text-gray-900 hover:bg-[#1BA098] hover:text-white">
+            <Star className="h-4 w-4 mr-2" />
+            NPS Surveys
+          </Button>
+        </Link>
+        <Link href="/feedback/issues">
+          <Button variant="outline">Issues</Button>
         </Link>
       </div>
 
@@ -67,7 +90,6 @@ export default async function NPSPage() {
         />
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center gap-2 text-gray-500 mb-1">
-            <Users className="w-4 h-4" />
             <span className="text-sm">Responses</span>
           </div>
           <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
@@ -75,7 +97,6 @@ export default async function NPSPage() {
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center gap-2 text-green-600 mb-1">
-            <ThumbsUp className="w-4 h-4" />
             <span className="text-sm">Promoters</span>
           </div>
           <p className="text-2xl font-bold text-green-600">{stats.promoters}</p>
@@ -83,7 +104,6 @@ export default async function NPSPage() {
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center gap-2 text-yellow-600 mb-1">
-            <TrendingUp className="w-4 h-4" />
             <span className="text-sm">Passives</span>
           </div>
           <p className="text-2xl font-bold text-yellow-600">{stats.passives}</p>
@@ -91,7 +111,6 @@ export default async function NPSPage() {
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="flex items-center gap-2 text-red-600 mb-1">
-            <ThumbsDown className="w-4 h-4" />
             <span className="text-sm">Detractors</span>
           </div>
           <p className="text-2xl font-bold text-red-600">{stats.detractors}</p>

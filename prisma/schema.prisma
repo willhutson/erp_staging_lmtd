@@ -145,6 +145,19 @@ model User {
   // Events
   entityEvents            EntityEvent[]
 
+  // WhatsApp & Complaints (Phase 15)
+  whatsappConversations   WhatsAppConversation[]
+  whatsappMessages        WhatsAppMessage[]
+  complaintsAssigned      ClientComplaint[]
+
+  // Content CMS (Phase 16)
+  contentPostsCreated     ContentPost[] @relation("ContentPostCreator")
+  contentPostsAssigned    ContentPost[] @relation("ContentPostAssignee")
+  contentVersions         ContentVersion[]
+  contentApprovalsRequested ContentApproval[] @relation("ApprovalRequester")
+  contentApprovalsAssigned  ContentApproval[] @relation("ApprovalAssignee")
+  contentComments         ContentComment[]
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([department])
@@ -234,6 +247,12 @@ model Client {
   clientFiles      ClientFile[]
   portalUsers      ClientPortalUser[]
   retainerPeriods  RetainerPeriod[]
+  whatsappConversations WhatsAppConversation[]
+  complaints       ClientComplaint[]
+
+  // Content CMS (Phase 16)
+  socialAccounts   SocialAccount[]
+  contentPosts     ContentPost[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
@@ -293,6 +312,12 @@ model ClientContact {
   npsSurveys   NPSSurvey[]
   npsResponses NPSResponse[]
   portalUsers  ClientPortalUser[]
+  whatsappConversations WhatsAppConversation[]
+  complaints   ClientComplaint[]
+
+  // Content CMS (Phase 16)
+  contentApprovals ContentApproval[]
+  contentComments  ContentComment[]
 
   @@index([clientId])
   @@map("client_contacts")
@@ -461,6 +486,11 @@ model Brief {
   submissionApprovals SubmissionApproval[]  // Client approval requests
   deliverables     Deliverable[]            // Work output from this brief
   scopeChanges     ScopeChange[]            // Mid-execution pivots
+  whatsappConversations WhatsAppConversation[]
+  complaints       ClientComplaint[]
+
+  // Content CMS (Phase 16)
+  contentPosts     ContentPost[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -955,6 +985,7 @@ model NPSResponse {
   survey      NPSSurvey          @relation(fields: [surveyId], references: [id], onDelete: Cascade)
   contact     ClientContact?     @relation(fields: [contactId], references: [id])
   portalUser  ClientPortalUser?  @relation(fields: [portalUserId], references: [id])
+  complaints  ClientComplaint[]
 
   @@index([surveyId])
   @@map("nps_responses")
@@ -2756,6 +2787,9 @@ model Deliverable {
   comments        DeliverableComment[]
   history         DeliverableHistory[]
 
+  // Content CMS (Phase 16)
+  contentPosts    ContentPost[]
+
   @@index([organizationId, briefId])
   @@index([status])
   @@index([clientReviewStatus])
@@ -3092,4 +3126,691 @@ enum RetainerPeriodStatus {
   ACTIVE      // Current period
   COMPLETED   // Past period, finalized
   RECONCILED  // Reviewed and closed out
+}
+
+// ============================================
+// WHATSAPP INTEGRATION (Phase 15)
+// ============================================
+
+// WhatsApp conversation thread
+model WhatsAppConversation {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Linked entities (optional)
+  clientId        String?
+  client          Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  briefId         String?
+  brief           Brief?   @relation(fields: [briefId], references: [id], onDelete: SetNull)
+  contactId       String?
+  contact         ClientContact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  // WhatsApp identifiers
+  waPhoneNumber   String            // The external WhatsApp number
+  waDisplayName   String?           // Contact name from WhatsApp
+  waProfilePic    String?           // Profile picture URL
+
+  // Conversation state
+  status          ConversationStatus @default(ACTIVE)
+  assignedToId    String?
+  assignedTo      User?    @relation(fields: [assignedToId], references: [id])
+
+  // Last activity
+  lastMessageAt   DateTime?
+  lastMessagePreview String?
+  unreadCount     Int      @default(0)
+
+  // Provider info
+  provider        String   @default("whatsapp_business") // whatsapp_business, gupshup, etc.
+  externalId      String?  // Provider's conversation ID
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  messages        WhatsAppMessage[]
+
+  @@unique([organizationId, waPhoneNumber])
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@index([lastMessageAt])
+  @@map("whatsapp_conversations")
+}
+
+enum ConversationStatus {
+  ACTIVE
+  ARCHIVED
+  BLOCKED
+}
+
+// Individual WhatsApp message
+model WhatsAppMessage {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  conversationId  String
+  conversation    WhatsAppConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // Message direction
+  direction       MessageDirection
+  senderId        String?  // User ID if outbound
+  sender          User?    @relation(fields: [senderId], references: [id])
+
+  // Content
+  messageType     MessageType @default(TEXT)
+  content         String?  @db.Text   // Text content or caption
+  mediaUrl        String?             // URL for media messages
+  mediaMimeType   String?
+  mediaSize       Int?                // File size in bytes
+
+  // Voice note specific
+  voiceDuration   Int?                // Duration in seconds
+  transcription   VoiceNoteTranscription?
+
+  // WhatsApp metadata
+  waMessageId     String?  @unique    // WhatsApp's message ID
+  waTimestamp     DateTime?           // WhatsApp's timestamp
+  waStatus        String?             // sent, delivered, read, failed
+
+  // Reply context
+  replyToId       String?
+  replyTo         WhatsAppMessage? @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies         WhatsAppMessage[] @relation("MessageReplies")
+
+  // Processing flags
+  isProcessed     Boolean  @default(false)  // For automation triggers
+  processedAt     DateTime?
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([conversationId])
+  @@index([createdAt])
+  @@index([messageType])
+  @@map("whatsapp_messages")
+}
+
+enum MessageDirection {
+  INBOUND   // From client to org
+  OUTBOUND  // From org to client
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  VOICE_NOTE
+  DOCUMENT
+  STICKER
+  LOCATION
+  CONTACT
+}
+
+// Voice note transcription
+model VoiceNoteTranscription {
+  id              String   @id @default(cuid())
+
+  messageId       String   @unique
+  message         WhatsAppMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  // Transcription result
+  transcription   String   @db.Text
+  language        String?             // Detected language (ar, en, etc.)
+  confidence      Decimal? @db.Decimal(3, 2)  // 0.00 to 1.00
+
+  // Provider info
+  provider        String              // openai_whisper, google_stt, azure_stt
+  durationMs      Int?                // Processing duration
+  cost            Decimal? @db.Decimal(8, 4)  // Cost in USD
+
+  // Manual corrections
+  correctedText   String?  @db.Text
+  correctedById   String?
+  correctedAt     DateTime?
+
+  createdAt       DateTime @default(now())
+
+  @@map("voice_note_transcriptions")
+}
+
+// ============================================
+// COMPLAINT & FEEDBACK INTEGRATION (Phase 15)
+// ============================================
+
+// Client complaint (integrates with NPS)
+model ClientComplaint {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  clientId        String
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  // Source of complaint
+  source          ComplaintSource
+  sourceId        String?             // WhatsApp message ID, email ID, etc.
+  sourceUrl       String?             // Link to original
+
+  // Contact who complained
+  contactId       String?
+  contact         ClientContact? @relation(fields: [contactId], references: [id])
+
+  // Complaint details
+  title           String
+  description     String   @db.Text
+  category        ComplaintCategory?
+
+  // Related entities
+  briefId         String?
+  brief           Brief?   @relation(fields: [briefId], references: [id])
+  npsResponseId   String?
+  npsResponse     NPSResponse? @relation(fields: [npsResponseId], references: [id])
+
+  // Severity and status
+  severity        ComplaintSeverity @default(MEDIUM)
+  status          ComplaintStatus @default(NEW)
+  priority        Int      @default(0)  // Higher = more urgent
+
+  // Assignment
+  assignedToId    String?
+  assignedTo      User?    @relation(fields: [assignedToId], references: [id])
+
+  // Resolution
+  resolution      String?  @db.Text
+  resolvedAt      DateTime?
+  resolvedById    String?
+
+  // Follow-up
+  followUpDate    DateTime?
+  followUpNotes   String?  @db.Text
+
+  // Sentiment analysis (if applicable)
+  sentimentScore  Decimal? @db.Decimal(3, 2)  // -1.00 to 1.00
+  keywords        String[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@index([severity])
+  @@index([createdAt])
+  @@map("client_complaints")
+}
+
+enum ComplaintSource {
+  EMAIL
+  WHATSAPP
+  PHONE_CALL
+  NPS_SURVEY
+  MEETING
+  PORTAL
+  OTHER
+}
+
+enum ComplaintCategory {
+  QUALITY
+  TIMELINE
+  COMMUNICATION
+  SCOPE
+  BILLING
+  PERSONNEL
+  OTHER
+}
+
+enum ComplaintSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ComplaintStatus {
+  NEW
+  ACKNOWLEDGED
+  IN_PROGRESS
+  PENDING_CLIENT
+  RESOLVED
+  CLOSED
+}
+
+// ============================================
+// CONTENT CALENDAR & SOCIAL CMS (Phase 16)
+// ============================================
+
+// Social platform enum - comprehensive list
+enum SocialPlatform {
+  // Meta platforms
+  INSTAGRAM_FEED
+  INSTAGRAM_STORY
+  INSTAGRAM_REEL
+  FACEBOOK_PAGE
+  FACEBOOK_STORY
+  THREADS
+
+  // Video platforms
+  TIKTOK
+  YOUTUBE_VIDEO
+  YOUTUBE_SHORT
+
+  // Professional
+  LINKEDIN_PAGE
+  LINKEDIN_PERSONAL
+  LINKEDIN_ARTICLE
+
+  // Twitter/X
+  X_TWEET
+  X_THREAD
+
+  // CMS/Web
+  WORDPRESS
+  CUSTOM_CMS
+
+  // Other
+  PINTEREST
+  SNAPCHAT
+}
+
+// Content types
+enum ContentType {
+  SINGLE_IMAGE
+  CAROUSEL           // Multiple images
+  VIDEO              // Standard video
+  SHORT_VIDEO        // Reels, Shorts, TikTok
+  STORY              // 24hr ephemeral
+  TEXT_ONLY          // Text post (X, LinkedIn)
+  ARTICLE            // Long-form (LinkedIn, WordPress)
+  LIVE               // Live stream
+}
+
+// Post workflow status
+enum ContentPostStatus {
+  DRAFT              // Being created
+  INTERNAL_REVIEW    // Ready for internal review
+  CLIENT_REVIEW      // Sent to client for approval
+  REVISION_REQUESTED // Client requested changes
+  APPROVED           // Client approved, ready to schedule
+  SCHEDULED          // Scheduled for publishing
+  PUBLISHING         // Currently being published
+  PUBLISHED          // Successfully published
+  FAILED             // Publishing failed
+  ARCHIVED           // No longer active
+}
+
+// Approval status
+enum ContentApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVISION_REQUESTED
+}
+
+// Client's connected social account
+model SocialAccount {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  clientId        String
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  // Platform details
+  platform        SocialPlatform
+  accountName     String              // Display name / handle
+  accountId       String?             // Platform's internal ID
+  accountUrl      String?             // Profile URL
+  avatarUrl       String?             // Profile picture
+
+  // Authentication (encrypted)
+  accessToken     String?  @db.Text   // OAuth access token (encrypted)
+  refreshToken    String?  @db.Text   // OAuth refresh token (encrypted)
+  tokenExpiresAt  DateTime?
+
+  // Account management model
+  managementType  AccountManagementType @default(AGENCY_MANAGED)
+
+  // Platform-specific settings
+  settings        Json     @default("{}")  // Platform-specific config
+
+  // Status
+  isActive        Boolean  @default(true)
+  lastSyncAt      DateTime?
+  lastError       String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  contentPosts    ContentPost[]
+
+  @@unique([clientId, platform, accountId])
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([platform])
+  @@map("social_accounts")
+}
+
+enum AccountManagementType {
+  AGENCY_MANAGED       // Agency has full access/credentials
+  CLIENT_CONNECTED     // Client connected via OAuth
+  THIRD_PARTY          // Managed via third-party tool (Loomly, etc.)
+  MANUAL               // No direct access, manual publishing
+}
+
+// Main content post entity
+model ContentPost {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Client and account
+  clientId        String
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  socialAccountId String?
+  socialAccount   SocialAccount? @relation(fields: [socialAccountId], references: [id])
+
+  // Content identification
+  title           String              // Internal title for reference
+  slug            String?             // URL-friendly identifier
+
+  // Platform targeting
+  platforms       SocialPlatform[]    // Can target multiple platforms
+  contentType     ContentType
+
+  // Content body
+  caption         String   @db.Text   // Main post text/caption
+  captionAr       String?  @db.Text   // Arabic version if needed
+  hashtags        String[]            // Extracted/managed hashtags
+  mentions        String[]            // @mentions
+
+  // Link handling
+  linkUrl         String?             // Link in bio / swipe up
+  linkText        String?             // CTA text
+
+  // Location tagging
+  locationName    String?
+  locationId      String?             // Platform location ID
+
+  // Scheduling
+  scheduledFor    DateTime?           // When to publish
+  publishedAt     DateTime?           // When actually published
+  timezone        String   @default("Asia/Dubai")
+
+  // Workflow status
+  status          ContentPostStatus @default(DRAFT)
+
+  // Version tracking
+  currentVersion  Int      @default(1)
+
+  // Related entities
+  briefId         String?
+  brief           Brief?   @relation(fields: [briefId], references: [id])
+  deliverableId   String?
+  deliverable     Deliverable? @relation(fields: [deliverableId], references: [id])
+
+  // Assignment
+  createdById     String
+  createdBy       User     @relation("ContentPostCreator", fields: [createdById], references: [id])
+  assignedToId    String?
+  assignedTo      User?    @relation("ContentPostAssignee", fields: [assignedToId], references: [id])
+
+  // Publishing result
+  platformPostId  String?             // ID returned by platform after publish
+  platformPostUrl String?             // Direct link to published post
+  publishError    String?  @db.Text   // Error message if failed
+
+  // Engagement metrics (synced from platform)
+  likes           Int?
+  comments        Int?
+  shares          Int?
+  saves           Int?
+  reach           Int?
+  impressions     Int?
+  engagementRate  Decimal? @db.Decimal(5, 2)
+  metricsUpdatedAt DateTime?
+
+  // Platform-specific data
+  platformData    Json     @default("{}")  // Platform-specific fields
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  assets          ContentAsset[]
+  versions        ContentVersion[]
+  approvals       ContentApproval[]
+  contentComments ContentComment[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@index([scheduledFor])
+  @@index([createdById])
+  @@map("content_posts")
+}
+
+// Media assets for posts
+model ContentAsset {
+  id              String   @id @default(cuid())
+
+  postId          String
+  post            ContentPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Asset details
+  type            AssetType
+  fileName        String
+  fileUrl         String              // Storage URL
+  thumbnailUrl    String?             // Thumbnail for videos
+  fileSize        Int?                // Bytes
+  mimeType        String?
+
+  // Media dimensions
+  width           Int?
+  height          Int?
+  duration        Int?                // Video/audio duration in seconds
+  aspectRatio     String?             // e.g., "16:9", "1:1", "9:16"
+
+  // Carousel/ordering
+  sortOrder       Int      @default(0)
+
+  // Alt text for accessibility
+  altText         String?
+  altTextAr       String?
+
+  // Video-specific
+  hasAudio        Boolean  @default(true)
+  captions        String?  @db.Text   // SRT or VTT captions
+
+  // Platform variants (different crops/versions)
+  variants        Json     @default("[]")  // Array of platform-specific versions
+
+  createdAt       DateTime @default(now())
+
+  @@index([postId])
+  @@map("content_assets")
+}
+
+enum AssetType {
+  IMAGE
+  VIDEO
+  GIF
+  DOCUMENT        // For WordPress/CMS
+}
+
+// Version history for posts
+model ContentVersion {
+  id              String   @id @default(cuid())
+
+  postId          String
+  post            ContentPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  versionNumber   Int
+
+  // Snapshot of content at this version
+  caption         String   @db.Text
+  captionAr       String?  @db.Text
+  hashtags        String[]
+  platforms       SocialPlatform[]
+
+  // Who created this version
+  createdById     String
+  createdBy       User     @relation(fields: [createdById], references: [id])
+
+  // Change notes
+  changeNotes     String?  @db.Text
+
+  createdAt       DateTime @default(now())
+
+  @@unique([postId, versionNumber])
+  @@index([postId])
+  @@map("content_versions")
+}
+
+// Approval workflow
+model ContentApproval {
+  id              String   @id @default(cuid())
+
+  postId          String
+  post            ContentPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Approval type
+  approvalType    ApprovalType
+
+  // Who requested
+  requestedById   String
+  requestedBy     User     @relation("ApprovalRequester", fields: [requestedById], references: [id])
+  requestedAt     DateTime @default(now())
+
+  // Who needs to approve
+  assignedToId    String?
+  assignedTo      User?    @relation("ApprovalAssignee", fields: [assignedToId], references: [id])
+
+  // Client portal approval
+  clientContactId String?
+  clientContact   ClientContact? @relation(fields: [clientContactId], references: [id])
+
+  // Approval status
+  status          ContentApprovalStatus @default(PENDING)
+
+  // Response
+  respondedAt     DateTime?
+  respondedById   String?
+  responseNotes   String?  @db.Text
+
+  // WhatsApp integration
+  whatsappMessageId String?           // If sent via WhatsApp
+  whatsappResponseId String?          // Response message ID
+
+  // Version being approved
+  versionNumber   Int?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([postId])
+  @@index([status])
+  @@map("content_approvals")
+}
+
+enum ApprovalType {
+  INTERNAL        // Team review
+  CLIENT          // Client approval
+  LEGAL           // Legal/compliance review
+  FINAL           // Final sign-off before publish
+}
+
+// Comments and feedback on posts
+model ContentComment {
+  id              String   @id @default(cuid())
+
+  postId          String
+  post            ContentPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Comment author (internal user or client contact)
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id])
+  clientContactId String?
+  clientContact   ClientContact? @relation(fields: [clientContactId], references: [id])
+
+  // Comment content
+  content         String   @db.Text
+
+  // If this is a reply to another comment
+  parentId        String?
+  parent          ContentComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies         ContentComment[] @relation("CommentReplies")
+
+  // Version this comment refers to
+  versionNumber   Int?
+
+  // Resolution (for revision requests)
+  isResolved      Boolean  @default(false)
+  resolvedAt      DateTime?
+  resolvedById    String?
+
+  // Source (where comment came from)
+  source          CommentSource @default(PORTAL)
+  sourceMessageId String?             // WhatsApp message ID if from WhatsApp
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([postId])
+  @@index([userId])
+  @@index([clientContactId])
+  @@map("content_comments")
+}
+
+enum CommentSource {
+  PORTAL          // Client portal
+  INTERNAL        // Internal UI
+  WHATSAPP        // WhatsApp message
+  EMAIL           // Email response
+}
+
+// Platform specifications (reference data)
+model PlatformSpec {
+  id              String   @id @default(cuid())
+
+  platform        SocialPlatform @unique
+  displayName     String              // Human readable name
+
+  // Character limits
+  captionMaxLength Int?
+  hashtagMaxCount Int?
+  mentionMaxCount Int?
+
+  // Media specs
+  imageMaxSize    Int?                // Bytes
+  videoMaxSize    Int?                // Bytes
+  videoMaxDuration Int?               // Seconds
+  videoMinDuration Int?               // Seconds
+
+  // Aspect ratios
+  supportedAspectRatios String[]      // ["1:1", "4:5", "16:9", "9:16"]
+  recommendedAspectRatio String?
+
+  // Features
+  supportsCarousel Boolean @default(false)
+  maxCarouselItems Int?
+  supportsScheduling Boolean @default(true)
+  supportsStories Boolean @default(false)
+  supportsLinks   Boolean @default(true)
+  supportsHashtags Boolean @default(true)
+  supportsMentions Boolean @default(true)
+  supportsLocation Boolean @default(false)
+
+  // API info
+  apiEndpoint     String?
+  apiVersion      String?
+  apiDocsUrl      String?
+
+  // Brand colors for UI
+  brandColor      String?             // Hex color
+  iconName        String?             // Lucide icon name
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("platform_specs")
 }
