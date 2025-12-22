@@ -11,7 +11,10 @@ import {
   Brain,
   Activity,
   TrendingUp,
-  Clock
+  Clock,
+  Search,
+  Package,
+  Sparkles,
 } from "lucide-react";
 import type { SkillCategory } from "@/modules/content-engine/types";
 
@@ -146,7 +149,7 @@ export default async function ContentEnginePage() {
         </Card>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - Row 1 */}
       <div className="grid gap-4 md:grid-cols-3">
         <Link href="/content-engine/sandbox">
           <Card className="hover:border-[#52EDC7] transition-colors cursor-pointer">
@@ -183,6 +186,49 @@ export default async function ContentEnginePage() {
               </CardTitle>
               <CardDescription>
                 Browse procedures, playbooks, and templates
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+      </div>
+
+      {/* Quick Actions - Row 2 */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Link href="/content-engine/search">
+          <Card className="hover:border-[#52EDC7] transition-colors cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-[#52EDC7]" />
+                Semantic Search
+              </CardTitle>
+              <CardDescription>
+                AI-powered search across knowledge base
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+        <Link href="/content-engine/deliverables">
+          <Card className="hover:border-[#52EDC7] transition-colors cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-[#52EDC7]" />
+                Deliverables
+              </CardTitle>
+              <CardDescription>
+                Track work outputs and review status
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+        <Link href="/content-engine/activity">
+          <Card className="hover:border-[#52EDC7] transition-colors cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5 text-[#52EDC7]" />
+                Activity Feed
+              </CardTitle>
+              <CardDescription>
+                Recent events and system activity
               </CardDescription>
             </CardHeader>
           </Card>
