@@ -9,7 +9,7 @@ interface DetailPageHeaderProps {
   subtitle?: string
   badge?: {
     label: string
-    status?: "default" | "success" | "warning" | "error" | "info"
+    status?: "neutral" | "success" | "warning" | "error" | "info"
   }
   backHref?: string
   backLabel?: string

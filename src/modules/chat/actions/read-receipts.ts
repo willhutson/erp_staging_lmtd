@@ -125,7 +125,8 @@ export async function markChannelAsRead(
 ): Promise<{ success: boolean; count: number }> {
   try {
     // Get unread messages
-    let whereClause: Parameters<typeof db.message.findMany>[0]["where"] = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let whereClause: any = {
       channelId,
       isDeleted: false,
       readReceipts: {

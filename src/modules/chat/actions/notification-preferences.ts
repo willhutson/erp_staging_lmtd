@@ -110,7 +110,8 @@ export async function updateNotificationPreferences(
   await db.user.update({
     where: { id: userId },
     data: {
-      chatPreferences: updated as unknown as Record<string, unknown>,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      chatPreferences: updated as any,
     },
   });
 
@@ -127,7 +128,8 @@ export async function resetNotificationPreferences(
   await db.user.update({
     where: { id: userId },
     data: {
-      chatPreferences: DEFAULT_PREFERENCES as unknown as Record<string, unknown>,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      chatPreferences: DEFAULT_PREFERENCES as any,
     },
   });
 

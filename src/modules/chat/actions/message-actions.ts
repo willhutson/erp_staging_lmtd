@@ -770,7 +770,8 @@ export async function searchMessages(
   const offset = input.offset || 0;
 
   // Build where clause
-  const where: Parameters<typeof db.message.findMany>[0]["where"] = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: any = {
     organizationId: input.organizationId,
     isDeleted: false,
     content: {

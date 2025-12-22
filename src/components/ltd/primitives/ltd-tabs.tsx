@@ -31,7 +31,8 @@ export function LtdTabs({ defaultValue, tabs, children, className }: LtdTabsProp
       {tabs.map((tab) => {
         const content = childrenArray.find((child) => {
           if (React.isValidElement(child)) {
-            return child.props["data-tab"] === tab.value
+            const props = child.props as { "data-tab"?: string }
+            return props["data-tab"] === tab.value
           }
           return false
         })

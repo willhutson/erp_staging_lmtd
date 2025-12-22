@@ -446,7 +446,7 @@ export default function ComponentsShowcase() {
                         ? "info"
                         : brief.status === "In Review"
                         ? "warning"
-                        : "default"
+                        : "neutral"
                     }
                   >
                     {brief.status}
@@ -564,7 +564,7 @@ export default function ComponentsShowcase() {
             <WidgetListItem
               title="Team standup"
               subtitle="Today 10am"
-              status={<LtdBadge status="default">Scheduled</LtdBadge>}
+              status={<LtdBadge status="neutral">Scheduled</LtdBadge>}
             />
           </WidgetCard>
 

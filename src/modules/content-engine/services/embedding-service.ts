@@ -127,10 +127,10 @@ function generateMockEmbedding(text: string, dimensions: number): number[] {
 /**
  * Split document content into chunks for embedding
  */
-export async function chunkDocument(
+export function chunkDocument(
   content: string,
   config: Partial<ChunkConfig> = {}
-): Promise<DocumentChunk[]> {
+): DocumentChunk[] {
   const fullConfig = { ...DEFAULT_CHUNK_CONFIG, ...config };
 
   switch (fullConfig.strategy) {
@@ -251,7 +251,7 @@ function getOverlapText(text: string, overlapTokens: number): string {
  * Estimate token count for text (rough approximation)
  * ~4 characters per token for English text
  */
-export async function estimateTokens(text: string): Promise<number> {
+export function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
