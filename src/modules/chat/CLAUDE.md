@@ -433,12 +433,13 @@ await sendManualContentReminder(organizationId, "Eid Al Fitr");
 | Holiday | Date (2025) | Duration |
 |---------|-------------|----------|
 | New Year's Day | Jan 1 | 1 day |
+| Emirati Mother's Day | Mar 21 | 1 day |
 | Eid Al Fitr | ~Mar 30 | 4 days |
 | Arafat Day | ~Jun 5 | 1 day |
 | Eid Al Adha | ~Jun 6 | 4 days |
 | Islamic New Year | ~Jun 26 | 1 day |
 | Prophet's Birthday | ~Sep 4 | 1 day |
-| Commemoration Day | Nov 30 | 1 day |
+| Martyrs Day | Nov 30 | 1 day |
 | UAE National Day | Dec 2-3 | 2 days |
 
 *Islamic holiday dates are approximations based on the lunar calendar.*
