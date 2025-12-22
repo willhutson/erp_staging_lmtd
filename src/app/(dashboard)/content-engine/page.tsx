@@ -15,6 +15,8 @@ import {
   Search,
   Package,
   Sparkles,
+  Bell,
+  Settings,
 } from "lucide-react";
 import type { SkillCategory } from "@/modules/content-engine/types";
 
@@ -234,6 +236,38 @@ export default async function ContentEnginePage() {
           </Card>
         </Link>
       </div>
+
+      {/* Admin Actions */}
+      {userIsAdmin && (
+        <div className="grid gap-4 md:grid-cols-2">
+          <Link href="/content-engine/events">
+            <Card className="hover:border-[#52EDC7] transition-colors cursor-pointer border-dashed">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-gray-400" />
+                  Event Subscriptions
+                </CardTitle>
+                <CardDescription>
+                  Configure automatic actions for events
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+          <Link href="/content-engine/skills">
+            <Card className="hover:border-[#52EDC7] transition-colors cursor-pointer border-dashed">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5 text-gray-400" />
+                  Skill Management
+                </CardTitle>
+                <CardDescription>
+                  Configure and manage AI skills
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+        </div>
+      )}
 
       {/* Skills by Category */}
       <div className="space-y-4">
