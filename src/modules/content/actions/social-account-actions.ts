@@ -174,7 +174,7 @@ export async function updateLastSync(
 // PLATFORM GROUPINGS
 // ============================================
 
-export function getPlatformFamily(platform: SocialPlatform): string {
+export async function getPlatformFamily(platform: SocialPlatform): Promise<string> {
   const families: Record<SocialPlatform, string> = {
     INSTAGRAM_FEED: "Meta",
     INSTAGRAM_STORY: "Meta",
@@ -199,7 +199,7 @@ export function getPlatformFamily(platform: SocialPlatform): string {
   return families[platform] || "Other";
 }
 
-export function getPlatformDisplayName(platform: SocialPlatform): string {
+export async function getPlatformDisplayName(platform: SocialPlatform): Promise<string> {
   const names: Record<SocialPlatform, string> = {
     INSTAGRAM_FEED: "Instagram Feed",
     INSTAGRAM_STORY: "Instagram Story",
@@ -224,7 +224,7 @@ export function getPlatformDisplayName(platform: SocialPlatform): string {
   return names[platform] || platform;
 }
 
-export function getPlatformIcon(platform: SocialPlatform): string {
+export async function getPlatformIcon(platform: SocialPlatform): Promise<string> {
   const icons: Record<SocialPlatform, string> = {
     INSTAGRAM_FEED: "Instagram",
     INSTAGRAM_STORY: "Instagram",
@@ -249,7 +249,7 @@ export function getPlatformIcon(platform: SocialPlatform): string {
   return icons[platform] || "Globe";
 }
 
-export function getPlatformColor(platform: SocialPlatform): string {
+export async function getPlatformColor(platform: SocialPlatform): Promise<string> {
   const colors: Record<SocialPlatform, string> = {
     INSTAGRAM_FEED: "#E4405F",
     INSTAGRAM_STORY: "#E4405F",
@@ -288,16 +288,20 @@ export async function getAccountStats(organizationId: string) {
   const byFamily: Record<string, number> = {};
 
   for (const account of accounts) {
-    const family = getPlatformFamily(account.platform);
+    const family = await getPlatformFamily(account.platform);
     byFamily[family] = (byFamily[family] || 0) + account._count.id;
   }
 
-  return {
-    byPlatform: accounts.map((a) => ({
+  const byPlatform = await Promise.all(
+    accounts.map(async (a) => ({
       platform: a.platform,
-      displayName: getPlatformDisplayName(a.platform),
+      displayName: await getPlatformDisplayName(a.platform),
       count: a._count.id,
-    })),
+    }))
+  );
+
+  return {
+    byPlatform,
     byFamily: Object.entries(byFamily).map(([family, count]) => ({
       family,
       count,

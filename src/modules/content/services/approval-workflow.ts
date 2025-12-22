@@ -96,20 +96,20 @@ const VALID_TRANSITIONS: Record<ContentPostStatus, ContentPostStatus[]> = {
 /**
  * Validates if a status transition is allowed
  */
-export function isValidTransition(
+export async function isValidTransition(
   currentStatus: ContentPostStatus,
   newStatus: ContentPostStatus
-): boolean {
+): Promise<boolean> {
   return VALID_TRANSITIONS[currentStatus]?.includes(newStatus) ?? false;
 }
 
 /**
  * Gets the next approval type in the workflow chain
  */
-export function getNextApprovalType(
+export async function getNextApprovalType(
   currentType: ApprovalType | null,
   config: WorkflowConfig = DEFAULT_WORKFLOW_CONFIG
-): ApprovalType | null {
+): Promise<ApprovalType | null> {
   if (!currentType) {
     return config.approvalChain[0] || null;
   }
@@ -151,7 +151,7 @@ export async function createApprovalRequest(
         : "INTERNAL_REVIEW";
 
     // Validate transition
-    if (!isValidTransition(post.status, targetStatus)) {
+    if (!(await isValidTransition(post.status, targetStatus))) {
       return {
         success: false,
         error: `Cannot transition from ${post.status} to ${targetStatus}`,
@@ -253,7 +253,7 @@ export async function processApprovalResponse(
     switch (response.status) {
       case "APPROVED":
         // Check if there's another approval step
-        const nextApprovalType = getNextApprovalType(approval.approvalType);
+        const nextApprovalType = await getNextApprovalType(approval.approvalType);
         newPostStatus = nextApprovalType
           ? nextApprovalType === "CLIENT"
             ? "CLIENT_REVIEW"
@@ -310,7 +310,7 @@ export async function processApprovalResponse(
 
       // If approved and there's a next step, auto-create next approval request
       if (response.status === "APPROVED") {
-        const nextType = getNextApprovalType(approval.approvalType);
+        const nextType = await getNextApprovalType(approval.approvalType);
         if (nextType) {
           await tx.contentApproval.create({
             data: {

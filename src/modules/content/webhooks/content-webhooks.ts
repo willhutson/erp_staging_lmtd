@@ -77,11 +77,11 @@ function generateSignature(payload: string, secret: string): string {
 /**
  * Verifies webhook signature
  */
-export function verifyWebhookSignature(
+export async function verifyWebhookSignature(
   payload: string,
   signature: string,
   secret: string
-): boolean {
+): Promise<boolean> {
   const expectedSignature = generateSignature(payload, secret);
   return crypto.timingSafeEqual(
     Buffer.from(signature),
