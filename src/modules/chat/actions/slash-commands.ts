@@ -172,7 +172,7 @@ registerCommand({
     "/remind 2h Review PR",
     "/remind tomorrow Submit report",
   ],
-  handler: async (args, context) => {
+  handler: async (args, _context) => {
     if (!args) {
       return {
         success: false,

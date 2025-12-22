@@ -95,7 +95,7 @@ export function ChannelSidebar({
   directMessages,
   unreadCounts,
   currentUserId,
-  organizationId,
+  organizationId: _organizationId,
   onCreateChannel,
 }: ChannelSidebarProps) {
   const pathname = usePathname();
