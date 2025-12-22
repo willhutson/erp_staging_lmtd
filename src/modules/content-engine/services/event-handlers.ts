@@ -1,3 +1,5 @@
+"use server";
+
 import { db } from "@/lib/db";
 import type { EntityEvent, EntityType } from "./event-bus";
 
@@ -184,7 +186,8 @@ async function handleDeliverableStatusChange(event: EntityEvent): Promise<void> 
 }
 
 async function handleDeliverableApproved(event: EntityEvent): Promise<void> {
-  const { entityId } = event;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { entityId, metadata: _metadata } = event;
 
   console.log(`Deliverable ${entityId} approved`);
 

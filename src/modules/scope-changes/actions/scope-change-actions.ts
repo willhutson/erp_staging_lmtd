@@ -38,6 +38,14 @@ export interface UpdateScopeChangeInput {
   clientNotes?: string;
 }
 
+// Inferred types
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type ScopeChangeRecord = Awaited<ReturnType<typeof db.scopeChange.findMany>>[number];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type ScopeChangeWithBrief = Awaited<ReturnType<typeof db.scopeChange.findFirst<{
+  include: { brief: { include: { client: true } } }
+}>>>;
+
 // ============================================
 // CRUD OPERATIONS
 // ============================================

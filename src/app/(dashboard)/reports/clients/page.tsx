@@ -6,9 +6,8 @@
  * @module app/(dashboard)/reports/clients
  */
 
-import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-
+import { auth } from "@/lib/auth";
 import { getAllClientReports } from "@/modules/reporting/actions/analytics-actions";
 import { ClientReportsClient } from "./ClientReportsClient";
 

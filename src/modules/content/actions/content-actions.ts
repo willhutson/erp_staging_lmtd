@@ -18,6 +18,24 @@ import {
 // TYPES
 // ============================================
 
+// Inferred types from Prisma
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type ContentPostWithRelations = Awaited<
+  ReturnType<typeof db.contentPost.findFirst>
+> & {
+  client: { id: string; name: string; code: string };
+  createdBy: { id: string; name: string };
+  assignedTo?: { id: string; name: string } | null;
+  assets: Array<{
+    id: string;
+    type: string;
+    fileName: string;
+    fileUrl: string;
+    thumbnailUrl: string | null;
+    sortOrder: number;
+  }>;
+};
+
 export interface CreateContentPostInput {
   organizationId: string;
   clientId: string;
@@ -165,7 +183,7 @@ export async function getContentPost(postId: string) {
 }
 
 export async function getContentPosts(filters: ContentPostFilters) {
-  const where: Record<string, unknown> = {
+  const where: Parameters<typeof db.contentPost.findMany>[0]["where"] = {
     organizationId: filters.organizationId,
   };
 
@@ -192,14 +210,13 @@ export async function getContentPosts(filters: ContentPostFilters) {
   }
 
   if (filters.scheduledFrom || filters.scheduledTo) {
-    const scheduledFor: { gte?: Date; lte?: Date } = {};
+    where.scheduledFor = {};
     if (filters.scheduledFrom) {
-      scheduledFor.gte = filters.scheduledFrom;
+      where.scheduledFor.gte = filters.scheduledFrom;
     }
     if (filters.scheduledTo) {
-      scheduledFor.lte = filters.scheduledTo;
+      where.scheduledFor.lte = filters.scheduledTo;
     }
-    where.scheduledFor = scheduledFor;
   }
 
   if (filters.search) {
@@ -633,7 +650,7 @@ export async function getCalendarPosts(
   endDate: Date,
   clientId?: string
 ) {
-  const where: Record<string, unknown> = {
+  const where: Parameters<typeof db.contentPost.findMany>[0]["where"] = {
     organizationId,
     scheduledFor: {
       gte: startDate,

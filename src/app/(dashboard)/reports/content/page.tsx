@@ -6,9 +6,8 @@
  * @module app/(dashboard)/reports/content
  */
 
-import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-
+import { auth } from "@/lib/auth";
 import { getContentMetrics } from "@/modules/reporting/actions/analytics-actions";
 import { ContentReportsClient } from "./ContentReportsClient";
 

@@ -54,13 +54,12 @@ export type RFPStatus =
 
 export type CompanySize =
   | "STARTUP"
-  | "SMB"
-  | "MID_MARKET"
-  | "ENTERPRISE"
-  | "GOVERNMENT";
+  | "SMALL"
+  | "MEDIUM"
+  | "LARGE"
+  | "ENTERPRISE";
 
 export type RelationshipStatus =
-  | "PROSPECT"
   | "ACTIVE"
   | "AT_RISK"
   | "CHURNED"

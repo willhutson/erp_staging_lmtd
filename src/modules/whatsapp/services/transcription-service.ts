@@ -107,8 +107,8 @@ async function transcribeWithWhisper(
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function transcribeWithGoogle(
-  audioUrl: string,
-  config: TranscriptionConfig
+  _audioUrl: string, // eslint-disable-line @typescript-eslint/no-unused-vars
+  _config: TranscriptionConfig // eslint-disable-line @typescript-eslint/no-unused-vars
 ): Promise<TranscriptionResult> {
   // This would use the Google Cloud Speech-to-Text API
   // For now, return a placeholder
@@ -123,8 +123,8 @@ async function transcribeWithGoogle(
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function transcribeWithAzure(
-  audioUrl: string,
-  config: TranscriptionConfig
+  _audioUrl: string, // eslint-disable-line @typescript-eslint/no-unused-vars
+  _config: TranscriptionConfig // eslint-disable-line @typescript-eslint/no-unused-vars
 ): Promise<TranscriptionResult> {
   // This would use the Azure Speech Services SDK
   // For now, return a placeholder

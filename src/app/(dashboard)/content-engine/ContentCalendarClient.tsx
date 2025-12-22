@@ -78,6 +78,7 @@ interface ContentCalendarClientProps {
   initialPosts: CalendarPost[];
   stats: Stats;
   socialAccounts: SocialAccount[];
+  organizationId: string;
 }
 
 // ============================================
@@ -174,6 +175,8 @@ export function ContentCalendarClient({
   initialPosts,
   stats,
   socialAccounts,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  organizationId: _organizationId,
 }: ContentCalendarClientProps) {
   const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
   const [currentDate, setCurrentDate] = useState(new Date());

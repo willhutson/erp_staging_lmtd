@@ -14,6 +14,8 @@
  */
 
 import { db } from "@/lib/db";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { BriefStatus, BriefType } from "@prisma/client";
 
 // ============================================
 // TYPES
@@ -319,7 +321,7 @@ export async function getClientReport(
   const [
     briefsByStatus,
     briefsByType,
-    , // timeByDepartment - placeholder for array destructuring
+    _timeByDepartment, // eslint-disable-line @typescript-eslint/no-unused-vars
     totalTime,
     contentByStatus,
     npsScore,
@@ -381,14 +383,12 @@ export async function getClientReport(
     }),
   ]);
 
-  // Get retainer usage for current period
-  const currentYear = to.getFullYear();
-  const currentMonth = to.getMonth() + 1;
+  // Get retainer usage
   const currentPeriod = await db.retainerPeriod.findFirst({
     where: {
       clientId,
-      year: currentYear,
-      month: currentMonth,
+      startDate: { lte: to },
+      endDate: { gte: from },
     },
   });
 
@@ -398,8 +398,8 @@ export async function getClientReport(
     .reduce((sum, s) => sum + s._count.id, 0);
 
   const hoursUsed = Number(totalTime._sum.hours || 0);
-  const burnRate = currentPeriod?.budgetHours
-    ? (hoursUsed / Number(currentPeriod.budgetHours)) * 100
+  const burnRate = currentPeriod
+    ? (hoursUsed / Number(currentPeriod.allocatedHours)) * 100
     : 0;
 
   return {
@@ -680,9 +680,6 @@ export async function getRetainerHealth(
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1;
-
   const retainerClients = await db.client.findMany({
     where: {
       organizationId,
@@ -692,10 +689,10 @@ export async function getRetainerHealth(
     include: {
       retainerPeriods: {
         where: {
-          year: currentYear,
-          month: currentMonth,
+          startDate: { lte: endOfMonth },
+          endDate: { gte: startOfMonth },
         },
-        orderBy: [{ year: "desc" }, { month: "desc" }],
+        orderBy: { startDate: "desc" },
         take: 1,
       },
     },
@@ -705,8 +702,8 @@ export async function getRetainerHealth(
 
   for (const client of retainerClients) {
     const currentPeriod = client.retainerPeriods[0];
-    const monthlyAllocation = currentPeriod?.budgetHours
-      ? Number(currentPeriod.budgetHours)
+    const monthlyAllocation = currentPeriod
+      ? Number(currentPeriod.allocatedHours)
       : client.retainerHours || 0;
 
     // Get hours used this month
@@ -740,9 +737,9 @@ export async function getRetainerHealth(
       where: {
         brief: { clientId: client.id },
         createdAt: { gte: startOfMonth },
-        approvalStatus: "APPROVED",
+        status: "APPROVED",
       },
-      _sum: { estimatedAdditionalHours: true },
+      _sum: { hoursImpact: true },
     });
 
     const hoursUsed = Number(hoursThisMonth._sum.hours || 0);
@@ -784,7 +781,7 @@ export async function getRetainerHealth(
       previousMonthUsage,
       usageTrend,
       scopeChanges,
-      additionalHours: Number(additionalHoursResult._sum.estimatedAdditionalHours || 0),
+      additionalHours: Number(additionalHoursResult._sum.hoursImpact || 0),
       status,
       daysRemaining,
       projectedOverage,

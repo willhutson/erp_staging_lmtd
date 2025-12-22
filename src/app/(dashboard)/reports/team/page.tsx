@@ -6,9 +6,8 @@
  * @module app/(dashboard)/reports/team
  */
 
-import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-
+import { auth } from "@/lib/auth";
 import { getTeamProductivity } from "@/modules/reporting/actions/analytics-actions";
 import { TeamReportsClient } from "./TeamReportsClient";
 

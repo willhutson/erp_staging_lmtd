@@ -77,6 +77,7 @@ interface Post {
 interface ContentReviewClientProps {
   post: Post;
   approvalId: string | null;
+  contactId: string;
   comments: Comment[];
 }
 
@@ -339,6 +340,8 @@ function XPreview({ post }: { post: Post }) {
 export function ContentReviewClient({
   post,
   approvalId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  contactId: _contactId,
   comments,
 }: ContentReviewClientProps) {
   const router = useRouter();

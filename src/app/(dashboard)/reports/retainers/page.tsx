@@ -6,9 +6,8 @@
  * @module app/(dashboard)/reports/retainers
  */
 
-import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-
+import { auth } from "@/lib/auth";
 import { getRetainerHealth } from "@/modules/reporting/actions/analytics-actions";
 import { RetainerReportsClient } from "./RetainerReportsClient";
 

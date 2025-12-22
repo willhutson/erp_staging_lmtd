@@ -329,7 +329,7 @@ async function buildEntityContext(inputs: Record<string, unknown>): Promise<Reco
 async function executeSkill(
   skill: Skill,
   context: SkillContext,
-  inputs: Record<string, unknown>
+  _inputs: Record<string, unknown> // eslint-disable-line @typescript-eslint/no-unused-vars
 ): Promise<Record<string, unknown>> {
   // TODO: Implement actual skill execution with LLM
   // For now, log context and inputs to satisfy linter, will be used when LLM integration is added

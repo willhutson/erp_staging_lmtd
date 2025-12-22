@@ -8,7 +8,6 @@ import {
   ChevronUp,
   Clock,
   ArrowRight,
-  
   XCircle,
   AlertCircle,
   HelpCircle,
