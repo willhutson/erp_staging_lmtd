@@ -240,8 +240,61 @@ export interface BriefRecord {
   updatedAt: Date;
 }
 
+// ============================================
+// EVENT SYSTEM (Phase 12.4)
+// ============================================
+
+export interface EntityEventRecord {
+  id: string;
+  organizationId: string;
+  entityType: string;
+  entityId: string;
+  action: string;
+  userId: string;
+  metadata: unknown;
+  createdAt: Date;
+}
+
+export interface EventSubscriptionRecord {
+  id: string;
+  organizationId: string;
+  entityType: string;
+  action: string;
+  handler: string;
+  skillSlug: string | null;
+  priority: number;
+  enabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface EventHandlerLogRecord {
+  id: string;
+  organizationId: string;
+  eventId: string;
+  subscriptionId: string;
+  status: string;
+  error: string | null;
+  executedAt: Date;
+}
+
+export interface StatusTransitionRecord {
+  id: string;
+  organizationId: string;
+  entityType: string;
+  entityId: string;
+  fromStatus: string;
+  toStatus: string;
+  userId: string;
+  createdAt: Date;
+}
+
 // Aliases for backwards compatibility
 export type File = FileRecord;
 export type Folder = FolderRecord;
 export type Notification = NotificationRecord;
 export type Brief = BriefRecord;
+export type EntityEvent = EntityEventRecord;
+export type EventSubscription = EventSubscriptionRecord;
+export type EventHandlerLog = EventHandlerLogRecord;
+export type StatusTransition = StatusTransitionRecord;

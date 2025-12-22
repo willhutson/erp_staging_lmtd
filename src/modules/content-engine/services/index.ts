@@ -2,6 +2,7 @@
  * Content Engine Services
  *
  * Phase 12.2 - Agent Infrastructure
+ * Phase 12.4 - Event System
  */
 
 // Skill Registry - Load and manage skills
@@ -57,3 +58,32 @@ export type {
   DashboardMetrics,
   RecentInvocation,
 } from "./invocation-metrics";
+
+// Event Bus - Publish and subscribe to entity events
+export {
+  publishEvent,
+  createEvent,
+  getEntityEvents,
+  getActivityFeed,
+  createSubscription,
+  updateSubscription,
+  deleteSubscription,
+  listSubscriptions,
+} from "./event-bus";
+
+export type {
+  EntityType,
+  EventAction,
+  EntityEvent,
+  EventSubscription,
+} from "./event-bus";
+
+// Event Handlers - Built-in handlers for common events
+export {
+  getHandler,
+  listHandlers,
+  executeHandlerByName,
+  emitStatusChange,
+  emitEntityCreated,
+  emitEntityUpdated,
+} from "./event-handlers";

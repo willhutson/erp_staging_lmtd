@@ -142,6 +142,9 @@ model User {
   // Files
   uploadedFiles           File[]  @relation("FileUploader")
 
+  // Events
+  entityEvents            EntityEvent[]
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([department])
@@ -2878,4 +2881,92 @@ model DeliverableHistory {
 
   @@index([deliverableId])
   @@map("deliverable_history")
+}
+
+// ============================================
+// EVENT SYSTEM (Phase 12.4)
+// ============================================
+
+// Entity events for audit trail and triggers
+model EntityEvent {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  entityType      String              // "BRIEF", "DELIVERABLE", "CLIENT", etc.
+  entityId        String
+  action          String              // "CREATED", "UPDATED", "STATUS_CHANGED", etc.
+
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+
+  metadata        Json     @default("{}")
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId, entityType])
+  @@index([organizationId, entityId])
+  @@index([createdAt])
+  @@map("entity_events")
+}
+
+// Event subscriptions - what to do when events occur
+model EventSubscription {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  entityType      String              // "*" for all, or specific type
+  action          String              // "*" for all, or specific action
+
+  handler         String              // Handler function name
+  skillSlug       String?             // Optional skill to trigger
+
+  priority        Int      @default(100)
+  enabled         Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  logs            EventHandlerLog[]
+
+  @@index([organizationId, entityType])
+  @@index([enabled])
+  @@map("event_subscriptions")
+}
+
+// Handler execution logs
+model EventHandlerLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  eventId         String              // EntityEvent ID
+  subscriptionId  String
+  subscription    EventSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  status          String              // "SUCCESS", "FAILED"
+  error           String?
+
+  executedAt      DateTime @default(now())
+
+  @@index([organizationId, eventId])
+  @@index([subscriptionId])
+  @@map("event_handler_logs")
+}
+
+// Track status transitions for analytics
+model StatusTransition {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  entityType      String
+  entityId        String
+  fromStatus      String
+  toStatus        String
+
+  userId          String
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId, entityType])
+  @@index([entityId])
+  @@map("status_transitions")
 }
