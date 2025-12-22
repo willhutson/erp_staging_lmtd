@@ -38,20 +38,20 @@ const handlers: Record<
 /**
  * Get handler function by name
  */
-export function getHandler(
+export async function getHandler(
   name: string
-): ((event: EntityEvent) => Promise<void>) | undefined {
+): Promise<((event: EntityEvent) => Promise<void>) | undefined> {
   return handlers[name];
 }
 
 /**
  * List all available handlers
  */
-export function listHandlers(): Array<{
+export async function listHandlers(): Promise<Array<{
   name: string;
   entityType: EntityType;
   description: string;
-}> {
+}>> {
   return [
     {
       name: "brief.onStatusChange",

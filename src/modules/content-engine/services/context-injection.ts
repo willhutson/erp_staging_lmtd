@@ -517,7 +517,7 @@ function truncateToTokens(text: string, maxTokens: number): string {
 /**
  * Serialize context into a prompt-ready format
  */
-export function serializeContextForPrompt(context: SkillContext): string {
+export async function serializeContextForPrompt(context: SkillContext): Promise<string> {
   const parts: string[] = [];
 
   // Skill instructions

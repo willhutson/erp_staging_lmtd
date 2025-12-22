@@ -131,7 +131,7 @@ export interface SkillValidationResult {
 /**
  * Validate a skill configuration
  */
-export function validateSkill(skill: Skill): SkillValidationResult {
+export async function validateSkill(skill: Skill): Promise<SkillValidationResult> {
   const errors: string[] = [];
   const warnings: string[] = [];
 
