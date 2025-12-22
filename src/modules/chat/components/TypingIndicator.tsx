@@ -186,6 +186,7 @@ export function useTyping({
   channelId,
   userId,
   userName,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   debounceMs = 500,
 }: UseTypingOptions) {
   const [isTyping, setIsTyping] = useState(false);
@@ -194,9 +195,7 @@ export function useTyping({
   // Send typing indicator
   const sendTyping = useCallback(async () => {
     try {
-      const pusher = getPusherClient();
-      // Use client event (requires enabling in Pusher dashboard)
-      // For now, we'll call a server action
+      // getPusherClient() available for client events if needed
       await fetch("/api/chat/typing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -205,7 +204,7 @@ export function useTyping({
           user: { id: userId, name: userName },
         }),
       });
-    } catch (error) {
+    } catch {
       // Silent fail for typing indicators
     }
   }, [channelId, userId, userName]);
@@ -221,7 +220,7 @@ export function useTyping({
           userId,
         }),
       });
-    } catch (error) {
+    } catch {
       // Silent fail
     }
   }, [channelId, userId]);

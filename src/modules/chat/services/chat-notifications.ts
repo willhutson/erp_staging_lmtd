@@ -66,7 +66,9 @@ interface FeedbackNotification {
 // SYSTEM USER
 // ============================================
 
-const SYSTEM_USER_ID = "system"; // We'll use a special system user
+// System user ID for automated messages (to be used when sending system notifications)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const SYSTEM_USER_ID = "system";
 
 // ============================================
 // HELPER: Get or create default channel
