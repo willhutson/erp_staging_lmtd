@@ -12,7 +12,6 @@ import type { SocialPlatform } from "@prisma/client";
 import type {
   PlatformAdapter,
   PlatformCapabilities,
-  PlatformCredentials,
   PublishRequest,
   PublishResult,
   ValidationResult,
@@ -226,6 +225,7 @@ function createManualAdapter(platform: SocialPlatform): PlatformAdapter {
       };
     },
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async publish(request: PublishRequest): Promise<PublishResult> {
       // Manual adapter doesn't actually publish
       // It returns a "pending manual" status

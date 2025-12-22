@@ -10,12 +10,12 @@
  */
 
 import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import type { SocialPlatform, PublishJobStatus } from "@prisma/client";
 import { getAdapter } from "../adapters/types";
 import type { PublishRequest, MediaAsset } from "../adapters/types";
 import {
-  emitContentWebhook,
   emitPostPublished,
   emitPublishFailed,
 } from "../webhooks/content-webhooks";
@@ -257,7 +257,7 @@ export async function processJob(jobId: string): Promise<ProcessJobResult> {
           publishedAt: new Date(),
           platformPostId: result.platformPostId,
           platformPostUrl: result.platformPostUrl,
-          metadata: result.metadata || {},
+          metadata: (result.metadata || {}) as Prisma.InputJsonValue,
         },
       });
 
@@ -277,7 +277,7 @@ export async function processJob(jobId: string): Promise<ProcessJobResult> {
           jobId,
           event: "PUBLISH_SUCCESS",
           message: `Published successfully`,
-          responseData: result as unknown as Record<string, unknown>,
+          responseData: result as unknown as Prisma.InputJsonValue,
           durationMs: duration,
         },
       });
@@ -519,7 +519,7 @@ export async function getPublishQueue(
     toDate?: Date;
   }
 ) {
-  const where: Parameters<typeof db.publishJob.findMany>[0]["where"] = {
+  const where: Prisma.PublishJobWhereInput = {
     organizationId,
   };
 
