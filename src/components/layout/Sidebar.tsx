@@ -49,6 +49,7 @@ import {
   ThumbsUp,
   AlertCircle,
   Slack,
+  ImageIcon,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -142,6 +143,12 @@ const navItems: NavItem[] = [
     title: "Files",
     href: "/files",
     icon: <FolderOpen className="w-5 h-5" />,
+  },
+  {
+    title: "Assets",
+    href: "/assets",
+    icon: <ImageIcon className="w-5 h-5" />,
+    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
   },
   {
     title: "Pipeline",
