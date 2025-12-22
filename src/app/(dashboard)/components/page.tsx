@@ -39,7 +39,6 @@ import {
   Send,
   Sun,
   Moon,
-  Monitor,
   Inbox,
   Search,
   AlertTriangle,
@@ -49,7 +48,7 @@ import {
   Plus,
   Calendar,
 } from "lucide-react"
-import { setDensity, setSurface } from "@/lib/design/modes"
+import { setDensity } from "@/lib/design/modes"
 
 type UserRole = "admin" | "leadership" | "team_lead" | "staff" | "freelancer"
 
@@ -73,9 +72,7 @@ const tabs = [
 ]
 
 type Density = "compact" | "standard" | "comfortable"
-type Surface = "internal" | "client"
-
-type Theme = "light" | "dark" | "system"
+type Theme = "light" | "dark"
 
 export default function ComponentsShowcase() {
   const [mounted, setMounted] = useState(false)
@@ -85,15 +82,14 @@ export default function ComponentsShowcase() {
   const [detailTab, setDetailTab] = useState("overview")
   const [timePeriod, setTimePeriod] = useState<TimePeriodValue | undefined>()
   const [density, setDensityState] = useState<Density>("standard")
-  const [surface, setSurfaceState] = useState<Surface>("internal")
-  const [theme, setThemeState] = useState<Theme>("system")
+  const [theme, setThemeState] = useState<Theme>("light")
 
   useEffect(() => {
     setMounted(true)
     // Read initial theme from localStorage or detect from class
-    const stored = localStorage.getItem("theme") as Theme | null
-    if (stored) {
-      setThemeState(stored)
+    const stored = localStorage.getItem("theme")
+    if (stored === "dark") {
+      setThemeState("dark")
     } else if (document.documentElement.classList.contains("dark")) {
       setThemeState("dark")
     } else {
@@ -107,27 +103,14 @@ export default function ComponentsShowcase() {
 
     if (newTheme === "dark") {
       document.documentElement.classList.add("dark")
-    } else if (newTheme === "light") {
-      document.documentElement.classList.remove("dark")
     } else {
-      // System preference
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-      if (prefersDark) {
-        document.documentElement.classList.add("dark")
-      } else {
-        document.documentElement.classList.remove("dark")
-      }
+      document.documentElement.classList.remove("dark")
     }
   }
 
   const handleDensityChange = (d: Density) => {
     setDensityState(d)
     setDensity(d)
-  }
-
-  const handleSurfaceChange = (s: Surface) => {
-    setSurfaceState(s)
-    setSurface(s)
   }
 
   if (!mounted) {
@@ -158,7 +141,7 @@ export default function ComponentsShowcase() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-ltd-primary/20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-ltd-primary/20">
           {/* Density */}
           <div>
             <h3 className="text-sm font-semibold text-ltd-text-2 mb-3">Density</h3>
@@ -194,30 +177,6 @@ export default function ComponentsShowcase() {
               >
                 <Moon className="h-4 w-4 mr-1" /> Dark
               </LtdButton>
-              <LtdButton
-                variant={theme === "system" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setTheme("system")}
-              >
-                <Monitor className="h-4 w-4 mr-1" /> System
-              </LtdButton>
-            </div>
-          </div>
-
-          {/* Surface */}
-          <div>
-            <h3 className="text-sm font-semibold text-ltd-text-2 mb-3">Surface</h3>
-            <div className="flex gap-2">
-              {(["internal", "client"] as Surface[]).map((s) => (
-                <LtdButton
-                  key={s}
-                  variant={surface === s ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleSurfaceChange(s)}
-                >
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
-                </LtdButton>
-              ))}
             </div>
           </div>
         </div>
