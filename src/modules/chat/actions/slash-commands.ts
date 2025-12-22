@@ -453,18 +453,18 @@ export async function executeSlashCommand(
 /**
  * Check if a message is a slash command
  */
-export function isSlashCommand(message: string): boolean {
+export async function isSlashCommand(message: string): Promise<boolean> {
   return message.startsWith("/");
 }
 
 /**
  * Get all available commands for autocomplete
  */
-export function getAvailableCommands(): Array<{
+export async function getAvailableCommands(): Promise<Array<{
   name: string;
   description: string;
   usage: string;
-}> {
+}>> {
   return Object.values(COMMANDS).map((c) => ({
     name: c.name,
     description: c.description,
@@ -475,10 +475,10 @@ export function getAvailableCommands(): Array<{
 /**
  * Get command suggestions for autocomplete
  */
-export function getCommandSuggestions(partial: string): Array<{
+export async function getCommandSuggestions(partial: string): Promise<Array<{
   name: string;
   description: string;
-}> {
+}>> {
   const search = partial.toLowerCase().replace(/^\//, "");
 
   return Object.values(COMMANDS)
