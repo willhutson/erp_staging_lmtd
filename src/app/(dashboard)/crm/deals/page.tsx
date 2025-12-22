@@ -42,7 +42,7 @@ async function DealsPipeline() {
   }
 
   const pipeline = pipelines[0];
-  const stages = (pipeline.stages as PipelineStage[]).sort((a, b) => a.order - b.order);
+  const stages = (pipeline.stages as unknown as PipelineStage[]).sort((a, b) => a.order - b.order);
 
   // Group deals by stage
   const dealsByStage = stages.reduce((acc, stage) => {
