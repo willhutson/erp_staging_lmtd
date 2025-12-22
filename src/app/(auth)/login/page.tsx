@@ -67,7 +67,7 @@ function LoginForm() {
       <button
         onClick={handleDemoMode}
         disabled={isLoading || isDemoLoading}
-        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-[var(--ltd-radius-md)] bg-gradient-to-r from-ltd-primary to-[#7B61FF] text-ltd-primary-text font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ltd-primary focus:ring-offset-2 disabled:opacity-50 transition-all shadow-lg"
+        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-[var(--ltd-radius-md)] bg-gradient-to-r from-ltd-primary to-ltd-primary-active text-ltd-primary-text font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ltd-primary focus:ring-offset-2 disabled:opacity-50 transition-all shadow-lg"
       >
         <Play className="w-5 h-5" />
         {isDemoLoading ? "Loading Demo..." : "Try Demo Mode"}
@@ -78,15 +78,12 @@ function LoginForm() {
       </p>
 
       {/* Divider */}
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-ltd-border-1" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-3 bg-ltd-surface-2 text-ltd-text-3">
-            Or sign in to your account
-          </span>
-        </div>
+      <div className="relative flex items-center gap-4">
+        <div className="flex-1 h-px bg-ltd-border-1" />
+        <span className="text-sm text-ltd-text-3 whitespace-nowrap">
+          Or sign in to your account
+        </span>
+        <div className="flex-1 h-px bg-ltd-border-1" />
       </div>
 
       {/* Google Sign In */}
