@@ -683,29 +683,114 @@ export async function getPinnedMessages(channelId: string) {
 // SEARCH
 // ============================================
 
+export interface SearchMessagesInput {
+  organizationId: string;
+  query: string;
+  channelId?: string;
+  userId?: string; // Filter by sender
+  fromDate?: Date;
+  toDate?: Date;
+  hasAttachments?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
+export interface SearchResult {
+  id: string;
+  content: string;
+  contentFormat: MessageFormat;
+  createdAt: Date;
+  user: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
+  channel: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  parentId: string | null;
+  replyCount: number;
+  hasAttachments: boolean;
+  // Snippet with highlighted match
+  snippet: string;
+}
+
 /**
- * Search messages in a channel or organization
+ * Extract a snippet around the search match
+ */
+function extractSnippet(content: string, query: string, maxLength = 150): string {
+  // Strip HTML tags for cleaner snippet
+  const plainText = content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+  const lowerContent = plainText.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  const matchIndex = lowerContent.indexOf(lowerQuery);
+
+  if (matchIndex === -1) {
+    return plainText.slice(0, maxLength) + (plainText.length > maxLength ? "..." : "");
+  }
+
+  // Get context around the match
+  const start = Math.max(0, matchIndex - 40);
+  const end = Math.min(plainText.length, matchIndex + query.length + 60);
+
+  let snippet = "";
+  if (start > 0) snippet += "...";
+  snippet += plainText.slice(start, end);
+  if (end < plainText.length) snippet += "...";
+
+  return snippet;
+}
+
+/**
+ * Search messages with advanced filters
  */
 export async function searchMessages(
-  organizationId: string,
-  query: string,
-  options?: {
-    channelId?: string;
-    userId?: string;
-    limit?: number;
-  }
-) {
-  return db.message.findMany({
-    where: {
-      organizationId,
-      channelId: options?.channelId,
-      userId: options?.userId,
-      isDeleted: false,
-      content: {
-        contains: query,
-        mode: "insensitive",
-      },
+  input: SearchMessagesInput
+): Promise<{
+  results: SearchResult[];
+  total: number;
+  hasMore: boolean;
+}> {
+  const limit = input.limit || 20;
+  const offset = input.offset || 0;
+
+  // Build where clause
+  const where: Parameters<typeof db.message.findMany>[0]["where"] = {
+    organizationId: input.organizationId,
+    isDeleted: false,
+    content: {
+      contains: input.query,
+      mode: "insensitive",
     },
+  };
+
+  if (input.channelId) {
+    where.channelId = input.channelId;
+  }
+
+  if (input.userId) {
+    where.userId = input.userId;
+  }
+
+  if (input.fromDate || input.toDate) {
+    where.createdAt = {};
+    if (input.fromDate) where.createdAt.gte = input.fromDate;
+    if (input.toDate) where.createdAt.lte = input.toDate;
+  }
+
+  if (input.hasAttachments) {
+    where.attachments = { some: {} };
+  }
+
+  // Get total count
+  const total = await db.message.count({ where });
+
+  // Get results
+  const messages = await db.message.findMany({
+    where,
     include: {
       user: {
         select: {
@@ -721,10 +806,53 @@ export async function searchMessages(
           slug: true,
         },
       },
+      attachments: {
+        select: { id: true },
+        take: 1,
+      },
     },
     orderBy: { createdAt: "desc" },
-    take: options?.limit || 20,
+    take: limit,
+    skip: offset,
   });
+
+  const results: SearchResult[] = messages.map((msg) => ({
+    id: msg.id,
+    content: msg.content,
+    contentFormat: msg.contentFormat,
+    createdAt: msg.createdAt,
+    user: msg.user,
+    channel: msg.channel,
+    parentId: msg.parentId,
+    replyCount: msg.replyCount,
+    hasAttachments: msg.attachments.length > 0,
+    snippet: extractSnippet(msg.content, input.query),
+  }));
+
+  return {
+    results,
+    total,
+    hasMore: offset + limit < total,
+  };
+}
+
+/**
+ * Quick search (for autocomplete/instant results)
+ */
+export async function quickSearchMessages(
+  organizationId: string,
+  query: string,
+  limit = 5
+): Promise<SearchResult[]> {
+  if (query.length < 2) return [];
+
+  const { results } = await searchMessages({
+    organizationId,
+    query,
+    limit,
+  });
+
+  return results;
 }
 
 // ============================================
