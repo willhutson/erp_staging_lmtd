@@ -158,6 +158,17 @@ model User {
   contentApprovalsAssigned  ContentApproval[] @relation("ApprovalAssignee")
   contentComments         ContentComment[]
 
+  // Chat (Phase 18)
+  channelsCreated         Channel[]          @relation("ChannelCreator")
+  channelMemberships      ChannelMember[]
+  messagesAuthored        Message[]          @relation("MessageAuthor")
+  messageReactions        MessageReaction[]
+  messageAttachments      MessageAttachment[]
+  pinnedMessages          PinnedMessage[]
+  presence                UserPresence?
+  pushSubscriptions       PushSubscription[]
+  chatPreferences         Json?              // Notification preferences
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([department])
@@ -3919,4 +3930,289 @@ enum PublishLogEvent {
   RETRY_SCHEDULED
   JOB_CANCELLED
   JOB_SKIPPED
+}
+
+// ============================================
+// CHAT / INTERNAL COMMUNICATIONS
+// ============================================
+
+enum ChannelType {
+  PUBLIC        // Open to all org members
+  PRIVATE       // Invite only
+  DM            // Direct message (1:1 or group)
+}
+
+enum ChannelMemberRole {
+  OWNER         // Channel creator, full control
+  ADMIN         // Can manage members, edit channel
+  MEMBER        // Regular member
+}
+
+// Chat channels (#general, #creative, etc.)
+model Channel {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String            // Display name
+  slug            String            // URL-friendly identifier
+  description     String?  @db.Text
+  type            ChannelType       @default(PUBLIC)
+  icon            String?           // Emoji or icon identifier
+
+  // For DMs - store participant IDs for quick lookup
+  dmParticipantIds String[]         // User IDs for DM channels
+
+  // Settings
+  isArchived      Boolean  @default(false)
+  isDefault       Boolean  @default(false)  // Auto-join for new members
+
+  // Metadata
+  lastMessageAt   DateTime?
+  messageCount    Int      @default(0)
+
+  createdById     String
+  createdBy       User     @relation("ChannelCreator", fields: [createdById], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  members         ChannelMember[]
+  messages        Message[]
+  pinnedMessages  PinnedMessage[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([type])
+  @@index([lastMessageAt])
+  @@map("channels")
+}
+
+// Channel membership
+model ChannelMember {
+  id              String   @id @default(cuid())
+
+  channelId       String
+  channel         Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role            ChannelMemberRole @default(MEMBER)
+
+  // Notification preferences for this channel
+  notifyAll       Boolean  @default(true)   // All messages
+  notifyMentions  Boolean  @default(true)   // @mentions only
+  notifyNone      Boolean  @default(false)  // Muted
+
+  // Reading state
+  lastReadAt      DateTime?
+  lastReadMessageId String?
+
+  joinedAt        DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([channelId, userId])
+  @@index([userId])
+  @@map("channel_members")
+}
+
+// Chat messages
+model Message {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  channelId       String
+  channel         Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  userId          String
+  user            User     @relation("MessageAuthor", fields: [userId], references: [id])
+
+  // Content (stored as Tiptap JSON or plain text)
+  content         String   @db.Text
+  contentFormat   MessageFormat @default(TIPTAP)
+
+  // Threading
+  parentId        String?           // If reply to another message
+  parent          Message?  @relation("MessageThread", fields: [parentId], references: [id], onDelete: SetNull)
+  replies         Message[] @relation("MessageThread")
+  replyCount      Int      @default(0)
+
+  // Editing
+  isEdited        Boolean  @default(false)
+  editedAt        DateTime?
+
+  // Soft delete
+  isDeleted       Boolean  @default(false)
+  deletedAt       DateTime?
+  deletedById     String?
+
+  // Mentions extracted from content
+  mentionedUserIds String[]
+  mentionedChannelIds String[]
+  hasMentionAll    Boolean @default(false)  // @channel or @here
+
+  // Metadata
+  metadata        Json     @default("{}")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  reactions       MessageReaction[]
+  attachments     MessageAttachment[]
+  pinnedIn        PinnedMessage[]
+  readReceipts    MessageReadReceipt[]
+
+  @@index([channelId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([createdAt])
+  @@index([organizationId])
+  @@map("messages")
+}
+
+enum MessageFormat {
+  PLAIN           // Plain text
+  TIPTAP          // Tiptap JSON
+  MARKDOWN        // Markdown
+  SYSTEM          // System-generated message
+}
+
+// Emoji reactions on messages
+model MessageReaction {
+  id              String   @id @default(cuid())
+
+  messageId       String
+  message         Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  emoji           String   // Emoji character or shortcode
+
+  createdAt       DateTime @default(now())
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@map("message_reactions")
+}
+
+// File attachments on messages
+model MessageAttachment {
+  id              String   @id @default(cuid())
+
+  messageId       String
+  message         Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  // File details
+  fileName        String
+  fileType        String            // MIME type
+  fileSize        Int               // Bytes
+  fileUrl         String
+
+  // For images/videos
+  width           Int?
+  height          Int?
+  thumbnailUrl    String?
+
+  // Metadata
+  metadata        Json     @default("{}")
+
+  uploadedById    String
+  uploadedBy      User     @relation(fields: [uploadedById], references: [id])
+
+  createdAt       DateTime @default(now())
+
+  @@index([messageId])
+  @@map("message_attachments")
+}
+
+// Pinned messages in channels
+model PinnedMessage {
+  id              String   @id @default(cuid())
+
+  channelId       String
+  channel         Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  messageId       String
+  message         Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  pinnedById      String
+  pinnedBy        User     @relation(fields: [pinnedById], references: [id])
+
+  pinnedAt        DateTime @default(now())
+
+  @@unique([channelId, messageId])
+  @@index([channelId])
+  @@map("pinned_messages")
+}
+
+// User presence/status
+model UserPresence {
+  id              String   @id @default(cuid())
+
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status          PresenceStatus @default(OFFLINE)
+  statusText      String?        // Custom status message
+  statusEmoji     String?        // Custom status emoji
+
+  lastSeenAt      DateTime @default(now())
+  lastActiveAt    DateTime @default(now())
+
+  // Device tracking
+  activeDevices   Int      @default(0)
+
+  updatedAt       DateTime @updatedAt
+
+  @@map("user_presence")
+}
+
+enum PresenceStatus {
+  ONLINE
+  AWAY
+  DND             // Do not disturb
+  OFFLINE
+}
+
+// Push notification subscriptions
+model PushSubscription {
+  id          String   @id @default(cuid())
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  endpoint    String   @db.Text
+  p256dh      String   // Encryption key
+  auth        String   // Auth secret
+
+  // Device info
+  userAgent   String?
+  platform    String?  // "web", "ios", "android"
+  deviceName  String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, endpoint])
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+// Message read receipts
+model MessageReadReceipt {
+  id          String   @id @default(cuid())
+
+  messageId   String
+  message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  userId      String
+  readAt      DateTime @default(now())
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+  @@map("message_read_receipts")
 }

@@ -5,6 +5,7 @@ import type { FormConfig, FormField as FormFieldType } from "@/types/forms";
 import {
   TextField,
   TextareaField,
+  RichTextField,
   SelectField,
   MultiSelectField,
   DateField,
@@ -131,6 +132,20 @@ export function DynamicForm({
             value={value as string}
             onChange={(v) => updateField(field.id, v)}
             error={error}
+          />
+        );
+
+      case "richtext":
+        return (
+          <RichTextField
+            key={field.id}
+            field={field}
+            value={value as string}
+            onChange={(v) => updateField(field.id, v)}
+            error={error}
+            users={users.map((u) => ({ id: u.id, name: u.name }))}
+            variant={field.config?.mentions ? "mentions" : "standard"}
+            enableAI={field.config?.enableAI}
           />
         );
 

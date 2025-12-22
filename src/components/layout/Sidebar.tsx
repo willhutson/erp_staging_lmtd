@@ -26,6 +26,7 @@ import {
   Film,
   Palette,
   MessageSquare,
+  MessageCircle,
   Inbox,
   FolderOpen,
   Zap,
@@ -135,6 +136,11 @@ const navItems: NavItem[] = [
     href: "/whatsapp",
     icon: <MessageSquare className="w-5 h-5" />,
     requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
+  },
+  {
+    title: "Chat",
+    href: "/chat",
+    icon: <MessageCircle className="w-5 h-5" />,
   },
   {
     title: "Client Health",

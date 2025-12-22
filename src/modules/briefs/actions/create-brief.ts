@@ -6,6 +6,7 @@ import { can } from "@/lib/permissions";
 import type { BriefType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { emitBriefCreated } from "@/modules/content-engine/services/workflow-events";
+import { onBriefCreated } from "@/modules/chat/services/module-integrations";
 
 interface CreateBriefInput {
   type: BriefType;
@@ -78,6 +79,17 @@ export async function createBrief(input: CreateBriefInput) {
     type: brief.type,
     status: brief.status,
     clientId: brief.clientId,
+    assigneeId: brief.assigneeId,
+  });
+
+  // Post to SpokeChat
+  await onBriefCreated({
+    id: brief.id,
+    organizationId: session.user.organizationId,
+    title: brief.title,
+    type: brief.type,
+    clientId: brief.clientId,
+    createdById: session.user.id,
     assigneeId: brief.assigneeId,
   });
 

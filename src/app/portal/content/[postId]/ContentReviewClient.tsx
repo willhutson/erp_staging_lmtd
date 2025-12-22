@@ -36,8 +36,8 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RichTextEditor } from "@/components/editor";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -559,11 +559,11 @@ export function ContentReviewClient({
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <Textarea
+                  <RichTextEditor
+                    variant="standard"
                     placeholder="Describe the changes you'd like to see..."
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
-                    rows={4}
+                    onChange={(html) => setFeedback(html)}
+                    className="min-h-[120px]"
                   />
                   <div className="flex gap-2">
                     <Button
