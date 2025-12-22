@@ -3482,6 +3482,7 @@ model SocialAccount {
 
   // Relations
   contentPosts    ContentPost[]
+  publishJobs     PublishJob[]
 
   @@unique([clientId, platform, accountId])
   @@index([organizationId])
@@ -3580,6 +3581,7 @@ model ContentPost {
   versions        ContentVersion[]
   approvals       ContentApproval[]
   contentComments ContentComment[]
+  publishJobs     PublishJob[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -3813,4 +3815,108 @@ model PlatformSpec {
   updatedAt       DateTime @updatedAt
 
   @@map("platform_specs")
+}
+
+// ============================================
+// PUBLISHING QUEUE (Phase 16.3)
+// ============================================
+
+// Publishing job queue
+model PublishJob {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  postId          String
+  post            ContentPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Target platform for this job (one job per platform)
+  platform        SocialPlatform
+
+  // Social account to publish to
+  socialAccountId String?
+  socialAccount   SocialAccount? @relation(fields: [socialAccountId], references: [id])
+
+  // Scheduling
+  scheduledFor    DateTime
+  timezone        String   @default("Asia/Dubai")
+
+  // Job status
+  status          PublishJobStatus @default(PENDING)
+  priority        Int      @default(0)  // Higher = more urgent
+
+  // Execution tracking
+  attempts        Int      @default(0)
+  maxAttempts     Int      @default(3)
+  lastAttemptAt   DateTime?
+  nextRetryAt     DateTime?
+
+  // Result
+  publishedAt     DateTime?
+  platformPostId  String?              // ID from platform
+  platformPostUrl String?              // URL on platform
+
+  // Error handling
+  errorCode       String?
+  errorMessage    String?  @db.Text
+  errorDetails    Json?                // Full error response
+
+  // Metadata
+  metadata        Json     @default("{}")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  logs            PublishLog[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([scheduledFor])
+  @@index([postId])
+  @@map("publish_jobs")
+}
+
+enum PublishJobStatus {
+  PENDING         // Waiting to be processed
+  QUEUED          // In the processing queue
+  PROCESSING      // Currently being published
+  PUBLISHED       // Successfully published
+  FAILED          // All retries exhausted
+  CANCELLED       // Manually cancelled
+  SKIPPED         // Skipped (e.g., account disconnected)
+}
+
+// Publishing audit log
+model PublishLog {
+  id              String   @id @default(cuid())
+
+  jobId           String
+  job             PublishJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  // Event details
+  event           PublishLogEvent
+  message         String?
+
+  // Request/Response data (for debugging)
+  requestData     Json?
+  responseData    Json?
+
+  // Timing
+  durationMs      Int?
+
+  createdAt       DateTime @default(now())
+
+  @@index([jobId])
+  @@map("publish_logs")
+}
+
+enum PublishLogEvent {
+  JOB_CREATED
+  JOB_QUEUED
+  PUBLISH_STARTED
+  PUBLISH_SUCCESS
+  PUBLISH_FAILED
+  RETRY_SCHEDULED
+  JOB_CANCELLED
+  JOB_SKIPPED
 }
