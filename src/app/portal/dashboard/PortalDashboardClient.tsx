@@ -8,6 +8,8 @@ import {
   AlertCircle,
   ArrowRight,
   LucideIcon,
+  Package,
+  Eye,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -20,6 +22,14 @@ interface Brief {
   assignee: { name: string } | null;
 }
 
+interface Deliverable {
+  id: string;
+  title: string;
+  type: string;
+  briefTitle: string;
+  updatedAt: Date;
+}
+
 interface Props {
   userName: string;
   briefs: Brief[];
@@ -27,6 +37,7 @@ interface Props {
   inProgressCount: number;
   awaitingReviewCount: number;
   completedCount: number;
+  deliverablesAwaitingReview: Deliverable[];
 }
 
 export function PortalDashboardClient({
@@ -36,6 +47,7 @@ export function PortalDashboardClient({
   inProgressCount,
   awaitingReviewCount,
   completedCount,
+  deliverablesAwaitingReview,
 }: Props) {
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -77,6 +89,54 @@ export function PortalDashboardClient({
           color="green"
         />
       </div>
+
+      {/* Deliverables Awaiting Review */}
+      {deliverablesAwaitingReview.length > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                <Eye className="w-5 h-5 text-yellow-600" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-gray-900">
+                  Deliverables to Review
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {deliverablesAwaitingReview.length} deliverable(s) need your approval
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/portal/dashboard/deliverables"
+              className="text-sm text-yellow-600 hover:text-yellow-700 font-medium flex items-center gap-1"
+            >
+              View all
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {deliverablesAwaitingReview.slice(0, 3).map((d) => (
+              <Link
+                key={d.id}
+                href={`/portal/dashboard/deliverables/${d.id}`}
+                className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-yellow-100 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Package className="w-4 h-4 text-yellow-600" />
+                  <div>
+                    <p className="font-medium text-gray-900 text-sm">{d.title}</p>
+                    <p className="text-xs text-gray-500">{d.briefTitle}</p>
+                  </div>
+                </div>
+                <span className="text-xs text-gray-400">
+                  {formatDistanceToNow(new Date(d.updatedAt), { addSuffix: true })}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Pending Approvals */}
       {pendingApprovalsCount > 0 && (
