@@ -19,7 +19,7 @@ import {
   markAllAsRead,
   archiveNotification,
 } from "@/modules/notifications/actions/notification-actions";
-import type { Notification } from "@prisma/client";
+import type { NotificationRecord as Notification } from "@/types/prisma-types";
 
 interface Props {
   initialNotifications: Notification[];

@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { redirect, notFound } from "next/navigation";
 import { can } from "@/lib/permissions";
 import { getFormConfig } from "@/../config/forms";
-import type { BriefType } from "@prisma/client";
+import type { BriefType } from "@/types/forms";
 import { BriefFormClient } from "./BriefFormClient";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";

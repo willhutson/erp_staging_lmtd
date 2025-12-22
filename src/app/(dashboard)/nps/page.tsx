@@ -4,11 +4,10 @@ import { Plus, TrendingUp, Users, ThumbsUp, ThumbsDown } from "lucide-react";
 import Link from "next/link";
 import { NPSScoreCard } from "@/modules/nps/components/NPSScoreCard";
 import { NPSSurveyList } from "@/modules/nps/components/NPSSurveyList";
-import { getNPSStats } from "@/modules/nps/actions/nps-actions";
+import { getNPSStats, type NPSStatsResult } from "@/modules/nps/actions/nps-actions";
 
-// Type for stats from getNPSStats
-type NPSStats = Awaited<ReturnType<typeof getNPSStats>>;
-type ClientStat = NPSStats["byClient"][number];
+// Type for client stats
+type ClientStat = NPSStatsResult["byClient"][number];
 
 export default async function NPSPage() {
   const session = await auth();
