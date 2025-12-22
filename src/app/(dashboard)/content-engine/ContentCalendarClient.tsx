@@ -8,7 +8,6 @@ import {
   ChevronRight,
   Calendar,
   List,
-  Filter,
   Instagram,
   Facebook,
   Linkedin,
@@ -79,7 +78,6 @@ interface ContentCalendarClientProps {
   initialPosts: CalendarPost[];
   stats: Stats;
   socialAccounts: SocialAccount[];
-  organizationId: string;
 }
 
 // ============================================
@@ -176,7 +174,6 @@ export function ContentCalendarClient({
   initialPosts,
   stats,
   socialAccounts,
-  organizationId,
 }: ContentCalendarClientProps) {
   const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
   const [currentDate, setCurrentDate] = useState(new Date());

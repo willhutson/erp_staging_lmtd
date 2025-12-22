@@ -12,23 +12,6 @@ import type {
 // TYPES
 // ============================================
 
-// Inferred types from Prisma
-type ContentPostWithRelations = Awaited<
-  ReturnType<typeof db.contentPost.findFirst>
-> & {
-  client: { id: string; name: string; code: string };
-  createdBy: { id: string; name: string };
-  assignedTo?: { id: string; name: string } | null;
-  assets: Array<{
-    id: string;
-    type: string;
-    fileName: string;
-    fileUrl: string;
-    thumbnailUrl: string | null;
-    sortOrder: number;
-  }>;
-};
-
 export interface CreateContentPostInput {
   organizationId: string;
   clientId: string;
@@ -176,7 +159,7 @@ export async function getContentPost(postId: string) {
 }
 
 export async function getContentPosts(filters: ContentPostFilters) {
-  const where: Parameters<typeof db.contentPost.findMany>[0]["where"] = {
+  const where: Record<string, unknown> = {
     organizationId: filters.organizationId,
   };
 
@@ -203,13 +186,14 @@ export async function getContentPosts(filters: ContentPostFilters) {
   }
 
   if (filters.scheduledFrom || filters.scheduledTo) {
-    where.scheduledFor = {};
+    const scheduledFor: { gte?: Date; lte?: Date } = {};
     if (filters.scheduledFrom) {
-      where.scheduledFor.gte = filters.scheduledFrom;
+      scheduledFor.gte = filters.scheduledFrom;
     }
     if (filters.scheduledTo) {
-      where.scheduledFor.lte = filters.scheduledTo;
+      scheduledFor.lte = filters.scheduledTo;
     }
+    where.scheduledFor = scheduledFor;
   }
 
   if (filters.search) {
@@ -587,7 +571,7 @@ export async function getCalendarPosts(
   endDate: Date,
   clientId?: string
 ) {
-  const where: Parameters<typeof db.contentPost.findMany>[0]["where"] = {
+  const where: Record<string, unknown> = {
     organizationId,
     scheduledFor: {
       gte: startDate,

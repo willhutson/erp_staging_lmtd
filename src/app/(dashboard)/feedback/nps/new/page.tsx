@@ -23,7 +23,7 @@ export default async function NewNPSSurveyPage() {
   const clients = await db.client.findMany({
     where: {
       organizationId: session.user.organizationId,
-      status: "ACTIVE",
+      isActive: true,
     },
     select: {
       id: true,
