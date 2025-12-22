@@ -10,7 +10,6 @@
  */
 
 import { db } from "@/lib/db";
-import { revalidatePath } from "next/cache";
 import crypto from "crypto";
 import path from "path";
 import fs from "fs/promises";

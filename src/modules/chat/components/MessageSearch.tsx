@@ -33,7 +33,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
 import { searchMessages, type SearchResult } from "../actions/message-actions";
 import { formatDistanceToNow } from "date-fns";
 
@@ -46,6 +45,8 @@ interface MessageSearchProps {
   channels: Array<{ id: string; name: string; slug: string }>;
   users: Array<{ id: string; name: string; avatarUrl?: string | null }>;
   onSelectMessage: (result: SearchResult) => void;
+  /** Reserved for future use - filter to current channel */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   currentChannelId?: string;
 }
 
@@ -392,7 +393,7 @@ export function MessageSearch({
             {!isPending && query.length >= 2 && results.length === 0 && (
               <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
                 <Search className="h-8 w-8 mb-2" />
-                <p>No messages found for "{query}"</p>
+                <p>No messages found for &quot;{query}&quot;</p>
               </div>
             )}
 

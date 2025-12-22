@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { channelId, userId } = await request.json();
+    const { channelId } = await request.json();
 
     if (!channelId) {
       return NextResponse.json(

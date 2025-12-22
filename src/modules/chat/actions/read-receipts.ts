@@ -9,7 +9,7 @@
  */
 
 import { db } from "@/lib/db";
-import { pusherServer, PUSHER_EVENTS } from "@/lib/pusher";
+import { pusherServer } from "@/lib/pusher";
 
 // ============================================
 // TYPES

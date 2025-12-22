@@ -16,7 +16,7 @@
  * @module components/editor/RichTextEditor
  */
 
-import { useCallback, useEffect, useImperativeHandle, forwardRef, useState, useTransition } from "react";
+import { useEffect, useImperativeHandle, forwardRef, useState } from "react";
 import { useEditor, EditorContent, Editor, JSONContent } from "@tiptap/react";
 import { performAIAction } from "@/modules/ai/actions";
 import StarterKit from "@tiptap/starter-kit";
@@ -67,7 +67,6 @@ import {
   Redo,
   Heading1,
   Heading2,
-  X,
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -179,6 +178,21 @@ const PLATFORM_LIMITS: Record<string, number> = {
 // MENTION SUGGESTION RENDERER
 // ============================================
 
+// Tiptap mention suggestion types (simplified for our use case)
+interface MentionSuggestionProps {
+  clientRect: (() => DOMRect | null) | null;
+  items: MentionUser[];
+  selectedIndex: number;
+  command: (item: MentionUser) => void;
+  event?: KeyboardEvent;
+}
+
+interface MentionCommandProps {
+  editor: Editor;
+  range: { from: number; to: number };
+  props: MentionUser;
+}
+
 function createMentionSuggestion(users: MentionUser[]) {
   return {
     items: ({ query }: { query: string }) => {
@@ -193,7 +207,7 @@ function createMentionSuggestion(users: MentionUser[]) {
       let popup: HTMLElement | null = null;
 
       return {
-        onStart: (props: any) => {
+        onStart: (props: MentionSuggestionProps) => {
           popup = document.createElement("div");
           popup.className = "bg-white border rounded-lg shadow-lg py-1 z-50 min-w-[200px]";
           document.body.appendChild(popup);
@@ -252,7 +266,7 @@ function createMentionSuggestion(users: MentionUser[]) {
           updatePosition();
           updateContent();
         },
-        onUpdate: (props: any) => {
+        onUpdate: (props: MentionSuggestionProps) => {
           const rect = props.clientRect?.();
           if (rect && popup) {
             popup.style.left = `${rect.left}px`;
@@ -299,8 +313,8 @@ function createMentionSuggestion(users: MentionUser[]) {
             });
           });
         },
-        onKeyDown: (props: any) => {
-          if (props.event.key === "Escape") {
+        onKeyDown: (props: MentionSuggestionProps) => {
+          if (props.event?.key === "Escape") {
             popup?.remove();
             popup = null;
             return true;
@@ -313,7 +327,7 @@ function createMentionSuggestion(users: MentionUser[]) {
         },
       };
     },
-    command: ({ editor, range, props }: any) => {
+    command: ({ editor, range, props }: MentionCommandProps) => {
       editor
         .chain()
         .focus()
@@ -348,8 +362,8 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       className,
       editorClassName,
       users = [],
-      channels = [],
-      onMention,
+      channels: _channels = [],
+      onMention: _onMention,
       maxLength,
       showCharCount = false,
       enableAI = false,

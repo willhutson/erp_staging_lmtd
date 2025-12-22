@@ -353,7 +353,7 @@ export function NotificationSettings({
 
           {prefs.keywords.length === 0 && (
             <p className="text-sm text-muted-foreground">
-              No keywords added. Add words like "urgent", "deadline", or your
+              No keywords added. Add words like &quot;urgent&quot;, &quot;deadline&quot;, or your
               name.
             </p>
           )}
