@@ -6,9 +6,9 @@
  * @module app/(dashboard)/reports/team
  */
 
-import { getServerSession } from "next-auth";
+import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
+
 import { getTeamProductivity } from "@/modules/reporting/actions/analytics-actions";
 import { TeamReportsClient } from "./TeamReportsClient";
 
@@ -18,7 +18,7 @@ export const metadata = {
 };
 
 export default async function TeamReportsPage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user) {
     redirect("/login");
