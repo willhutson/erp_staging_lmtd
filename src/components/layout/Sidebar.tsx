@@ -151,6 +151,17 @@ const navItems: NavItem[] = [
     requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
   },
   {
+    title: "CRM",
+    href: "/crm",
+    icon: <Briefcase className="w-5 h-5" />,
+    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
+    children: [
+      { title: "Overview", href: "/crm", icon: <Briefcase className="w-4 h-4" /> },
+      { title: "Contacts", href: "/crm/contacts", icon: <Users className="w-4 h-4" /> },
+      { title: "Deals", href: "/crm/deals", icon: <TrendingUp className="w-4 h-4" /> },
+    ],
+  },
+  {
     title: "Pipeline",
     href: "/pipeline",
     icon: <TrendingUp className="w-5 h-5" />,
