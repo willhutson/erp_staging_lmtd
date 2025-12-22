@@ -27,6 +27,7 @@ export interface SendMessageInput {
   mentionedUserIds?: string[];
   mentionedChannelIds?: string[];
   hasMentionAll?: boolean;
+  attachmentIds?: string[]; // File attachments
 }
 
 export interface MessageWithDetails {
@@ -153,6 +154,18 @@ export async function sendMessage(input: SendMessageInput) {
       attachments: true,
     },
   });
+
+  // Link attachments to this message
+  if (input.attachmentIds && input.attachmentIds.length > 0) {
+    await db.messageAttachment.updateMany({
+      where: {
+        id: { in: input.attachmentIds },
+      },
+      data: {
+        messageId: message.id,
+      },
+    });
+  }
 
   // Update channel's lastMessageAt and messageCount
   await db.channel.update({

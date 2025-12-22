@@ -11,6 +11,7 @@
 import { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { ChannelSidebar } from "@/modules/chat/components/ChannelSidebar";
+import { MessageSearch } from "@/modules/chat/components/MessageSearch";
 import { createChannel } from "@/modules/chat/actions/channel-actions";
 import type { ChannelType } from "@prisma/client";
 
@@ -46,6 +47,7 @@ interface ChatLayoutProps {
   unreadCounts: Record<string, number>;
   currentUserId: string;
   organizationId: string;
+  users?: Array<{ id: string; name: string; avatarUrl?: string | null }>;
 }
 
 export function ChatLayout({
@@ -55,6 +57,7 @@ export function ChatLayout({
   unreadCounts,
   currentUserId,
   organizationId,
+  users = [],
 }: ChatLayoutProps) {
   const router = useRouter();
 
@@ -75,6 +78,18 @@ export function ChatLayout({
     router.refresh();
   };
 
+  // Navigate to search result
+  const handleSearchSelect = (result: { channel: { slug: string }; id: string }) => {
+    router.push(`/chat/${result.channel.slug}?message=${result.id}`);
+  };
+
+  // Format channels for search
+  const searchChannels = channels.map((c) => ({
+    id: c.id,
+    name: c.name,
+    slug: c.slug,
+  }));
+
   return (
     <div className="flex h-[calc(100vh-64px)] -m-6">
       <ChannelSidebar
@@ -85,7 +100,18 @@ export function ChatLayout({
         organizationId={organizationId}
         onCreateChannel={handleCreateChannel}
       />
-      {children}
+      <div className="flex-1 flex flex-col">
+        {/* Search bar */}
+        <div className="flex items-center justify-end px-4 py-2 border-b bg-gray-50/50">
+          <MessageSearch
+            organizationId={organizationId}
+            channels={searchChannels}
+            users={users}
+            onSelectMessage={handleSearchSelect}
+          />
+        </div>
+        {children}
+      </div>
     </div>
   );
 }

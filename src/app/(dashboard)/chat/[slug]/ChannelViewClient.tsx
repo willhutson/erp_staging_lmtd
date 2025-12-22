@@ -8,7 +8,7 @@
  * @module app/(dashboard)/chat/[slug]/ChannelViewClient
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Hash,
   Lock,
@@ -35,6 +35,8 @@ import {
 } from "@/components/ui/sheet";
 import { MessageList } from "@/modules/chat/components/MessageList";
 import { MessageEditor } from "@/modules/chat/components/MessageEditor";
+import { TypingIndicator } from "@/modules/chat/components/TypingIndicator";
+import { AvatarWithPresence } from "@/modules/chat/components/PresenceIndicator";
 import {
   sendMessage,
   toggleReaction,
@@ -43,6 +45,7 @@ import {
   sendTypingIndicator,
   sendStopTypingIndicator,
 } from "@/modules/chat/actions/message-actions";
+import { markChannelAsRead } from "@/modules/chat/actions/read-receipts";
 import type { ChannelType, ChannelMemberRole } from "@prisma/client";
 import type { MessageWithDetails } from "@/modules/chat/actions/message-actions";
 
@@ -111,9 +114,17 @@ export function ChannelViewClient({
   } | null>(null);
   const [showMembers, setShowMembers] = useState(false);
 
+  // Get current user name for slash commands
+  const currentUserName = users.find((u) => u.id === currentUserId)?.name || "User";
+
+  // Mark channel as read when viewing
+  useEffect(() => {
+    markChannelAsRead(channel.id, currentUserId);
+  }, [channel.id, currentUserId]);
+
   // Handle send message
   const handleSendMessage = useCallback(
-    async (content: string, mentionedUserIds: string[]) => {
+    async (content: string, mentionedUserIds: string[], attachmentIds?: string[]) => {
       await sendMessage({
         organizationId,
         channelId: channel.id,
@@ -121,6 +132,7 @@ export function ChannelViewClient({
         content,
         mentionedUserIds,
         parentId: replyingTo?.id,
+        attachmentIds,
       });
       setReplyingTo(null);
     },
@@ -217,19 +229,12 @@ export function ChannelViewClient({
                     key={member.id}
                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50"
                   >
-                    <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center">
-                      {member.user.avatarUrl ? (
-                        <img
-                          src={member.user.avatarUrl}
-                          alt={member.user.name}
-                          className="w-9 h-9 rounded-full"
-                        />
-                      ) : (
-                        <span className="text-sm font-medium text-gray-600">
-                          {member.user.name.charAt(0).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
+                    <AvatarWithPresence
+                      userId={member.user.id}
+                      name={member.user.name}
+                      avatarUrl={member.user.avatarUrl}
+                      size="sm"
+                    />
                     <div className="flex-1">
                       <p className="font-medium text-sm">{member.user.name}</p>
                       <p className="text-xs text-gray-500">
@@ -283,10 +288,17 @@ export function ChannelViewClient({
         hasMore={hasMore}
       />
 
+      {/* Typing Indicator */}
+      <TypingIndicator channelId={channel.id} currentUserId={currentUserId} />
+
       {/* Message Editor */}
       <div className="p-4 border-t">
         <MessageEditor
           channelId={channel.id}
+          channelName={channel.name}
+          organizationId={organizationId}
+          currentUserId={currentUserId}
+          currentUserName={currentUserName}
           onSend={handleSendMessage}
           onTyping={handleTyping}
           onStopTyping={handleStopTyping}
