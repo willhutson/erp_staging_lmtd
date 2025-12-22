@@ -35,7 +35,6 @@ interface CapturedKnowledge {
 }
 
 interface KnowledgeCaptureProps {
-  skillSlug: string;
   skillName: string;
   scenario?: string;
   onComplete?: (knowledge: CapturedKnowledge[]) => void;
@@ -101,7 +100,7 @@ const CAPTURE_QUESTIONS: CaptureQuestion[] = [
   },
 ];
 
-export function KnowledgeCapture({ skillSlug, skillName, scenario, onComplete }: KnowledgeCaptureProps) {
+export function KnowledgeCapture({ skillName, scenario, onComplete }: KnowledgeCaptureProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [capturedKnowledge, setCapturedKnowledge] = useState<CapturedKnowledge[]>([]);
@@ -181,7 +180,7 @@ export function KnowledgeCapture({ skillSlug, skillName, scenario, onComplete }:
             Knowledge Captured
           </CardTitle>
           <CardDescription>
-            Your expertise for "{skillName}" has been recorded
+            Your expertise for &ldquo;{skillName}&rdquo; has been recorded
           </CardDescription>
         </CardHeader>
         <CardContent>
