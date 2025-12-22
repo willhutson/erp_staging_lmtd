@@ -162,6 +162,10 @@ model User {
   deliverablesCreated     Deliverable[] @relation("DeliverableCreator")
   deliverablesReviewed    Deliverable[] @relation("DeliverableReviewer")
 
+  // DAM (Phase 19)
+  assetsCreated           Asset[]        @relation("AssetCreator")
+  assetComments           AssetComment[]
+
   // Chat (Phase 18)
   channelsCreated         Channel[]          @relation("ChannelCreator")
   channelMemberships      ChannelMember[]
@@ -268,6 +272,9 @@ model Client {
   // Content CMS (Phase 16)
   socialAccounts   SocialAccount[]
   contentPosts     ContentPost[]
+
+  // DAM (Phase 19)
+  assetLibraries   AssetLibrary[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
@@ -2112,6 +2119,7 @@ model File {
   clientFiles     ClientFile[]
   projectFiles    ProjectFile[]
   submissionFiles FormSubmissionFile[]
+  asset           Asset?
 
   @@index([organizationId])
   @@index([category])
@@ -2231,6 +2239,229 @@ model FormSubmissionFile {
 
   @@id([submissionId, fileId])
   @@map("form_submission_files")
+}
+
+// ============================================
+// DIGITAL ASSET MANAGEMENT (Phase 19 - DAM)
+// ============================================
+
+// Asset libraries for organizing creative assets
+model AssetLibrary {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String   // "Brand Assets", "Stock Photos"
+  slug            String
+  description     String?
+
+  libraryType     LibraryType @default(GENERAL)
+  visibility      LibraryVisibility @default(INTERNAL)
+
+  coverImageId    String?
+  clientId        String?
+  client          Client?  @relation(fields: [clientId], references: [id])
+
+  settings        Json     @default("{}")
+
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  folders         AssetFolder[]
+  assets          Asset[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([clientId])
+  @@map("asset_libraries")
+}
+
+enum LibraryType {
+  GENERAL
+  BRAND
+  STOCK
+  CLIENT
+  PROJECT
+  ARCHIVE
+}
+
+enum LibraryVisibility {
+  INTERNAL
+  CLIENT
+  PUBLIC
+}
+
+// Folder hierarchy within libraries
+model AssetFolder {
+  id              String   @id @default(cuid())
+  libraryId       String
+  library         AssetLibrary @relation(fields: [libraryId], references: [id], onDelete: Cascade)
+
+  name            String
+  slug            String
+  description     String?
+  color           String?
+
+  parentId        String?
+  parent          AssetFolder? @relation("AssetFolderHierarchy", fields: [parentId], references: [id])
+  children        AssetFolder[] @relation("AssetFolderHierarchy")
+  path            String
+  depth           Int      @default(0)
+
+  defaultMetadata Json     @default("{}")
+
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  assets          Asset[]
+
+  @@unique([libraryId, path])
+  @@index([libraryId])
+  @@index([parentId])
+  @@map("asset_folders")
+}
+
+// Core asset model with rich metadata
+model Asset {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  libraryId       String
+  library         AssetLibrary @relation(fields: [libraryId], references: [id])
+  folderId        String?
+  folder          AssetFolder? @relation(fields: [folderId], references: [id])
+
+  fileId          String   @unique
+  file            File     @relation(fields: [fileId], references: [id])
+
+  name            String
+  slug            String
+  description     String?  @db.Text
+
+  assetType       AssetType
+
+  metadata        Json     @default("{}")
+  aiMetadata      Json?
+
+  tags            String[] @default([])
+
+  status          AssetStatus @default(PENDING)
+  approvedById    String?
+  approvedAt      DateTime?
+
+  downloadCount   Int      @default(0)
+  lastDownloadedAt DateTime?
+
+  license         LicenseType?
+  licenseDetails  Json?
+  expiresAt       DateTime?
+
+  copyrightHolder String?
+  copyrightYear   Int?
+
+  sourceType      AssetSourceType @default(UPLOAD)
+  sourceUrl       String?
+
+  createdById     String
+  createdBy       User     @relation("AssetCreator", fields: [createdById], references: [id])
+  lastEditedById  String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  versions        AssetVersion[]
+  comments        AssetComment[]
+
+  @@unique([organizationId, libraryId, slug])
+  @@index([organizationId])
+  @@index([libraryId])
+  @@index([folderId])
+  @@index([assetType])
+  @@index([status])
+  @@map("assets")
+}
+
+enum AssetType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  DESIGN
+  FONT
+  TEMPLATE
+  OTHER
+}
+
+enum AssetStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
+
+enum LicenseType {
+  OWNED
+  ROYALTY_FREE
+  RIGHTS_MANAGED
+  CREATIVE_COMMONS
+  EDITORIAL
+  CUSTOM
+}
+
+enum AssetSourceType {
+  UPLOAD
+  STOCK_PURCHASE
+  AGENCY_CREATED
+  CLIENT_PROVIDED
+  AI_GENERATED
+  EXTERNAL_LINK
+}
+
+// Asset version history
+model AssetVersion {
+  id              String   @id @default(cuid())
+  assetId         String
+  asset           Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  version         Int
+  fileId          String
+  changeNote      String?
+
+  createdById     String
+  createdAt       DateTime @default(now())
+
+  @@unique([assetId, version])
+  @@index([assetId])
+  @@map("asset_versions")
+}
+
+// Asset comments/annotations
+model AssetComment {
+  id              String   @id @default(cuid())
+  assetId         String
+  asset           Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  content         String   @db.Text
+
+  parentId        String?
+  parent          AssetComment? @relation("AssetCommentThread", fields: [parentId], references: [id])
+  replies         AssetComment[] @relation("AssetCommentThread")
+
+  annotationType  String?
+  annotationData  Json?
+
+  isResolved      Boolean  @default(false)
+  resolvedAt      DateTime?
+
+  authorId        String
+  author          User     @relation(fields: [authorId], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([assetId])
+  @@map("asset_comments")
 }
 
 // ============================================
