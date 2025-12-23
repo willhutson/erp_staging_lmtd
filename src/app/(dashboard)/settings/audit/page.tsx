@@ -2,6 +2,10 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Shield, Filter } from "lucide-react";
 
+// Inferred types for Prisma records
+type AuditLogRecord = Awaited<ReturnType<typeof db.auditLog.findMany>>[number];
+type UserSelect = { id: string; name: string | null };
+
 const actionColors: Record<string, { bg: string; text: string }> = {
   created: { bg: "bg-green-100", text: "text-green-700" },
   updated: { bg: "bg-blue-100", text: "text-blue-700" },
@@ -29,12 +33,12 @@ export default async function AuditSettingsPage() {
   });
 
   // Get user names for the logs
-  const userIds = Array.from(new Set(auditLogs.filter(l => l.userId).map(l => l.userId!)));
+  const userIds = Array.from(new Set(auditLogs.filter((l: AuditLogRecord) => l.userId).map((l: AuditLogRecord) => l.userId!)));
   const users = await db.user.findMany({
     where: { id: { in: userIds } },
     select: { id: true, name: true },
   });
-  const userMap = new Map(users.map(u => [u.id, u.name]));
+  const userMap = new Map(users.map((u: UserSelect) => [u.id, u.name]));
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleString("en-GB", {
@@ -73,7 +77,7 @@ export default async function AuditSettingsPage() {
           </div>
         ) : (
           <div className="divide-y divide-gray-100 dark:divide-gray-700">
-            {auditLogs.map((log) => {
+            {auditLogs.map((log: AuditLogRecord) => {
               const actionType = getActionType(log.action);
               const colors = actionColors[actionType] || actionColors.default;
               const userName = log.userId ? userMap.get(log.userId) || "Unknown" : "System";

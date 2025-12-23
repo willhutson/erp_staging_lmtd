@@ -4,6 +4,15 @@ import { GlobalTimer } from "@/modules/time-tracking/components/GlobalTimer";
 import { WeeklyTimesheet } from "@/modules/time-tracking/components/WeeklyTimesheet";
 import { PageShell } from "@/components/ltd/patterns/page-shell";
 
+// Inferred type for time entries with brief and client
+type TimeEntryWithBrief = Awaited<
+  ReturnType<
+    typeof db.timeEntry.findMany<{
+      include: { brief: { include: { client: true } } };
+    }>
+  >
+>[number];
+
 export default async function TimePage() {
   const session = await auth();
 
@@ -75,19 +84,19 @@ export default async function TimePage() {
   startOfWeek.setDate(today.getDate() + diff);
 
   const hoursToday = entries
-    .filter((e) => {
+    .filter((e: TimeEntryWithBrief) => {
       const entryDate = new Date(e.date);
       entryDate.setHours(0, 0, 0, 0);
       return entryDate.getTime() === today.getTime();
     })
-    .reduce((sum, e) => sum + Number(e.hours), 0);
+    .reduce((sum: number, e: TimeEntryWithBrief) => sum + Number(e.hours), 0);
 
   const hoursThisWeek = entries
-    .filter((e) => {
+    .filter((e: TimeEntryWithBrief) => {
       const entryDate = new Date(e.date);
       return entryDate >= startOfWeek;
     })
-    .reduce((sum, e) => sum + Number(e.hours), 0);
+    .reduce((sum: number, e: TimeEntryWithBrief) => sum + Number(e.hours), 0);
 
   const weeklyTarget = user?.weeklyCapacity || 40;
   const utilizationPercent = Math.round((hoursThisWeek / weeklyTarget) * 100);

@@ -13,7 +13,7 @@ interface TextFieldProps {
 export function TextField({ field, value, onChange, error }: TextFieldProps) {
   return (
     <div className="space-y-1">
-      <label htmlFor={field.id} className="block text-sm font-medium text-gray-700">
+      <label htmlFor={field.id} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
         {field.label}
         {field.required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -25,12 +25,12 @@ export function TextField({ field, value, onChange, error }: TextFieldProps) {
         placeholder={field.placeholder}
         maxLength={field.maxLength}
         className={cn(
-          "w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#52EDC7] focus:border-transparent",
-          error ? "border-red-500" : "border-gray-300"
+          "w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#52EDC7] focus:border-transparent",
+          error ? "border-red-500" : "border-gray-300 dark:border-gray-600"
         )}
       />
       {field.helpText && (
-        <p className="text-xs text-gray-500">{field.helpText}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
       )}
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>

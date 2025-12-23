@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { getRetainerDashboard, getRetainerTrends } from "@/modules/retainer/actions/retainer-period-actions";
 import { RetainerDashboardClient } from "./RetainerDashboardClient";
 
+// Type for dashboard period
+type DashboardPeriod = Awaited<ReturnType<typeof getRetainerDashboard>>["periods"][number];
+
 export const dynamic = "force-dynamic";
 
 export default async function RetainerDashboardPage() {
@@ -24,7 +27,7 @@ export default async function RetainerDashboardPage() {
   // Transform periods to match client component types
   const dashboard = {
     ...dashboardData,
-    periods: dashboardData.periods.map((p) => ({
+    periods: dashboardData.periods.map((p: DashboardPeriod) => ({
       ...p,
       budgetHours: p.budgetHours ? Number(p.budgetHours) : null,
       budgetValue: p.budgetValue ? Number(p.budgetValue) : null,
