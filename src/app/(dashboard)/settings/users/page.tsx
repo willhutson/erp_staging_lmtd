@@ -3,6 +3,18 @@ import { db } from "@/lib/db";
 import { Plus, MoreVertical, Mail } from "lucide-react";
 import Link from "next/link";
 
+// Inferred type for user with relations
+type UserWithRelations = Awaited<
+  ReturnType<
+    typeof db.user.findMany<{
+      include: {
+        teamLead: { select: { id: true; name: true } };
+        _count: { select: { briefsAssigned: true } };
+      };
+    }>
+  >
+>[number];
+
 const permissionColors: Record<string, { bg: string; text: string }> = {
   ADMIN: { bg: "bg-red-100", text: "text-red-700" },
   LEADERSHIP: { bg: "bg-purple-100", text: "text-purple-700" },
@@ -24,9 +36,9 @@ export default async function UsersSettingsPage() {
     orderBy: [{ isActive: "desc" }, { name: "asc" }],
   });
 
-  const departments = Array.from(new Set(users.map((u) => u.department))).sort();
-  const activeCount = users.filter((u) => u.isActive).length;
-  const freelancerCount = users.filter((u) => u.isFreelancer && u.isActive).length;
+  const departments = Array.from(new Set(users.map((u: UserWithRelations) => u.department))).sort();
+  const activeCount = users.filter((u: UserWithRelations) => u.isActive).length;
+  const freelancerCount = users.filter((u: UserWithRelations) => u.isFreelancer && u.isActive).length;
 
   return (
     <>
@@ -73,7 +85,7 @@ export default async function UsersSettingsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {users.map((user) => {
+              {users.map((user: UserWithRelations) => {
                 const permColor = permissionColors[user.permissionLevel] || permissionColors.STAFF;
                 return (
                   <tr key={user.id} className={!user.isActive ? "opacity-50" : ""}>
@@ -82,7 +94,7 @@ export default async function UsersSettingsPage() {
                         <div className="w-8 h-8 rounded-full bg-[#52EDC7] flex items-center justify-center text-sm font-medium text-gray-900">
                           {user.name
                             .split(" ")
-                            .map((n) => n[0])
+                            .map((n: string) => n[0])
                             .join("")
                             .slice(0, 2)}
                         </div>
@@ -141,14 +153,14 @@ export default async function UsersSettingsPage() {
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">By Department</h3>
         <div className="flex flex-wrap gap-2">
-          {departments.map((dept) => {
-            const count = users.filter((u) => u.department === dept && u.isActive).length;
+          {departments.map((dept: string | null) => {
+            const count = users.filter((u: UserWithRelations) => u.department === dept && u.isActive).length;
             return (
               <span
-                key={dept}
+                key={dept ?? "none"}
                 className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-full"
               >
-                {dept} ({count})
+                {dept ?? "Unassigned"} ({count})
               </span>
             );
           })}

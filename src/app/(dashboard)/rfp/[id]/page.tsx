@@ -15,6 +15,10 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+// Inferred type for RFP subitem
+type RFPSubitemRecord = Awaited<ReturnType<typeof db.rFPSubitem.findMany>>[number];
+type WinProbability = "LOW" | "MEDIUM" | "HIGH";
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
@@ -65,7 +69,7 @@ export default async function RFPDetailPage({ params }: PageProps) {
   const daysLeft = getDaysUntilDeadline();
   const isOverdue = daysLeft < 0;
   const isUrgent = daysLeft >= 0 && daysLeft <= 3;
-  const completedSubitems = rfp.subitems.filter((s) => s.status === "COMPLETED").length;
+  const completedSubitems = rfp.subitems.filter((s: RFPSubitemRecord) => s.status === "COMPLETED").length;
   const totalSubitems = rfp.subitems.length;
   const progressPercent = totalSubitems > 0 ? (completedSubitems / totalSubitems) * 100 : 0;
 
@@ -102,7 +106,7 @@ export default async function RFPDetailPage({ params }: PageProps) {
           <span
             className={cn(
               "px-3 py-1 text-sm font-medium rounded-full",
-              winProbabilityColors[rfp.winProbability]
+              winProbabilityColors[rfp.winProbability as WinProbability]
             )}
           >
             {rfp.winProbability} Win Probability

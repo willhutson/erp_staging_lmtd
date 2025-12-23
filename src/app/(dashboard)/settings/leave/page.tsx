@@ -2,6 +2,17 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Plus, Calendar, Ban, PartyPopper } from "lucide-react";
 
+// Inferred types for Prisma records
+type LeaveTypeRecord = Awaited<ReturnType<typeof db.leaveType.findMany>>[number];
+type PublicHolidayRecord = Awaited<ReturnType<typeof db.publicHoliday.findMany>>[number];
+type BlackoutPeriodWithClient = Awaited<
+  ReturnType<
+    typeof db.blackoutPeriod.findMany<{
+      include: { client: { select: { name: true; code: true } } };
+    }>
+  >
+>[number];
+
 export default async function LeaveSettingsPage() {
   const session = await auth();
 
@@ -53,7 +64,7 @@ export default async function LeaveSettingsPage() {
               No leave types configured. Add your first leave type.
             </div>
           ) : (
-            leaveTypes.map((type) => (
+            leaveTypes.map((type: LeaveTypeRecord) => (
               <div key={type.id} className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div
@@ -110,7 +121,7 @@ export default async function LeaveSettingsPage() {
               No public holidays configured for {new Date().getFullYear()}.
             </div>
           ) : (
-            publicHolidays.map((holiday) => (
+            publicHolidays.map((holiday: PublicHolidayRecord) => (
               <div key={holiday.id} className="p-4 flex items-center justify-between">
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white">{holiday.name}</p>
@@ -151,7 +162,7 @@ export default async function LeaveSettingsPage() {
               No blackout periods configured. Blackouts prevent leave requests during critical times.
             </div>
           ) : (
-            blackoutPeriods.map((period) => (
+            blackoutPeriods.map((period: BlackoutPeriodWithClient) => (
               <div key={period.id} className="p-4 flex items-center justify-between">
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white">{period.name}</p>

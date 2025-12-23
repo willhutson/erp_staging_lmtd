@@ -1,13 +1,21 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { redirect, notFound } from "next/navigation";
-import { getFormConfig, briefTypeLabels } from "@/../config/forms";
+import { getFormConfig, briefTypeLabels, BriefType } from "@/../config/forms";
 import { StatusBadge } from "@/modules/briefs/components/StatusBadge";
 import { AssigneeSelector } from "@/modules/briefs/components/AssigneeSelector";
 import { BriefScopeChangesSection } from "@/modules/scope-changes/components";
 import { DocumentUpload } from "@/components/documents";
 import { ArrowLeft, Calendar, Building2, Clock } from "lucide-react";
 import Link from "next/link";
+
+// Inferred types from Prisma
+type ScopeChangeRecord = Awaited<
+  ReturnType<typeof db.scopeChange.findMany>
+>[number];
+type StatusHistoryRecord = Awaited<
+  ReturnType<typeof db.briefStatusHistory.findMany>
+>[number];
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -81,7 +89,7 @@ export default async function BriefDetailPage({ params }: PageProps) {
               <StatusBadge status={brief.status} size="md" />
             </div>
             <p className="text-ltd-text-2">
-              {brief.briefNumber} • {briefTypeLabels[brief.type]}
+              {brief.briefNumber} • {briefTypeLabels[brief.type as BriefType]}
             </p>
           </div>
         </div>
@@ -186,7 +194,7 @@ export default async function BriefDetailPage({ params }: PageProps) {
       {/* Scope Changes */}
       <BriefScopeChangesSection
         briefId={brief.id}
-        scopeChanges={brief.scopeChanges.map((sc) => ({
+        scopeChanges={brief.scopeChanges.map((sc: ScopeChangeRecord) => ({
           id: sc.id,
           title: sc.title,
           originalDirection: sc.originalDirection,
@@ -219,7 +227,7 @@ export default async function BriefDetailPage({ params }: PageProps) {
             Status History
           </h2>
           <div className="space-y-3">
-            {brief.statusHistory.map((history) => (
+            {brief.statusHistory.map((history: StatusHistoryRecord) => (
               <div
                 key={history.id}
                 className="flex items-center gap-3 text-sm"

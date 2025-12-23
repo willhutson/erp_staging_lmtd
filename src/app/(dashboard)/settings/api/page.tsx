@@ -3,6 +3,15 @@ import { redirect } from "next/navigation";
 import { ApiKeysManager } from "@/components/settings/ApiKeysManager";
 import { db } from "@/lib/db";
 
+// Inferred type for API keys with creator
+type ApiKeyWithCreator = Awaited<
+  ReturnType<
+    typeof db.apiKey.findMany<{
+      include: { createdBy: { select: { name: true } } };
+    }>
+  >
+>[number];
+
 export default async function ApiSettingsPage() {
   const session = await auth();
 
@@ -38,7 +47,7 @@ export default async function ApiSettingsPage() {
         </div>
 
         <ApiKeysManager
-          initialKeys={apiKeys.map((key) => ({
+          initialKeys={apiKeys.map((key: ApiKeyWithCreator) => ({
             id: key.id,
             name: key.name,
             keyPrefix: key.keyPrefix,

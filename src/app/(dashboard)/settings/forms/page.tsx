@@ -3,6 +3,9 @@ import { getFormTemplates } from "@/modules/forms/actions/form-template-actions"
 import { Plus, FileText, Check, X } from "lucide-react";
 import { FormTemplateActions } from "@/modules/forms/components/FormTemplateActions";
 
+// Type for form template from the action
+type FormTemplateRecord = Awaited<ReturnType<typeof getFormTemplates>>[number];
+
 export default async function FormsSettingsPage() {
   const templates = await getFormTemplates();
 
@@ -62,7 +65,7 @@ export default async function FormsSettingsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {templates.map((template) => {
+              {templates.map((template: FormTemplateRecord) => {
                 const config = template.config as { sections?: unknown[] } | null;
                 const sectionCount = config?.sections?.length || 0;
 

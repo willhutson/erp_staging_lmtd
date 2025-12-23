@@ -5,6 +5,9 @@ import Link from "next/link";
 import { FileText, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
+// Type for form submission from action
+type FormSubmissionRecord = Awaited<ReturnType<typeof getFormSubmissions>>[number];
+
 const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   DRAFT: { label: "Draft", color: "bg-gray-100 text-gray-700", icon: <FileText className="w-4 h-4" /> },
   SUBMITTED: { label: "Pending Review", color: "bg-yellow-100 text-yellow-700", icon: <Clock className="w-4 h-4" /> },
@@ -36,7 +39,7 @@ export default async function SubmissionsPage({
   const submissions = await getFormSubmissions();
 
   const canReview = ["ADMIN", "LEADERSHIP", "TEAM_LEAD"].includes(session.user.permissionLevel);
-  const pendingCount = submissions.filter(s => ["SUBMITTED", "IN_REVIEW"].includes(s.status)).length;
+  const pendingCount = submissions.filter((s: FormSubmissionRecord) => ["SUBMITTED", "IN_REVIEW"].includes(s.status)).length;
 
   return (
     <div className="space-y-6">
@@ -97,7 +100,7 @@ export default async function SubmissionsPage({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {submissions.map((submission) => {
+              {submissions.map((submission: FormSubmissionRecord) => {
                 const status = statusConfig[submission.status] || statusConfig.DRAFT;
                 return (
                   <tr key={submission.id} className="hover:bg-gray-50">
