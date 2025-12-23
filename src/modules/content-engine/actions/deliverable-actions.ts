@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { can } from "@/lib/permissions";
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import {
   emitDeliverableCreated,
   emitDeliverableStatusChanged,
@@ -167,7 +168,7 @@ export async function createDeliverable(input: CreateDeliverableInput) {
       title: input.title,
       type: input.type,
       description: input.description,
-      content: input.metadata ?? {},
+      content: (input.metadata ?? {}) as Prisma.InputJsonValue,
       status: "DRAFT",
       version: 1,
       createdById: session.user.id,
