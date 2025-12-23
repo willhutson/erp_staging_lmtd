@@ -305,7 +305,7 @@ export async function recalculateRetainerActuals(clientId: string, year: number,
         organizationId: session.user.organizationId,
       },
       status: { in: ["APPROVED", "DELIVERED"] },
-      clientReviewedAt: {
+      approvedAt: {
         gte: startDate,
         lte: endDate,
       },
