@@ -34,7 +34,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">General</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">General</h2>
         <LtdButton>
           <Save className="h-4 w-4 mr-2" />
           Save Changes

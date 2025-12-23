@@ -35,11 +35,11 @@ export default async function LeaveSettingsPage() {
   return (
     <>
       {/* Leave Types */}
-      <div className="bg-white rounded-xl border border-gray-200 mb-6">
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 mb-6">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Leave Types</h2>
+            <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Leave Types</h2>
           </div>
           <button className="flex items-center gap-2 px-3 py-1.5 bg-[#52EDC7] text-gray-900 text-sm font-medium rounded-lg hover:bg-[#1BA098] hover:text-white transition-colors">
             <Plus className="w-4 h-4" />
@@ -47,9 +47,9 @@ export default async function LeaveSettingsPage() {
           </button>
         </div>
 
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100 dark:divide-gray-700">
           {leaveTypes.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
               No leave types configured. Add your first leave type.
             </div>
           ) : (
@@ -61,8 +61,8 @@ export default async function LeaveSettingsPage() {
                     style={{ backgroundColor: type.color }}
                   />
                   <div>
-                    <p className="font-medium text-gray-900">{type.name}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="font-medium text-gray-900 dark:text-white">{type.name}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {type.defaultDays} days/year
                       {type.carryOverLimit > 0 && ` • ${type.carryOverLimit} carryover`}
                       {!type.isPaid && " • Unpaid"}
@@ -79,7 +79,7 @@ export default async function LeaveSettingsPage() {
                   >
                     {type.isActive ? "Active" : "Inactive"}
                   </span>
-                  <button className="text-sm text-gray-500 hover:text-gray-700">
+                  <button className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
                     Edit
                   </button>
                 </div>
@@ -90,11 +90,11 @@ export default async function LeaveSettingsPage() {
       </div>
 
       {/* Public Holidays */}
-      <div className="bg-white rounded-xl border border-gray-200 mb-6">
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 mb-6">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <PartyPopper className="w-5 h-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
+            <PartyPopper className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               Public Holidays {new Date().getFullYear()}
             </h2>
           </div>
@@ -104,17 +104,17 @@ export default async function LeaveSettingsPage() {
           </button>
         </div>
 
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100 dark:divide-gray-700">
           {publicHolidays.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
               No public holidays configured for {new Date().getFullYear()}.
             </div>
           ) : (
             publicHolidays.map((holiday) => (
               <div key={holiday.id} className="p-4 flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-900">{holiday.name}</p>
-                  <p className="text-sm text-gray-500">{formatDate(holiday.date)}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{holiday.name}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(holiday.date)}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {holiday.isOptional && (
@@ -122,7 +122,7 @@ export default async function LeaveSettingsPage() {
                       Optional
                     </span>
                   )}
-                  <button className="text-sm text-gray-500 hover:text-gray-700">
+                  <button className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
                     Edit
                   </button>
                 </div>
@@ -133,11 +133,11 @@ export default async function LeaveSettingsPage() {
       </div>
 
       {/* Blackout Periods */}
-      <div className="bg-white rounded-xl border border-gray-200">
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Ban className="w-5 h-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Blackout Periods</h2>
+            <Ban className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Blackout Periods</h2>
           </div>
           <button className="flex items-center gap-2 px-3 py-1.5 bg-[#52EDC7] text-gray-900 text-sm font-medium rounded-lg hover:bg-[#1BA098] hover:text-white transition-colors">
             <Plus className="w-4 h-4" />
@@ -145,22 +145,22 @@ export default async function LeaveSettingsPage() {
           </button>
         </div>
 
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100 dark:divide-gray-700">
           {blackoutPeriods.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
               No blackout periods configured. Blackouts prevent leave requests during critical times.
             </div>
           ) : (
             blackoutPeriods.map((period) => (
               <div key={period.id} className="p-4 flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-900">{period.name}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="font-medium text-gray-900 dark:text-white">{period.name}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     {formatDate(period.startDate)} – {formatDate(period.endDate)}
                     {period.client && ` • ${period.client.name}`}
                   </p>
                   {period.reason && (
-                    <p className="text-sm text-gray-400 mt-1">{period.reason}</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">{period.reason}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -169,7 +169,7 @@ export default async function LeaveSettingsPage() {
                       Recurring
                     </span>
                   )}
-                  <button className="text-sm text-gray-500 hover:text-gray-700">
+                  <button className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
                     Edit
                   </button>
                 </div>

@@ -10,9 +10,9 @@ export default async function BrandingSettingsPage() {
   // Only ADMIN can edit branding
   if (session!.user.permissionLevel !== "ADMIN") {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-        <Shield className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-        <p className="text-gray-500">Admin access required to edit branding settings.</p>
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+        <Shield className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+        <p className="text-gray-500 dark:text-gray-400">Admin access required to edit branding settings.</p>
       </div>
     );
   }
