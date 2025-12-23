@@ -11,8 +11,8 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mon
 
 export const metadata: Metadata = {
   title: "LMTD OS - Operating System for Agency Workflows",
-  description: "Token-based design system with vibrant aesthetics, built for enterprise agency workflows",
-  generator: "v0.app",
+  description: "Multi-tenant ERP platform for professional services agencies. Manage briefs, resources, time tracking, and client relationships.",
+  generator: "SpokeStack",
   icons: {
     icon: [
       {
@@ -29,6 +29,17 @@ export const metadata: Metadata = {
       },
     ],
     apple: "/apple-icon.png",
+  },
+  openGraph: {
+    title: "LMTD OS - Operating System for Agency Workflows",
+    description: "Multi-tenant ERP platform for professional services agencies. Manage briefs, resources, time tracking, and client relationships.",
+    type: "website",
+    siteName: "LMTD OS",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LMTD OS - Operating System for Agency Workflows",
+    description: "Multi-tenant ERP platform for professional services agencies.",
   },
 }
 

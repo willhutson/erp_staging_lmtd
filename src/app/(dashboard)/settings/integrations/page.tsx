@@ -4,7 +4,7 @@ import { SettingsNav } from "@/components/settings/SettingsNav";
 import { GoogleIntegrationCard } from "@/modules/integrations/google/components/GoogleIntegrationCard";
 import { SlackIntegrationCard } from "@/modules/integrations/slack/components/SlackIntegrationCard";
 import { getSlackChannels } from "@/modules/integrations/slack/actions";
-import { FileSpreadsheet, BarChart3 } from "lucide-react";
+import { FileSpreadsheet, BarChart3, Receipt } from "lucide-react";
 
 export default async function IntegrationsSettingsPage() {
   const session = await auth();
@@ -87,6 +87,26 @@ export default async function IntegrationsSettingsPage() {
                       <p className="font-medium text-gray-900">Meta Business Suite</p>
                       <p className="text-sm text-gray-500">
                         Pull campaign analytics and performance data
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-500 rounded-full">
+                    Coming Soon
+                  </span>
+                </div>
+              </div>
+
+              {/* Xero - Coming Soon */}
+              <div className="border border-gray-200 rounded-lg p-4 opacity-60">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-cyan-100 flex items-center justify-center">
+                      <Receipt className="w-5 h-5 text-cyan-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Xero</p>
+                      <p className="text-sm text-gray-500">
+                        Sync invoices, expenses, and financial data
                       </p>
                     </div>
                   </div>
