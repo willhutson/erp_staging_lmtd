@@ -59,15 +59,15 @@ export interface CreateDeliverableInput {
   title: string;
   type: DeliverableType;
   description?: string;
-  metadata?: Record<string, unknown>;
+  content?: Record<string, unknown>;
 }
 
 export interface UpdateDeliverableInput {
   title?: string;
   description?: string;
   type?: DeliverableType;
-  fileUrls?: string[];
-  metadata?: Record<string, unknown>;
+  content?: Record<string, unknown>;
+  textContent?: string;
 }
 
 export interface ReviewInput {
@@ -168,7 +168,7 @@ export async function createDeliverable(input: CreateDeliverableInput) {
       title: input.title,
       type: input.type,
       description: input.description,
-      content: (input.metadata ?? {}) as Prisma.InputJsonValue,
+      content: (input.content ?? {}) as Prisma.InputJsonValue,
       status: "DRAFT",
       version: 1,
       createdById: session.user.id,
@@ -220,8 +220,8 @@ export async function updateDeliverable(id: string, input: UpdateDeliverableInpu
       title: input.title,
       description: input.description,
       type: input.type,
-      fileUrls: input.fileUrls,
-      metadata: input.metadata,
+      content: input.content ? (input.content as Prisma.InputJsonValue) : undefined,
+      textContent: input.textContent,
     },
   });
 
