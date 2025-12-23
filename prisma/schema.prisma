@@ -68,7 +68,8 @@ model Organization {
 model User {
   id              String          @id @default(cuid())
   organizationId  String
-  email           String          @unique
+  email           String          // Per-org unique via @@unique([organizationId, email])
+  googleSub       String?         // Google OAuth stable identity (sub claim)
   passwordHash    String?         // For email/password auth (test accounts)
   name            String
   role            String
@@ -199,6 +200,7 @@ model User {
 
   @@unique([organizationId, email])
   @@index([organizationId])
+  @@index([organizationId, email])
   @@index([department])
   @@map("users")
 }
