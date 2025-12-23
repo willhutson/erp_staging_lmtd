@@ -44,11 +44,7 @@ export async function createSocialAccount(input: CreateSocialAccountInput) {
       accountUrl: input.accountUrl,
       avatarUrl: input.avatarUrl,
       managementType: input.managementType || "AGENCY_MANAGED",
-<<<<<<< HEAD
-      settings: (input.settings || {}) as Prisma.JsonObject,
-=======
       settings: (input.settings || {}) as Prisma.InputJsonValue,
->>>>>>> 4fac985 (Fix JSON type casting in social-account-actions.ts)
     },
     include: {
       client: { select: { id: true, name: true, code: true } },
