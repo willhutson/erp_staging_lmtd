@@ -120,7 +120,7 @@ export async function updateSocialAccount(
     where: { id: accountId },
     data: {
       ...rest,
-      ...(settings !== undefined && { settings: settings as Prisma.JsonObject }),
+      ...(settings !== undefined && { settings: settings as Prisma.InputJsonValue }),
     },
   });
 
