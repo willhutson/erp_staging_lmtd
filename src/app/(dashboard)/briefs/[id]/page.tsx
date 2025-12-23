@@ -3,9 +3,10 @@ import { db } from "@/lib/db";
 import { redirect, notFound } from "next/navigation";
 import { getFormConfig, briefTypeLabels } from "@/../config/forms";
 import { StatusBadge } from "@/modules/briefs/components/StatusBadge";
+import { AssigneeSelector } from "@/modules/briefs/components/AssigneeSelector";
 import { BriefScopeChangesSection } from "@/modules/scope-changes/components";
 import { DocumentUpload } from "@/components/documents";
-import { ArrowLeft, Calendar, User, Building2, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, Building2, Clock } from "lucide-react";
 import Link from "next/link";
 
 interface PageProps {
@@ -26,6 +27,7 @@ export default async function BriefDetailPage({ params }: PageProps) {
       client: true,
       createdBy: true,
       assignee: true,
+      assignedBy: true,
       statusHistory: {
         orderBy: { createdAt: "desc" },
         take: 10,
@@ -42,6 +44,22 @@ export default async function BriefDetailPage({ params }: PageProps) {
   if (!brief || brief.organizationId !== session.user.organizationId) {
     notFound();
   }
+
+  // Fetch available users for assignment
+  const availableUsers = await db.user.findMany({
+    where: {
+      organizationId: session.user.organizationId,
+      isActive: true,
+    },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+
+  // Check if user can edit assignee
+  const canEditAssignee =
+    brief.status !== "COMPLETED" &&
+    brief.status !== "CANCELLED" &&
+    ["ADMIN", "LEADERSHIP", "TEAM_LEAD"].includes(session.user.permissionLevel);
 
   const formConfig = getFormConfig(brief.type);
   const formData = brief.formData as Record<string, unknown>;
@@ -79,15 +97,14 @@ export default async function BriefDetailPage({ params }: PageProps) {
           <p className="font-medium text-ltd-text-1">{brief.client.name}</p>
         </div>
 
-        <div className="bg-ltd-surface-overlay rounded-lg border border-ltd-border-1 p-4">
-          <div className="flex items-center gap-2 text-ltd-text-2 mb-1">
-            <User className="w-4 h-4" />
-            <span className="text-sm">Assignee</span>
-          </div>
-          <p className="font-medium text-ltd-text-1">
-            {brief.assignee?.name || "Unassigned"}
-          </p>
-        </div>
+        <AssigneeSelector
+          briefId={brief.id}
+          currentAssignee={brief.assignee}
+          assignedBy={brief.assignedBy}
+          assignedAt={brief.assignedAt}
+          availableUsers={availableUsers}
+          canEdit={canEditAssignee}
+        />
 
         <div className="bg-ltd-surface-overlay rounded-lg border border-ltd-border-1 p-4">
           <div className="flex items-center gap-2 text-ltd-text-2 mb-1">

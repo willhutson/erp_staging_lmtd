@@ -18,6 +18,14 @@ export default async function LeaveRequestPage() {
   // Initialize leave types if needed
   await initializeLeaveTypes(session.user.organizationId);
 
+  // Get user's team lead (the person who will approve the request)
+  const currentUser = await db.user.findUnique({
+    where: { id: session.user.id },
+    include: {
+      teamLead: { select: { id: true, name: true } },
+    },
+  });
+
   // Get leave types
   const leaveTypes = await db.leaveType.findMany({
     where: { organizationId: session.user.organizationId, isActive: true },
@@ -48,21 +56,24 @@ export default async function LeaveRequestPage() {
       <div className="flex items-center gap-4">
         <Link
           href="/leave"
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-500" />
+          <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Request Leave</h1>
-          <p className="text-gray-500 mt-1">Submit a new leave request</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Request Leave</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Submit a new leave request</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <LeaveRequestForm leaveTypes={leaveTypes} />
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <LeaveRequestForm
+              leaveTypes={leaveTypes}
+              approverName={currentUser?.teamLead?.name || null}
+            />
           </div>
         </div>
 
@@ -72,15 +83,15 @@ export default async function LeaveRequestPage() {
 
           {/* Upcoming Blackouts Warning */}
           {blackouts.length > 0 && (
-            <div className="bg-orange-50 rounded-xl border border-orange-200 p-4">
-              <h3 className="font-medium text-orange-800 mb-2">
+            <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-200 dark:border-orange-800 p-4">
+              <h3 className="font-medium text-orange-800 dark:text-orange-300 mb-2">
                 Upcoming Blackout Periods
               </h3>
-              <div className="space-y-2 text-sm text-orange-700">
+              <div className="space-y-2 text-sm text-orange-700 dark:text-orange-400">
                 {blackouts.map((blackout) => (
                   <div key={blackout.id}>
                     <p className="font-medium">{blackout.name}</p>
-                    <p className="text-orange-600">
+                    <p className="text-orange-600 dark:text-orange-500">
                       {new Date(blackout.startDate).toLocaleDateString("en-GB", {
                         day: "numeric",
                         month: "short",
