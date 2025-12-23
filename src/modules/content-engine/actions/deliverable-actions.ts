@@ -58,7 +58,6 @@ export interface CreateDeliverableInput {
   title: string;
   type: DeliverableType;
   description?: string;
-  fileUrls?: string[];
   metadata?: Record<string, unknown>;
 }
 
@@ -168,8 +167,7 @@ export async function createDeliverable(input: CreateDeliverableInput) {
       title: input.title,
       type: input.type,
       description: input.description,
-      fileUrls: input.fileUrls ?? [],
-      metadata: input.metadata ?? {},
+      content: input.metadata ?? {},
       status: "DRAFT",
       version: 1,
       createdById: session.user.id,
