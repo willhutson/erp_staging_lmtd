@@ -6,6 +6,7 @@ import type {
   SocialPlatform,
   ContentType,
   ContentPostStatus,
+  Prisma,
 } from "@prisma/client";
 import {
   onContentSubmitted,
@@ -183,7 +184,7 @@ export async function getContentPost(postId: string) {
 }
 
 export async function getContentPosts(filters: ContentPostFilters) {
-  const where: Parameters<typeof db.contentPost.findMany>[0]["where"] = {
+  const where: Prisma.ContentPostWhereInput = {
     organizationId: filters.organizationId,
   };
 
@@ -650,7 +651,7 @@ export async function getCalendarPosts(
   endDate: Date,
   clientId?: string
 ) {
-  const where: Parameters<typeof db.contentPost.findMany>[0]["where"] = {
+  const where: Prisma.ContentPostWhereInput = {
     organizationId,
     scheduledFor: {
       gte: startDate,

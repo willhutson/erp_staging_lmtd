@@ -112,8 +112,8 @@ async function transcribeWithGoogle(
 ): Promise<TranscriptionResult> {
   // This would use the Google Cloud Speech-to-Text API
   // For now, return a placeholder
-  void audioUrl;
-  void config;
+  void _audioUrl;
+  void _config;
   throw new Error("Google Speech-to-Text not yet implemented");
 }
 
@@ -128,8 +128,8 @@ async function transcribeWithAzure(
 ): Promise<TranscriptionResult> {
   // This would use the Azure Speech Services SDK
   // For now, return a placeholder
-  void audioUrl;
-  void config;
+  void _audioUrl;
+  void _config;
   throw new Error("Azure Speech Services not yet implemented");
 }
 

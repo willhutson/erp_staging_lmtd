@@ -281,7 +281,6 @@ export async function submitForInternalReview(id: string) {
     where: { id },
     data: {
       status: "INTERNAL_REVIEW",
-      submittedAt: new Date(),
     },
   });
 
@@ -407,7 +406,7 @@ export async function recordClientFeedback(
     data: {
       status: newStatus,
       clientFeedback: input.feedback,
-      approvedAt: input.decision === "APPROVE" ? new Date() : null,
+      clientReviewedAt: new Date(),
     },
   });
 
@@ -489,7 +488,7 @@ export async function getPendingReviews() {
       },
       createdBy: { select: { id: true, name: true } },
     },
-    orderBy: { submittedAt: "asc" },
+    orderBy: { updatedAt: "asc" },
   });
 }
 

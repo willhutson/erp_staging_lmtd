@@ -7,6 +7,7 @@ export type ThemeMode = "light" | "dark"
 export function setDensity(mode: DensityMode) {
   if (typeof document !== "undefined") {
     document.documentElement.dataset.density = mode
+    localStorage.setItem("density", mode)
   }
 }
 
@@ -35,6 +36,10 @@ export function setTheme(mode: ThemeMode) {
 
 export function getDensity(): DensityMode {
   if (typeof document !== "undefined") {
+    const stored = localStorage.getItem("density")
+    if (stored === "compact" || stored === "standard" || stored === "comfortable") {
+      return stored
+    }
     return (document.documentElement.dataset.density as DensityMode) || "standard"
   }
   return "standard"
@@ -74,6 +79,15 @@ export function initTheme() {
       document.documentElement.classList.add("dark")
     } else {
       document.documentElement.classList.remove("dark")
+    }
+  }
+}
+
+export function initDensity() {
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem("density")
+    if (stored === "compact" || stored === "standard" || stored === "comfortable") {
+      document.documentElement.dataset.density = stored
     }
   }
 }

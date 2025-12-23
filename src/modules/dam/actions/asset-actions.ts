@@ -3,6 +3,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 
 // ============================================
 // TYPES
@@ -362,7 +363,7 @@ export async function addAssetComment(input: {
       content: input.content,
       parentId: input.parentId,
       annotationType: input.annotationType,
-      annotationData: input.annotationData,
+      annotationData: input.annotationData as Prisma.JsonObject | undefined,
       authorId: session.user.id,
     },
     include: {

@@ -55,10 +55,16 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                const stored = localStorage.getItem('theme');
+                // Theme initialization
+                const storedTheme = localStorage.getItem('theme');
                 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                if (stored === 'dark' || (!stored && prefersDark)) {
+                if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
                   document.documentElement.classList.add('dark');
+                }
+                // Density initialization
+                const storedDensity = localStorage.getItem('density');
+                if (storedDensity === 'compact' || storedDensity === 'standard' || storedDensity === 'comfortable') {
+                  document.documentElement.dataset.density = storedDensity;
                 }
               })();
             `,

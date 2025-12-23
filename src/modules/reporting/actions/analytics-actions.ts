@@ -387,8 +387,8 @@ export async function getClientReport(
   const currentPeriod = await db.retainerPeriod.findFirst({
     where: {
       clientId,
-      startDate: { lte: to },
-      endDate: { gte: from },
+      year: from.getFullYear(),
+      month: from.getMonth() + 1, // JavaScript months are 0-indexed
     },
   });
 
@@ -398,8 +398,8 @@ export async function getClientReport(
     .reduce((sum, s) => sum + s._count.id, 0);
 
   const hoursUsed = Number(totalTime._sum.hours || 0);
-  const burnRate = currentPeriod
-    ? (hoursUsed / Number(currentPeriod.allocatedHours)) * 100
+  const burnRate = currentPeriod?.budgetHours
+    ? (hoursUsed / Number(currentPeriod.budgetHours)) * 100
     : 0;
 
   return {
@@ -680,6 +680,9 @@ export async function getRetainerHealth(
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1; // 1-indexed for DB
+
   const retainerClients = await db.client.findMany({
     where: {
       organizationId,
@@ -689,10 +692,9 @@ export async function getRetainerHealth(
     include: {
       retainerPeriods: {
         where: {
-          startDate: { lte: endOfMonth },
-          endDate: { gte: startOfMonth },
+          year: currentYear,
+          month: currentMonth,
         },
-        orderBy: { startDate: "desc" },
         take: 1,
       },
     },
@@ -702,8 +704,8 @@ export async function getRetainerHealth(
 
   for (const client of retainerClients) {
     const currentPeriod = client.retainerPeriods[0];
-    const monthlyAllocation = currentPeriod
-      ? Number(currentPeriod.allocatedHours)
+    const monthlyAllocation = currentPeriod?.budgetHours
+      ? Number(currentPeriod.budgetHours)
       : client.retainerHours || 0;
 
     // Get hours used this month
@@ -737,9 +739,9 @@ export async function getRetainerHealth(
       where: {
         brief: { clientId: client.id },
         createdAt: { gte: startOfMonth },
-        status: "APPROVED",
+        approvalStatus: "APPROVED",
       },
-      _sum: { hoursImpact: true },
+      _sum: { estimatedAdditionalHours: true },
     });
 
     const hoursUsed = Number(hoursThisMonth._sum.hours || 0);
@@ -781,7 +783,7 @@ export async function getRetainerHealth(
       previousMonthUsage,
       usageTrend,
       scopeChanges,
-      additionalHours: Number(additionalHoursResult._sum.hoursImpact || 0),
+      additionalHours: Number(additionalHoursResult._sum.estimatedAdditionalHours || 0),
       status,
       daysRemaining,
       projectedOverage,
