@@ -383,7 +383,7 @@ export async function getClientReport(
     }),
   ]);
 
-  // Get retainer usage
+  // Get retainer usage - query by year/month instead of date range
   const currentPeriod = await db.retainerPeriod.findFirst({
     where: {
       clientId,

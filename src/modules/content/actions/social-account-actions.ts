@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import type { SocialPlatform, AccountManagementType, Prisma } from "@prisma/client";
+import { Prisma, type SocialPlatform, type AccountManagementType } from "@prisma/client";
 
 // ============================================
 // TYPES
@@ -44,7 +44,11 @@ export async function createSocialAccount(input: CreateSocialAccountInput) {
       accountUrl: input.accountUrl,
       avatarUrl: input.avatarUrl,
       managementType: input.managementType || "AGENCY_MANAGED",
+<<<<<<< HEAD
       settings: (input.settings || {}) as Prisma.JsonObject,
+=======
+      settings: (input.settings || {}) as Prisma.InputJsonValue,
+>>>>>>> 4fac985 (Fix JSON type casting in social-account-actions.ts)
     },
     include: {
       client: { select: { id: true, name: true, code: true } },
@@ -116,7 +120,7 @@ export async function updateSocialAccount(
     where: { id: accountId },
     data: {
       ...rest,
-      ...(settings !== undefined && { settings: settings as Prisma.JsonObject }),
+      ...(settings !== undefined && { settings: settings as Prisma.InputJsonValue }),
     },
   });
 

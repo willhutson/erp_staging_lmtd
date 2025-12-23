@@ -2,11 +2,11 @@
 
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import type {
-  SocialPlatform,
-  ContentType,
-  ContentPostStatus,
+import {
   Prisma,
+  type SocialPlatform,
+  type ContentType,
+  type ContentPostStatus,
 } from "@prisma/client";
 import {
   onContentSubmitted,
