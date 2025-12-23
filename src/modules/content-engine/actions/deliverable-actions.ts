@@ -73,7 +73,6 @@ export interface UpdateDeliverableInput {
 export interface ReviewInput {
   decision: "APPROVE" | "REQUEST_REVISION";
   feedback?: string;
-  revisionNotes?: string[];
 }
 
 // ============================================
@@ -282,7 +281,7 @@ export async function submitForInternalReview(id: string) {
     where: { id },
     data: {
       status: "INTERNAL_REVIEW",
-      submittedForReviewAt: new Date(),
+      submittedAt: new Date(),
     },
   });
 
@@ -327,9 +326,8 @@ export async function completeInternalReview(id: string, input: ReviewInput) {
     data: {
       status: newStatus,
       internalFeedback: input.feedback,
-      revisionNotes: input.revisionNotes ?? [],
-      reviewedById: session.user.id,
-      reviewedAt: new Date(),
+      internalReviewerId: session.user.id,
+      internalReviewedAt: new Date(),
     },
   });
 
@@ -367,7 +365,6 @@ export async function submitToClient(id: string) {
     where: { id },
     data: {
       status: "CLIENT_REVIEW",
-      sentToClientAt: new Date(),
     },
   });
 
@@ -387,7 +384,6 @@ export async function recordClientFeedback(
   input: {
     decision: "APPROVE" | "REQUEST_REVISION";
     feedback?: string;
-    revisionNotes?: string[];
   }
 ) {
   const session = await auth();
@@ -411,8 +407,7 @@ export async function recordClientFeedback(
     data: {
       status: newStatus,
       clientFeedback: input.feedback,
-      revisionNotes: input.revisionNotes ?? deliverable.revisionNotes,
-      clientApprovedAt: input.decision === "APPROVE" ? new Date() : null,
+      approvedAt: input.decision === "APPROVE" ? new Date() : null,
     },
   });
 
@@ -494,7 +489,7 @@ export async function getPendingReviews() {
       },
       createdBy: { select: { id: true, name: true } },
     },
-    orderBy: { submittedForReviewAt: "asc" },
+    orderBy: { submittedAt: "asc" },
   });
 }
 

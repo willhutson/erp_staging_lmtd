@@ -333,7 +333,7 @@ async function executeSkill(
 ): Promise<Record<string, unknown>> {
   // TODO: Implement actual skill execution with LLM
   // For now, log context and inputs to satisfy linter, will be used when LLM integration is added
-  console.debug("Executing skill with context:", context.skillName, "inputs:", Object.keys(inputs));
+  console.debug("Executing skill with context:", context.skillName, "inputs:", Object.keys(_inputs));
 
   // Placeholder: Return mock outputs based on skill outputs definition
   const outputs: Record<string, unknown> = {};
