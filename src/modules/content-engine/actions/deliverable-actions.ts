@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { can } from "@/lib/permissions";
+import { can, isAdmin } from "@/lib/permissions";
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import {
@@ -238,7 +238,7 @@ export async function deleteDeliverable(id: string) {
   const session = await auth();
   if (!session?.user) throw new Error("Unauthorized");
 
-  if (!can(session.user as Parameters<typeof can>[0], "admin:access")) {
+  if (!isAdmin(session.user)) {
     throw new Error("Only admins can delete deliverables");
   }
 
