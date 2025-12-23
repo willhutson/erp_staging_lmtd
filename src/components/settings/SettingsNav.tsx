@@ -30,8 +30,8 @@ export function SettingsNav() {
             href={item.href}
             className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
               isActive
-                ? "bg-gray-100 text-gray-900 font-medium"
-                : "text-gray-600 hover:bg-gray-50"
+                ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-medium"
+                : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
             }`}
           >
             <Icon className="w-4 h-4" />

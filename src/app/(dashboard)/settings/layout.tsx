@@ -21,8 +21,8 @@ export default async function SettingsLayout({
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-500 mt-1">Manage platform settings</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">Manage platform settings</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
