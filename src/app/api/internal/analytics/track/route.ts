@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 
 /**
  * Event Bridge for Analytics Engine
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
           entityId: body.entityId,
           metadata: body.metadata || {},
           timestamp: timestamp.toISOString(),
-        },
+        } as Prisma.InputJsonValue,
       },
     });
   } catch (error) {
