@@ -5,7 +5,11 @@ from .database import db
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    db.connect()
+    try:
+        db.connect()
+    except Exception as e:
+        print(f"Startup Warning: Could not connect to Neo4j: {e}")
+        # We don't raise here so the Vercel function can still "start" and serve /health
     yield
     # Shutdown
     db.close()
