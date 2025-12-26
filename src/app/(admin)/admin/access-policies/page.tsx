@@ -102,7 +102,6 @@ export default function AccessPoliciesListPage() {
         ? [{ field: "status", operator: "eq" as const, value: statusFilter }]
         : []),
     ],
-    pagination: { page: 1, perPage: 50 },
     sorters: [{ field: "priority", order: "desc" }],
   });
 
