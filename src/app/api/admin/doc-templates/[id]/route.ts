@@ -109,7 +109,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (data.googleDocId) updateData.googleDocId = data.googleDocId;
     if (data.outputFolder !== undefined) updateData.outputFolder = data.outputFolder;
     if (data.namingPattern !== undefined) updateData.namingPattern = data.namingPattern;
-    if (data.mappings) updateData.mappings = data.mappings;
+    if (data.mappings) updateData.mappings = data.mappings as Prisma.InputJsonValue;
 
     const template = await db.docTemplate.update({
       where: { id },

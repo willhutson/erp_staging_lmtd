@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
         googleDocId: data.googleDocId,
         outputFolder: data.outputFolder,
         namingPattern: data.namingPattern,
-        mappings: data.mappings,
+        mappings: data.mappings as Prisma.InputJsonValue,
       },
       select: {
         id: true,

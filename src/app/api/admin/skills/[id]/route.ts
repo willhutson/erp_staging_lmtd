@@ -107,11 +107,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (data.category) updateData.category = data.category;
     if (data.isEnabled !== undefined) updateData.isEnabled = data.isEnabled;
     if (data.version) updateData.version = data.version;
-    if (data.triggers) updateData.triggers = data.triggers;
-    if (data.inputs) updateData.inputs = data.inputs;
-    if (data.outputs) updateData.outputs = data.outputs;
+    if (data.triggers) updateData.triggers = data.triggers as Prisma.InputJsonValue;
+    if (data.inputs) updateData.inputs = data.inputs as Prisma.InputJsonValue;
+    if (data.outputs) updateData.outputs = data.outputs as Prisma.InputJsonValue;
     if (data.config !== undefined) {
-      updateData.config = data.config === null ? Prisma.DbNull : data.config;
+      updateData.config = (data.config === null ? Prisma.DbNull : data.config) as Prisma.InputJsonValue;
     }
     if (data.dependsOn) updateData.dependsOn = data.dependsOn;
     if (data.requiredPermissions) updateData.requiredPermissions = data.requiredPermissions;
