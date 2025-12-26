@@ -8,6 +8,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../src'))
 
 app = FastAPI(title="Solar Schrodinger Engine", docs_url="/api/docs", openapi_url="/api/openapi.json")
 
+@app.get("/")
+def root():
+    return {"status": "ok", "message": "Service is running. Go to /api/docs for usage."}
+
 @app.get("/api/health")
 def health_check():
     return {"status": "ok", "version": "1.0.0"}
