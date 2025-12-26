@@ -15,6 +15,8 @@ import { projectsResource } from "./projects.resource";
 import { auditLogsResource } from "./audit-logs.resource";
 import { skillsResource } from "./skills.resource";
 import { docTemplatesResource } from "./doc-templates.resource";
+import { analyticsDashboardsResource } from "./analytics-dashboards.resource";
+import { analyticsWidgetsResource } from "./analytics-widgets.resource";
 
 // ============================================
 // RESOURCE REGISTRY
@@ -31,8 +33,9 @@ const allResources: ResourceConfig[] = [
   skillsResource,
   docTemplatesResource,
 
-  // ANALYTICS (to be added)
-  // eventTypesResource,
+  // ANALYTICS
+  analyticsDashboardsResource,
+  analyticsWidgetsResource,
 
   // MESSAGING (to be added)
   // notificationRulesResource - already exists but needs migration
@@ -87,4 +90,13 @@ export const resourceRegistry: ResourceRegistry = {
 export type { ResourceConfig, FieldDefinition, FieldType, SpokeStackModule } from "./types";
 
 // Re-export individual resources for direct import
-export { usersResource, clientsResource, projectsResource, auditLogsResource, skillsResource, docTemplatesResource };
+export {
+  usersResource,
+  clientsResource,
+  projectsResource,
+  auditLogsResource,
+  skillsResource,
+  docTemplatesResource,
+  analyticsDashboardsResource,
+  analyticsWidgetsResource,
+};
