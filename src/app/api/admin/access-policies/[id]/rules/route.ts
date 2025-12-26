@@ -6,7 +6,7 @@ import {
 } from "@/lib/api/session-middleware";
 import { db } from "@/lib/db";
 import { z } from "zod";
-import { AccessAction, AccessCondition, AccessEffect } from "@prisma/client";
+import { AccessAction, AccessCondition, AccessEffect, Prisma } from "@prisma/client";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         action: data.action,
         effect: data.effect,
         conditionType: data.conditionType,
-        conditionParams: data.conditionParams,
+        conditionParams: data.conditionParams as Prisma.InputJsonValue,
         allowedFields: data.allowedFields,
         deniedFields: data.deniedFields,
         isActive: data.isActive,
