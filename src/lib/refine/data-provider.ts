@@ -189,4 +189,4 @@ export const dataProvider = {
 
     return { data: json.data as BaseRecord };
   },
-} satisfies DataProvider;
+} as unknown as DataProvider;

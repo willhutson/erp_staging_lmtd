@@ -1,6 +1,6 @@
 "use client";
 
-import { Refine, DataProvider } from "@refinedev/core";
+import { Refine } from "@refinedev/core";
 import routerProvider from "@refinedev/nextjs-router";
 import { dataProvider } from "@/lib/refine/data-provider";
 import {
@@ -149,7 +149,7 @@ export default function AdminLayout({
 
   return (
     <Refine
-      dataProvider={dataProvider as DataProvider}
+      dataProvider={dataProvider}
       routerProvider={routerProvider}
       accessControlProvider={accessControlProvider}
       resources={resources}
