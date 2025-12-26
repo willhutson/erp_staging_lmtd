@@ -73,12 +73,9 @@ export function ResourceList({ config }: ResourceListProps) {
     : [];
 
   // Fetch data using Refine
+  // Note: Pagination handled manually since Refine v4 doesn't accept pagination in useList
   const { query } = useList({
     resource: config.name,
-    pagination: {
-      page: currentPage,
-      perPage: pageSize,
-    },
     sorters: sortField
       ? [{ field: sortField, order: sortOrder }]
       : [],
