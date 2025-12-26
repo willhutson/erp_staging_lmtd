@@ -103,10 +103,10 @@ export function ResourceForm({ config, mode, id }: ResourceFormProps) {
   }, [existingData, mode, form]);
 
   // Mutations
-  const { mutate: create, isLoading: isCreating } = useCreate();
-  const { mutate: update, isLoading: isUpdating } = useUpdate();
+  const { mutate: create, mutation: createMutation } = useCreate();
+  const { mutate: update, mutation: updateMutation } = useUpdate();
 
-  const isSubmitting = isCreating || isUpdating;
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   // Handle form submission
   const onSubmit = (values: z.infer<typeof schema>) => {
