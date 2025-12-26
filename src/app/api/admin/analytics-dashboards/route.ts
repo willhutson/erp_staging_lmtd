@@ -109,8 +109,8 @@ export async function POST(request: NextRequest) {
         type: data.type,
         isPublic: data.isPublic,
         ownerId: data.ownerId || ctx.userId,
-        layout: data.layout,
-        defaultFilters: data.defaultFilters ?? Prisma.DbNull,
+        layout: data.layout as Prisma.InputJsonValue,
+        defaultFilters: (data.defaultFilters ?? Prisma.DbNull) as Prisma.InputJsonValue,
       },
       select: {
         id: true,

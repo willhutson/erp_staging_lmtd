@@ -98,18 +98,18 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
     if (data.size) updateData.size = data.size;
     if (data.position !== undefined) {
-      updateData.position = data.position === null ? Prisma.DbNull : data.position;
+      updateData.position = (data.position === null ? Prisma.DbNull : data.position) as Prisma.InputJsonValue;
     }
     if (data.metric) updateData.metric = data.metric;
     if (data.dimensions) updateData.dimensions = data.dimensions;
     if (data.filters !== undefined) {
-      updateData.filters = data.filters === null ? Prisma.DbNull : data.filters;
+      updateData.filters = (data.filters === null ? Prisma.DbNull : data.filters) as Prisma.InputJsonValue;
     }
     if (data.timeRange !== undefined) updateData.timeRange = data.timeRange;
     if (data.refreshInterval !== undefined) updateData.refreshInterval = data.refreshInterval;
     if (data.compareWith !== undefined) updateData.compareWith = data.compareWith;
     if (data.thresholds !== undefined) {
-      updateData.thresholds = data.thresholds === null ? Prisma.DbNull : data.thresholds;
+      updateData.thresholds = (data.thresholds === null ? Prisma.DbNull : data.thresholds) as Prisma.InputJsonValue;
     }
 
     const widget = await db.analyticsWidget.update({
