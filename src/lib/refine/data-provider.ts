@@ -72,7 +72,7 @@ interface ApiResponse<T> {
   error?: string;
 }
 
-export const dataProvider: DataProvider = {
+export const dataProvider = {
   getList: async ({ resource, pagination, sorters, filters }) => {
     const query = buildQueryString({ pagination, sorters, filters });
     const url = `${API_URL}/${resource}${query ? `?${query}` : ""}`;
@@ -187,6 +187,6 @@ export const dataProvider: DataProvider = {
       throw new Error(json.error || "Request failed");
     }
 
-    return { data: json.data as Record<string, unknown> };
+    return { data: json.data as BaseRecord };
   },
-};
+} satisfies DataProvider;
