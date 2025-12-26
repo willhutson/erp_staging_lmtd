@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       db.project.count({
         where: {
           organizationId: ctx.organizationId,
-          status: { in: ["ACTIVE", "IN_PROGRESS"] },
+          status: "ACTIVE",
         },
       }),
       db.timeEntry.count({
