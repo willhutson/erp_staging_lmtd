@@ -1,6 +1,6 @@
 "use client";
 
-import { useList, useCan, useCustom, useInvalidate } from "@refinedev/core";
+import { useList, useCan, useInvalidate } from "@refinedev/core";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
@@ -94,7 +94,7 @@ export default function AccessPoliciesListPage() {
     action: "create",
   });
 
-  const { data, isLoading } = useList<Policy>({
+  const { query: listQuery, result } = useList<Policy>({
     resource: "access-policies",
     filters: [
       ...(searchQuery ? [{ field: "q", operator: "contains" as const, value: searchQuery }] : []),
@@ -106,10 +106,8 @@ export default function AccessPoliciesListPage() {
     sorters: [{ field: "priority", order: "desc" }],
   });
 
-  const { mutate: performAction, isLoading: actionLoading } = useCustom({
-    url: "",
-    method: "post",
-  });
+  const isLoading = listQuery.isLoading;
+  const [actionLoading, setActionLoading] = useState(false);
 
   const handleAction = async (action: string, policy: Policy) => {
     if (action === "reject" && !rejectionReason) {
@@ -123,6 +121,7 @@ export default function AccessPoliciesListPage() {
       payload.reason = rejectionReason;
     }
 
+    setActionLoading(true);
     try {
       await fetch(url, {
         method: "POST",
@@ -136,6 +135,8 @@ export default function AccessPoliciesListPage() {
       setRejectionReason("");
     } catch (error) {
       toast.error(`Failed to ${action} policy`);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -144,7 +145,7 @@ export default function AccessPoliciesListPage() {
     setRejectionReason("");
   };
 
-  const policies = data?.data || [];
+  const policies = result?.data || [];
 
   return (
     <div className="space-y-6">
