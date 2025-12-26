@@ -22,10 +22,13 @@ interface ResourceShowProps {
 }
 
 export function ResourceShow({ config, id }: ResourceShowProps) {
-  const { data, isLoading, isError } = useOne({
+  const { query } = useOne({
     resource: config.name,
     id,
   });
+  const data = query.data;
+  const isLoading = query.isLoading;
+  const isError = query.isError;
 
   const record = data?.data as Record<string, unknown> | undefined;
   const showView = config.show;
