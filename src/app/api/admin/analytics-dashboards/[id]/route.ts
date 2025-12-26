@@ -103,9 +103,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (data.ownerId !== undefined) {
       updateData.ownerId = data.ownerId;
     }
-    if (data.layout) updateData.layout = data.layout;
+    if (data.layout) updateData.layout = data.layout as Prisma.InputJsonValue;
     if (data.defaultFilters !== undefined) {
-      updateData.defaultFilters = data.defaultFilters === null ? Prisma.DbNull : data.defaultFilters;
+      updateData.defaultFilters = data.defaultFilters === null
+        ? Prisma.DbNull
+        : data.defaultFilters as Prisma.InputJsonValue;
     }
 
     const dashboard = await db.analyticsDashboard.update({
