@@ -35,8 +35,11 @@ function buildQueryString(params: {
   const searchParams = new URLSearchParams();
 
   // Pagination - convert to offset/limit format our APIs expect
+  // Cast pagination to expected shape since Refine's Pagination type varies
   if (params.pagination) {
-    const { current = 1, pageSize = 10 } = params.pagination;
+    const pag = params.pagination as { current?: number; pageSize?: number };
+    const current = pag.current ?? 1;
+    const pageSize = pag.pageSize ?? 10;
     const offset = (current - 1) * pageSize;
     searchParams.set("_start", offset.toString());
     searchParams.set("_end", (offset + pageSize).toString());
