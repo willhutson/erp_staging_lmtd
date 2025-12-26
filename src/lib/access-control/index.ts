@@ -263,7 +263,7 @@ export class AccessControl {
 
       case "CUSTOM":
         // Use conditionParams JSON for custom logic
-        return this.parseCustomCondition(allowRule.conditionParams);
+        return this.parseCustomCondition(allowRule.conditionParams) as unknown as T;
 
       default:
         return {} as T;
