@@ -71,7 +71,7 @@ export const analyticsDashboardsResource: ResourceConfig = {
     {
       name: "ownerId",
       label: "Owner",
-      type: "reference",
+      type: "relation",
       referenceResource: "users",
       referenceField: "name",
       list: false,

@@ -36,7 +36,7 @@ export const analyticsWidgetsResource: ResourceConfig = {
     {
       name: "dashboardId",
       label: "Dashboard",
-      type: "reference",
+      type: "relation",
       referenceResource: "analytics-dashboards",
       referenceField: "name",
       list: true,
