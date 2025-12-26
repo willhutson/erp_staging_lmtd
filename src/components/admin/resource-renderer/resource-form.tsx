@@ -7,7 +7,7 @@
  */
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, UseFormReturn, FieldValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCreate, useUpdate, useOne } from "@refinedev/core";
@@ -252,7 +252,7 @@ export function ResourceForm({ config, mode, id }: ResourceFormProps) {
 interface FormSectionCardProps {
   section: FormSection;
   fields: FieldDefinition[];
-  form: ReturnType<typeof useForm>;
+  form: UseFormReturn<FieldValues>;
   getField: (name: string) => FieldDefinition | undefined;
 }
 
@@ -317,7 +317,7 @@ function FormSectionCard({ section, fields, form, getField }: FormSectionCardPro
 
 interface FormFieldRendererProps {
   field: FieldDefinition;
-  form: ReturnType<typeof useForm>;
+  form: UseFormReturn<FieldValues>;
 }
 
 function FormFieldRenderer({ field, form }: FormFieldRendererProps) {
