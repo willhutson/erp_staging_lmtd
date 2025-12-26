@@ -56,7 +56,7 @@ export async function performAIAction(request: AIActionRequest): Promise<AIActio
       data: {
         organizationId: session.user.organizationId,
         userId: session.user.id,
-        action: "AI_ACTION",
+        action: "CREATE",
         entityType: "AI",
         entityId: request.action,
         changes: {
