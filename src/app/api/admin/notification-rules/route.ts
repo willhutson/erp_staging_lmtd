@@ -6,6 +6,7 @@ import {
 } from "@/lib/api/session-middleware";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 // GET /api/admin/notification-rules - List notification rules
 export async function GET(request: NextRequest) {
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
         notifyAssignee: data.notifyAssignee || false,
         notifyApprover: data.notifyApprover || false,
         notifyTeamLead: data.notifyTeamLead || false,
-        conditions: data.conditions,
+        conditions: data.conditions as Prisma.InputJsonValue | undefined,
         channels: data.channels || ["in_app"],
         templateId: data.templateId,
         isActive: data.isActive ?? true,
