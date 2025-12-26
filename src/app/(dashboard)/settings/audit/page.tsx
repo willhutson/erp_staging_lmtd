@@ -3,9 +3,13 @@ import { db } from "@/lib/db";
 import { Shield, Filter } from "lucide-react";
 
 const actionColors: Record<string, { bg: string; text: string }> = {
-  created: { bg: "bg-green-100", text: "text-green-700" },
-  updated: { bg: "bg-blue-100", text: "text-blue-700" },
-  deleted: { bg: "bg-red-100", text: "text-red-700" },
+  CREATE: { bg: "bg-green-100", text: "text-green-700" },
+  UPDATE: { bg: "bg-blue-100", text: "text-blue-700" },
+  DELETE: { bg: "bg-red-100", text: "text-red-700" },
+  ACCESS_GRANTED: { bg: "bg-green-100", text: "text-green-700" },
+  ACCESS_DENIED: { bg: "bg-red-100", text: "text-red-700" },
+  LOGIN: { bg: "bg-purple-100", text: "text-purple-700" },
+  LOGOUT: { bg: "bg-gray-100", text: "text-gray-700" },
   default: { bg: "bg-gray-100", text: "text-gray-700" },
 };
 
@@ -24,17 +28,9 @@ export default async function AuditSettingsPage() {
 
   const auditLogs = await db.auditLog.findMany({
     where: { organizationId: session!.user.organizationId },
-    orderBy: { createdAt: "desc" },
+    orderBy: { occurredAt: "desc" },
     take: 100,
   });
-
-  // Get user names for the logs
-  const userIds = Array.from(new Set(auditLogs.filter(l => l.userId).map(l => l.userId!)));
-  const users = await db.user.findMany({
-    where: { id: { in: userIds } },
-    select: { id: true, name: true },
-  });
-  const userMap = new Map(users.map(u => [u.id, u.name]));
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleString("en-GB", {
@@ -44,13 +40,6 @@ export default async function AuditSettingsPage() {
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
-
-  const getActionType = (action: string): string => {
-    if (action.includes("created") || action.includes("create")) return "created";
-    if (action.includes("updated") || action.includes("update")) return "updated";
-    if (action.includes("deleted") || action.includes("delete")) return "deleted";
-    return "default";
   };
 
   return (
@@ -74,9 +63,8 @@ export default async function AuditSettingsPage() {
         ) : (
           <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {auditLogs.map((log) => {
-              const actionType = getActionType(log.action);
-              const colors = actionColors[actionType] || actionColors.default;
-              const userName = log.userId ? userMap.get(log.userId) || "Unknown" : "System";
+              const colors = actionColors[log.action] || actionColors.default;
+              const userName = log.userName || "System";
 
               return (
                 <div key={log.id} className="p-4">
@@ -89,29 +77,52 @@ export default async function AuditSettingsPage() {
                           {log.action}
                         </span>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
-                          {log.entityType}
+                          {log.resource}
                         </span>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-300">
                         <span className="font-medium">{userName}</span>
-                        {" "}performed action on{" "}
-                        <code className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">
-                          {log.entityId.slice(0, 8)}...
-                        </code>
+                        {" "}performed action
+                        {log.resourceId && (
+                          <>
+                            {" "}on{" "}
+                            <code className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">
+                              {log.resourceId.slice(0, 8)}...
+                            </code>
+                          </>
+                        )}
+                        {log.changesSummary && (
+                          <span className="text-gray-400"> - {log.changesSummary}</span>
+                        )}
                       </p>
-                      {log.changes && (
+                      {(log.previousState || log.newState) && (
                         <details className="mt-2">
                           <summary className="text-xs text-gray-400 dark:text-gray-500 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300">
                             View changes
                           </summary>
-                          <pre className="mt-2 p-2 bg-gray-50 dark:bg-gray-900 rounded text-xs overflow-x-auto text-gray-800 dark:text-gray-200">
-                            {JSON.stringify(log.changes, null, 2)}
-                          </pre>
+                          <div className="mt-2 space-y-2">
+                            {log.previousState && (
+                              <div>
+                                <span className="text-xs text-red-500">Previous:</span>
+                                <pre className="p-2 bg-gray-50 dark:bg-gray-900 rounded text-xs overflow-x-auto text-gray-800 dark:text-gray-200">
+                                  {JSON.stringify(log.previousState, null, 2)}
+                                </pre>
+                              </div>
+                            )}
+                            {log.newState && (
+                              <div>
+                                <span className="text-xs text-green-500">New:</span>
+                                <pre className="p-2 bg-gray-50 dark:bg-gray-900 rounded text-xs overflow-x-auto text-gray-800 dark:text-gray-200">
+                                  {JSON.stringify(log.newState, null, 2)}
+                                </pre>
+                              </div>
+                            )}
+                          </div>
                         </details>
                       )}
                     </div>
                     <div className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">
-                      {formatDate(log.createdAt)}
+                      {formatDate(log.occurredAt)}
                     </div>
                   </div>
                 </div>
