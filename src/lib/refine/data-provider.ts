@@ -16,6 +16,10 @@ import {
   DeleteOneParams,
   GetManyParams,
   CustomParams,
+  CrudFilter,
+  CrudSort,
+  Pagination,
+  LogicalFilter,
 } from "@refinedev/core";
 
 const API_URL = "/api/admin";
@@ -24,13 +28,9 @@ const API_URL = "/api/admin";
  * Build query string from Refine parameters
  */
 function buildQueryString(params: {
-  pagination?: { current?: number; pageSize?: number };
-  sorters?: Array<{ field: string; order: "asc" | "desc" }>;
-  filters?: Array<{
-    field: string;
-    operator: string;
-    value: unknown;
-  }>;
+  pagination?: Pagination;
+  sorters?: CrudSort[];
+  filters?: CrudFilter[];
 }): string {
   const searchParams = new URLSearchParams();
 
@@ -49,16 +49,20 @@ function buildQueryString(params: {
     searchParams.set("_order", sorter.order);
   }
 
-  // Filters
+  // Filters - only handle LogicalFilter (has 'field' property)
   if (params.filters) {
     for (const filter of params.filters) {
-      if (filter.value !== undefined && filter.value !== null && filter.value !== "") {
-        if (filter.field === "q") {
+      // Skip ConditionalFilter (has 'key' instead of 'field')
+      if (!("field" in filter)) continue;
+
+      const logicalFilter = filter as LogicalFilter;
+      if (logicalFilter.value !== undefined && logicalFilter.value !== null && logicalFilter.value !== "") {
+        if (logicalFilter.field === "q") {
           // Search query
-          searchParams.set("q", String(filter.value));
+          searchParams.set("q", String(logicalFilter.value));
         } else {
           // Other filters - use field name directly
-          searchParams.set(filter.field, String(filter.value));
+          searchParams.set(logicalFilter.field, String(logicalFilter.value));
         }
       }
     }
