@@ -24,7 +24,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       },
       include: {
         document: {
-          select: { id: true, title: true, type: true },
+          select: { id: true, title: true, documentType: true },
         },
         _count: {
           select: { invocations: true },
