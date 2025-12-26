@@ -6,7 +6,17 @@
  * sorting, and filtering.
  */
 
-import { DataProvider, BaseRecord } from "@refinedev/core";
+import {
+  DataProvider,
+  BaseRecord,
+  GetListParams,
+  GetOneParams,
+  CreateParams,
+  UpdateParams,
+  DeleteOneParams,
+  GetManyParams,
+  CustomParams,
+} from "@refinedev/core";
 
 const API_URL = "/api/admin";
 
@@ -73,7 +83,7 @@ interface ApiResponse<T> {
 }
 
 export const dataProvider = {
-  getList: async ({ resource, pagination, sorters, filters }) => {
+  getList: async ({ resource, pagination, sorters, filters }: GetListParams) => {
     const query = buildQueryString({ pagination, sorters, filters });
     const url = `${API_URL}/${resource}${query ? `?${query}` : ""}`;
 
@@ -90,7 +100,7 @@ export const dataProvider = {
     };
   },
 
-  getOne: async ({ resource, id }) => {
+  getOne: async ({ resource, id }: GetOneParams) => {
     const url = `${API_URL}/${resource}/${id}`;
     const response = await fetch(url);
     const json: ApiResponse<unknown> = await response.json();
@@ -104,7 +114,7 @@ export const dataProvider = {
     };
   },
 
-  create: async ({ resource, variables }) => {
+  create: async ({ resource, variables }: CreateParams) => {
     const url = `${API_URL}/${resource}`;
     const response = await fetch(url, {
       method: "POST",
@@ -122,7 +132,7 @@ export const dataProvider = {
     };
   },
 
-  update: async ({ resource, id, variables }) => {
+  update: async ({ resource, id, variables }: UpdateParams) => {
     const url = `${API_URL}/${resource}/${id}`;
     const response = await fetch(url, {
       method: "PATCH",
@@ -140,7 +150,7 @@ export const dataProvider = {
     };
   },
 
-  deleteOne: async ({ resource, id }) => {
+  deleteOne: async ({ resource, id }: DeleteOneParams) => {
     const url = `${API_URL}/${resource}/${id}`;
     const response = await fetch(url, {
       method: "DELETE",
@@ -156,7 +166,7 @@ export const dataProvider = {
     };
   },
 
-  getMany: async ({ resource, ids }) => {
+  getMany: async ({ resource, ids }: GetManyParams) => {
     // Fetch each resource individually (our API doesn't support bulk get)
     const promises = ids.map(async (id) => {
       const url = `${API_URL}/${resource}/${id}`;
@@ -175,7 +185,7 @@ export const dataProvider = {
   getApiUrl: () => API_URL,
 
   // Custom method for policy actions (submit, approve, reject, etc.)
-  custom: async ({ url, method, payload }) => {
+  custom: async ({ url, method, payload }: CustomParams) => {
     const response = await fetch(url, {
       method: method?.toUpperCase() || "POST",
       headers: { "Content-Type": "application/json" },
