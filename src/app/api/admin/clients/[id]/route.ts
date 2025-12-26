@@ -6,7 +6,7 @@ import {
 } from "@/lib/api/session-middleware";
 import { db } from "@/lib/db";
 import { z } from "zod";
-import { Prisma } from "@prisma/client";
+import { Prisma, RelationshipStatus } from "@prisma/client";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -60,9 +60,7 @@ const updateClientSchema = z.object({
   accountManagerId: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
-  relationshipStatus: z
-    .enum(["PROSPECT", "ACTIVE", "ON_HOLD", "CHURNED", "FORMER"])
-    .optional(),
+  relationshipStatus: z.nativeEnum(RelationshipStatus).optional(),
 });
 
 export async function PATCH(request: NextRequest, context: RouteContext) {
