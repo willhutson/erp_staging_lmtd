@@ -59,9 +59,7 @@ export async function GET(request: NextRequest) {
       db.user.count({
         where: {
           organizationId: ctx.organizationId,
-          lastLoginAt: {
-            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
-          },
+          isActive: true,
         },
       }),
       db.brief.count({
