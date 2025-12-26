@@ -6,6 +6,15 @@ import { LeaveRequestForm } from "@/modules/leave/components/LeaveRequestForm";
 import { LeaveBalanceCard } from "@/modules/leave/components/LeaveBalanceCard";
 import { initializeLeaveTypes } from "@/modules/leave/actions/leave-actions";
 
+// Inferred type for blackout periods with client
+type BlackoutPeriodWithClient = Awaited<
+  ReturnType<
+    typeof db.blackoutPeriod.findMany<{
+      include: { client: { select: { id: true; name: true; code: true } } };
+    }>
+  >
+>[number];
+
 export default async function LeaveRequestPage() {
   const session = await auth();
 
@@ -88,7 +97,7 @@ export default async function LeaveRequestPage() {
                 Upcoming Blackout Periods
               </h3>
               <div className="space-y-2 text-sm text-orange-700 dark:text-orange-400">
-                {blackouts.map((blackout) => (
+                {blackouts.map((blackout: BlackoutPeriodWithClient) => (
                   <div key={blackout.id}>
                     <p className="font-medium">{blackout.name}</p>
                     <p className="text-orange-600 dark:text-orange-500">

@@ -161,7 +161,7 @@ export function BrandingForm({ initialTheme, organizationName, logo }: BrandingF
                 setFonts((prev) => ({ ...prev, heading: e.target.value }));
                 setSaved(false);
               }}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
             >
               {availableFonts.map((font) => (
                 <option key={font.value} value={font.value}>
@@ -181,7 +181,7 @@ export function BrandingForm({ initialTheme, organizationName, logo }: BrandingF
                 setFonts((prev) => ({ ...prev, body: e.target.value }));
                 setSaved(false);
               }}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
             >
               {availableFonts.map((font) => (
                 <option key={font.value} value={font.value}>
@@ -211,7 +211,7 @@ export function BrandingForm({ initialTheme, organizationName, logo }: BrandingF
                 setBorderRadius(e.target.value as ThemeSettings["borderRadius"]);
                 setSaved(false);
               }}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#52EDC7]"
             >
               {borderRadiusOptions.map((option) => (
                 <option key={option.value} value={option.value}>

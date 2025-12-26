@@ -236,12 +236,12 @@ export function DynamicForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {config.sections.map((section) => (
-        <div key={section.id} className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">
+        <div key={section.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
             {section.title}
           </h2>
           {section.description && (
-            <p className="text-sm text-gray-500 mb-4">{section.description}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{section.description}</p>
           )}
           <div className="space-y-4">
             {section.fields.map(renderField)}
@@ -252,7 +252,7 @@ export function DynamicForm({
       <div className="flex justify-end gap-3">
         <button
           type="button"
-          className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+          className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           Cancel
         </button>

@@ -1,5 +1,8 @@
 import type { FormConfig, BriefType } from "@/types/forms";
 
+// Re-export BriefType for use in pages
+export type { BriefType } from "@/types/forms";
+
 import { videoShootForm } from "./video-shoot.form";
 import { videoEditForm } from "./video-edit.form";
 import { designForm } from "./design.form";
