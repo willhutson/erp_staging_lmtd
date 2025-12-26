@@ -31,10 +31,10 @@ export async function GET(request: NextRequest) {
       }),
       // Date range filters
       ...(filters.startDate && {
-        createdAt: { gte: new Date(filters.startDate) },
+        occurredAt: { gte: new Date(filters.startDate) },
       }),
       ...(filters.endDate && {
-        createdAt: { lte: new Date(filters.endDate) },
+        occurredAt: { lte: new Date(filters.endDate) },
       }),
     };
 
@@ -52,9 +52,9 @@ export async function GET(request: NextRequest) {
           resourceName: true,
           changesSummary: true,
           ipAddress: true,
-          createdAt: true,
+          occurredAt: true,
         },
-        orderBy: sort.length > 0 ? buildOrderBy(sort) : { createdAt: "desc" },
+        orderBy: sort.length > 0 ? buildOrderBy(sort) : { occurredAt: "desc" },
         take: pagination.limit,
         skip: pagination.offset,
       }),
