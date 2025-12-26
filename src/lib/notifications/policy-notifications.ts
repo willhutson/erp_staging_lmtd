@@ -9,6 +9,7 @@
  */
 
 import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 
 interface NotificationParams {
   organizationId: string;
@@ -38,7 +39,7 @@ async function createNotification(params: NotificationParams): Promise<void> {
       actionLabel: params.actionLabel,
       entityType: params.entityType,
       entityId: params.entityId,
-      metadata: params.metadata,
+      metadata: params.metadata as Prisma.InputJsonValue | undefined,
       channels: ["in_app"], // Can be extended to include email, slack
     },
   });
