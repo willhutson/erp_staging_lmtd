@@ -66,13 +66,15 @@ export function ResourceForm({ config, mode, id }: ResourceFormProps) {
   }
 
   // Fetch existing data for edit mode
-  const { data: existingData, isLoading: isLoadingData } = useOne({
+  const { query } = useOne({
     resource: config.name,
     id: id || "",
     queryOptions: {
       enabled: mode === "edit" && !!id,
     },
   });
+  const existingData = query.data;
+  const isLoadingData = query.isLoading;
 
   // Build Zod schema from field definitions
   const schema = buildZodSchema(config.fields, formView);
