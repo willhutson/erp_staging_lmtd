@@ -5571,3 +5571,51 @@ enum BackupStatus {
   FAILED
   EXPIRED
 }
+
+// ============================================
+// DOC TEMPLATES (Doc Engine Integration)
+// ============================================
+
+model DocTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Basic info
+  name            String
+  description     String?
+  category        DocTemplateCategory @default(OTHER)
+  isActive        Boolean  @default(true)
+
+  // Figma source
+  figmaFileKey    String
+  figmaFileUrl    String?
+
+  // Google Doc target
+  googleDocId     String
+  outputFolder    String?  // Google Drive folder ID
+  namingPattern   String?  // e.g., "Generated Doc - {{date}} - {{client}}"
+
+  // Field mappings (array of {figma_node: string, doc_var: string})
+  mappings        Json     @default("[]")
+
+  // Stats
+  generationCount Int      @default(0)
+  lastGeneratedAt DateTime?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, name])
+  @@index([organizationId, category])
+  @@map("doc_templates")
+}
+
+enum DocTemplateCategory {
+  BRIEF
+  PROPOSAL
+  REPORT
+  CONTRACT
+  INVOICE
+  OTHER
+}

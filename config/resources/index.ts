@@ -13,6 +13,8 @@ import { usersResource } from "./users.resource";
 import { clientsResource } from "./clients.resource";
 import { projectsResource } from "./projects.resource";
 import { auditLogsResource } from "./audit-logs.resource";
+import { skillsResource } from "./skills.resource";
+import { docTemplatesResource } from "./doc-templates.resource";
 
 // ============================================
 // RESOURCE REGISTRY
@@ -25,9 +27,9 @@ const allResources: ResourceConfig[] = [
   projectsResource,
   auditLogsResource,
 
-  // CONTENT_ENGINE (to be added)
-  // skillsResource,
-  // templatesResource,
+  // CONTENT_ENGINE
+  skillsResource,
+  docTemplatesResource,
 
   // ANALYTICS (to be added)
   // eventTypesResource,
@@ -85,4 +87,4 @@ export const resourceRegistry: ResourceRegistry = {
 export type { ResourceConfig, FieldDefinition, FieldType, SpokeStackModule } from "./types";
 
 // Re-export individual resources for direct import
-export { usersResource, clientsResource, projectsResource, auditLogsResource };
+export { usersResource, clientsResource, projectsResource, auditLogsResource, skillsResource, docTemplatesResource };
