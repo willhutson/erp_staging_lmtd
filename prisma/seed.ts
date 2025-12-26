@@ -261,6 +261,532 @@ async function main() {
     console.log("Created portal test user: portal@test.com (use magic link to login)");
   }
 
+  // ===========================================
+  // ACCESS CONTROL POLICIES
+  // ===========================================
+  // These define what each permission level can do by default.
+  // Leadership can create draft policies, Admins approve them.
+  // Individual users can have policies assigned to override defaults.
+
+  // Get an admin user to be the creator
+  const adminUser = await prisma.user.findFirst({
+    where: { organizationId: org.id, email: "will@teamlmtd.com" },
+  });
+
+  if (adminUser) {
+    console.log("Creating default access policies...");
+
+    // ADMIN FULL ACCESS
+    // ─────────────────────────────────────────
+    // Full unrestricted access to all resources and actions.
+    // Can create, edit, delete anything. Can manage users and policies.
+    // Can approve/reject policy submissions from Leadership.
+    const adminPolicy = await prisma.accessPolicy.upsert({
+      where: { organizationId_name: { organizationId: org.id, name: "Admin Full Access" } },
+      update: {},
+      create: {
+        organizationId: org.id,
+        name: "Admin Full Access",
+        description: `
+Full administrative access to all platform features.
+
+USERS:
+• View all users across organization
+• Create new user accounts
+• Edit user profiles, roles, permissions
+• Deactivate/reactivate accounts
+• Assign policies to users
+
+CLIENTS:
+• View all clients and their details
+• Create new clients
+• Edit client information, retainer settings
+• Assign account managers
+• Archive clients
+
+PROJECTS:
+• View all projects
+• Create and edit projects
+• Delete/archive projects
+• Manage budgets and timelines
+
+BRIEFS:
+• Full access to all briefs
+• Create, edit, assign, delete briefs
+• Override any brief status
+
+ACCESS POLICIES:
+• Create policies directly (auto-approved)
+• Approve/reject policy submissions
+• Edit any policy
+• Archive/restore policies
+• Assign policies to users
+
+AUDIT LOGS:
+• View all audit logs
+• Export audit data
+        `.trim(),
+        defaultLevel: PermissionLevel.ADMIN,
+        status: "APPROVED",
+        isActive: true,
+        priority: 100,
+        version: 1,
+        approvedById: adminUser.id,
+        approvedAt: new Date(),
+        createdById: adminUser.id,
+      },
+    });
+
+    // Create rules for admin
+    const adminRules = [
+      // Users - full access
+      { resource: "users", action: "LIST" },
+      { resource: "users", action: "VIEW" },
+      { resource: "users", action: "CREATE" },
+      { resource: "users", action: "UPDATE" },
+      { resource: "users", action: "DELETE" },
+      { resource: "users", action: "EXPORT" },
+      // Clients - full access
+      { resource: "clients", action: "LIST" },
+      { resource: "clients", action: "VIEW" },
+      { resource: "clients", action: "CREATE" },
+      { resource: "clients", action: "UPDATE" },
+      { resource: "clients", action: "DELETE" },
+      { resource: "clients", action: "EXPORT" },
+      // Projects - full access
+      { resource: "projects", action: "LIST" },
+      { resource: "projects", action: "VIEW" },
+      { resource: "projects", action: "CREATE" },
+      { resource: "projects", action: "UPDATE" },
+      { resource: "projects", action: "DELETE" },
+      // Briefs - full access
+      { resource: "briefs", action: "LIST" },
+      { resource: "briefs", action: "VIEW" },
+      { resource: "briefs", action: "CREATE" },
+      { resource: "briefs", action: "UPDATE" },
+      { resource: "briefs", action: "DELETE" },
+      { resource: "briefs", action: "ASSIGN" },
+      // Time entries - full access
+      { resource: "time_entries", action: "LIST" },
+      { resource: "time_entries", action: "VIEW" },
+      { resource: "time_entries", action: "CREATE" },
+      { resource: "time_entries", action: "UPDATE" },
+      { resource: "time_entries", action: "DELETE" },
+      // Access policies - full access
+      { resource: "access_policies", action: "LIST" },
+      { resource: "access_policies", action: "VIEW" },
+      { resource: "access_policies", action: "CREATE" },
+      { resource: "access_policies", action: "UPDATE" },
+      { resource: "access_policies", action: "DELETE" },
+      // Audit logs - view and export
+      { resource: "audit_logs", action: "LIST" },
+      { resource: "audit_logs", action: "VIEW" },
+      { resource: "audit_logs", action: "EXPORT" },
+    ];
+
+    for (const rule of adminRules) {
+      await prisma.accessRule.upsert({
+        where: {
+          policyId_resource_action: {
+            policyId: adminPolicy.id,
+            resource: rule.resource,
+            action: rule.action as any,
+          },
+        },
+        update: {},
+        create: {
+          policyId: adminPolicy.id,
+          resource: rule.resource,
+          action: rule.action as any,
+          effect: "ALLOW",
+          conditionType: "ALL",
+        },
+      });
+    }
+
+    // LEADERSHIP ACCESS
+    // ─────────────────────────────────────────
+    // Senior management with broad view access.
+    // Can create clients/projects but limited user management.
+    // Can draft policies for admin approval.
+    const leadershipPolicy = await prisma.accessPolicy.upsert({
+      where: { organizationId_name: { organizationId: org.id, name: "Leadership Access" } },
+      update: {},
+      create: {
+        organizationId: org.id,
+        name: "Leadership Access",
+        description: `
+Senior leadership with broad organizational visibility.
+
+USERS:
+• View all users (no sensitive fields like salary)
+• Cannot create or delete users
+
+CLIENTS:
+• View all clients with full details
+• Create new clients
+• Edit client information
+• Cannot archive clients
+
+PROJECTS:
+• View all projects
+• Create and edit projects
+• Cannot delete projects
+
+BRIEFS:
+• View all briefs across teams
+• Create and edit briefs
+• Assign briefs to team members
+• Cannot delete briefs
+
+ACCESS POLICIES:
+• View all policies
+• Create draft policies (requires admin approval)
+• Cannot approve or delete policies
+
+AUDIT LOGS:
+• View audit logs
+        `.trim(),
+        defaultLevel: PermissionLevel.LEADERSHIP,
+        status: "APPROVED",
+        isActive: true,
+        priority: 90,
+        version: 1,
+        approvedById: adminUser.id,
+        approvedAt: new Date(),
+        createdById: adminUser.id,
+      },
+    });
+
+    const leadershipRules = [
+      // Users - view only, hide sensitive fields
+      { resource: "users", action: "LIST", conditionType: "ALL", deniedFields: ["hourlyRate", "bankAccountNumber", "bankIban", "emiratesId"] },
+      { resource: "users", action: "VIEW", conditionType: "ALL", deniedFields: ["hourlyRate", "bankAccountNumber", "bankIban", "emiratesId"] },
+      // Clients - full view, create, update
+      { resource: "clients", action: "LIST" },
+      { resource: "clients", action: "VIEW" },
+      { resource: "clients", action: "CREATE" },
+      { resource: "clients", action: "UPDATE" },
+      // Projects - full view, create, update
+      { resource: "projects", action: "LIST" },
+      { resource: "projects", action: "VIEW" },
+      { resource: "projects", action: "CREATE" },
+      { resource: "projects", action: "UPDATE" },
+      // Briefs - full access except delete
+      { resource: "briefs", action: "LIST" },
+      { resource: "briefs", action: "VIEW" },
+      { resource: "briefs", action: "CREATE" },
+      { resource: "briefs", action: "UPDATE" },
+      { resource: "briefs", action: "ASSIGN" },
+      // Time entries - view all, manage own
+      { resource: "time_entries", action: "LIST" },
+      { resource: "time_entries", action: "VIEW" },
+      { resource: "time_entries", action: "CREATE", conditionType: "OWN" },
+      { resource: "time_entries", action: "UPDATE", conditionType: "OWN" },
+      // Access policies - view and create drafts
+      { resource: "access_policies", action: "LIST" },
+      { resource: "access_policies", action: "VIEW" },
+      { resource: "access_policies", action: "CREATE" }, // Creates as draft
+      // Audit logs - view only
+      { resource: "audit_logs", action: "LIST" },
+      { resource: "audit_logs", action: "VIEW" },
+    ];
+
+    for (const rule of leadershipRules) {
+      await prisma.accessRule.upsert({
+        where: {
+          policyId_resource_action: {
+            policyId: leadershipPolicy.id,
+            resource: rule.resource,
+            action: rule.action as any,
+          },
+        },
+        update: {},
+        create: {
+          policyId: leadershipPolicy.id,
+          resource: rule.resource,
+          action: rule.action as any,
+          effect: "ALLOW",
+          conditionType: (rule as any).conditionType || "ALL",
+          deniedFields: (rule as any).deniedFields || [],
+        },
+      });
+    }
+
+    // TEAM LEAD ACCESS
+    // ─────────────────────────────────────────
+    // Department heads with team management capabilities.
+    // Can view own team, assign work, manage projects.
+    const teamLeadPolicy = await prisma.accessPolicy.upsert({
+      where: { organizationId_name: { organizationId: org.id, name: "Team Lead Access" } },
+      update: {},
+      create: {
+        organizationId: org.id,
+        name: "Team Lead Access",
+        description: `
+Department leads with team management capabilities.
+
+USERS:
+• View team members (direct reports)
+• View own profile with full details
+• Cannot view other teams' members
+
+CLIENTS:
+• View all clients (basic info)
+• Cannot create or edit clients
+
+PROJECTS:
+• View all projects
+• Create projects (for any client)
+• Edit projects they're assigned to
+
+BRIEFS:
+• View all briefs
+• Create briefs
+• Assign briefs to team members
+• Edit briefs for their team
+
+TIME ENTRIES:
+• View team's time entries
+• Edit own time entries
+• Approve team time entries
+
+ACCESS POLICIES:
+• View policies (cannot create/edit)
+        `.trim(),
+        defaultLevel: PermissionLevel.TEAM_LEAD,
+        status: "APPROVED",
+        isActive: true,
+        priority: 80,
+        version: 1,
+        approvedById: adminUser.id,
+        approvedAt: new Date(),
+        createdById: adminUser.id,
+      },
+    });
+
+    const teamLeadRules = [
+      // Users - view team only
+      { resource: "users", action: "LIST", conditionType: "TEAM" },
+      { resource: "users", action: "VIEW", conditionType: "TEAM" },
+      // Clients - view all
+      { resource: "clients", action: "LIST" },
+      { resource: "clients", action: "VIEW" },
+      // Projects - view all, create, update own
+      { resource: "projects", action: "LIST" },
+      { resource: "projects", action: "VIEW" },
+      { resource: "projects", action: "CREATE" },
+      { resource: "projects", action: "UPDATE" },
+      // Briefs - view all, full access for team
+      { resource: "briefs", action: "LIST" },
+      { resource: "briefs", action: "VIEW" },
+      { resource: "briefs", action: "CREATE" },
+      { resource: "briefs", action: "UPDATE" },
+      { resource: "briefs", action: "ASSIGN", conditionType: "TEAM" },
+      // Time entries - view team, manage own
+      { resource: "time_entries", action: "LIST", conditionType: "TEAM" },
+      { resource: "time_entries", action: "VIEW", conditionType: "TEAM" },
+      { resource: "time_entries", action: "CREATE", conditionType: "OWN" },
+      { resource: "time_entries", action: "UPDATE", conditionType: "OWN" },
+      // Access policies - view only
+      { resource: "access_policies", action: "LIST" },
+      { resource: "access_policies", action: "VIEW" },
+    ];
+
+    for (const rule of teamLeadRules) {
+      await prisma.accessRule.upsert({
+        where: {
+          policyId_resource_action: {
+            policyId: teamLeadPolicy.id,
+            resource: rule.resource,
+            action: rule.action as any,
+          },
+        },
+        update: {},
+        create: {
+          policyId: teamLeadPolicy.id,
+          resource: rule.resource,
+          action: rule.action as any,
+          effect: "ALLOW",
+          conditionType: (rule as any).conditionType || "ALL",
+        },
+      });
+    }
+
+    // STAFF ACCESS
+    // ─────────────────────────────────────────
+    // Regular employees with standard access.
+    // Can view work, manage own assignments.
+    const staffPolicy = await prisma.accessPolicy.upsert({
+      where: { organizationId_name: { organizationId: org.id, name: "Staff Access" } },
+      update: {},
+      create: {
+        organizationId: org.id,
+        name: "Staff Access",
+        description: `
+Standard employee access for day-to-day work.
+
+USERS:
+• View team directory (basic info only)
+• Edit own profile
+
+CLIENTS:
+• View client list (names only)
+• View client details when assigned to their briefs
+
+PROJECTS:
+• View projects they're working on
+
+BRIEFS:
+• View all briefs (to understand workload)
+• Edit briefs assigned to them
+• Cannot create or assign briefs
+
+TIME ENTRIES:
+• View own time entries only
+• Create and edit own time entries
+        `.trim(),
+        defaultLevel: PermissionLevel.STAFF,
+        status: "APPROVED",
+        isActive: true,
+        priority: 70,
+        version: 1,
+        approvedById: adminUser.id,
+        approvedAt: new Date(),
+        createdById: adminUser.id,
+      },
+    });
+
+    const staffRules = [
+      // Users - limited view
+      { resource: "users", action: "LIST", conditionType: "ALL", allowedFields: ["id", "name", "email", "role", "department", "avatarUrl"] },
+      { resource: "users", action: "VIEW", conditionType: "OWN" },
+      { resource: "users", action: "UPDATE", conditionType: "OWN", allowedFields: ["name", "phone", "avatarUrl", "skills"] },
+      // Clients - view all
+      { resource: "clients", action: "LIST" },
+      { resource: "clients", action: "VIEW" },
+      // Projects - view all
+      { resource: "projects", action: "LIST" },
+      { resource: "projects", action: "VIEW" },
+      // Briefs - view all, edit assigned
+      { resource: "briefs", action: "LIST" },
+      { resource: "briefs", action: "VIEW" },
+      { resource: "briefs", action: "UPDATE", conditionType: "ASSIGNED" },
+      // Time entries - own only
+      { resource: "time_entries", action: "LIST", conditionType: "OWN" },
+      { resource: "time_entries", action: "VIEW", conditionType: "OWN" },
+      { resource: "time_entries", action: "CREATE", conditionType: "OWN" },
+      { resource: "time_entries", action: "UPDATE", conditionType: "OWN" },
+    ];
+
+    for (const rule of staffRules) {
+      await prisma.accessRule.upsert({
+        where: {
+          policyId_resource_action: {
+            policyId: staffPolicy.id,
+            resource: rule.resource,
+            action: rule.action as any,
+          },
+        },
+        update: {},
+        create: {
+          policyId: staffPolicy.id,
+          resource: rule.resource,
+          action: rule.action as any,
+          effect: "ALLOW",
+          conditionType: (rule as any).conditionType || "ALL",
+          allowedFields: (rule as any).allowedFields || [],
+        },
+      });
+    }
+
+    // FREELANCER ACCESS
+    // ─────────────────────────────────────────
+    // Contractors with restricted access.
+    // Only see work assigned to them.
+    const freelancerPolicy = await prisma.accessPolicy.upsert({
+      where: { organizationId_name: { organizationId: org.id, name: "Freelancer Access" } },
+      update: {},
+      create: {
+        organizationId: org.id,
+        name: "Freelancer Access",
+        description: `
+External contractors with restricted access.
+
+USERS:
+• View own profile only
+
+CLIENTS:
+• View clients only when assigned to their briefs
+• Cannot see retainer details, notes, or contracts
+
+PROJECTS:
+• View projects only when assigned to related briefs
+
+BRIEFS:
+• View only briefs assigned to them
+• Update status on assigned briefs
+
+TIME ENTRIES:
+• View and manage own time entries only
+        `.trim(),
+        defaultLevel: PermissionLevel.FREELANCER,
+        status: "APPROVED",
+        isActive: true,
+        priority: 60,
+        version: 1,
+        approvedById: adminUser.id,
+        approvedAt: new Date(),
+        createdById: adminUser.id,
+      },
+    });
+
+    const freelancerRules = [
+      // Users - own only
+      { resource: "users", action: "VIEW", conditionType: "OWN" },
+      { resource: "users", action: "UPDATE", conditionType: "OWN", allowedFields: ["phone", "avatarUrl", "skills"] },
+      // Clients - assigned only, hide sensitive
+      { resource: "clients", action: "LIST", conditionType: "CLIENT" },
+      { resource: "clients", action: "VIEW", conditionType: "CLIENT", deniedFields: ["retainerHours", "notes", "linkedIn", "accountManagerId"] },
+      // Projects - assigned only
+      { resource: "projects", action: "LIST", conditionType: "ASSIGNED" },
+      { resource: "projects", action: "VIEW", conditionType: "ASSIGNED", deniedFields: ["budgetHours", "budgetAmount"] },
+      // Briefs - assigned only
+      { resource: "briefs", action: "LIST", conditionType: "ASSIGNED" },
+      { resource: "briefs", action: "VIEW", conditionType: "ASSIGNED" },
+      { resource: "briefs", action: "UPDATE", conditionType: "ASSIGNED" },
+      // Time entries - own only
+      { resource: "time_entries", action: "LIST", conditionType: "OWN" },
+      { resource: "time_entries", action: "VIEW", conditionType: "OWN" },
+      { resource: "time_entries", action: "CREATE", conditionType: "OWN" },
+      { resource: "time_entries", action: "UPDATE", conditionType: "OWN" },
+    ];
+
+    for (const rule of freelancerRules) {
+      await prisma.accessRule.upsert({
+        where: {
+          policyId_resource_action: {
+            policyId: freelancerPolicy.id,
+            resource: rule.resource,
+            action: rule.action as any,
+          },
+        },
+        update: {},
+        create: {
+          policyId: freelancerPolicy.id,
+          resource: rule.resource,
+          action: rule.action as any,
+          effect: "ALLOW",
+          conditionType: (rule as any).conditionType || "ALL",
+          allowedFields: (rule as any).allowedFields || [],
+          deniedFields: (rule as any).deniedFields || [],
+        },
+      });
+    }
+
+    console.log("Created 5 default access policies with rules");
+  }
+
   console.log("Seeding complete!");
 }
 

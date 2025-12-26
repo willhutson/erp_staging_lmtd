@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ============================================
@@ -62,13 +63,20 @@ model Organization {
   crmCampaigns     CRMCampaign[]
   crmTasks         CRMTask[]
 
+  // Access Control (Phase 2)
+  accessPolicies   AccessPolicy[]
+
+  // Notification Rules
+  notificationRules NotificationRule[]
+
   @@map("organizations")
 }
 
 model User {
   id              String          @id @default(cuid())
   organizationId  String
-  email           String          @unique
+  email           String          // Per-org unique via @@unique([organizationId, email])
+  googleSub       String?         // Google OAuth stable identity (sub claim)
   passwordHash    String?         // For email/password auth (test accounts)
   name            String
   role            String
@@ -197,8 +205,20 @@ model User {
   crmTasksAssigned        CRMTask[]          @relation("CRMTaskAssignee")
   crmTasksCreated         CRMTask[]          @relation("CRMTaskCreator")
 
+  // Access Control (Phase 2)
+  accessPoliciesCreated   AccessPolicy[]       @relation("AccessPolicyCreator")
+  accessPoliciesApproved  AccessPolicy[]       @relation("AccessPolicyApprover")
+  policyAssignments       PolicyAssignment[]   @relation("PolicyAssignmentUser")
+  policyAssignmentsMade   PolicyAssignment[]   @relation("PolicyAssignmentAssigner")
+  policyAssignmentsApproved PolicyAssignment[] @relation("PolicyAssignmentApprover")
+  policyVersionChanges    PolicyVersion[]      @relation("PolicyVersionChanger")
+
+  // Notification Rules
+  notificationRulesCreated NotificationRule[] @relation("NotificationRulesCreated")
+
   @@unique([organizationId, email])
   @@index([organizationId])
+  @@index([organizationId, email])
   @@index([department])
   @@map("users")
 }
@@ -1267,23 +1287,7 @@ enum GoogleDocType {
   PRESENTATION  // Google Slides
 }
 
-model AuditLog {
-  id             String   @id @default(cuid())
-  organizationId String
-  userId         String?
-  action         String
-  entityType     String
-  entityId       String
-  changes        Json?
-  ipAddress      String?
-  userAgent      String?
-  createdAt      DateTime @default(now())
-
-  @@index([organizationId])
-  @@index([entityType, entityId])
-  @@index([createdAt])
-  @@map("audit_logs")
-}
+// NOTE: AuditLog model is defined in the ACCESS CONTROL section with comprehensive fields
 
 // ============================================
 // DASHBOARD LAYOUTS
@@ -1886,6 +1890,58 @@ model NotificationTemplate {
 
   @@unique([organizationId, type, channel])
   @@map("notification_templates")
+}
+
+// Notification rules define when and who gets notified
+model NotificationRule {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Rule identification
+  name            String
+  description     String?  @db.Text
+
+  // Trigger configuration
+  eventType       String   // e.g., "policy.assigned", "brief.created", "submission.approved"
+
+  // Recipient configuration
+  recipientType   String   // "user", "role", "team", "custom"
+  recipientValue  String?  // userId, role name, teamId, or expression
+
+  // Optional: notify specific permission levels
+  notifyLevels    String[] @default([])
+
+  // Optional: notify related users
+  notifyCreator   Boolean  @default(false)
+  notifyAssignee  Boolean  @default(false)
+  notifyApprover  Boolean  @default(false)
+  notifyTeamLead  Boolean  @default(false)
+
+  // Conditions (JSON for flexible filtering)
+  conditions      Json?    // e.g., {"status": "SUBMITTED", "priority": "HIGH"}
+
+  // Channel configuration
+  channels        String[] @default(["in_app"])  // "in_app", "email", "slack"
+
+  // Template override (optional - uses default if not set)
+  templateId      String?
+
+  // Status
+  isActive        Boolean  @default(true)
+  priority        Int      @default(0)  // Higher priority rules evaluated first
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdById     String
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy       User     @relation("NotificationRulesCreated", fields: [createdById], references: [id])
+
+  @@unique([organizationId, name])
+  @@index([organizationId, eventType])
+  @@map("notification_rules")
 }
 
 // ============================================
@@ -5185,4 +5241,381 @@ enum CRMTaskStatus {
   COMPLETED
   CANCELLED
   DEFERRED
+}
+
+// ============================================
+// CONFIGURABLE ACCESS CONTROL (Phase 2)
+// ============================================
+
+// AccessPolicy defines a named set of access rules
+// Leadership can draft, Admin approves
+model AccessPolicy {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String   // e.g., "Freelancer Restricted", "Account Manager"
+  description     String?  @db.Text
+
+  // Default assignment - which permission level gets this policy by default
+  defaultLevel    PermissionLevel?
+
+  // Approval workflow
+  status          PolicyStatus @default(DRAFT)
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  approvedById    String?
+  rejectedAt      DateTime?
+  rejectionReason String?
+
+  isActive        Boolean  @default(true)
+  priority        Int      @default(0)  // Higher priority wins conflicts
+  version         Int      @default(1)  // For version tracking
+
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdBy       User     @relation("AccessPolicyCreator", fields: [createdById], references: [id])
+  approvedBy      User?    @relation("AccessPolicyApprover", fields: [approvedById], references: [id])
+
+  rules           AccessRule[]
+  assignments     PolicyAssignment[]
+  versions        PolicyVersion[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([defaultLevel])
+  @@index([status])
+  @@map("access_policies")
+}
+
+enum PolicyStatus {
+  DRAFT       // Created by Leadership, pending submission
+  SUBMITTED   // Submitted for Admin approval
+  APPROVED    // Approved and active
+  REJECTED    // Rejected by Admin (with reason)
+  ARCHIVED    // No longer in use
+}
+
+// AccessRule defines individual permissions within a policy
+model AccessRule {
+  id              String   @id @default(cuid())
+  policyId        String
+
+  // What resource this rule applies to
+  resource        String   // "clients", "projects", "briefs", "users", "time_entries"
+
+  // What action this rule controls
+  action          AccessAction   // LIST, VIEW, CREATE, UPDATE, DELETE
+
+  // Rule effect
+  effect          AccessEffect   @default(ALLOW)  // ALLOW or DENY
+
+  // Condition type - how to filter records
+  conditionType   AccessCondition @default(ALL)
+
+  // Condition parameters (JSON)
+  // Examples:
+  // - { "field": "assigneeId", "operator": "eq", "value": "$userId" }
+  // - { "field": "clientId", "operator": "in", "value": "$assignedClientIds" }
+  // - { "relationPath": "briefs.assigneeId", "value": "$userId" }
+  conditionParams Json     @default("{}")
+
+  // Field-level restrictions (which fields can be seen/edited)
+  // Empty = all fields, otherwise list of allowed fields
+  allowedFields   String[] @default([])
+  deniedFields    String[] @default([])
+
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  policy          AccessPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  @@unique([policyId, resource, action])
+  @@index([policyId])
+  @@index([resource, action])
+  @@map("access_rules")
+}
+
+// PolicyAssignment links policies to users (overrides default level)
+model PolicyAssignment {
+  id              String   @id @default(cuid())
+  organizationId  String
+  policyId        String
+
+  // Assign to specific user (null = applies to default level only)
+  userId          String?
+
+  // Documentation & paper trail (required for override assignments)
+  reason          String   @db.Text  // Why this override was granted
+  businessCase    String?  @db.Text  // Business justification
+  approvedById    String?            // Who approved this override (if different from assigner)
+
+  assignedById    String
+  assignedAt      DateTime @default(now())
+  expiresAt       DateTime?  // Optional expiry for temporary access
+
+  // Notification tracking
+  notifiedAt      DateTime?  // When affected parties were notified
+  notifiedUsers   String[]   @default([])  // User IDs who were notified
+
+  policy          AccessPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  user            User?    @relation("PolicyAssignmentUser", fields: [userId], references: [id])
+  assignedBy      User     @relation("PolicyAssignmentAssigner", fields: [assignedById], references: [id])
+  approvedBy      User?    @relation("PolicyAssignmentApprover", fields: [approvedById], references: [id])
+
+  @@unique([policyId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("policy_assignments")
+}
+
+// PolicyVersion stores historical snapshots of policies for version control
+model PolicyVersion {
+  id              String   @id @default(cuid())
+  policyId        String
+  version         Int
+
+  // Snapshot of policy state at this version
+  name            String
+  description     String?  @db.Text
+  defaultLevel    PermissionLevel?
+  priority        Int
+  rulesSnapshot   Json     // Full snapshot of rules at this version
+
+  // Change tracking
+  changeType      PolicyChangeType
+  changeSummary   String   @db.Text  // Human-readable summary of changes
+  changedById     String
+  changedAt       DateTime @default(now())
+
+  policy          AccessPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  changedBy       User     @relation("PolicyVersionChanger", fields: [changedById], references: [id])
+
+  @@unique([policyId, version])
+  @@index([policyId, changedAt])
+  @@map("policy_versions")
+}
+
+enum PolicyChangeType {
+  CREATED
+  UPDATED
+  APPROVED
+  REJECTED
+  RULE_ADDED
+  RULE_REMOVED
+  RULE_MODIFIED
+  ARCHIVED
+  RESTORED
+}
+
+enum AccessAction {
+  LIST      // Can list/search records
+  VIEW      // Can view single record details
+  CREATE    // Can create new records
+  UPDATE    // Can modify existing records
+  DELETE    // Can delete/archive records
+  EXPORT    // Can export data
+  ASSIGN    // Can assign records to others
+}
+
+enum AccessEffect {
+  ALLOW
+  DENY
+}
+
+enum AccessCondition {
+  ALL       // Access all records (within tenant)
+  OWN       // Only records where user is owner/creator
+  ASSIGNED  // Only records assigned to user
+  TEAM      // Records for user's team (via teamLeadId)
+  CLIENT    // Only records for assigned clients
+  CUSTOM    // Use conditionParams for custom logic
+}
+
+// ============================================
+// COMPREHENSIVE AUDIT LOGGING
+// ============================================
+
+// AuditLog captures all significant actions for compliance and debugging
+model AuditLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Who performed the action
+  userId          String?
+  userEmail       String?  // Captured at time of action (in case user deleted)
+  userName        String?
+  userRole        String?
+  ipAddress       String?
+  userAgent       String?
+
+  // What happened
+  action          AuditAction
+  resource        String       // "access_policy", "user", "client", "brief", etc.
+  resourceId      String?      // ID of the affected record
+  resourceName    String?      // Human-readable name at time of action
+
+  // Change details
+  previousState   Json?        // State before change (for updates/deletes)
+  newState        Json?        // State after change (for creates/updates)
+  changesSummary  String?      // Human-readable summary
+
+  // Access control specific
+  accessDecision  AccessEffect?  // ALLOW or DENY (for access checks)
+  accessRuleId    String?        // Which rule was applied
+  accessPolicyId  String?        // Which policy was applied
+
+  // Context
+  requestPath     String?      // API path
+  requestMethod   String?      // GET, POST, etc.
+  sessionId       String?
+  correlationId   String?      // For tracing related actions
+
+  // Timestamps
+  occurredAt      DateTime @default(now())
+
+  // For backup/sync tracking
+  syncedAt        DateTime?
+  syncStatus      SyncStatus @default(PENDING)
+
+  @@index([organizationId, occurredAt])
+  @@index([userId, occurredAt])
+  @@index([resource, resourceId])
+  @@index([action, occurredAt])
+  @@index([syncStatus])
+  @@map("audit_logs")
+}
+
+enum AuditAction {
+  // CRUD operations
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  ARCHIVE
+  RESTORE
+
+  // Access control
+  ACCESS_GRANTED
+  ACCESS_DENIED
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+
+  // Policy management
+  POLICY_CREATED
+  POLICY_SUBMITTED
+  POLICY_APPROVED
+  POLICY_REJECTED
+  POLICY_UPDATED
+  POLICY_ARCHIVED
+  RULE_ADDED
+  RULE_UPDATED
+  RULE_REMOVED
+  ASSIGNMENT_CREATED
+  ASSIGNMENT_REMOVED
+  ASSIGNMENT_EXPIRED
+
+  // Data export/import
+  EXPORT
+  IMPORT
+  BULK_UPDATE
+  BULK_DELETE
+}
+
+enum SyncStatus {
+  PENDING     // Awaiting backup sync
+  SYNCED      // Successfully backed up
+  FAILED      // Sync failed (will retry)
+  SKIPPED     // Not eligible for sync
+}
+
+// AuditLogBackup stores backed up audit logs for long-term retention
+model AuditLogBackup {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Backup metadata
+  backupDate      DateTime
+  logsCount       Int
+  startDate       DateTime  // Earliest log in this backup
+  endDate         DateTime  // Latest log in this backup
+
+  // Storage
+  storageKey      String    // S3/R2 key for the backup file
+  storageProvider String    @default("supabase")
+  fileSizeBytes   Int
+  checksum        String    // SHA-256 for integrity
+
+  // Status
+  status          BackupStatus @default(PENDING)
+  verifiedAt      DateTime?
+  expiresAt       DateTime?   // When this backup will be deleted (retention policy)
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId, backupDate])
+  @@index([status])
+  @@map("audit_log_backups")
+}
+
+enum BackupStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  VERIFIED
+  FAILED
+  EXPIRED
+}
+
+// ============================================
+// DOC TEMPLATES (Doc Engine Integration)
+// ============================================
+
+model DocTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Basic info
+  name            String
+  description     String?
+  category        DocTemplateCategory @default(OTHER)
+  isActive        Boolean  @default(true)
+
+  // Figma source
+  figmaFileKey    String
+  figmaFileUrl    String?
+
+  // Google Doc target
+  googleDocId     String
+  outputFolder    String?  // Google Drive folder ID
+  namingPattern   String?  // e.g., "Generated Doc - {{date}} - {{client}}"
+
+  // Field mappings (array of {figma_node: string, doc_var: string})
+  mappings        Json     @default("[]")
+
+  // Stats
+  generationCount Int      @default(0)
+  lastGeneratedAt DateTime?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, name])
+  @@index([organizationId, category])
+  @@map("doc_templates")
+}
+
+enum DocTemplateCategory {
+  BRIEF
+  PROPOSAL
+  REPORT
+  CONTRACT
+  INVOICE
+  OTHER
 }

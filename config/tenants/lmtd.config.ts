@@ -52,6 +52,28 @@ export const lmtdConfig = {
     dateFormat: "DD MMM YYYY",
     timeFormat: "12h",
   },
+
+  storage: {
+    // File size limits in bytes (can be overridden per-user via settings)
+    maxFileSizeBytes: 500 * 1024 * 1024, // 500MB default
+    maxFileSizeMB: 500,
+
+    // Role-based limits (in MB)
+    roleLimits: {
+      ADMIN: 2048,       // 2GB - admins can upload anything
+      LEADERSHIP: 1024,  // 1GB
+      TEAM_LEAD: 500,    // 500MB
+      STAFF: 250,        // 250MB
+      FREELANCER: 100,   // 100MB
+    },
+
+    // Allowed MIME types (empty = all allowed)
+    allowedMimeTypes: [],
+
+    // Support contact for limit increases
+    supportEmail: "ops@teamlmtd.com",
+    supportMessage: "If you need more bandwidth, email your manager or ops@teamlmtd.com ASAP.",
+  },
 };
 
 export type LmtdConfig = typeof lmtdConfig;
