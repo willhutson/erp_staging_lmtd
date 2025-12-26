@@ -377,13 +377,19 @@ export default function NotificationRulesPage() {
                     <TableCell>
                       <div className="flex gap-1">
                         {rule.channels.includes("in_app") && (
-                          <Monitor className="h-4 w-4 text-muted-foreground" title="In-App" />
+                          <span title="In-App">
+                            <Monitor className="h-4 w-4 text-muted-foreground" />
+                          </span>
                         )}
                         {rule.channels.includes("email") && (
-                          <Mail className="h-4 w-4 text-muted-foreground" title="Email" />
+                          <span title="Email">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                          </span>
                         )}
                         {rule.channels.includes("slack") && (
-                          <MessageSquare className="h-4 w-4 text-muted-foreground" title="Slack" />
+                          <span title="Slack">
+                            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                          </span>
                         )}
                       </div>
                     </TableCell>

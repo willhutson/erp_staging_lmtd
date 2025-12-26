@@ -2,6 +2,29 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
+interface AccessRuleData {
+  id: string;
+  resource: string;
+  action: string;
+  effect: string;
+  conditionType: string;
+}
+
+interface PolicyAssignmentData {
+  id: string;
+  reason: string | null;
+  createdAt: Date;
+  expiresAt: Date | null;
+  assignedBy: { id: string; name: string } | null;
+  policy: {
+    id: string;
+    name: string;
+    description: string | null;
+    priority: number;
+    rules: AccessRuleData[];
+  };
+}
+
 /**
  * GET /api/user/access
  * Get the current user's access policies and permissions
@@ -53,6 +76,14 @@ export async function GET(request: NextRequest) {
     });
 
     // Format response
+    const mapRule = (rule: { id: string; resource: string; action: string; effect: string; conditionType: string }): AccessRuleData => ({
+      id: rule.id,
+      resource: rule.resource,
+      action: rule.action,
+      effect: rule.effect,
+      conditionType: rule.conditionType,
+    });
+
     const response = {
       user: {
         id: userId,
@@ -65,33 +96,21 @@ export async function GET(request: NextRequest) {
             id: defaultPolicy.id,
             name: defaultPolicy.name,
             description: defaultPolicy.description,
-            rules: defaultPolicy.rules.map((rule) => ({
-              id: rule.id,
-              resource: rule.resource,
-              action: rule.action,
-              effect: rule.effect,
-              conditionType: rule.conditionType,
-            })),
+            rules: defaultPolicy.rules.map(mapRule),
           }
         : null,
-      assignments: assignments.map((a) => ({
-        id: a.id,
-        reason: a.reason,
-        assignedAt: a.createdAt,
-        expiresAt: a.expiresAt,
-        assignedBy: a.assignedBy,
+      assignments: assignments.map((assignment: typeof assignments[number]) => ({
+        id: assignment.id,
+        reason: assignment.reason,
+        assignedAt: assignment.createdAt,
+        expiresAt: assignment.expiresAt,
+        assignedBy: assignment.assignedBy,
         policy: {
-          id: a.policy.id,
-          name: a.policy.name,
-          description: a.policy.description,
-          priority: a.policy.priority,
-          rules: a.policy.rules.map((rule) => ({
-            id: rule.id,
-            resource: rule.resource,
-            action: rule.action,
-            effect: rule.effect,
-            conditionType: rule.conditionType,
-          })),
+          id: assignment.policy.id,
+          name: assignment.policy.name,
+          description: assignment.policy.description,
+          priority: assignment.policy.priority,
+          rules: assignment.policy.rules.map(mapRule),
         },
       })),
     };

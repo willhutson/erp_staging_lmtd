@@ -9,7 +9,6 @@
  */
 
 import { db } from "@/lib/db";
-import { PermissionLevel } from "@prisma/client";
 
 interface NotificationParams {
   organizationId: string;
@@ -52,7 +51,7 @@ async function getAdminUsers(organizationId: string): Promise<{ id: string; name
   return db.user.findMany({
     where: {
       organizationId,
-      permissionLevel: PermissionLevel.ADMIN,
+      permissionLevel: "ADMIN",
       isActive: true,
     },
     select: { id: true, name: true, email: true },
