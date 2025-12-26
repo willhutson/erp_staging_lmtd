@@ -101,7 +101,8 @@ export function ResourceList({ config }: ResourceListProps) {
 
   // Get icon component
   const getIcon = (iconName: string) => {
-    const Icon = (LucideIcons as Record<string, React.ComponentType<{ className?: string }>>)[iconName];
+    const icons = LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>;
+    const Icon = icons[iconName];
     return Icon ? <Icon className="h-4 w-4" /> : null;
   };
 
