@@ -6,7 +6,7 @@ import {
 } from "@/lib/api/session-middleware";
 import { db } from "@/lib/db";
 import { z } from "zod";
-import { AccessAction, AccessCondition, AccessEffect } from "@prisma/client";
+import { AccessAction, AccessCondition, AccessEffect, Prisma } from "@prisma/client";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -92,7 +92,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         ...(data.effect && { effect: data.effect }),
         ...(data.conditionType && { conditionType: data.conditionType }),
         ...(data.conditionParams !== undefined && {
-          conditionParams: data.conditionParams,
+          conditionParams: data.conditionParams as Prisma.InputJsonValue,
         }),
         ...(data.allowedFields !== undefined && {
           allowedFields: data.allowedFields,

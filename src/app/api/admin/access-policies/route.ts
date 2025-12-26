@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
             action: rule.action,
             effect: rule.effect,
             conditionType: rule.conditionType,
-            conditionParams: rule.conditionParams,
+            conditionParams: rule.conditionParams as Prisma.InputJsonValue,
             allowedFields: rule.allowedFields,
             deniedFields: rule.deniedFields,
           })),
