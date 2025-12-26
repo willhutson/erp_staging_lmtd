@@ -112,6 +112,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           console.log("[AUTH] Looking up user:", email);
           const user = await db.user.findFirst({
             where: { email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              passwordHash: true,
+              organizationId: true,
+              permissionLevel: true,
+              department: true,
+              role: true,
+              avatarUrl: true,
+            },
           });
 
           console.log("[AUTH] User found:", !!user, "Has password:", !!user?.passwordHash);
@@ -142,49 +153,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
-      // For Google sign-in, verify user exists and bind googleSub
-      if (account?.provider === "google" && user.email && profile?.sub) {
-        const googleSub = profile.sub;
-
+    async signIn({ user, account }) {
+      // For Google sign-in, verify user exists in our database
+      if (account?.provider === "google" && user.email) {
         try {
-          // First, try to find user by googleSub (most secure)
-          let dbUser = await db.user.findFirst({
-            where: { googleSub },
-          });
-
-          if (dbUser) {
-            // googleSub matches - allow login
-            console.log(`User ${user.email} authenticated via googleSub`);
-            return true;
-          }
-
-          // Fallback: find by email
-          dbUser = await db.user.findFirst({
+          const dbUser = await db.user.findFirst({
             where: { email: user.email },
+            select: { id: true },
           });
 
           if (!dbUser) {
             console.log(`User ${user.email} not found in database`);
             return false;
-          }
-
-          // Security check: if user has a different googleSub stored, block login
-          if (dbUser.googleSub && dbUser.googleSub !== googleSub) {
-            console.error(
-              `SECURITY WARNING: User ${user.email} attempted login with different Google account. ` +
-              `Stored sub: ${dbUser.googleSub}, Attempted sub: ${googleSub}`
-            );
-            return false;
-          }
-
-          // Bind googleSub to user on first successful Google login
-          if (!dbUser.googleSub) {
-            await db.user.update({
-              where: { id: dbUser.id },
-              data: { googleSub },
-            });
-            console.log(`Bound googleSub ${googleSub} to user ${user.email}`);
           }
 
           console.log(`User ${user.email} found, allowing sign in`);
@@ -196,24 +176,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return true;
     },
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user, account }) {
       // On initial sign-in, fetch full user data from our database
       if ((account && user) || (user && !token.organizationId)) {
         try {
-          // For Google auth, prefer lookup by googleSub
-          let dbUser = null;
-          if (account?.provider === "google" && profile?.sub) {
-            dbUser = await db.user.findFirst({
-              where: { googleSub: profile.sub },
-            });
-          }
-
-          // Fallback to email lookup
-          if (!dbUser && token.email) {
-            dbUser = await db.user.findFirst({
-              where: { email: token.email },
-            });
-          }
+          const dbUser = await db.user.findFirst({
+            where: { email: token.email as string },
+            select: {
+              id: true,
+              organizationId: true,
+              permissionLevel: true,
+              department: true,
+              role: true,
+              avatarUrl: true,
+            },
+          });
 
           if (dbUser) {
             token.id = dbUser.id;
