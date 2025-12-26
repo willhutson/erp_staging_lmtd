@@ -6,6 +6,7 @@ import {
 } from "@/lib/api/session-middleware";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -94,9 +95,32 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
+    // Build update data with proper JSON handling
+    const updateData: Prisma.NotificationRuleUpdateInput = {
+      ...(data.name && { name: data.name }),
+      ...(data.description !== undefined && { description: data.description }),
+      ...(data.eventType && { eventType: data.eventType }),
+      ...(data.recipientType && { recipientType: data.recipientType }),
+      ...(data.recipientValue !== undefined && { recipientValue: data.recipientValue }),
+      ...(data.notifyLevels && { notifyLevels: data.notifyLevels }),
+      ...(data.notifyCreator !== undefined && { notifyCreator: data.notifyCreator }),
+      ...(data.notifyAssignee !== undefined && { notifyAssignee: data.notifyAssignee }),
+      ...(data.notifyApprover !== undefined && { notifyApprover: data.notifyApprover }),
+      ...(data.notifyTeamLead !== undefined && { notifyTeamLead: data.notifyTeamLead }),
+      ...(data.conditions !== undefined && {
+        conditions: data.conditions === null
+          ? Prisma.JsonNull
+          : (data.conditions as Prisma.InputJsonValue),
+      }),
+      ...(data.channels && { channels: data.channels }),
+      ...(data.templateId !== undefined && { templateId: data.templateId }),
+      ...(data.isActive !== undefined && { isActive: data.isActive }),
+      ...(data.priority !== undefined && { priority: data.priority }),
+    };
+
     const updated = await db.notificationRule.update({
       where: { id },
-      data,
+      data: updateData,
       include: {
         createdBy: { select: { id: true, name: true } },
       },
