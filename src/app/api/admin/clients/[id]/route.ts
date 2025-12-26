@@ -29,7 +29,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
           take: 10,
         },
         contacts: {
-          select: { id: true, name: true, email: true, role: true, isPrimary: true },
+          select: { id: true, name: true, email: true, jobTitle: true, isPrimary: true },
           take: 10,
         },
         _count: {
