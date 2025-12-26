@@ -98,7 +98,11 @@ export interface FieldDefinition {
   options?: SelectOption[];
   enumName?: string;      // Prisma enum name
 
-  // Relation config
+  // Relation config (shorthand)
+  referenceResource?: string;  // Target resource name
+  referenceField?: string;     // Field to display (e.g., "name")
+
+  // Relation config (detailed)
   relation?: {
     resource: string;     // Target resource name
     field: string;        // Foreign key field
