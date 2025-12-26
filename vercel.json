@@ -1,0 +1,14 @@
+{
+    "builds": [
+        {
+            "src": "analytics_service/app/main.py",
+            "use": "@vercel/python"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "analytics_service/app/main.py"
+        }
+    ]
+}
