@@ -6,7 +6,7 @@
  * sorting, and filtering.
  */
 
-import { DataProvider } from "@refinedev/core";
+import { DataProvider, BaseRecord } from "@refinedev/core";
 
 const API_URL = "/api/admin";
 
@@ -85,8 +85,8 @@ export const dataProvider: DataProvider = {
     }
 
     return {
-      data: json.data as unknown[],
-      total: json.pagination?.total || (json.data as unknown[]).length,
+      data: json.data as BaseRecord[],
+      total: json.pagination?.total || (json.data as BaseRecord[]).length,
     };
   },
 
@@ -100,7 +100,7 @@ export const dataProvider: DataProvider = {
     }
 
     return {
-      data: json.data as Record<string, unknown>,
+      data: json.data as BaseRecord,
     };
   },
 
@@ -118,7 +118,7 @@ export const dataProvider: DataProvider = {
     }
 
     return {
-      data: json.data as Record<string, unknown>,
+      data: json.data as BaseRecord,
     };
   },
 
@@ -136,7 +136,7 @@ export const dataProvider: DataProvider = {
     }
 
     return {
-      data: json.data as Record<string, unknown>,
+      data: json.data as BaseRecord,
     };
   },
 
@@ -152,7 +152,7 @@ export const dataProvider: DataProvider = {
     }
 
     return {
-      data: json.data as Record<string, unknown>,
+      data: json.data as BaseRecord,
     };
   },
 
@@ -169,7 +169,7 @@ export const dataProvider: DataProvider = {
     });
 
     const data = await Promise.all(promises);
-    return { data: data as Record<string, unknown>[] };
+    return { data: data as BaseRecord[] };
   },
 
   getApiUrl: () => API_URL,
