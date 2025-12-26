@@ -6,6 +6,7 @@ import {
 } from "@/lib/api/session-middleware";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -118,28 +119,27 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
+    const updateData: Prisma.ClientUpdateInput = {};
+    if (data.name) updateData.name = data.name;
+    if (data.code) updateData.code = data.code;
+    if (data.industry !== undefined) updateData.industry = data.industry;
+    if (data.isRetainer !== undefined) updateData.isRetainer = data.isRetainer;
+    if (data.retainerHours !== undefined) updateData.retainerHours = data.retainerHours;
+    if (data.logoUrl !== undefined) updateData.logoUrl = data.logoUrl;
+    if (data.website !== undefined) updateData.website = data.website;
+    if (data.linkedIn !== undefined) updateData.linkedIn = data.linkedIn;
+    if (data.accountManagerId !== undefined) {
+      updateData.accountManager = data.accountManagerId
+        ? { connect: { id: data.accountManagerId } }
+        : { disconnect: true };
+    }
+    if (data.notes !== undefined) updateData.notes = data.notes;
+    if (data.isActive !== undefined) updateData.isActive = data.isActive;
+    if (data.relationshipStatus) updateData.relationshipStatus = data.relationshipStatus;
+
     const client = await db.client.update({
       where: { id },
-      data: {
-        ...(data.name && { name: data.name }),
-        ...(data.code && { code: data.code }),
-        ...(data.industry !== undefined && { industry: data.industry }),
-        ...(data.isRetainer !== undefined && { isRetainer: data.isRetainer }),
-        ...(data.retainerHours !== undefined && {
-          retainerHours: data.retainerHours,
-        }),
-        ...(data.logoUrl !== undefined && { logoUrl: data.logoUrl }),
-        ...(data.website !== undefined && { website: data.website }),
-        ...(data.linkedIn !== undefined && { linkedIn: data.linkedIn }),
-        ...(data.accountManagerId !== undefined && {
-          accountManagerId: data.accountManagerId,
-        }),
-        ...(data.notes !== undefined && { notes: data.notes }),
-        ...(data.isActive !== undefined && { isActive: data.isActive }),
-        ...(data.relationshipStatus && {
-          relationshipStatus: data.relationshipStatus,
-        }),
-      },
+      data: updateData,
     });
 
     return apiSuccess(client);
