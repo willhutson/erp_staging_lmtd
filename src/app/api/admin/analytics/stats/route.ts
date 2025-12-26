@@ -15,6 +15,7 @@ import { db } from "@/lib/db";
  */
 
 const ANALYTICS_ENGINE_URL = process.env.ANALYTICS_ENGINE_URL;
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || "dev-internal-key";
 
 // GET /api/admin/analytics/stats - Get analytics overview
 export async function GET(request: NextRequest) {
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
       try {
         const response = await fetch(`${ANALYTICS_ENGINE_URL}/analytics/stats`, {
           headers: {
-            Authorization: `Bearer ${ctx.token}`,
+            Authorization: `Bearer ${INTERNAL_API_KEY}`,
           },
         });
 
