@@ -76,8 +76,8 @@ export function ResourceList({ config }: ResourceListProps) {
   const { query } = useList({
     resource: config.name,
     pagination: {
-      current: currentPage,
-      pageSize,
+      page: currentPage,
+      perPage: pageSize,
     },
     sorters: sortField
       ? [{ field: sortField, order: sortOrder }]
