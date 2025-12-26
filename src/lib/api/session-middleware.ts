@@ -24,8 +24,9 @@ export async function withSessionAuth(
   try {
     const ctx = await getOrgContext();
 
-    // Check minimum permission level
-    if (options.minLevel && !hasMinLevel(ctx, options.minLevel)) {
+    // Check minimum permission level - map userId to id for SessionUser compatibility
+    const sessionUser = { ...ctx, id: ctx.userId };
+    if (options.minLevel && !hasMinLevel(sessionUser, options.minLevel)) {
       return apiError(
         `Insufficient permissions. Required: ${options.minLevel}`,
         403
