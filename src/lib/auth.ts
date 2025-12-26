@@ -98,7 +98,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        console.log("[AUTH] Authorize called with email:", credentials?.email);
+
         if (!credentials?.email || !credentials?.password) {
+          console.log("[AUTH] Missing credentials");
           return null;
         }
 
@@ -106,26 +109,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const password = credentials.password as string;
 
         try {
+          console.log("[AUTH] Looking up user:", email);
           const user = await db.user.findFirst({
             where: { email },
           });
 
+          console.log("[AUTH] User found:", !!user, "Has password:", !!user?.passwordHash);
+
           if (!user || !user.passwordHash) {
+            console.log("[AUTH] No user or no password hash");
             return null;
           }
 
           const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+          console.log("[AUTH] Password valid:", isValidPassword);
+
           if (!isValidPassword) {
             return null;
           }
 
+          console.log("[AUTH] Login successful for:", user.email);
           return {
             id: user.id,
             email: user.email,
             name: user.name,
           };
         } catch (error) {
-          console.error("Credentials auth error:", error);
+          console.error("[AUTH] Credentials auth error:", error);
           return null;
         }
       },
