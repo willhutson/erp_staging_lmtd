@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
       assignments: assignments.map((assignment: typeof assignments[number]) => ({
         id: assignment.id,
         reason: assignment.reason,
-        assignedAt: assignment.createdAt,
+        assignedAt: assignment.assignedAt,
         expiresAt: assignment.expiresAt,
         assignedBy: assignment.assignedBy,
         policy: {
