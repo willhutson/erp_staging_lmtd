@@ -62,6 +62,9 @@ model Organization {
   crmCampaigns     CRMCampaign[]
   crmTasks         CRMTask[]
 
+  // Access Control (Phase 2)
+  accessPolicies   AccessPolicy[]
+
   @@map("organizations")
 }
 
@@ -197,6 +200,11 @@ model User {
   crmCampaignsOwned       CRMCampaign[]      @relation("CRMCampaignOwner")
   crmTasksAssigned        CRMTask[]          @relation("CRMTaskAssignee")
   crmTasksCreated         CRMTask[]          @relation("CRMTaskCreator")
+
+  // Access Control (Phase 2)
+  accessPoliciesCreated   AccessPolicy[]       @relation("AccessPolicyCreator")
+  policyAssignments       PolicyAssignment[]   @relation("PolicyAssignmentUser")
+  policyAssignmentsMade   PolicyAssignment[]   @relation("PolicyAssignmentAssigner")
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -5187,4 +5195,127 @@ enum CRMTaskStatus {
   COMPLETED
   CANCELLED
   DEFERRED
+}
+
+// ============================================
+// CONFIGURABLE ACCESS CONTROL (Phase 2)
+// ============================================
+
+// AccessPolicy defines a named set of access rules
+// Leadership/Admin can create/edit policies via admin UI
+model AccessPolicy {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String   // e.g., "Freelancer Restricted", "Account Manager"
+  description     String?  @db.Text
+
+  // Default assignment - which permission level gets this policy by default
+  defaultLevel    PermissionLevel?
+
+  isActive        Boolean  @default(true)
+  priority        Int      @default(0)  // Higher priority wins conflicts
+
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdBy       User     @relation("AccessPolicyCreator", fields: [createdById], references: [id])
+
+  rules           AccessRule[]
+  assignments     PolicyAssignment[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([defaultLevel])
+  @@map("access_policies")
+}
+
+// AccessRule defines individual permissions within a policy
+model AccessRule {
+  id              String   @id @default(cuid())
+  policyId        String
+
+  // What resource this rule applies to
+  resource        String   // "clients", "projects", "briefs", "users", "time_entries"
+
+  // What action this rule controls
+  action          AccessAction   // LIST, VIEW, CREATE, UPDATE, DELETE
+
+  // Rule effect
+  effect          AccessEffect   @default(ALLOW)  // ALLOW or DENY
+
+  // Condition type - how to filter records
+  conditionType   AccessCondition @default(ALL)
+
+  // Condition parameters (JSON)
+  // Examples:
+  // - { "field": "assigneeId", "operator": "eq", "value": "$userId" }
+  // - { "field": "clientId", "operator": "in", "value": "$assignedClientIds" }
+  // - { "relationPath": "briefs.assigneeId", "value": "$userId" }
+  conditionParams Json     @default("{}")
+
+  // Field-level restrictions (which fields can be seen/edited)
+  // Empty = all fields, otherwise list of allowed fields
+  allowedFields   String[] @default([])
+  deniedFields    String[] @default([])
+
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  policy          AccessPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  @@index([policyId])
+  @@index([resource, action])
+  @@map("access_rules")
+}
+
+// PolicyAssignment links policies to users (overrides default level)
+model PolicyAssignment {
+  id              String   @id @default(cuid())
+  organizationId  String
+  policyId        String
+
+  // Assign to specific user (null = applies to default level only)
+  userId          String?
+
+  assignedById    String
+  assignedAt      DateTime @default(now())
+  expiresAt       DateTime?  // Optional expiry for temporary access
+
+  policy          AccessPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  user            User?    @relation("PolicyAssignmentUser", fields: [userId], references: [id])
+  assignedBy      User     @relation("PolicyAssignmentAssigner", fields: [assignedById], references: [id])
+
+  @@unique([policyId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("policy_assignments")
+}
+
+enum AccessAction {
+  LIST      // Can list/search records
+  VIEW      // Can view single record details
+  CREATE    // Can create new records
+  UPDATE    // Can modify existing records
+  DELETE    // Can delete/archive records
+  EXPORT    // Can export data
+  ASSIGN    // Can assign records to others
+}
+
+enum AccessEffect {
+  ALLOW
+  DENY
+}
+
+enum AccessCondition {
+  ALL       // Access all records (within tenant)
+  OWN       // Only records where user is owner/creator
+  ASSIGNED  // Only records assigned to user
+  TEAM      // Records for user's team (via teamLeadId)
+  CLIENT    // Only records for assigned clients
+  CUSTOM    // Use conditionParams for custom logic
 }
