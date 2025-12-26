@@ -138,10 +138,10 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       return apiError("Project not found", 404);
     }
 
-    // Archive by setting status to ARCHIVED
+    // Archive by setting status to CANCELLED (soft delete)
     await db.project.update({
       where: { id },
-      data: { status: "ARCHIVED" },
+      data: { status: "CANCELLED" },
     });
 
     return apiSuccess({ id, deleted: true });
