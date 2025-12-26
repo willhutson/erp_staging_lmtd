@@ -113,7 +113,7 @@ export function createAccessControlProvider(
         },
       };
 
-      const resourceRules = resourceDefaults[resource];
+      const resourceRules = resource ? resourceDefaults[resource] : undefined;
       if (resourceRules) {
         const requiredLevel = resourceRules[action];
         if (requiredLevel) {
