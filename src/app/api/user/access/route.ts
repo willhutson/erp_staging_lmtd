@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
         },
         assignedBy: { select: { id: true, name: true } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { assignedAt: "desc" },
     });
 
     // Get default policy for user's permission level
