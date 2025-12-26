@@ -73,7 +73,7 @@ export function ResourceList({ config }: ResourceListProps) {
     : [];
 
   // Fetch data using Refine
-  const { data, isLoading, isError } = useList({
+  const { query } = useList({
     resource: config.name,
     pagination: {
       current: currentPage,
@@ -84,6 +84,9 @@ export function ResourceList({ config }: ResourceListProps) {
       : [],
     filters: filters.length > 0 ? [{ operator: "or", value: filters }] : [],
   });
+  const data = query.data;
+  const isLoading = query.isLoading;
+  const isError = query.isError;
 
   const records = data?.data || [];
   const total = data?.total || 0;
