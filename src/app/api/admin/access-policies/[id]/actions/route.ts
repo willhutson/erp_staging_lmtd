@@ -8,6 +8,11 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 import { PolicyStatus } from "@prisma/client";
 import { createAuditLogger } from "@/lib/audit";
+import {
+  notifyPolicySubmitted,
+  notifyPolicyApproved,
+  notifyPolicyRejected,
+} from "@/lib/notifications/policy-notifications";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -94,8 +99,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
           `Policy submitted for approval by ${ctx.name}`
         );
 
-        // TODO: Send notification to admins
-        // await notifyAdmins(ctx.organizationId, policy);
+        // Notify admins about new policy awaiting approval
+        await notifyPolicySubmitted(
+          ctx.organizationId,
+          policy.id,
+          policy.name,
+          { id: ctx.userId, name: ctx.name }
+        );
 
         return apiSuccess(updated);
       }
@@ -147,8 +157,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
           `Policy approved by ${ctx.name}`
         );
 
-        // TODO: Send notification to creator
-        // await notifyUser(policy.createdById, { type: "policy_approved", ... });
+        // Notify the policy creator that their policy was approved
+        await notifyPolicyApproved(
+          ctx.organizationId,
+          policy.id,
+          policy.name,
+          policy.createdById,
+          { id: ctx.userId, name: ctx.name }
+        );
 
         return apiSuccess(updated);
       }
@@ -186,8 +202,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
           `Policy rejected by ${ctx.name}: ${reason}`
         );
 
-        // TODO: Send notification to creator with reason
-        // await notifyUser(policy.createdById, { type: "policy_rejected", reason, ... });
+        // Notify the policy creator that their policy was rejected with reason
+        await notifyPolicyRejected(
+          ctx.organizationId,
+          policy.id,
+          policy.name,
+          policy.createdById,
+          { id: ctx.userId, name: ctx.name },
+          reason
+        );
 
         return apiSuccess(updated);
       }

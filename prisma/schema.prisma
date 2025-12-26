@@ -65,6 +65,9 @@ model Organization {
   // Access Control (Phase 2)
   accessPolicies   AccessPolicy[]
 
+  // Notification Rules
+  notificationRules NotificationRule[]
+
   @@map("organizations")
 }
 
@@ -208,6 +211,9 @@ model User {
   policyAssignmentsMade   PolicyAssignment[]   @relation("PolicyAssignmentAssigner")
   policyAssignmentsApproved PolicyAssignment[] @relation("PolicyAssignmentApprover")
   policyVersionChanges    PolicyVersion[]      @relation("PolicyVersionChanger")
+
+  // Notification Rules
+  notificationRulesCreated NotificationRule[] @relation("NotificationRulesCreated")
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -1899,6 +1905,58 @@ model NotificationTemplate {
 
   @@unique([organizationId, type, channel])
   @@map("notification_templates")
+}
+
+// Notification rules define when and who gets notified
+model NotificationRule {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Rule identification
+  name            String
+  description     String?  @db.Text
+
+  // Trigger configuration
+  eventType       String   // e.g., "policy.assigned", "brief.created", "submission.approved"
+
+  // Recipient configuration
+  recipientType   String   // "user", "role", "team", "custom"
+  recipientValue  String?  // userId, role name, teamId, or expression
+
+  // Optional: notify specific permission levels
+  notifyLevels    String[] @default([])
+
+  // Optional: notify related users
+  notifyCreator   Boolean  @default(false)
+  notifyAssignee  Boolean  @default(false)
+  notifyApprover  Boolean  @default(false)
+  notifyTeamLead  Boolean  @default(false)
+
+  // Conditions (JSON for flexible filtering)
+  conditions      Json?    // e.g., {"status": "SUBMITTED", "priority": "HIGH"}
+
+  // Channel configuration
+  channels        String[] @default(["in_app"])  // "in_app", "email", "slack"
+
+  // Template override (optional - uses default if not set)
+  templateId      String?
+
+  // Status
+  isActive        Boolean  @default(true)
+  priority        Int      @default(0)  // Higher priority rules evaluated first
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdById     String
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy       User     @relation("NotificationRulesCreated", fields: [createdById], references: [id])
+
+  @@unique([organizationId, name])
+  @@index([organizationId, eventType])
+  @@map("notification_rules")
 }
 
 // ============================================
@@ -5291,6 +5349,7 @@ model AccessRule {
 
   policy          AccessPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
 
+  @@unique([policyId, resource, action])
   @@index([policyId])
   @@index([resource, action])
   @@map("access_rules")

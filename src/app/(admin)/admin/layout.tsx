@@ -20,6 +20,7 @@ import {
   LayoutDashboard,
   Settings,
   ChevronLeft,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -132,6 +133,16 @@ export default function AdminLayout({
       meta: {
         label: "Audit Logs",
         icon: <FileText className="h-4 w-4" />,
+      },
+    },
+    {
+      name: "notification-rules",
+      list: "/admin/notification-rules",
+      create: "/admin/notification-rules/create",
+      edit: "/admin/notification-rules/:id/edit",
+      meta: {
+        label: "Notification Rules",
+        icon: <Bell className="h-4 w-4" />,
       },
     },
   ];
