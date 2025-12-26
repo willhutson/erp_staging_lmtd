@@ -203,8 +203,11 @@ model User {
 
   // Access Control (Phase 2)
   accessPoliciesCreated   AccessPolicy[]       @relation("AccessPolicyCreator")
+  accessPoliciesApproved  AccessPolicy[]       @relation("AccessPolicyApprover")
   policyAssignments       PolicyAssignment[]   @relation("PolicyAssignmentUser")
   policyAssignmentsMade   PolicyAssignment[]   @relation("PolicyAssignmentAssigner")
+  policyAssignmentsApproved PolicyAssignment[] @relation("PolicyAssignmentApprover")
+  policyVersionChanges    PolicyVersion[]      @relation("PolicyVersionChanger")
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -5202,7 +5205,7 @@ enum CRMTaskStatus {
 // ============================================
 
 // AccessPolicy defines a named set of access rules
-// Leadership/Admin can create/edit policies via admin UI
+// Leadership can draft, Admin approves
 model AccessPolicy {
   id              String   @id @default(cuid())
   organizationId  String
@@ -5213,8 +5216,17 @@ model AccessPolicy {
   // Default assignment - which permission level gets this policy by default
   defaultLevel    PermissionLevel?
 
+  // Approval workflow
+  status          PolicyStatus @default(DRAFT)
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  approvedById    String?
+  rejectedAt      DateTime?
+  rejectionReason String?
+
   isActive        Boolean  @default(true)
   priority        Int      @default(0)  // Higher priority wins conflicts
+  version         Int      @default(1)  // For version tracking
 
   createdById     String
   createdAt       DateTime @default(now())
@@ -5222,14 +5234,25 @@ model AccessPolicy {
 
   organization    Organization @relation(fields: [organizationId], references: [id])
   createdBy       User     @relation("AccessPolicyCreator", fields: [createdById], references: [id])
+  approvedBy      User?    @relation("AccessPolicyApprover", fields: [approvedById], references: [id])
 
   rules           AccessRule[]
   assignments     PolicyAssignment[]
+  versions        PolicyVersion[]
 
   @@unique([organizationId, name])
   @@index([organizationId])
   @@index([defaultLevel])
+  @@index([status])
   @@map("access_policies")
+}
+
+enum PolicyStatus {
+  DRAFT       // Created by Leadership, pending submission
+  SUBMITTED   // Submitted for Admin approval
+  APPROVED    // Approved and active
+  REJECTED    // Rejected by Admin (with reason)
+  ARCHIVED    // No longer in use
 }
 
 // AccessRule defines individual permissions within a policy
@@ -5282,18 +5305,67 @@ model PolicyAssignment {
   // Assign to specific user (null = applies to default level only)
   userId          String?
 
+  // Documentation & paper trail (required for override assignments)
+  reason          String   @db.Text  // Why this override was granted
+  businessCase    String?  @db.Text  // Business justification
+  approvedById    String?            // Who approved this override (if different from assigner)
+
   assignedById    String
   assignedAt      DateTime @default(now())
   expiresAt       DateTime?  // Optional expiry for temporary access
 
+  // Notification tracking
+  notifiedAt      DateTime?  // When affected parties were notified
+  notifiedUsers   String[]   @default([])  // User IDs who were notified
+
   policy          AccessPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
   user            User?    @relation("PolicyAssignmentUser", fields: [userId], references: [id])
   assignedBy      User     @relation("PolicyAssignmentAssigner", fields: [assignedById], references: [id])
+  approvedBy      User?    @relation("PolicyAssignmentApprover", fields: [approvedById], references: [id])
 
   @@unique([policyId, userId])
   @@index([organizationId])
   @@index([userId])
   @@map("policy_assignments")
+}
+
+// PolicyVersion stores historical snapshots of policies for version control
+model PolicyVersion {
+  id              String   @id @default(cuid())
+  policyId        String
+  version         Int
+
+  // Snapshot of policy state at this version
+  name            String
+  description     String?  @db.Text
+  defaultLevel    PermissionLevel?
+  priority        Int
+  rulesSnapshot   Json     // Full snapshot of rules at this version
+
+  // Change tracking
+  changeType      PolicyChangeType
+  changeSummary   String   @db.Text  // Human-readable summary of changes
+  changedById     String
+  changedAt       DateTime @default(now())
+
+  policy          AccessPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  changedBy       User     @relation("PolicyVersionChanger", fields: [changedById], references: [id])
+
+  @@unique([policyId, version])
+  @@index([policyId, changedAt])
+  @@map("policy_versions")
+}
+
+enum PolicyChangeType {
+  CREATED
+  UPDATED
+  APPROVED
+  REJECTED
+  RULE_ADDED
+  RULE_REMOVED
+  RULE_MODIFIED
+  ARCHIVED
+  RESTORED
 }
 
 enum AccessAction {
@@ -5318,4 +5390,140 @@ enum AccessCondition {
   TEAM      // Records for user's team (via teamLeadId)
   CLIENT    // Only records for assigned clients
   CUSTOM    // Use conditionParams for custom logic
+}
+
+// ============================================
+// COMPREHENSIVE AUDIT LOGGING
+// ============================================
+
+// AuditLog captures all significant actions for compliance and debugging
+model AuditLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Who performed the action
+  userId          String?
+  userEmail       String?  // Captured at time of action (in case user deleted)
+  userName        String?
+  userRole        String?
+  ipAddress       String?
+  userAgent       String?
+
+  // What happened
+  action          AuditAction
+  resource        String       // "access_policy", "user", "client", "brief", etc.
+  resourceId      String?      // ID of the affected record
+  resourceName    String?      // Human-readable name at time of action
+
+  // Change details
+  previousState   Json?        // State before change (for updates/deletes)
+  newState        Json?        // State after change (for creates/updates)
+  changesSummary  String?      // Human-readable summary
+
+  // Access control specific
+  accessDecision  AccessEffect?  // ALLOW or DENY (for access checks)
+  accessRuleId    String?        // Which rule was applied
+  accessPolicyId  String?        // Which policy was applied
+
+  // Context
+  requestPath     String?      // API path
+  requestMethod   String?      // GET, POST, etc.
+  sessionId       String?
+  correlationId   String?      // For tracing related actions
+
+  // Timestamps
+  occurredAt      DateTime @default(now())
+
+  // For backup/sync tracking
+  syncedAt        DateTime?
+  syncStatus      SyncStatus @default(PENDING)
+
+  @@index([organizationId, occurredAt])
+  @@index([userId, occurredAt])
+  @@index([resource, resourceId])
+  @@index([action, occurredAt])
+  @@index([syncStatus])
+  @@map("audit_logs")
+}
+
+enum AuditAction {
+  // CRUD operations
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  ARCHIVE
+  RESTORE
+
+  // Access control
+  ACCESS_GRANTED
+  ACCESS_DENIED
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+
+  // Policy management
+  POLICY_CREATED
+  POLICY_SUBMITTED
+  POLICY_APPROVED
+  POLICY_REJECTED
+  POLICY_UPDATED
+  POLICY_ARCHIVED
+  RULE_ADDED
+  RULE_UPDATED
+  RULE_REMOVED
+  ASSIGNMENT_CREATED
+  ASSIGNMENT_REMOVED
+  ASSIGNMENT_EXPIRED
+
+  // Data export/import
+  EXPORT
+  IMPORT
+  BULK_UPDATE
+  BULK_DELETE
+}
+
+enum SyncStatus {
+  PENDING     // Awaiting backup sync
+  SYNCED      // Successfully backed up
+  FAILED      // Sync failed (will retry)
+  SKIPPED     // Not eligible for sync
+}
+
+// AuditLogBackup stores backed up audit logs for long-term retention
+model AuditLogBackup {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Backup metadata
+  backupDate      DateTime
+  logsCount       Int
+  startDate       DateTime  // Earliest log in this backup
+  endDate         DateTime  // Latest log in this backup
+
+  // Storage
+  storageKey      String    // S3/R2 key for the backup file
+  storageProvider String    @default("supabase")
+  fileSizeBytes   Int
+  checksum        String    // SHA-256 for integrity
+
+  // Status
+  status          BackupStatus @default(PENDING)
+  verifiedAt      DateTime?
+  expiresAt       DateTime?   // When this backup will be deleted (retention policy)
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId, backupDate])
+  @@index([status])
+  @@map("audit_log_backups")
+}
+
+enum BackupStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  VERIFIED
+  FAILED
+  EXPIRED
 }
