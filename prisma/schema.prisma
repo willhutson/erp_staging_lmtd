@@ -1286,23 +1286,7 @@ enum GoogleDocType {
   PRESENTATION  // Google Slides
 }
 
-model AuditLog {
-  id             String   @id @default(cuid())
-  organizationId String
-  userId         String?
-  action         String
-  entityType     String
-  entityId       String
-  changes        Json?
-  ipAddress      String?
-  userAgent      String?
-  createdAt      DateTime @default(now())
-
-  @@index([organizationId])
-  @@index([entityType, entityId])
-  @@index([createdAt])
-  @@map("audit_logs")
-}
+// NOTE: AuditLog model is defined in the ACCESS CONTROL section with comprehensive fields
 
 // ============================================
 // DASHBOARD LAYOUTS
