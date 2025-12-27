@@ -943,6 +943,264 @@ enum ContentType {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// DASHBOARD BUILDER & CLIENT INSTANCES
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Customizable dashboards for clients
+model Dashboard {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Identity
+  name            String
+  description     String?
+  slug            String?  // For URL: /dashboards/:slug
+
+  // Configuration
+  isDefault       Boolean  @default(false)  // Default dashboard for org
+  isPublished     Boolean  @default(false)  // Visible to clients
+  isTemplate      Boolean  @default(false)  // Can be cloned
+
+  // Layout configuration (react-grid-layout compatible)
+  layout          Json     @default("[]")   // [{i, x, y, w, h, minW, minH}]
+
+  // Theme/Branding overrides
+  theme           Json     @default("{}")   // {primaryColor, logoUrl, etc.}
+
+  // Relations
+  widgets         DashboardWidget[]
+  clientInstances ClientInstance[]
+
+  // Access control
+  visibility      DashboardVisibility @default(PRIVATE)
+  allowedRoles    String[]  // Role names that can view
+
+  // Audit
+  createdById     String
+  createdBy       User     @relation("DashboardCreator", fields: [createdById], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  publishedAt     DateTime?
+
+  @@index([organizationId])
+  @@index([visibility])
+  @@index([isTemplate])
+  @@map("dashboards")
+}
+
+enum DashboardVisibility {
+  PRIVATE       // Only creator
+  ORGANIZATION  // All org members
+  CLIENT        // Client instance users
+  PUBLIC        // Anyone with link (view-only)
+}
+
+// Individual widgets on a dashboard
+model DashboardWidget {
+  id              String   @id @default(cuid())
+  dashboardId     String
+  dashboard       Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  // Widget identity
+  type            WidgetType
+  title           String
+  description     String?
+
+  // Position in grid (react-grid-layout)
+  x               Int      @default(0)
+  y               Int      @default(0)
+  width           Int      @default(4)
+  height          Int      @default(3)
+  minWidth        Int?
+  minHeight       Int?
+
+  // Data configuration
+  dataSource      Json     @default("{}")   // {type, query, filters, refresh}
+  // Example: {type: "bigquery", query: "campaign_performance", filters: {dateRange: "last30days"}}
+
+  // Visualization configuration
+  visualization   Json     @default("{}")   // {chartType, colors, labels, legend}
+  // Example: {chartType: "line", xAxis: "date", yAxis: "spend", showLegend: true}
+
+  // Filters (can be overridden by user)
+  filters         Json     @default("[]")   // [{field, operator, value, userEditable}]
+
+  // Permissions
+  requiredRole    String?  // Minimum role to view this widget
+  isHidden        Boolean  @default(false)
+
+  // Interactivity
+  isDrillDown     Boolean  @default(false)  // Can click for details
+  drillDownConfig Json?    // Where to navigate on click
+
+  // Refresh settings
+  refreshInterval Int?     // Seconds between auto-refresh
+
+  sortOrder       Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([dashboardId])
+  @@index([type])
+  @@map("dashboard_widgets")
+}
+
+enum WidgetType {
+  // KPI & Numbers
+  KPI_CARD           // Single metric with trend
+  SPARKLINE          // Mini line chart
+  GAUGE              // Progress/goal gauge
+  COUNTER            // Animated counter
+
+  // Charts
+  LINE_CHART
+  BAR_CHART
+  PIE_CHART
+  DONUT_CHART
+  AREA_CHART
+  STACKED_BAR
+  COMBO_CHART        // Bar + Line
+
+  // Tables & Lists
+  DATA_TABLE         // Full data table
+  LEADERBOARD        // Ranked list
+  ACTIVITY_FEED      // Timeline of events
+
+  // Specialized
+  HEATMAP
+  FUNNEL
+  SCATTER_PLOT
+  GEO_MAP
+
+  // Module-specific
+  CAMPAIGN_LIST      // Campaign summary cards
+  CREATOR_ROSTER     // Creator cards with metrics
+  AD_ACCOUNT_STATUS  // Account connection status
+  SPEND_TRACKER      // Budget vs actual
+  PLATFORM_COMPARE   // Cross-platform comparison
+
+  // Content
+  TEXT_BLOCK         // Markdown/rich text
+  IMAGE              // Static image
+  EMBED              // External embed (Looker, etc.)
+}
+
+// Client-facing dashboard instances
+model ClientInstance {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Identity
+  name            String
+  slug            String   @unique  // URL: [slug].spokestack.app
+
+  // Branding
+  logo            String?
+  primaryColor    String?
+  secondaryColor  String?
+  favicon         String?
+
+  // Module configuration
+  enabledModules  String[] // ["MEDIA_BUYING", "ANALYTICS", "LISTENING"]
+
+  // Default dashboard
+  defaultDashboardId String?
+  defaultDashboard   Dashboard? @relation(fields: [defaultDashboardId], references: [id], onDelete: SetNull)
+
+  // Settings
+  settings        Json     @default("{}")
+  // Example: {timezone: "Asia/Dubai", currency: "AED", dateFormat: "DD/MM/YYYY"}
+
+  // Relations
+  users           ClientInstanceUser[]
+
+  // Soft delete
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([slug])
+  @@map("client_instances")
+}
+
+// Users with access to client instances
+model ClientInstanceUser {
+  id                String   @id @default(cuid())
+  clientInstanceId  String
+  clientInstance    ClientInstance @relation(fields: [clientInstanceId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Role in this client instance
+  role              ClientRole @default(VIEWER)
+
+  // Granular permission overrides
+  permissions       String[]  // e.g., ["view_spend", "export_data", "manage_users"]
+
+  // Module-specific access
+  moduleAccess      Json     @default("{}")
+  // Example: {MEDIA_BUYING: "full", ANALYTICS: "view", LISTENING: "none"}
+
+  // Invitation tracking
+  invitedById       String?
+  invitedAt         DateTime?
+  acceptedAt        DateTime?
+
+  // Status
+  isActive          Boolean  @default(true)
+  lastAccessAt      DateTime?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([clientInstanceId, userId])
+  @@index([clientInstanceId])
+  @@index([userId])
+  @@map("client_instance_users")
+}
+
+enum ClientRole {
+  ADMIN      // Full access to client instance
+  MANAGER    // Can edit dashboards, manage team
+  EDITOR     // Can modify data, create reports
+  VIEWER     // Read-only access
+}
+
+// Dashboard templates for quick setup
+model DashboardTemplate {
+  id              String   @id @default(cuid())
+
+  // Identity
+  name            String
+  description     String?
+  category        String?  // "Media Buying", "Analytics", "Listening"
+  thumbnail       String?
+
+  // Template configuration (full dashboard config)
+  config          Json     // Complete dashboard + widgets config
+
+  // Usage tracking
+  usageCount      Int      @default(0)
+
+  // Visibility
+  isPublic        Boolean  @default(true)   // Available to all orgs
+  organizationId  String?  // If org-specific
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([category])
+  @@index([isPublic])
+  @@map("dashboard_templates")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // SYSTEM TABLES
 // ═══════════════════════════════════════════════════════════════════════════
 
