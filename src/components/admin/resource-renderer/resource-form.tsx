@@ -42,6 +42,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronDown, Loader2, Save, ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { RelationPicker, MultiRelationPicker } from "./relation-picker";
 import type { ResourceConfig, FieldDefinition, FormSection, FormView } from "@config/resources/types";
 
 interface ResourceFormProps {
@@ -536,14 +537,23 @@ function renderFormInput(
         />
       );
 
-    // TODO: Add relation picker, file upload, etc.
     case "relation":
+      // Check if it's a multi-select relation (hasMany)
+      if (field.relation?.type === "hasMany") {
+        return (
+          <MultiRelationPicker
+            field={field}
+            value={formField.value as string[] | null}
+            onChange={formField.onChange}
+          />
+        );
+      }
+      // Default: single relation (belongsTo/hasOne)
       return (
-        <Input
-          type="text"
-          placeholder={field.placeholder || `Enter ${field.label.toLowerCase()} ID`}
-          {...formField}
-          value={String(formField.value || "")}
+        <RelationPicker
+          field={field}
+          value={formField.value as string | null}
+          onChange={formField.onChange}
         />
       );
 

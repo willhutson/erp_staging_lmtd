@@ -104,9 +104,11 @@ export interface FieldDefinition {
 
   // Relation config (detailed)
   relation?: {
+    type?: "belongsTo" | "hasOne" | "hasMany";  // Relation type (default: belongsTo)
     resource: string;     // Target resource name
-    field: string;        // Foreign key field
+    field?: string;       // Foreign key field
     displayField: string; // Field to display (e.g., "name")
+    secondaryField?: string;  // Secondary field for additional context
     searchFields?: string[];  // Fields to search when filtering
     filter?: Record<string, unknown>;  // Static filter
   };
