@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Building2, FolderKanban, Shield, FileText, Clock } from "lucide-react";
+import { Users, Building2, FolderKanban, Shield, FileText, Clock, PenTool } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminDashboard() {
@@ -45,6 +45,13 @@ export default function AdminDashboard() {
       icon: FileText,
       href: "/admin/audit-logs",
       color: "text-gray-500",
+    },
+    {
+      title: "Dashboard Builder",
+      description: "Build custom dashboards with widgets",
+      icon: PenTool,
+      href: "/admin/builder",
+      color: "text-ltd-primary",
     },
   ];
 

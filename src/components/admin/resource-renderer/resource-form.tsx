@@ -13,6 +13,7 @@ import { z } from "zod";
 import { useCreate, useUpdate, useOne } from "@refinedev/core";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import {
   Form,
   FormControl,
@@ -42,6 +43,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronDown, Loader2, Save, ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { RelationPicker, MultiRelationPicker } from "./relation-picker";
 import type { ResourceConfig, FieldDefinition, FormSection, FormView } from "@config/resources/types";
 
 interface ResourceFormProps {
@@ -347,22 +349,60 @@ function FormFieldRenderer({ field, form }: FormFieldRendererProps) {
     ? "md:col-span-2"
     : "";
 
+  const isRequired = field.validation?.required;
+  const maxLength = field.validation?.maxLength;
+
   return (
     <FormField
       control={form.control}
       name={field.name}
-      render={({ field: formField }) => (
-        <FormItem className={colSpan}>
-          <FormLabel>{field.label}</FormLabel>
-          <FormControl>
-            {renderFormInput(field, formField)}
-          </FormControl>
-          {field.description && (
-            <FormDescription>{field.description}</FormDescription>
-          )}
-          <FormMessage />
-        </FormItem>
-      )}
+      render={({ field: formField, fieldState }) => {
+        const hasError = !!fieldState.error;
+        const isDirty = fieldState.isDirty;
+        const isValid = isDirty && !hasError;
+
+        // Calculate character count for text fields
+        const charCount = typeof formField.value === "string" ? formField.value.length : 0;
+        const showCharCount = maxLength && (field.type === "string" || field.type === "text");
+
+        return (
+          <FormItem className={colSpan}>
+            <div className="flex items-center justify-between">
+              <FormLabel className="flex items-center gap-1">
+                {field.label}
+                {isRequired && <span className="text-red-500">*</span>}
+              </FormLabel>
+              {showCharCount && (
+                <span className={cn(
+                  "text-xs",
+                  charCount > maxLength ? "text-red-500" : "text-muted-foreground"
+                )}>
+                  {charCount}/{maxLength}
+                </span>
+              )}
+            </div>
+            <FormControl>
+              <div className="relative">
+                {renderFormInput(field, formField, hasError)}
+                {/* Validation indicator */}
+                {isDirty && (
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                    {isValid ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    ) : hasError ? (
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            </FormControl>
+            {field.description && !hasError && (
+              <FormDescription>{field.description}</FormDescription>
+            )}
+            <FormMessage />
+          </FormItem>
+        );
+      }}
     />
   );
 }
@@ -371,6 +411,10 @@ function FormFieldRenderer({ field, form }: FormFieldRendererProps) {
 // FORM INPUT RENDERERS
 // ============================================
 
+// Error input styling
+const errorInputClass = "border-red-500 focus-visible:ring-red-500/20";
+const validInputClass = "border-green-500 focus-visible:ring-green-500/20";
+
 function renderFormInput(
   field: FieldDefinition,
   formField: {
@@ -378,8 +422,15 @@ function renderFormInput(
     onChange: (value: unknown) => void;
     onBlur: () => void;
     name: string;
-  }
+  },
+  hasError?: boolean
 ): React.ReactNode {
+  // Add padding for validation icon
+  const inputClass = cn(
+    "pr-8",
+    hasError && errorInputClass
+  );
+
   switch (field.type) {
     case "string":
     case "email":
@@ -389,6 +440,7 @@ function renderFormInput(
         <Input
           type={field.type === "email" ? "email" : field.type === "url" ? "url" : "text"}
           placeholder={field.placeholder}
+          className={inputClass}
           {...formField}
           value={String(formField.value || "")}
         />
@@ -399,6 +451,7 @@ function renderFormInput(
         <Input
           type="number"
           placeholder={field.placeholder}
+          className={inputClass}
           {...formField}
           value={formField.value as number || ""}
           onChange={(e) => formField.onChange(e.target.valueAsNumber || null)}
@@ -411,6 +464,7 @@ function renderFormInput(
           type="number"
           step="0.01"
           placeholder={field.placeholder}
+          className={inputClass}
           {...formField}
           value={formField.value as number || ""}
           onChange={(e) => formField.onChange(e.target.valueAsNumber || null)}
@@ -423,6 +477,7 @@ function renderFormInput(
         <Textarea
           placeholder={field.placeholder}
           rows={4}
+          className={cn(hasError && errorInputClass)}
           {...formField}
           value={String(formField.value || "")}
         />
@@ -440,6 +495,7 @@ function renderFormInput(
       return (
         <Input
           type="date"
+          className={inputClass}
           {...formField}
           value={formField.value ? String(formField.value).split("T")[0] : ""}
         />
@@ -449,6 +505,7 @@ function renderFormInput(
       return (
         <Input
           type="datetime-local"
+          className={inputClass}
           {...formField}
           value={formField.value ? String(formField.value).slice(0, 16) : ""}
         />
@@ -461,7 +518,7 @@ function renderFormInput(
           value={String(formField.value || "")}
           onValueChange={formField.onChange}
         >
-          <SelectTrigger>
+          <SelectTrigger className={cn(hasError && errorInputClass)}>
             <SelectValue placeholder={field.placeholder || `Select ${field.label.toLowerCase()}`} />
           </SelectTrigger>
           <SelectContent>
@@ -479,14 +536,14 @@ function renderFormInput(
         <div className="flex items-center gap-2">
           <Input
             type="color"
-            className="w-12 h-10 p-1 cursor-pointer"
+            className={cn("w-12 h-10 p-1 cursor-pointer", hasError && errorInputClass)}
             {...formField}
             value={String(formField.value || "#000000")}
           />
           <Input
             type="text"
             placeholder="#000000"
-            className="flex-1"
+            className={cn("flex-1", hasError && errorInputClass)}
             {...formField}
             value={String(formField.value || "")}
           />
@@ -499,7 +556,7 @@ function renderFormInput(
         <Textarea
           placeholder={field.placeholder || "{}"}
           rows={6}
-          className="font-mono text-sm"
+          className={cn("font-mono text-sm", hasError && errorInputClass)}
           {...formField}
           value={
             typeof formField.value === "object"
@@ -523,6 +580,7 @@ function renderFormInput(
         <Input
           type="text"
           placeholder={field.placeholder || "Enter tags, comma-separated"}
+          className={inputClass}
           {...formField}
           value={
             Array.isArray(formField.value)
@@ -536,14 +594,23 @@ function renderFormInput(
         />
       );
 
-    // TODO: Add relation picker, file upload, etc.
     case "relation":
+      // Check if it's a multi-select relation (hasMany)
+      if (field.relation?.type === "hasMany") {
+        return (
+          <MultiRelationPicker
+            field={field}
+            value={formField.value as string[] | null}
+            onChange={formField.onChange}
+          />
+        );
+      }
+      // Default: single relation (belongsTo/hasOne)
       return (
-        <Input
-          type="text"
-          placeholder={field.placeholder || `Enter ${field.label.toLowerCase()} ID`}
-          {...formField}
-          value={String(formField.value || "")}
+        <RelationPicker
+          field={field}
+          value={formField.value as string | null}
+          onChange={formField.onChange}
         />
       );
 
@@ -552,6 +619,7 @@ function renderFormInput(
         <Input
           type="text"
           placeholder={field.placeholder}
+          className={inputClass}
           {...formField}
           value={String(formField.value || "")}
         />

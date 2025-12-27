@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ltd/primitives/theme-toggle";
+import { LtdToaster } from "@/components/ltd/primitives/ltd-toast";
 import { Logo } from "@/components/ltd/brand/logo";
 import type { PermissionLevel } from "@prisma/client";
 import {
@@ -635,6 +636,7 @@ export function DashboardShell({ permissionLevel, children }: DashboardShellProp
 
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
+      <LtdToaster />
     </div>
   );
 }

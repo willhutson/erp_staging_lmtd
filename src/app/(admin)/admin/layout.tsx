@@ -33,12 +33,15 @@ import {
   Minus,
   UserCircle,
   CalendarOff,
+  PenTool,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getAllResources, getModuleWithResources } from "@config/resources";
 import type { SpokeStackModule } from "@config/resources/types";
 import { useState } from "react";
+import { ThemeToggle } from "@/components/ltd/primitives/theme-toggle";
+import { useInstance } from "@/lib/instance-context";
 
 // Icon map for dynamic icon rendering
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -131,11 +134,12 @@ const resourceStatus: Record<string, { api: "done" | "partial" | "none"; page: "
 // Instance selector for multi-tenant
 function InstanceSelector() {
   const [isOpen, setIsOpen] = useState(false);
-  const instances = [
-    { id: "lmtd", name: "TeamLMTD", domain: "lmtd.spokestack.io", active: true },
-    // Future instances would be listed here
-  ];
-  const current = instances.find((i) => i.active) || instances[0];
+  const { currentInstance, setInstance, instances: availableInstances } = useInstance();
+
+  const handleSelectInstance = (id: string) => {
+    setInstance(id);
+    setIsOpen(false);
+  };
 
   return (
     <div className="relative">
@@ -143,33 +147,42 @@ function InstanceSelector() {
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-ltd-surface-3 hover:bg-ltd-surface-3/80 transition-colors"
       >
-        <Globe className="h-4 w-4 text-ltd-primary" />
+        <div
+          className="h-4 w-4 rounded"
+          style={{ backgroundColor: currentInstance.branding.primaryColor }}
+        />
         <div className="flex-1 text-left">
-          <div className="text-sm font-medium text-ltd-text-1">{current.name}</div>
-          <div className="text-[10px] text-ltd-text-3">{current.domain}</div>
+          <div className="text-sm font-medium text-ltd-text-1">{currentInstance.name}</div>
+          <div className="text-[10px] text-ltd-text-3">{currentInstance.domain}</div>
         </div>
         <ChevronDown className={cn("h-4 w-4 text-ltd-text-2 transition-transform", isOpen && "rotate-180")} />
       </button>
 
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-ltd-surface-2 border border-ltd-border-1 rounded-lg shadow-lg z-50">
-          {instances.map((instance) => (
-            <button
-              key={instance.id}
-              className={cn(
-                "w-full flex items-center gap-2 px-3 py-2 hover:bg-ltd-surface-3 first:rounded-t-lg last:rounded-b-lg",
-                instance.active && "bg-ltd-primary/10"
-              )}
-              onClick={() => setIsOpen(false)}
-            >
-              <Globe className="h-4 w-4 text-ltd-text-2" />
-              <div className="flex-1 text-left">
-                <div className="text-sm text-ltd-text-1">{instance.name}</div>
-                <div className="text-[10px] text-ltd-text-3">{instance.domain}</div>
-              </div>
-              {instance.active && <Check className="h-4 w-4 text-ltd-primary" />}
-            </button>
-          ))}
+          {availableInstances.map((instance) => {
+            const isActive = instance.id === currentInstance.id;
+            return (
+              <button
+                key={instance.id}
+                className={cn(
+                  "w-full flex items-center gap-2 px-3 py-2 hover:bg-ltd-surface-3 first:rounded-t-lg",
+                  isActive && "bg-ltd-primary/10"
+                )}
+                onClick={() => handleSelectInstance(instance.id)}
+              >
+                <div
+                  className="h-4 w-4 rounded"
+                  style={{ backgroundColor: instance.branding.primaryColor }}
+                />
+                <div className="flex-1 text-left">
+                  <div className="text-sm text-ltd-text-1">{instance.name}</div>
+                  <div className="text-[10px] text-ltd-text-3">{instance.domain}</div>
+                </div>
+                {isActive && <Check className="h-4 w-4 text-ltd-primary" />}
+              </button>
+            );
+          })}
           <div className="border-t border-ltd-border-1">
             <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ltd-primary hover:bg-ltd-surface-3 rounded-b-lg">
               <span className="text-lg leading-none">+</span>
@@ -348,6 +361,20 @@ export default function AdminLayout({
               Dashboard
             </Link>
 
+            {/* Dashboard Builder */}
+            <Link
+              href="/admin/builder"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                isActive("/admin/builder")
+                  ? "bg-ltd-primary text-ltd-primary-text"
+                  : "text-ltd-text-1 hover:bg-ltd-surface-3"
+              )}
+            >
+              <PenTool className="h-4 w-4" />
+              Dashboard Builder
+            </Link>
+
             {/* Render resources grouped by module */}
             {modulesWithResources
               .filter((m) => m.resources.length > 0)
@@ -482,8 +509,8 @@ export default function AdminLayout({
             })}
           </nav>
 
-          {/* User info */}
-          <div className="p-4 border-t border-ltd-border-1">
+          {/* User info + Theme Toggle */}
+          <div className="p-4 border-t border-ltd-border-1 space-y-3">
             <div className="flex items-center gap-3 px-2">
               <div className="h-9 w-9 rounded-full bg-ltd-primary/20 flex items-center justify-center">
                 <span className="text-sm font-semibold text-ltd-primary">
@@ -496,6 +523,7 @@ export default function AdminLayout({
                   {session.user.permissionLevel}
                 </div>
               </div>
+              <ThemeToggle />
             </div>
           </div>
         </aside>
