@@ -136,15 +136,22 @@ function InstanceSelector() {
   const [isOpen, setIsOpen] = useState(false);
   const { currentInstance, setInstance, instances: availableInstances } = useInstance();
 
-  const handleSelectInstance = (id: string) => {
+  const handleSelectInstance = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
     setInstance(id);
     setIsOpen(false);
+  };
+
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsOpen(!isOpen);
   };
 
   return (
     <div className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        type="button"
+        onClick={handleToggle}
         className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-ltd-surface-3 hover:bg-ltd-surface-3/80 transition-colors"
       >
         <div
@@ -159,17 +166,19 @@ function InstanceSelector() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-ltd-surface-2 border border-ltd-border-1 rounded-lg shadow-lg z-50">
-          {availableInstances.map((instance) => {
+        <div className="absolute top-full left-0 right-0 mt-1 bg-ltd-surface-2 border border-ltd-border-1 rounded-lg shadow-lg z-[100]">
+          {availableInstances.map((instance, idx) => {
             const isActive = instance.id === currentInstance.id;
             return (
               <button
+                type="button"
                 key={instance.id}
                 className={cn(
-                  "w-full flex items-center gap-2 px-3 py-2 hover:bg-ltd-surface-3 first:rounded-t-lg",
+                  "w-full flex items-center gap-2 px-3 py-2 hover:bg-ltd-surface-3 transition-colors",
+                  idx === 0 && "rounded-t-lg",
                   isActive && "bg-ltd-primary/10"
                 )}
-                onClick={() => handleSelectInstance(instance.id)}
+                onClick={(e) => handleSelectInstance(e, instance.id)}
               >
                 <div
                   className="h-4 w-4 rounded"
@@ -184,7 +193,11 @@ function InstanceSelector() {
             );
           })}
           <div className="border-t border-ltd-border-1">
-            <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ltd-primary hover:bg-ltd-surface-3 rounded-b-lg">
+            <button
+              type="button"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ltd-primary hover:bg-ltd-surface-3 rounded-b-lg transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
               <span className="text-lg leading-none">+</span>
               Create New Instance
             </button>
