@@ -33,6 +33,7 @@ import {
   Minus,
   UserCircle,
   CalendarOff,
+  PenTool,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -347,6 +348,20 @@ export default function AdminLayout({
             >
               <LayoutDashboard className="h-4 w-4" />
               Dashboard
+            </Link>
+
+            {/* Dashboard Builder */}
+            <Link
+              href="/admin/builder"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                isActive("/admin/builder")
+                  ? "bg-ltd-primary text-ltd-primary-text"
+                  : "text-ltd-text-1 hover:bg-ltd-surface-3"
+              )}
+            >
+              <PenTool className="h-4 w-4" />
+              Dashboard Builder
             </Link>
 
             {/* Render resources grouped by module */}

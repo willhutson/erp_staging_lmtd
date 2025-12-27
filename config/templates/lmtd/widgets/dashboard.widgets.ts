@@ -6,7 +6,7 @@
  * to build dashboard layouts for new SpokeStack instances.
  */
 
-import type { UIWidgetTemplate } from "../types";
+import type { UIWidgetTemplate } from "../../types";
 
 // ============================================
 // DASHBOARD WIDGETS (from LMTD)
