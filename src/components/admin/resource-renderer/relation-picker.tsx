@@ -73,10 +73,9 @@ export function RelationPicker({
   const displayField = relationConfig?.displayField || "name";
   const searchFields = relationConfig?.searchFields || [displayField];
 
-  // Fetch related records
+  // Fetch related records (pagination handled by API)
   const { query } = useList<RelatedRecord>({
     resource,
-    pagination: { current: 1, pageSize: 20 },
     filters: debouncedSearch
       ? [
           {
@@ -100,7 +99,6 @@ export function RelationPicker({
   const { query: selectedQuery } = useList<RelatedRecord>({
     resource,
     filters: value ? [{ field: "id", operator: "eq", value }] : [],
-    pagination: { current: 1, pageSize: 1 },
     queryOptions: {
       enabled: !!value && !records.find((r) => r.id === value),
     },
@@ -316,10 +314,9 @@ export function MultiRelationPicker({
   const displayField = relationConfig?.displayField || "name";
   const searchFields = relationConfig?.searchFields || [displayField];
 
-  // Fetch related records
+  // Fetch related records (pagination handled by API)
   const { query: multiQuery } = useList<RelatedRecord>({
     resource,
-    pagination: { current: 1, pageSize: 50 },
     filters: debouncedSearch
       ? [
           {
