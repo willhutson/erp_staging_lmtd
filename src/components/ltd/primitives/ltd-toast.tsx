@@ -41,8 +41,8 @@ const toastIcons: Record<string, ToastIconConfig> = {
   default: { icon: Bell, className: "text-ltd-text-2" },
 }
 
-interface ToastOptions extends ExternalToast {
-  icon?: LucideIcon
+type ToastOptions = Omit<ExternalToast, "icon"> & {
+  icon?: React.ReactNode
 }
 
 // Helper to create consistent icon element
