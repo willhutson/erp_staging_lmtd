@@ -99,7 +99,8 @@ export function WidgetPicker({ onSelect, selectedWidgets = [] }: WidgetPickerPro
               </p>
             ) : (
               filteredWidgets.map((widget) => {
-                const Icon = iconMap[widget.metadata.icon] || FileText;
+                const iconKey = widget.metadata.icon;
+                const Icon = (iconKey && iconMap[iconKey]) || FileText;
                 const isSelected = selectedWidgets.includes(widget.metadata.id);
 
                 return (

@@ -364,7 +364,8 @@ function GridLayoutPreview({ props, compact }: { props: Record<string, unknown>;
 }
 
 function DefaultPreview({ widget, compact }: { widget: UIWidgetTemplate; compact: boolean }) {
-  const Icon = iconMap[widget.metadata.icon] || FileText;
+  const iconKey = widget.metadata.icon;
+  const Icon = (iconKey && iconMap[iconKey]) || FileText;
 
   return (
     <div className="flex flex-col items-center justify-center py-4 text-center">
