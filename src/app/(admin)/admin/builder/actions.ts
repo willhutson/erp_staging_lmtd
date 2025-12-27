@@ -44,7 +44,7 @@ export async function getDashboards(): Promise<SavedDashboard[]> {
     id: d.id,
     name: d.name,
     isDefault: d.isDefault,
-    layout: d.layout as DashboardLayoutConfig,
+    layout: d.layout as unknown as DashboardLayoutConfig,
     createdAt: d.createdAt,
     updatedAt: d.updatedAt,
   }));
@@ -71,7 +71,7 @@ export async function getDashboard(id: string): Promise<SavedDashboard | null> {
     id: dashboard.id,
     name: dashboard.name,
     isDefault: dashboard.isDefault,
-    layout: dashboard.layout as DashboardLayoutConfig,
+    layout: dashboard.layout as unknown as DashboardLayoutConfig,
     createdAt: dashboard.createdAt,
     updatedAt: dashboard.updatedAt,
   };
@@ -118,7 +118,7 @@ export async function saveDashboard(
       id: updated.id,
       name: updated.name,
       isDefault: updated.isDefault,
-      layout: updated.layout as DashboardLayoutConfig,
+      layout: updated.layout as unknown as DashboardLayoutConfig,
       createdAt: updated.createdAt,
       updatedAt: updated.updatedAt,
     };
@@ -139,7 +139,7 @@ export async function saveDashboard(
       id: created.id,
       name: created.name,
       isDefault: created.isDefault,
-      layout: created.layout as DashboardLayoutConfig,
+      layout: created.layout as unknown as DashboardLayoutConfig,
       createdAt: created.createdAt,
       updatedAt: created.updatedAt,
     };
@@ -213,7 +213,7 @@ export async function duplicateDashboard(id: string): Promise<SavedDashboard> {
     throw new Error("Dashboard not found");
   }
 
-  const layout = original.layout as DashboardLayoutConfig;
+  const layout = original.layout as unknown as DashboardLayoutConfig;
 
   const duplicate = await db.dashboardLayout.create({
     data: {
@@ -230,7 +230,7 @@ export async function duplicateDashboard(id: string): Promise<SavedDashboard> {
     id: duplicate.id,
     name: duplicate.name,
     isDefault: duplicate.isDefault,
-    layout: duplicate.layout as DashboardLayoutConfig,
+    layout: duplicate.layout as unknown as DashboardLayoutConfig,
     createdAt: duplicate.createdAt,
     updatedAt: duplicate.updatedAt,
   };
