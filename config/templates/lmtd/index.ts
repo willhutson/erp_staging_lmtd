@@ -7,7 +7,8 @@
 
 import { briefApprovalWorkflow } from "./workflows/brief-approval.workflow";
 import { videoShootFormTemplate } from "./forms/video-shoot.form";
-import type { TemplateConfig, TemplateCategory } from "../types";
+import { lmtdWidgets, getWidgetById, getWidgetsByCategory, getWidgetsByTag } from "./widgets/dashboard.widgets";
+import type { TemplateConfig, TemplateCategory, UIWidgetTemplate } from "../types";
 
 // ============================================
 // ALL LMTD TEMPLATES
@@ -20,6 +21,9 @@ export const lmtdTemplates: TemplateConfig[] = [
   // Forms
   videoShootFormTemplate,
 
+  // Widgets (cast to TemplateConfig for unified registry)
+  ...(lmtdWidgets as TemplateConfig[]),
+
   // TODO: Add more templates as they are extracted:
   // - Video Edit Brief Form
   // - Design Brief Form
@@ -27,10 +31,10 @@ export const lmtdTemplates: TemplateConfig[] = [
   // - Paid Media Brief Form
   // - RFP Pipeline Workflow
   // - Client Onboarding Workflow
-  // - Retainer Tracking Dashboard
-  // - Team Capacity Widget
-  // - Client Health Dashboard
 ];
+
+// Re-export widget helpers
+export { lmtdWidgets, getWidgetById, getWidgetsByCategory, getWidgetsByTag };
 
 // ============================================
 // HELPER FUNCTIONS
