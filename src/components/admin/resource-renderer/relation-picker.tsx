@@ -74,7 +74,7 @@ export function RelationPicker({
   const searchFields = relationConfig?.searchFields || [displayField];
 
   // Fetch related records
-  const { data, isLoading, isError } = useList<RelatedRecord>({
+  const { query } = useList<RelatedRecord>({
     resource,
     pagination: { current: 1, pageSize: 20 },
     filters: debouncedSearch
@@ -91,10 +91,13 @@ export function RelationPicker({
     },
   });
 
+  const data = query.data;
+  const isLoading = query.isLoading;
+  const isError = query.isError;
   const records = data?.data || [];
 
   // Fetch selected record if value exists but not in current list
-  const { data: selectedData } = useList<RelatedRecord>({
+  const { query: selectedQuery } = useList<RelatedRecord>({
     resource,
     filters: value ? [{ field: "id", operator: "eq", value }] : [],
     pagination: { current: 1, pageSize: 1 },
@@ -105,7 +108,7 @@ export function RelationPicker({
 
   // Find the selected record
   const selectedRecord =
-    records.find((r) => r.id === value) || selectedData?.data?.[0];
+    records.find((r) => r.id === value) || selectedQuery.data?.data?.[0];
 
   // Get display value for a record
   const getDisplayValue = (record: RelatedRecord): string => {
@@ -314,7 +317,7 @@ export function MultiRelationPicker({
   const searchFields = relationConfig?.searchFields || [displayField];
 
   // Fetch related records
-  const { data, isLoading, isError } = useList<RelatedRecord>({
+  const { query: multiQuery } = useList<RelatedRecord>({
     resource,
     pagination: { current: 1, pageSize: 50 },
     filters: debouncedSearch
@@ -331,7 +334,9 @@ export function MultiRelationPicker({
     },
   });
 
-  const records = data?.data || [];
+  const isLoading = multiQuery.isLoading;
+  const isError = multiQuery.isError;
+  const records = multiQuery.data?.data || [];
 
   const getDisplayValue = (record: RelatedRecord): string => {
     const mainValue = record[displayField];
