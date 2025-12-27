@@ -161,7 +161,8 @@ export function WidgetCanvas({
           const widgetDef = getWidgetById(placed.widgetId);
           if (!widgetDef) return null;
 
-          const Icon = iconMap[widgetDef.metadata.icon] || FileText;
+          const iconKey = widgetDef.metadata.icon;
+          const Icon = (iconKey && iconMap[iconKey]) || FileText;
           const isSelected = selectedWidgetId === placed.id;
           const isDropTarget = dragOverIndex === index;
 
