@@ -12,17 +12,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { use } from "react";
 
 interface ResourceShowPageProps {
-  params: Promise<{
+  params: {
     resource: string;
     id: string;
-  }>;
+  };
 }
 
 export default function ResourceShowPage({ params }: ResourceShowPageProps) {
-  const { resource, id } = use(params);
+  const { resource, id } = params;
   const config = getResource(resource);
 
   if (!config) {
