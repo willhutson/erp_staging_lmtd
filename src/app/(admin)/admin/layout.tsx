@@ -31,6 +31,8 @@ import {
   Check,
   X,
   Minus,
+  UserCircle,
+  CalendarOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -53,6 +55,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   MessageSquare,
   Plug,
   Wrench,
+  UserCircle,
+  CalendarOff,
 };
 
 // Module icon map
