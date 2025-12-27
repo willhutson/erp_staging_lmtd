@@ -39,6 +39,7 @@ import { cn } from "@/lib/utils";
 import { getAllResources, getModuleWithResources } from "@config/resources";
 import type { SpokeStackModule } from "@config/resources/types";
 import { useState } from "react";
+import { ThemeToggle } from "@/components/ltd/primitives/theme-toggle";
 
 // Icon map for dynamic icon rendering
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -482,8 +483,8 @@ export default function AdminLayout({
             })}
           </nav>
 
-          {/* User info */}
-          <div className="p-4 border-t border-ltd-border-1">
+          {/* User info + Theme Toggle */}
+          <div className="p-4 border-t border-ltd-border-1 space-y-3">
             <div className="flex items-center gap-3 px-2">
               <div className="h-9 w-9 rounded-full bg-ltd-primary/20 flex items-center justify-center">
                 <span className="text-sm font-semibold text-ltd-primary">
@@ -496,6 +497,7 @@ export default function AdminLayout({
                   {session.user.permissionLevel}
                 </div>
               </div>
+              <ThemeToggle />
             </div>
           </div>
         </aside>
