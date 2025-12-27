@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 
 export interface DashboardWidgetConfig {
   widgetId: string;
@@ -108,7 +109,7 @@ export async function saveDashboard(
       where: { id: dashboardId },
       data: {
         name: config.name,
-        layout: config as unknown as Record<string, unknown>,
+        layout: config as unknown as Prisma.InputJsonValue,
       },
     });
 
@@ -129,7 +130,7 @@ export async function saveDashboard(
         userId,
         organizationId,
         name: config.name,
-        layout: config as unknown as Record<string, unknown>,
+        layout: config as unknown as Prisma.InputJsonValue,
       },
     });
 
@@ -220,7 +221,7 @@ export async function duplicateDashboard(id: string): Promise<SavedDashboard> {
       userId: session.user.id,
       organizationId: session.user.organizationId,
       name: `${original.name} (Copy)`,
-      layout: { ...layout, name: `${layout.name} (Copy)` } as unknown as Record<string, unknown>,
+      layout: { ...layout, name: `${layout.name} (Copy)` } as unknown as Prisma.InputJsonValue,
     },
   });
 
