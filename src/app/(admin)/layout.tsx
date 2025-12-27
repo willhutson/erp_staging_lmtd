@@ -1,3 +1,5 @@
+import { AdminProviders } from "./providers";
+
 // Server component layout for (admin) route group
 // This exports the dynamic config to prevent static rendering
 
@@ -8,5 +10,5 @@ export default function AdminRouteGroupLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return <AdminProviders>{children}</AdminProviders>;
 }
