@@ -214,6 +214,30 @@ function formatDateTime(value: unknown): string {
   }
 }
 
+// LTD Status Badge color mapping
+// Uses semantic status colors from the LTD design system
+const LTD_STATUS_COLORS = {
+  // Semantic status colors
+  success: "bg-[#00D68F]/10 text-[#00D68F] border-[#00D68F]/20",
+  warning: "bg-[#FFB547]/10 text-[#FFB547] border-[#FFB547]/20",
+  error: "bg-[#FF4757]/10 text-[#FF4757] border-[#FF4757]/20",
+  info: "bg-[#4D9CFF]/10 text-[#4D9CFF] border-[#4D9CFF]/20",
+  neutral: "bg-ltd-surface-3 text-ltd-text-2 border-ltd-border-1",
+
+  // Named color aliases for backward compatibility
+  green: "bg-[#00D68F]/10 text-[#00D68F] border-[#00D68F]/20",
+  red: "bg-[#FF4757]/10 text-[#FF4757] border-[#FF4757]/20",
+  yellow: "bg-[#FFB547]/10 text-[#FFB547] border-[#FFB547]/20",
+  blue: "bg-[#4D9CFF]/10 text-[#4D9CFF] border-[#4D9CFF]/20",
+  orange: "bg-[#FF8F47]/10 text-[#FF8F47] border-[#FF8F47]/20",
+  purple: "bg-[#7B61FF]/10 text-[#7B61FF] border-[#7B61FF]/20",
+  pink: "bg-[#FF6B9D]/10 text-[#FF6B9D] border-[#FF6B9D]/20",
+  gray: "bg-ltd-surface-3 text-ltd-text-2 border-ltd-border-1",
+
+  // Primary accent (TeamLMTD turquoise)
+  primary: "bg-ltd-primary/10 text-ltd-primary border-ltd-primary/20",
+} as const;
+
 function renderSelectValue(
   value: unknown,
   options?: SelectOption[]
@@ -224,24 +248,19 @@ function renderSelectValue(
     return <span>{String(value)}</span>;
   }
 
-  const colorMap: Record<string, string> = {
-    green: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    red: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-    yellow: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-    blue: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    orange: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-    purple: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-    gray: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
-  };
-
-  const colorClass = option.color ? colorMap[option.color] : colorMap.gray;
+  const colorClass = option.color
+    ? LTD_STATUS_COLORS[option.color as keyof typeof LTD_STATUS_COLORS] || LTD_STATUS_COLORS.neutral
+    : LTD_STATUS_COLORS.neutral;
 
   return (
-    <Badge variant="secondary" className={colorClass}>
+    <Badge variant="outline" className={`${colorClass} font-medium`}>
       {option.label}
     </Badge>
   );
 }
+
+// Export for use in other components
+export { LTD_STATUS_COLORS };
 
 function renderMultiSelectValue(
   value: unknown,

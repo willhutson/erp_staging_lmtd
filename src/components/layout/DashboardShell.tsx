@@ -65,167 +65,218 @@ interface NavItem {
   children?: NavItem[];
 }
 
-const navItems: NavItem[] = [
+interface NavSection {
+  title: string;
+  items: NavItem[];
+  requiredLevels?: PermissionLevel[];
+  collapsed?: boolean; // For bottom sections like Settings
+}
+
+// Organized navigation structure with logical groupings
+const navSections: NavSection[] = [
   {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: <LayoutDashboard className="w-5 h-5" />,
+    title: "Overview",
+    items: [
+      {
+        title: "Dashboard",
+        href: "/dashboard",
+        icon: <LayoutDashboard className="w-5 h-5" />,
+      },
+    ],
   },
   {
-    title: "Briefs",
-    href: "/briefs",
-    icon: <FileText className="w-5 h-5" />,
-  },
-  {
-    title: "Submissions",
-    href: "/submissions",
-    icon: <Inbox className="w-5 h-5" />,
-    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
-  },
-  {
-    title: "Resources",
-    href: "/resources",
-    icon: <Users className="w-5 h-5" />,
-    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
-  },
-  {
-    title: "Time",
-    href: "/time",
-    icon: <Clock className="w-5 h-5" />,
+    title: "Work",
+    items: [
+      {
+        title: "Briefs",
+        href: "/briefs",
+        icon: <FileText className="w-5 h-5" />,
+      },
+      {
+        title: "Submissions",
+        href: "/submissions",
+        icon: <Inbox className="w-5 h-5" />,
+        requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
+      },
+      {
+        title: "Time",
+        href: "/time",
+        icon: <Clock className="w-5 h-5" />,
+      },
+    ],
   },
   {
     title: "Clients",
-    href: "/clients",
-    icon: <Building2 className="w-5 h-5" />,
     requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
-  },
-  {
-    title: "Retainer",
-    href: "/retainer",
-    icon: <Gauge className="w-5 h-5" />,
-    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
-  },
-  {
-    title: "Scope Changes",
-    href: "/scope-changes",
-    icon: <GitBranch className="w-5 h-5" />,
-    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
+    items: [
+      {
+        title: "All Clients",
+        href: "/clients",
+        icon: <Building2 className="w-5 h-5" />,
+      },
+      {
+        title: "Retainers",
+        href: "/retainer",
+        icon: <Gauge className="w-5 h-5" />,
+      },
+      {
+        title: "Scope Changes",
+        href: "/scope-changes",
+        icon: <GitBranch className="w-5 h-5" />,
+      },
+      {
+        title: "Client Health",
+        href: "/feedback",
+        icon: <HeartPulse className="w-5 h-5" />,
+        children: [
+          { title: "Overview", href: "/feedback", icon: <HeartPulse className="w-4 h-4" /> },
+          { title: "NPS Surveys", href: "/feedback/nps", icon: <ThumbsUp className="w-4 h-4" /> },
+          { title: "Issues", href: "/feedback/issues", icon: <AlertCircle className="w-4 h-4" /> },
+        ],
+      },
+    ],
   },
   {
     title: "Team",
-    href: "/team",
-    icon: <UserCircle className="w-5 h-5" />,
-  },
-  {
-    title: "Calendar",
-    href: "/calendar",
-    icon: <Calendar className="w-5 h-5" />,
-  },
-  {
-    title: "Leave",
-    href: "/leave",
-    icon: <CalendarDays className="w-5 h-5" />,
-  },
-  {
-    title: "Files",
-    href: "/files",
-    icon: <FolderOpen className="w-5 h-5" />,
-  },
-  {
-    title: "CRM",
-    href: "/crm",
-    icon: <Briefcase className="w-5 h-5" />,
-    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
-    children: [
-      { title: "Overview", href: "/crm", icon: <Briefcase className="w-4 h-4" /> },
-      { title: "Contacts", href: "/crm/contacts", icon: <Users className="w-4 h-4" /> },
-      { title: "Deals", href: "/crm/deals", icon: <TrendingUp className="w-4 h-4" /> },
+    items: [
+      {
+        title: "Directory",
+        href: "/team",
+        icon: <UserCircle className="w-5 h-5" />,
+      },
+      {
+        title: "Resources",
+        href: "/resources",
+        icon: <Users className="w-5 h-5" />,
+        requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
+      },
+      {
+        title: "Calendar",
+        href: "/calendar",
+        icon: <Calendar className="w-5 h-5" />,
+      },
+      {
+        title: "Leave",
+        href: "/leave",
+        icon: <CalendarDays className="w-5 h-5" />,
+      },
     ],
   },
   {
-    title: "Pipeline",
-    href: "/pipeline",
-    icon: <TrendingUp className="w-5 h-5" />,
+    title: "Content",
     requiredLevels: ["ADMIN", "LEADERSHIP"],
-  },
-  {
-    title: "RFP",
-    href: "/rfp",
-    icon: <FileStack className="w-5 h-5" />,
-    requiredLevels: ["ADMIN", "LEADERSHIP"],
-  },
-  {
-    title: "WhatsApp",
-    href: "/whatsapp",
-    icon: <MessageSquare className="w-5 h-5" />,
-    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
-  },
-  {
-    title: "Chat",
-    href: "/chat",
-    icon: <MessageCircle className="w-5 h-5" />,
-  },
-  {
-    title: "Client Health",
-    href: "/feedback",
-    icon: <HeartPulse className="w-5 h-5" />,
-    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
-    children: [
-      { title: "Overview", href: "/feedback", icon: <HeartPulse className="w-4 h-4" /> },
-      { title: "NPS Surveys", href: "/feedback/nps", icon: <ThumbsUp className="w-4 h-4" /> },
-      { title: "Issues", href: "/feedback/issues", icon: <AlertCircle className="w-4 h-4" /> },
+    items: [
+      {
+        title: "Content Engine",
+        href: "/content-engine",
+        icon: <Zap className="w-5 h-5" />,
+        children: [
+          { title: "Overview", href: "/content-engine", icon: <Zap className="w-4 h-4" /> },
+          { title: "Posts", href: "/content-engine/posts", icon: <FileEdit className="w-4 h-4" /> },
+          { title: "Deliverables", href: "/content-engine/deliverables", icon: <Layers className="w-4 h-4" /> },
+          { title: "Queue", href: "/content-engine/queue", icon: <Play className="w-4 h-4" /> },
+          { title: "Events", href: "/content-engine/events", icon: <Calendar className="w-4 h-4" /> },
+          { title: "Activity", href: "/content-engine/activity", icon: <Activity className="w-4 h-4" /> },
+        ],
+      },
+      {
+        title: "Files",
+        href: "/files",
+        icon: <FolderOpen className="w-5 h-5" />,
+      },
     ],
   },
   {
-    title: "Content Engine",
-    href: "/content-engine",
-    icon: <Zap className="w-5 h-5" />,
-    requiredLevels: ["ADMIN", "LEADERSHIP"],
-    children: [
-      { title: "Overview", href: "/content-engine", icon: <Zap className="w-4 h-4" /> },
-      { title: "Posts", href: "/content-engine/posts", icon: <FileEdit className="w-4 h-4" /> },
-      { title: "Deliverables", href: "/content-engine/deliverables", icon: <Layers className="w-4 h-4" /> },
-      { title: "Queue", href: "/content-engine/queue", icon: <Play className="w-4 h-4" /> },
-      { title: "Events", href: "/content-engine/events", icon: <Calendar className="w-4 h-4" /> },
-      { title: "Activity", href: "/content-engine/activity", icon: <Activity className="w-4 h-4" /> },
-      { title: "Search", href: "/content-engine/search", icon: <Search className="w-4 h-4" /> },
+    title: "Sales",
+    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
+    items: [
+      {
+        title: "CRM",
+        href: "/crm",
+        icon: <Briefcase className="w-5 h-5" />,
+        children: [
+          { title: "Overview", href: "/crm", icon: <Briefcase className="w-4 h-4" /> },
+          { title: "Contacts", href: "/crm/contacts", icon: <Users className="w-4 h-4" /> },
+          { title: "Deals", href: "/crm/deals", icon: <TrendingUp className="w-4 h-4" /> },
+        ],
+      },
+      {
+        title: "Pipeline",
+        href: "/pipeline",
+        icon: <TrendingUp className="w-5 h-5" />,
+        requiredLevels: ["ADMIN", "LEADERSHIP"],
+      },
+      {
+        title: "RFP",
+        href: "/rfp",
+        icon: <FileStack className="w-5 h-5" />,
+        requiredLevels: ["ADMIN", "LEADERSHIP"],
+      },
+    ],
+  },
+  {
+    title: "Communicate",
+    items: [
+      {
+        title: "Chat",
+        href: "/chat",
+        icon: <MessageCircle className="w-5 h-5" />,
+      },
+      {
+        title: "WhatsApp",
+        href: "/whatsapp",
+        icon: <MessageSquare className="w-5 h-5" />,
+        requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
+      },
     ],
   },
   {
     title: "Reports",
-    href: "/reports",
-    icon: <BarChart className="w-5 h-5" />,
     requiredLevels: ["ADMIN", "LEADERSHIP"],
-    children: [
-      { title: "Overview", href: "/reports", icon: <BarChart className="w-4 h-4" /> },
-      { title: "Clients", href: "/reports/clients", icon: <Building2 className="w-4 h-4" /> },
-      { title: "Team", href: "/reports/team", icon: <Users className="w-4 h-4" /> },
-      { title: "Content", href: "/reports/content", icon: <FileText className="w-4 h-4" /> },
-      { title: "Retainers", href: "/reports/retainers", icon: <Gauge className="w-4 h-4" /> },
-    ],
-  },
-  {
-    title: "Integrations",
-    href: "/settings/integrations",
-    icon: <Slack className="w-5 h-5" />,
-    requiredLevels: ["ADMIN"],
-  },
-  {
-    title: "Settings",
-    href: "/settings",
-    icon: <Settings className="w-5 h-5" />,
-    requiredLevels: ["ADMIN"],
-    children: [
-      { title: "General", href: "/settings", icon: <Settings className="w-4 h-4" /> },
-      { title: "Users", href: "/settings/users", icon: <Users className="w-4 h-4" /> },
-      { title: "Forms", href: "/settings/forms", icon: <ClipboardList className="w-4 h-4" /> },
-      { title: "API Keys", href: "/settings/api", icon: <Key className="w-4 h-4" /> },
-      { title: "Branding", href: "/settings/branding", icon: <Paintbrush className="w-4 h-4" /> },
-      { title: "Notifications", href: "/settings/notifications", icon: <Bell className="w-4 h-4" /> },
-      { title: "Audit Log", href: "/settings/audit", icon: <Shield className="w-4 h-4" /> },
+    items: [
+      {
+        title: "Reports",
+        href: "/reports",
+        icon: <BarChart className="w-5 h-5" />,
+        children: [
+          { title: "Overview", href: "/reports", icon: <BarChart className="w-4 h-4" /> },
+          { title: "Clients", href: "/reports/clients", icon: <Building2 className="w-4 h-4" /> },
+          { title: "Team", href: "/reports/team", icon: <Users className="w-4 h-4" /> },
+          { title: "Content", href: "/reports/content", icon: <FileText className="w-4 h-4" /> },
+          { title: "Retainers", href: "/reports/retainers", icon: <Gauge className="w-4 h-4" /> },
+        ],
+      },
     ],
   },
 ];
+
+// Settings section - always at bottom
+const settingsSection: NavSection = {
+  title: "Settings",
+  requiredLevels: ["ADMIN"],
+  collapsed: true,
+  items: [
+    {
+      title: "Settings",
+      href: "/settings",
+      icon: <Settings className="w-5 h-5" />,
+      children: [
+        { title: "General", href: "/settings", icon: <Settings className="w-4 h-4" /> },
+        { title: "Users", href: "/settings/users", icon: <Users className="w-4 h-4" /> },
+        { title: "Forms", href: "/settings/forms", icon: <ClipboardList className="w-4 h-4" /> },
+        { title: "API Keys", href: "/settings/api", icon: <Key className="w-4 h-4" /> },
+        { title: "Branding", href: "/settings/branding", icon: <Paintbrush className="w-4 h-4" /> },
+        { title: "Notifications", href: "/settings/notifications", icon: <Bell className="w-4 h-4" /> },
+        { title: "Audit Log", href: "/settings/audit", icon: <Shield className="w-4 h-4" /> },
+      ],
+    },
+    {
+      title: "Integrations",
+      href: "/settings/integrations",
+      icon: <Slack className="w-5 h-5" />,
+    },
+  ],
+};
 
 interface DashboardShellProps {
   permissionLevel: PermissionLevel;
@@ -243,10 +294,30 @@ export function DashboardShell({ permissionLevel, children }: DashboardShellProp
     setMounted(true);
   }, []);
 
-  const visibleItems = navItems.filter((item) => {
-    if (!item.requiredLevels) return true;
-    return item.requiredLevels.includes(permissionLevel);
-  });
+  // Filter sections and items based on permission level
+  const filterItems = (items: NavItem[]): NavItem[] => {
+    return items.filter((item) => {
+      if (!item.requiredLevels) return true;
+      return item.requiredLevels.includes(permissionLevel);
+    });
+  };
+
+  const visibleSections = navSections
+    .filter((section) => {
+      if (section.requiredLevels && !section.requiredLevels.includes(permissionLevel)) {
+        return false;
+      }
+      return filterItems(section.items).length > 0;
+    })
+    .map((section) => ({
+      ...section,
+      items: filterItems(section.items),
+    }));
+
+  // Check if settings section is visible
+  const showSettings = settingsSection.requiredLevels
+    ? settingsSection.requiredLevels.includes(permissionLevel)
+    : true;
 
   const toggleExpanded = (href: string) => {
     setExpandedItems((prev) =>
@@ -317,81 +388,192 @@ export function DashboardShell({ permissionLevel, children }: DashboardShellProp
           </button>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {visibleItems.map((item) => {
-            const isActive = isItemActive(item);
-            const hasChildren = item.children && item.children.length > 0;
-            const expanded = isExpanded(item);
+        <nav className="flex-1 p-3 overflow-y-auto">
+          {/* Main Navigation Sections */}
+          <div className="space-y-4">
+            {visibleSections.map((section, sectionIndex) => (
+              <div key={section.title}>
+                {/* Section Title */}
+                {!collapsed && (
+                  <div className="px-3 py-1.5 mb-1">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-ltd-text-3">
+                      {section.title}
+                    </span>
+                  </div>
+                )}
+                {collapsed && sectionIndex > 0 && (
+                  <div className="mx-3 my-2 border-t border-ltd-border-1" />
+                )}
 
-            return (
-              <div key={item.href}>
-                {hasChildren ? (
-                  <>
-                    <button
-                      onClick={() => toggleExpanded(item.href)}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-[var(--ltd-radius-md)] text-sm font-medium transition-colors",
-                        isActive
-                          ? "bg-ltd-primary/10 text-ltd-primary"
-                          : "text-ltd-text-1 hover:bg-ltd-surface-3"
-                      )}
-                    >
-                      {item.icon}
-                      {!collapsed && (
-                        <>
-                          <span className="flex-1 text-left">{item.title}</span>
-                          <ChevronDown
-                            className={cn(
-                              "w-4 h-4 transition-transform",
-                              expanded && "rotate-180"
-                            )}
-                          />
-                        </>
-                      )}
-                    </button>
-                    {expanded && !collapsed && (
-                      <div className="ml-4 mt-1 space-y-1">
-                        {item.children?.map((child) => {
-                          const childActive = pathname === child.href || pathname.startsWith(child.href + "/");
-                          return (
-                            <Link
-                              key={child.href}
-                              href={child.href}
-                              onClick={() => setMobileMenuOpen(false)}
+                {/* Section Items */}
+                <div className="space-y-0.5">
+                  {section.items.map((item) => {
+                    const isActive = isItemActive(item);
+                    const hasChildren = item.children && item.children.length > 0;
+                    const expanded = isExpanded(item);
+
+                    return (
+                      <div key={item.href}>
+                        {hasChildren ? (
+                          <>
+                            <button
+                              onClick={() => toggleExpanded(item.href)}
                               className={cn(
-                                "flex items-center gap-3 px-3 py-2 rounded-[var(--ltd-radius-md)] text-sm transition-colors",
-                                childActive
-                                  ? "bg-ltd-primary text-ltd-primary-text"
-                                  : "text-ltd-text-2 hover:bg-ltd-surface-3 hover:text-ltd-text-1"
+                                "w-full flex items-center gap-3 px-3 py-2 rounded-[var(--ltd-radius-md)] text-sm font-medium transition-colors",
+                                isActive
+                                  ? "bg-ltd-primary/10 text-ltd-primary"
+                                  : "text-ltd-text-1 hover:bg-ltd-surface-3"
                               )}
                             >
-                              {child.icon}
-                              <span>{child.title}</span>
-                            </Link>
-                          );
-                        })}
+                              {item.icon}
+                              {!collapsed && (
+                                <>
+                                  <span className="flex-1 text-left">{item.title}</span>
+                                  <ChevronDown
+                                    className={cn(
+                                      "w-4 h-4 transition-transform",
+                                      expanded && "rotate-180"
+                                    )}
+                                  />
+                                </>
+                              )}
+                            </button>
+                            {expanded && !collapsed && (
+                              <div className="ml-4 mt-0.5 space-y-0.5">
+                                {item.children?.map((child) => {
+                                  const childActive = pathname === child.href || pathname.startsWith(child.href + "/");
+                                  return (
+                                    <Link
+                                      key={child.href}
+                                      href={child.href}
+                                      onClick={() => setMobileMenuOpen(false)}
+                                      className={cn(
+                                        "flex items-center gap-3 px-3 py-1.5 rounded-[var(--ltd-radius-md)] text-sm transition-colors",
+                                        childActive
+                                          ? "bg-ltd-primary text-ltd-primary-text"
+                                          : "text-ltd-text-2 hover:bg-ltd-surface-3 hover:text-ltd-text-1"
+                                      )}
+                                    >
+                                      {child.icon}
+                                      <span>{child.title}</span>
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <Link
+                            href={item.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className={cn(
+                              "flex items-center gap-3 px-3 py-2 rounded-[var(--ltd-radius-md)] text-sm font-medium transition-colors",
+                              isActive
+                                ? "bg-ltd-primary text-ltd-primary-text"
+                                : "text-ltd-text-1 hover:bg-ltd-surface-3"
+                            )}
+                            title={collapsed ? item.title : undefined}
+                          >
+                            {item.icon}
+                            {!collapsed && <span>{item.title}</span>}
+                          </Link>
+                        )}
                       </div>
-                    )}
-                  </>
-                ) : (
-                  <Link
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-[var(--ltd-radius-md)] text-sm font-medium transition-colors",
-                      isActive
-                        ? "bg-ltd-primary text-ltd-primary-text"
-                        : "text-ltd-text-1 hover:bg-ltd-surface-3"
-                    )}
-                    title={collapsed ? item.title : undefined}
-                  >
-                    {item.icon}
-                    {!collapsed && <span>{item.title}</span>}
-                  </Link>
-                )}
+                    );
+                  })}
+                </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          {/* Settings Section - Separated at bottom */}
+          {showSettings && (
+            <div className="mt-4 pt-4 border-t border-ltd-border-1">
+              {!collapsed && (
+                <div className="px-3 py-1.5 mb-1">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-ltd-text-3">
+                    {settingsSection.title}
+                  </span>
+                </div>
+              )}
+              <div className="space-y-0.5">
+                {filterItems(settingsSection.items).map((item) => {
+                  const isActive = isItemActive(item);
+                  const hasChildren = item.children && item.children.length > 0;
+                  const expanded = isExpanded(item);
+
+                  return (
+                    <div key={item.href}>
+                      {hasChildren ? (
+                        <>
+                          <button
+                            onClick={() => toggleExpanded(item.href)}
+                            className={cn(
+                              "w-full flex items-center gap-3 px-3 py-2 rounded-[var(--ltd-radius-md)] text-sm font-medium transition-colors",
+                              isActive
+                                ? "bg-ltd-primary/10 text-ltd-primary"
+                                : "text-ltd-text-1 hover:bg-ltd-surface-3"
+                            )}
+                          >
+                            {item.icon}
+                            {!collapsed && (
+                              <>
+                                <span className="flex-1 text-left">{item.title}</span>
+                                <ChevronDown
+                                  className={cn(
+                                    "w-4 h-4 transition-transform",
+                                    expanded && "rotate-180"
+                                  )}
+                                />
+                              </>
+                            )}
+                          </button>
+                          {expanded && !collapsed && (
+                            <div className="ml-4 mt-0.5 space-y-0.5">
+                              {item.children?.map((child) => {
+                                const childActive = pathname === child.href || pathname.startsWith(child.href + "/");
+                                return (
+                                  <Link
+                                    key={child.href}
+                                    href={child.href}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className={cn(
+                                      "flex items-center gap-3 px-3 py-1.5 rounded-[var(--ltd-radius-md)] text-sm transition-colors",
+                                      childActive
+                                        ? "bg-ltd-primary text-ltd-primary-text"
+                                        : "text-ltd-text-2 hover:bg-ltd-surface-3 hover:text-ltd-text-1"
+                                    )}
+                                  >
+                                    {child.icon}
+                                    <span>{child.title}</span>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2 rounded-[var(--ltd-radius-md)] text-sm font-medium transition-colors",
+                            isActive
+                              ? "bg-ltd-primary text-ltd-primary-text"
+                              : "text-ltd-text-1 hover:bg-ltd-surface-3"
+                          )}
+                          title={collapsed ? item.title : undefined}
+                        >
+                          {item.icon}
+                          {!collapsed && <span>{item.title}</span>}
+                        </Link>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </nav>
 
         <div className="hidden lg:block p-3 border-t border-ltd-border-1">
