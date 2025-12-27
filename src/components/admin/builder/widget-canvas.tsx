@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import type { UIWidgetTemplate } from "@config/templates/types";
 import { getWidgetById } from "@config/templates/lmtd/widgets/dashboard.widgets";
+import { WidgetPreview } from "./widget-preview";
 import {
   CheckSquare,
   Calendar,
@@ -260,11 +261,13 @@ export function WidgetCanvas({
                 </CardHeader>
 
                 <CardContent>
-                  {/* Preview placeholder */}
-                  <div className="h-24 bg-ltd-surface-2 rounded-lg flex items-center justify-center border border-dashed border-ltd-border-1">
-                    <span className="text-xs text-ltd-text-3">
-                      Widget Preview
-                    </span>
+                  {/* Live Widget Preview */}
+                  <div className="min-h-[80px] bg-ltd-surface-2 rounded-lg p-3 border border-ltd-border-1">
+                    <WidgetPreview
+                      widget={widgetDef}
+                      props={placed.props}
+                      compact={true}
+                    />
                   </div>
 
                   {/* Config summary */}
