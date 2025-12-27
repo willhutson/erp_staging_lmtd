@@ -8,6 +8,7 @@
 
 import { getResource } from "@config/resources";
 import { ResourceForm } from "@/components/admin/resource-renderer";
+import { AdminBreadcrumbs } from "@/components/admin/breadcrumbs";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -45,5 +46,10 @@ export default function ResourceEditPage({ params }: ResourceEditPageProps) {
     );
   }
 
-  return <ResourceForm config={config} mode="edit" id={id} />;
+  return (
+    <>
+      <AdminBreadcrumbs resourceName={resource} recordId={id} action="edit" />
+      <ResourceForm config={config} mode="edit" id={id} />
+    </>
+  );
 }

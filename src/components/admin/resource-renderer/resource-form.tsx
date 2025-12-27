@@ -40,7 +40,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronDown, Loader2, Save, ArrowLeft } from "lucide-react";
+import { ChevronDown, Loader2, Save, ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 import type { ResourceConfig, FieldDefinition, FormSection, FormView } from "@config/resources/types";
 
 interface ResourceFormProps {
@@ -118,7 +119,17 @@ export function ResourceForm({ config, mode, id }: ResourceFormProps) {
         },
         {
           onSuccess: () => {
+            toast.success(`${config.label} created`, {
+              description: `The ${config.label.toLowerCase()} has been created successfully.`,
+              icon: <CheckCircle2 className="h-4 w-4 text-green-500" />,
+            });
             handleRedirect(formView.redirectOnSuccess);
+          },
+          onError: (error) => {
+            toast.error(`Failed to create ${config.label.toLowerCase()}`, {
+              description: error.message || "An unexpected error occurred. Please try again.",
+              icon: <AlertCircle className="h-4 w-4 text-red-500" />,
+            });
           },
         }
       );
@@ -131,7 +142,17 @@ export function ResourceForm({ config, mode, id }: ResourceFormProps) {
         },
         {
           onSuccess: () => {
+            toast.success(`${config.label} updated`, {
+              description: `The ${config.label.toLowerCase()} has been updated successfully.`,
+              icon: <CheckCircle2 className="h-4 w-4 text-green-500" />,
+            });
             handleRedirect(formView.redirectOnSuccess, id);
+          },
+          onError: (error) => {
+            toast.error(`Failed to update ${config.label.toLowerCase()}`, {
+              description: error.message || "An unexpected error occurred. Please try again.",
+              icon: <AlertCircle className="h-4 w-4 text-red-500" />,
+            });
           },
         }
       );

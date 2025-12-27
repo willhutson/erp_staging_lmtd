@@ -20,17 +20,25 @@ import {
   LayoutDashboard,
   Settings,
   ChevronLeft,
+  ChevronDown,
   Bell,
   Brain,
   BarChart3,
   MessageSquare,
   Plug,
   Wrench,
+  Globe,
+  Check,
+  X,
+  Minus,
+  UserCircle,
+  CalendarOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getAllResources, getModuleWithResources } from "@config/resources";
 import type { SpokeStackModule } from "@config/resources/types";
+import { useState } from "react";
 
 // Icon map for dynamic icon rendering
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -47,6 +55,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   MessageSquare,
   Plug,
   Wrench,
+  UserCircle,
+  CalendarOff,
 };
 
 // Module icon map
@@ -58,6 +68,119 @@ const moduleIconMap: Record<SpokeStackModule, React.ComponentType<{ className?: 
   ACCESS_CONTROL: Shield,
   INTEGRATIONS: Plug,
 };
+
+// Module color map for visual distinction
+const moduleColorMap: Record<SpokeStackModule, string> = {
+  CORE: "text-blue-500",
+  CONTENT_ENGINE: "text-purple-500",
+  ANALYTICS: "text-green-500",
+  MESSAGING: "text-yellow-500",
+  ACCESS_CONTROL: "text-orange-500",
+  INTEGRATIONS: "text-pink-500",
+};
+
+// Status indicator component
+function StatusIndicator({ api, page }: { api: "done" | "partial" | "none"; page: "done" | "partial" | "none" }) {
+  const getIcon = (status: "done" | "partial" | "none") => {
+    switch (status) {
+      case "done":
+        return <Check className="h-3 w-3 text-green-500" />;
+      case "partial":
+        return <Minus className="h-3 w-3 text-yellow-500" />;
+      case "none":
+        return <X className="h-3 w-3 text-red-400/60" />;
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-1.5 ml-auto">
+      <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+        API{getIcon(api)}
+      </span>
+      <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+        UI{getIcon(page)}
+      </span>
+    </div>
+  );
+}
+
+// Resource status mapping (what's built vs what's not)
+const resourceStatus: Record<string, { api: "done" | "partial" | "none"; page: "done" | "partial" | "none" }> = {
+  // Core
+  users: { api: "done", page: "done" },
+  clients: { api: "done", page: "done" },
+  projects: { api: "done", page: "done" },
+  "audit-logs": { api: "done", page: "done" },
+  // Content Engine
+  skills: { api: "done", page: "done" },
+  "doc-templates": { api: "done", page: "done" },
+  // Analytics
+  "analytics-dashboards": { api: "done", page: "done" },
+  "analytics-widgets": { api: "done", page: "done" },
+  // Messaging
+  "notification-rules": { api: "done", page: "done" },
+  "email-templates": { api: "none", page: "none" },
+  // Access Control
+  "access-policies": { api: "done", page: "done" },
+  // Integrations
+  webhooks: { api: "none", page: "none" },
+  "google-config": { api: "partial", page: "none" },
+  "slack-config": { api: "partial", page: "none" },
+};
+
+// Instance selector for multi-tenant
+function InstanceSelector() {
+  const [isOpen, setIsOpen] = useState(false);
+  const instances = [
+    { id: "lmtd", name: "TeamLMTD", domain: "lmtd.spokestack.io", active: true },
+    // Future instances would be listed here
+  ];
+  const current = instances.find((i) => i.active) || instances[0];
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-ltd-surface-3 hover:bg-ltd-surface-3/80 transition-colors"
+      >
+        <Globe className="h-4 w-4 text-ltd-primary" />
+        <div className="flex-1 text-left">
+          <div className="text-sm font-medium text-ltd-text-1">{current.name}</div>
+          <div className="text-[10px] text-ltd-text-3">{current.domain}</div>
+        </div>
+        <ChevronDown className={cn("h-4 w-4 text-ltd-text-2 transition-transform", isOpen && "rotate-180")} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-ltd-surface-2 border border-ltd-border-1 rounded-lg shadow-lg z-50">
+          {instances.map((instance) => (
+            <button
+              key={instance.id}
+              className={cn(
+                "w-full flex items-center gap-2 px-3 py-2 hover:bg-ltd-surface-3 first:rounded-t-lg last:rounded-b-lg",
+                instance.active && "bg-ltd-primary/10"
+              )}
+              onClick={() => setIsOpen(false)}
+            >
+              <Globe className="h-4 w-4 text-ltd-text-2" />
+              <div className="flex-1 text-left">
+                <div className="text-sm text-ltd-text-1">{instance.name}</div>
+                <div className="text-[10px] text-ltd-text-3">{instance.domain}</div>
+              </div>
+              {instance.active && <Check className="h-4 w-4 text-ltd-primary" />}
+            </button>
+          ))}
+          <div className="border-t border-ltd-border-1">
+            <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ltd-primary hover:bg-ltd-surface-3 rounded-b-lg">
+              <span className="text-lg leading-none">+</span>
+              Create New Instance
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AdminLayout({
   children,
@@ -183,27 +306,42 @@ export default function AdminLayout({
         warnWhenUnsavedChanges: true,
       }}
     >
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen bg-ltd-surface-1">
         {/* Sidebar */}
-        <aside className="w-64 border-r bg-muted/30 p-4 flex flex-col overflow-y-auto">
-          <div className="flex items-center gap-2 mb-8">
-            <Link href="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-              <ChevronLeft className="h-4 w-4" />
-              Back to App
-            </Link>
+        <aside className="w-72 border-r border-ltd-border-1 bg-ltd-surface-2 flex flex-col">
+          {/* Header */}
+          <div className="p-4 border-b border-ltd-border-1">
+            <div className="flex items-center gap-2 mb-4">
+              <Link href="/" className="flex items-center gap-2 text-sm text-ltd-text-2 hover:text-ltd-text-1 transition-colors">
+                <ChevronLeft className="h-4 w-4" />
+                Back to App
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-ltd-primary to-[#7B61FF] flex items-center justify-center">
+                <Wrench className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="font-bold text-ltd-text-1">SpokeStack</h1>
+                <span className="text-[10px] uppercase tracking-wider text-ltd-text-3">Admin Console</span>
+              </div>
+            </div>
+
+            {/* Instance Selector */}
+            <InstanceSelector />
           </div>
 
-          <div className="flex items-center gap-2 mb-6">
-            <Wrench className="h-5 w-5 text-primary" />
-            <h1 className="font-semibold">SpokeStack Admin</h1>
-          </div>
-
-          <nav className="space-y-1 flex-1">
+          {/* Navigation */}
+          <nav className="flex-1 p-3 overflow-y-auto">
+            {/* Dashboard */}
             <Link
               href="/admin"
               className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted",
-                isActive("/admin") && pathname === "/admin" && "bg-muted font-medium"
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                isActive("/admin") && pathname === "/admin"
+                  ? "bg-ltd-primary text-ltd-primary-text"
+                  : "text-ltd-text-1 hover:bg-ltd-surface-3"
               )}
             >
               <LayoutDashboard className="h-4 w-4" />
@@ -215,6 +353,7 @@ export default function AdminLayout({
               .filter((m) => m.resources.length > 0)
               .map((module) => {
                 const ModuleIcon = moduleIconMap[module.name];
+                const moduleColor = moduleColorMap[module.name];
                 // Get legacy resources for this module
                 const moduleLegacy = legacyResources.filter(
                   (r) => r.meta.module === module.name
@@ -224,47 +363,67 @@ export default function AdminLayout({
                 if (!hasResources) return null;
 
                 return (
-                  <div key={module.name} className="pt-4">
+                  <div key={module.name} className="mt-6">
                     <div className="flex items-center gap-2 px-3 pb-2">
-                      <ModuleIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      <ModuleIcon className={cn("h-3.5 w-3.5", moduleColor)} />
+                      <span className="text-[10px] font-semibold text-ltd-text-3 uppercase tracking-wider">
                         {module.label}
                       </span>
                     </div>
 
-                    {/* Registry resources */}
-                    {module.resources.map((resource) => {
-                      const Icon = iconMap[resource.icon] || FileText;
-                      const path = `/admin/${resource.name}`;
-                      return (
-                        <Link
-                          key={resource.name}
-                          href={path}
-                          className={cn(
-                            "flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted",
-                            isActive(path) && "bg-muted font-medium"
-                          )}
-                        >
-                          <Icon className="h-4 w-4" />
-                          {resource.labelPlural}
-                        </Link>
-                      );
-                    })}
+                    <div className="space-y-0.5">
+                      {/* Registry resources */}
+                      {module.resources.map((resource) => {
+                        const Icon = iconMap[resource.icon] || FileText;
+                        const path = `/admin/${resource.name}`;
+                        const status = resourceStatus[resource.name];
+                        return (
+                          <Link
+                            key={resource.name}
+                            href={path}
+                            className={cn(
+                              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group",
+                              isActive(path)
+                                ? "bg-ltd-primary/10 text-ltd-primary font-medium"
+                                : "text-ltd-text-1 hover:bg-ltd-surface-3"
+                            )}
+                          >
+                            <Icon className="h-4 w-4" />
+                            <span className="flex-1">{resource.labelPlural}</span>
+                            {status && (
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                <StatusIndicator api={status.api} page={status.page} />
+                              </div>
+                            )}
+                          </Link>
+                        );
+                      })}
 
-                    {/* Legacy resources */}
-                    {moduleLegacy.map((resource) => (
-                      <Link
-                        key={resource.name}
-                        href={resource.list}
-                        className={cn(
-                          "flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted",
-                          isActive(resource.list) && "bg-muted font-medium"
-                        )}
-                      >
-                        {resource.meta.icon}
-                        {resource.meta.label}
-                      </Link>
-                    ))}
+                      {/* Legacy resources */}
+                      {moduleLegacy.map((resource) => {
+                        const status = resourceStatus[resource.name];
+                        return (
+                          <Link
+                            key={resource.name}
+                            href={resource.list}
+                            className={cn(
+                              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group",
+                              isActive(resource.list)
+                                ? "bg-ltd-primary/10 text-ltd-primary font-medium"
+                                : "text-ltd-text-1 hover:bg-ltd-surface-3"
+                            )}
+                          >
+                            {resource.meta.icon}
+                            <span className="flex-1">{resource.meta.label}</span>
+                            {status && (
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                <StatusIndicator api={status.api} page={status.page} />
+                              </div>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
                 );
               })}
@@ -282,46 +441,67 @@ export default function AdminLayout({
               if (moduleLegacy.length === 0) return null;
 
               const ModuleIcon = moduleIconMap[moduleName as SpokeStackModule];
+              const moduleColor = moduleColorMap[moduleName as SpokeStackModule];
               const moduleLabel = moduleName === "ACCESS_CONTROL" ? "Access Control" : "Messaging";
 
               return (
-                <div key={moduleName} className="pt-4">
+                <div key={moduleName} className="mt-6">
                   <div className="flex items-center gap-2 px-3 pb-2">
-                    <ModuleIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <ModuleIcon className={cn("h-3.5 w-3.5", moduleColor)} />
+                    <span className="text-[10px] font-semibold text-ltd-text-3 uppercase tracking-wider">
                       {moduleLabel}
                     </span>
                   </div>
-                  {moduleLegacy.map((resource) => (
-                    <Link
-                      key={resource.name}
-                      href={resource.list}
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted",
-                        isActive(resource.list) && "bg-muted font-medium"
-                      )}
-                    >
-                      {resource.meta.icon}
-                      {resource.meta.label}
-                    </Link>
-                  ))}
+                  <div className="space-y-0.5">
+                    {moduleLegacy.map((resource) => {
+                      const status = resourceStatus[resource.name];
+                      return (
+                        <Link
+                          key={resource.name}
+                          href={resource.list}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group",
+                            isActive(resource.list)
+                              ? "bg-ltd-primary/10 text-ltd-primary font-medium"
+                              : "text-ltd-text-1 hover:bg-ltd-surface-3"
+                          )}
+                        >
+                          {resource.meta.icon}
+                          <span className="flex-1">{resource.meta.label}</span>
+                          {status && (
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                              <StatusIndicator api={status.api} page={status.page} />
+                            </div>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
               );
             })}
           </nav>
 
-          <div className="pt-4 border-t">
-            <div className="px-3 py-2 text-sm">
-              <div className="font-medium">{session.user.name}</div>
-              <div className="text-xs text-muted-foreground">
-                {session.user.permissionLevel}
+          {/* User info */}
+          <div className="p-4 border-t border-ltd-border-1">
+            <div className="flex items-center gap-3 px-2">
+              <div className="h-9 w-9 rounded-full bg-ltd-primary/20 flex items-center justify-center">
+                <span className="text-sm font-semibold text-ltd-primary">
+                  {session.user.name?.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-ltd-text-1 truncate">{session.user.name}</div>
+                <div className="text-[10px] text-ltd-text-3 uppercase tracking-wider">
+                  {session.user.permissionLevel}
+                </div>
               </div>
             </div>
           </div>
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-6 overflow-auto bg-ltd-surface-1">
           {children}
         </main>
       </div>

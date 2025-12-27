@@ -17,6 +17,10 @@ import { skillsResource } from "./skills.resource";
 import { docTemplatesResource } from "./doc-templates.resource";
 import { analyticsDashboardsResource } from "./analytics-dashboards.resource";
 import { analyticsWidgetsResource } from "./analytics-widgets.resource";
+// New resources extracted from LMTD
+import { contactsResource } from "./contacts.resource";
+import { leaveTypesResource } from "./leave-types.resource";
+import { integrationsResource } from "./integrations.resource";
 
 // ============================================
 // RESOURCE REGISTRY
@@ -27,6 +31,8 @@ const allResources: ResourceConfig[] = [
   usersResource,
   clientsResource,
   projectsResource,
+  contactsResource,      // CRM contacts
+  leaveTypesResource,    // Leave management config
   auditLogsResource,
 
   // CONTENT_ENGINE
@@ -44,8 +50,8 @@ const allResources: ResourceConfig[] = [
   // ACCESS_CONTROL (to be added)
   // accessPoliciesResource - already exists but needs migration
 
-  // INTEGRATIONS (to be added)
-  // webhooksResource,
+  // INTEGRATIONS
+  integrationsResource,
 ];
 
 // ============================================
@@ -99,4 +105,8 @@ export {
   docTemplatesResource,
   analyticsDashboardsResource,
   analyticsWidgetsResource,
+  // New resources
+  contactsResource,
+  leaveTypesResource,
+  integrationsResource,
 };

@@ -8,6 +8,7 @@
 
 import { getResource } from "@config/resources";
 import { ResourceList } from "@/components/admin/resource-renderer";
+import { AdminBreadcrumbs } from "@/components/admin/breadcrumbs";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -44,5 +45,10 @@ export default function ResourceListPage({ params }: ResourceListPageProps) {
     );
   }
 
-  return <ResourceList config={config} />;
+  return (
+    <>
+      <AdminBreadcrumbs resourceName={resource} />
+      <ResourceList config={config} />
+    </>
+  );
 }
