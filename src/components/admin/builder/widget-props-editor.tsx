@@ -74,7 +74,8 @@ export function WidgetPropsEditor({ widget, onUpdate, onClose }: WidgetPropsEdit
     );
   }
 
-  const Icon = iconMap[widgetDef.metadata.icon] || FileText;
+  const iconKey = widgetDef.metadata.icon;
+  const Icon = (iconKey && iconMap[iconKey]) || FileText;
 
   const handlePropChange = (name: string, value: unknown) => {
     onUpdate({
