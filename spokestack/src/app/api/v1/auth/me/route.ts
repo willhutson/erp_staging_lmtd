@@ -59,10 +59,10 @@ export async function GET() {
         notificationPreference: {
           select: {
             emailEnabled: true,
-            pushEnabled: true,
-            briefUpdates: true,
-            timeReminders: true,
-            leaveUpdates: true,
+            slackEnabled: true,
+            inAppEnabled: true,
+            emailDigest: true,
+            quietHoursEnabled: true,
           },
         },
       },
