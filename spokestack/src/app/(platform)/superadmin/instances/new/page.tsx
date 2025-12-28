@@ -21,25 +21,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Loader2, Building2, Megaphone, Check } from "lucide-react";
+import { ArrowLeft, Loader2, Building2, Megaphone, Check, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
 // Module bundles for quick selection
 const MODULE_BUNDLES = [
   {
+    id: "erp",
+    label: "ERP",
+    description: "Core business operations: work requests, timesheets, leave management, team directory",
+    modules: ["briefs", "time", "leave", "team"],
+    color: "bg-indigo-500",
+    icon: "clipboard",
+  },
+  {
     id: "agency",
     label: "Agency",
-    description: "Full professional services suite: Clients, Retainers, Projects, CRM, RFP, Resources",
-    modules: ["agency", "briefs", "time", "leave", "team"],
+    description: "Professional services suite: client management, retainers, projects, CRM, new business pipeline",
+    modules: ["agency"],
     color: "bg-emerald-500",
+    icon: "building",
   },
   {
     id: "marketing",
     label: "Marketing",
-    description: "Creator tracking, media buying, analytics, and campaign management",
+    description: "Digital marketing tools: creator tracking, media buying, analytics, custom dashboards",
     modules: ["listening", "mediabuying", "analytics", "builder"],
     color: "bg-purple-500",
+    icon: "megaphone",
   },
 ];
 
@@ -365,10 +375,10 @@ export default function NewInstancePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-3">
               {MODULE_BUNDLES.map((bundle) => {
                 const isEnabled = isBundleEnabled(bundle.id);
-                const Icon = bundle.id === "agency" ? Building2 : Megaphone;
+                const Icon = bundle.id === "erp" ? ClipboardList : bundle.id === "agency" ? Building2 : Megaphone;
                 return (
                   <div
                     key={bundle.id}
