@@ -54,6 +54,7 @@ import {
   FolderKanban,
   Repeat,
   TrendingUp,
+  Radio,
 } from "lucide-react";
 import type { TenantConfig } from "@/lib/tenant";
 
@@ -110,6 +111,7 @@ const modules = [
     href: "/listening",
     color: "text-purple-500",
     items: [
+      { label: "Trackers", href: "/listening/trackers", icon: Radio },
       { label: "Creators", href: "/listening/creators", icon: Sparkles },
       { label: "Content", href: "/listening/content", icon: Grid3X3 },
       { label: "Campaigns", href: "/listening/campaigns", icon: Megaphone },

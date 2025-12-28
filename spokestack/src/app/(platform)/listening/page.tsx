@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Users, Grid3X3, Megaphone, Plus } from "lucide-react";
+import { Sparkles, Users, Grid3X3, Megaphone, Plus, Radio, Activity } from "lucide-react";
 import Link from "next/link";
 
 export default function ListeningPage() {
@@ -10,15 +10,23 @@ export default function ListeningPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Listening</h1>
           <p className="text-muted-foreground">
-            Manage creators, content, and influencer campaigns
+            Track brand mentions, manage creators, and monitor campaigns
           </p>
         </div>
-        <Button asChild>
-          <Link href="/listening/creators/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Creator
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link href="/listening/trackers/new">
+              <Radio className="mr-2 h-4 w-4" />
+              New Tracker
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/listening/creators/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Creator
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -83,7 +91,24 @@ export default function ListeningPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="hover:shadow-md transition-shadow border-primary/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Radio className="h-5 w-5 text-red-500" />
+              Brand Trackers
+            </CardTitle>
+            <CardDescription>
+              Monitor brand mentions, sentiment, and trends across platforms
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild variant="default" className="w-full">
+              <Link href="/listening/trackers">View Trackers</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
