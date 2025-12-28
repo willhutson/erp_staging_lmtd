@@ -39,7 +39,6 @@ interface ClientWithCount {
   isRetainer: boolean;
   isActive: boolean;
   logoUrl: string | null;
-  primaryColor: string | null;
   website: string | null;
   industry: string | null;
   _count: {
