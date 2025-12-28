@@ -8,9 +8,9 @@ import prisma from "@/lib/prisma";
 import {
   getAuthContext,
   success,
-  error,
   handleRoute,
   validateBody,
+  ApiError,
 } from "@/lib/api";
 
 const UpdateProfileSchema = z.object({
@@ -69,7 +69,7 @@ export async function GET() {
     });
 
     if (!profile) {
-      return error({ status: 404, message: "Profile not found" });
+      throw ApiError.notFound("Profile");
     }
 
     return success(profile);

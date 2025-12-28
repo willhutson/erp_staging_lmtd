@@ -91,9 +91,9 @@ export function paginated<T>(
 /**
  * Handle async route with error catching
  */
-export async function handleRoute<T>(
-  handler: () => Promise<NextResponse<T>>
-): Promise<NextResponse<T | ApiErrorResponse>> {
+export async function handleRoute(
+  handler: () => Promise<NextResponse>
+): Promise<NextResponse> {
   try {
     return await handler();
   } catch (err) {
