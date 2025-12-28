@@ -1,22 +1,22 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Palette, Grid3X3, LayoutDashboard, Plus, Eye, Settings } from "lucide-react";
+import { Sparkles, Users, Grid3X3, Megaphone, Plus } from "lucide-react";
 import Link from "next/link";
 
-export default function BuilderPage() {
+export default function ListeningPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Builder</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Listening</h1>
           <p className="text-muted-foreground">
-            Create custom dashboards and client views
+            Manage creators, content, and influencer campaigns
           </p>
         </div>
         <Button asChild>
-          <Link href="/Builder/dashboards/new">
+          <Link href="/listening/creators/new">
             <Plus className="mr-2 h-4 w-4" />
-            New Dashboard
+            Add Creator
           </Link>
         </Button>
       </div>
@@ -25,14 +25,14 @@ export default function BuilderPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Dashboards
+              Total Creators
             </CardTitle>
-            <Grid3X3 className="h-4 w-4 text-pink-500" />
+            <Sparkles className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
+            <div className="text-2xl font-bold">156</div>
             <p className="text-xs text-muted-foreground">
-              8 published
+              +12 this month
             </p>
           </CardContent>
         </Card>
@@ -40,14 +40,14 @@ export default function BuilderPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Widgets
+              Connected Platforms
             </CardTitle>
-            <LayoutDashboard className="h-4 w-4 text-blue-500" />
+            <Users className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">48</div>
+            <div className="text-2xl font-bold">342</div>
             <p className="text-xs text-muted-foreground">
-              Across all dashboards
+              Across all creators
             </p>
           </CardContent>
         </Card>
@@ -55,14 +55,14 @@ export default function BuilderPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Client Instances
+              Content Pieces
             </CardTitle>
-            <Eye className="h-4 w-4 text-green-500" />
+            <Grid3X3 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">6</div>
+            <div className="text-2xl font-bold">2,847</div>
             <p className="text-xs text-muted-foreground">
-              Active portals
+              Tracked this quarter
             </p>
           </CardContent>
         </Card>
@@ -70,14 +70,14 @@ export default function BuilderPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Templates
+              Active Campaigns
             </CardTitle>
-            <Palette className="h-4 w-4 text-purple-500" />
+            <Megaphone className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">8</div>
             <p className="text-xs text-muted-foreground">
-              Ready to use
+              With 24 creators
             </p>
           </CardContent>
         </Card>
@@ -87,16 +87,16 @@ export default function BuilderPage() {
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Grid3X3 className="h-5 w-5 text-pink-500" />
-              Dashboards
+              <Sparkles className="h-5 w-5 text-purple-500" />
+              Creators
             </CardTitle>
             <CardDescription>
-              Create and manage custom dashboards with drag-and-drop widgets
+              Manage your creator roster, contracts, and platform connections
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild variant="outline" className="w-full">
-              <Link href="/Builder/dashboards">View Dashboards</Link>
+              <Link href="/listening/creators">View Creators</Link>
             </Button>
           </CardContent>
         </Card>
@@ -104,16 +104,16 @@ export default function BuilderPage() {
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <LayoutDashboard className="h-5 w-5 text-blue-500" />
-              Widget Library
+              <Grid3X3 className="h-5 w-5 text-green-500" />
+              Content
             </CardTitle>
             <CardDescription>
-              Browse available widgets: charts, KPIs, tables, and more
+              Track creator content, metrics, and campaign attribution
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild variant="outline" className="w-full">
-              <Link href="/Builder/widgets">Browse Widgets</Link>
+              <Link href="/listening/content">View Content</Link>
             </Button>
           </CardContent>
         </Card>
@@ -121,56 +121,20 @@ export default function BuilderPage() {
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Palette className="h-5 w-5 text-purple-500" />
-              Templates
+              <Megaphone className="h-5 w-5 text-orange-500" />
+              Campaigns
             </CardTitle>
             <CardDescription>
-              Start from pre-built templates for common use cases
+              Manage creator campaigns, deliverables, and performance
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild variant="outline" className="w-full">
-              <Link href="/Builder/templates">View Templates</Link>
+              <Link href="/listening/campaigns">View Campaigns</Link>
             </Button>
           </CardContent>
         </Card>
       </div>
-
-      {/* Widget Type Preview */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Available Widget Types</CardTitle>
-          <CardDescription>
-            25+ widget types available for building dashboards
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {[
-              { name: "KPI Card", icon: "📊" },
-              { name: "Line Chart", icon: "📈" },
-              { name: "Bar Chart", icon: "📊" },
-              { name: "Pie Chart", icon: "🥧" },
-              { name: "Data Table", icon: "📋" },
-              { name: "Heatmap", icon: "🗺️" },
-              { name: "Funnel", icon: "🔻" },
-              { name: "Leaderboard", icon: "🏆" },
-              { name: "Activity Feed", icon: "📰" },
-              { name: "Spend Tracker", icon: "💰" },
-              { name: "Creator Roster", icon: "⭐" },
-              { name: "Platform Compare", icon: "🔄" },
-            ].map((widget) => (
-              <div
-                key={widget.name}
-                className="p-3 rounded-lg border bg-muted/50 text-center hover:bg-accent transition-colors cursor-pointer"
-              >
-                <div className="text-2xl mb-1">{widget.icon}</div>
-                <div className="text-xs font-medium">{widget.name}</div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

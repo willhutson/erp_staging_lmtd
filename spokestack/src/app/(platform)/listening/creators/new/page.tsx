@@ -81,7 +81,7 @@ export default function NewCreatorPage() {
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     // Redirect to creators list
-    router.push("/Listening/creators");
+    router.push("/listening/creators");
   };
 
   return (
@@ -89,7 +89,7 @@ export default function NewCreatorPage() {
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/Listening/creators">
+          <Link href="/listening/creators">
             <ChevronLeft className="h-5 w-5" />
           </Link>
         </Button>
@@ -282,7 +282,7 @@ export default function NewCreatorPage() {
         {/* Actions */}
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" asChild>
-            <Link href="/Listening/creators">Cancel</Link>
+            <Link href="/listening/creators">Cancel</Link>
           </Button>
           <Button
             type="submit"

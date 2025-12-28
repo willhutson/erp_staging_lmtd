@@ -69,7 +69,7 @@ function NewDashboardContent() {
 
     // Generate a mock ID and redirect to editor
     const newId = `new-${Date.now()}`;
-    router.push(`/Builder/dashboards/${newId}/edit`);
+    router.push(`/builder/dashboards/${newId}/edit`);
   };
 
   return (
@@ -77,7 +77,7 @@ function NewDashboardContent() {
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/Builder/dashboards">
+          <Link href="/builder/dashboards">
             <ChevronLeft className="h-5 w-5" />
           </Link>
         </Button>
@@ -167,7 +167,7 @@ function NewDashboardContent() {
               <Label className="text-sm text-muted-foreground">Or choose a template</Label>
               <div className="grid grid-cols-2 gap-2 mt-2">
                 <Button variant="outline" asChild className="h-auto py-3 flex-col gap-1">
-                  <Link href="/Builder/templates">
+                  <Link href="/builder/templates">
                     <LayoutTemplate className="h-5 w-5" />
                     <span className="text-xs">Browse Templates</span>
                   </Link>
@@ -185,7 +185,7 @@ function NewDashboardContent() {
       {/* Actions */}
       <div className="flex justify-end gap-3">
         <Button variant="outline" asChild>
-          <Link href="/Builder/dashboards">Cancel</Link>
+          <Link href="/builder/dashboards">Cancel</Link>
         </Button>
         <Button
           onClick={handleCreate}

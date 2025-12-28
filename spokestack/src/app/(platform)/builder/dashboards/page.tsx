@@ -259,7 +259,7 @@ export default function DashboardsPage() {
                     <span>Blank Dashboard</span>
                   </Button>
                   <Button variant="outline" className="h-24 flex-col gap-2" asChild>
-                    <Link href="/Builder/templates">
+                    <Link href="/builder/templates">
                       <LayoutDashboard className="h-6 w-6" />
                       <span>Use Template</span>
                     </Link>
@@ -429,7 +429,7 @@ export default function DashboardsPage() {
                 </span>
               </div>
               <Button className="w-full mt-4" variant="outline" asChild>
-                <Link href={`/Builder/dashboards/${dashboard.id}/edit`}>
+                <Link href={`/builder/dashboards/${dashboard.id}/edit`}>
                   Open Editor
                 </Link>
               </Button>

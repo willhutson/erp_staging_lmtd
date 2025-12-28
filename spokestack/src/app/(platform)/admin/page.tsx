@@ -179,7 +179,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <a
-              href="/Admin/organizations"
+              href="/admin/organizations"
               className="inline-flex items-center text-sm text-primary hover:underline"
             >
               View organizations →
@@ -199,7 +199,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <a
-              href="/Admin/crm/deals"
+              href="/admin/crm/deals"
               className="inline-flex items-center text-sm text-primary hover:underline"
             >
               View deals →
@@ -219,7 +219,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <a
-              href="/Listening/creators"
+              href="/listening/creators"
               className="inline-flex items-center text-sm text-primary hover:underline"
             >
               View creators →

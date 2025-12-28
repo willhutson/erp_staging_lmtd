@@ -52,76 +52,76 @@ const modules = [
     id: "admin",
     label: "Admin",
     icon: Settings,
-    href: "/Admin",
+    href: "/admin",
     color: "text-slate-500",
     items: [
-      { label: "Dashboard", href: "/Admin", icon: LayoutDashboard },
-      { label: "Organizations", href: "/Admin/organizations", icon: Building2 },
-      { label: "Users", href: "/Admin/users", icon: Users },
-      { label: "Roles", href: "/Admin/roles", icon: UserCircle },
-      { label: "Integrations", href: "/Admin/integrations", icon: Plug },
+      { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+      { label: "Organizations", href: "/admin/organizations", icon: Building2 },
+      { label: "Users", href: "/admin/users", icon: Users },
+      { label: "Roles", href: "/admin/roles", icon: UserCircle },
+      { label: "Integrations", href: "/admin/integrations", icon: Plug },
     ],
   },
   {
     id: "crm",
     label: "CRM",
     icon: Handshake,
-    href: "/Admin/crm",
+    href: "/admin/crm",
     color: "text-blue-500",
     items: [
-      { label: "Companies", href: "/Admin/crm/companies", icon: Building2 },
-      { label: "Contacts", href: "/Admin/crm/contacts", icon: Users },
-      { label: "Deals", href: "/Admin/crm/deals", icon: Handshake },
-      { label: "Tasks", href: "/Admin/crm/tasks", icon: CheckSquare },
+      { label: "Companies", href: "/admin/crm/companies", icon: Building2 },
+      { label: "Contacts", href: "/admin/crm/contacts", icon: Users },
+      { label: "Deals", href: "/admin/crm/deals", icon: Handshake },
+      { label: "Tasks", href: "/admin/crm/tasks", icon: CheckSquare },
     ],
   },
   {
     id: "listening",
     label: "Listening",
     icon: Headphones,
-    href: "/Listening",
+    href: "/listening",
     color: "text-purple-500",
     items: [
-      { label: "Creators", href: "/Listening/creators", icon: Sparkles },
-      { label: "Content", href: "/Listening/content", icon: Grid3X3 },
-      { label: "Campaigns", href: "/Listening/campaigns", icon: Megaphone },
+      { label: "Creators", href: "/listening/creators", icon: Sparkles },
+      { label: "Content", href: "/listening/content", icon: Grid3X3 },
+      { label: "Campaigns", href: "/listening/campaigns", icon: Megaphone },
     ],
   },
   {
     id: "media-buying",
     label: "Media Buying",
     icon: CreditCard,
-    href: "/MediaBuying",
+    href: "/mediabuying",
     color: "text-green-500",
     items: [
-      { label: "Accounts", href: "/MediaBuying/accounts", icon: Globe },
-      { label: "Campaigns", href: "/MediaBuying/campaigns", icon: Megaphone },
-      { label: "Budgets", href: "/MediaBuying/budgets", icon: CreditCard },
+      { label: "Accounts", href: "/mediabuying/accounts", icon: Globe },
+      { label: "Campaigns", href: "/mediabuying/campaigns", icon: Megaphone },
+      { label: "Budgets", href: "/mediabuying/budgets", icon: CreditCard },
     ],
   },
   {
     id: "analytics",
     label: "Analytics",
     icon: BarChart3,
-    href: "/Analytics",
+    href: "/analytics",
     color: "text-orange-500",
     items: [
-      { label: "Overview", href: "/Analytics", icon: LayoutDashboard },
-      { label: "Campaigns", href: "/Analytics/campaigns", icon: Megaphone },
-      { label: "Creators", href: "/Analytics/creators", icon: Sparkles },
-      { label: "Platforms", href: "/Analytics/platforms", icon: Globe },
+      { label: "Overview", href: "/analytics", icon: LayoutDashboard },
+      { label: "Campaigns", href: "/analytics/campaigns", icon: Megaphone },
+      { label: "Creators", href: "/analytics/creators", icon: Sparkles },
+      { label: "Platforms", href: "/analytics/platforms", icon: Globe },
     ],
   },
   {
     id: "builder",
     label: "Builder",
     icon: Palette,
-    href: "/Builder",
+    href: "/builder",
     color: "text-pink-500",
     items: [
-      { label: "Dashboards", href: "/Builder/dashboards", icon: Grid3X3 },
-      { label: "Widgets", href: "/Builder/widgets", icon: LayoutDashboard },
-      { label: "Templates", href: "/Builder/templates", icon: Palette },
+      { label: "Dashboards", href: "/builder/dashboards", icon: Grid3X3 },
+      { label: "Widgets", href: "/builder/widgets", icon: LayoutDashboard },
+      { label: "Templates", href: "/builder/templates", icon: Palette },
     ],
   },
 ];
@@ -139,10 +139,10 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   // Determine which module is active
   const getActiveModule = () => {
-    if (pathname.startsWith("/Listening")) return "listening";
-    if (pathname.startsWith("/MediaBuying")) return "media-buying";
-    if (pathname.startsWith("/Analytics")) return "analytics";
-    if (pathname.startsWith("/Builder")) return "builder";
+    if (pathname.startsWith("/listening")) return "listening";
+    if (pathname.startsWith("/mediabuying")) return "media-buying";
+    if (pathname.startsWith("/analytics")) return "analytics";
+    if (pathname.startsWith("/builder")) return "builder";
     return "admin";
   };
 
@@ -151,7 +151,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
   return (
     <Sidebar className="border-r">
       <SidebarHeader className="border-b px-6 py-4">
-        <Link href="/Admin" className="flex items-center gap-3">
+        <Link href="/admin" className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-lg bg-[#52EDC7] flex items-center justify-center">
             <span className="text-[#0A1628] font-bold text-sm">S</span>
           </div>
@@ -266,13 +266,13 @@ export function AppSidebar({ user }: AppSidebarProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem asChild>
-                  <Link href="/Admin/settings/profile">
+                  <Link href="/admin/settings/profile">
                     <UserCircle className="mr-2 h-4 w-4" />
                     Profile
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/Admin/settings">
+                  <Link href="/admin/settings">
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
                   </Link>

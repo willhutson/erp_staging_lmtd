@@ -528,7 +528,7 @@ function TemplateCard({ template, isFavorite, onToggleFavorite, getCategoryIcon,
           <span>{template.usageCount} uses</span>
         </div>
         <Button className="w-full mt-4" variant="outline" asChild>
-          <Link href={`/Builder/dashboards/new?template=${template.id}`}>
+          <Link href={`/builder/dashboards/new?template=${template.id}`}>
             Use This Template
           </Link>
         </Button>

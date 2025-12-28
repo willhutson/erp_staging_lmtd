@@ -194,7 +194,7 @@ export default function DashboardEditorPage() {
       <div className="h-14 border-b bg-background flex items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="/Builder/dashboards">
+            <Link href="/builder/dashboards">
               <ChevronLeft className="h-5 w-5" />
             </Link>
           </Button>
