@@ -32,9 +32,25 @@ import {
   Clock,
 } from "lucide-react";
 
-async function getClients() {
+interface ClientWithCount {
+  id: string;
+  name: string;
+  code: string | null;
+  isRetainer: boolean;
+  isActive: boolean;
+  logoUrl: string | null;
+  primaryColor: string | null;
+  website: string | null;
+  industry: string | null;
+  _count: {
+    projects: number;
+    briefs: number;
+  };
+}
+
+async function getClients(): Promise<ClientWithCount[]> {
   try {
-    return prisma.client.findMany({
+    const clients = await prisma.client.findMany({
       orderBy: { name: "asc" },
       include: {
         _count: {
@@ -45,6 +61,7 @@ async function getClients() {
         },
       },
     });
+    return clients as ClientWithCount[];
   } catch {
     return [];
   }
@@ -75,7 +92,7 @@ function getStatusBadge(isActive: boolean, isRetainer: boolean) {
 }
 
 export default async function ClientsPage() {
-  let clients: Awaited<ReturnType<typeof getClients>> = [];
+  let clients: ClientWithCount[] = [];
   let stats = { total: 0, retainer: 0, project: 0 };
 
   try {

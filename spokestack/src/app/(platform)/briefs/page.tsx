@@ -35,6 +35,21 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+// Brief interface for typing
+interface BriefWithRelations {
+  id: string;
+  briefNumber: string | null;
+  type: string;
+  title: string;
+  status: string;
+  priority: string;
+  deadline: Date | null;
+  createdAt: Date;
+  client: { name: string; code: string | null } | null;
+  createdBy: { name: string } | null;
+  assignee: { name: string } | null;
+}
+
 // Brief type configurations
 const BRIEF_TYPES = [
   { id: "VIDEO_SHOOT", label: "Video Shoot", icon: Video, color: "text-red-500" },
@@ -79,7 +94,7 @@ function getPriorityBadge(priority: string) {
   }
 }
 
-async function getBriefs() {
+async function getBriefs(): Promise<BriefWithRelations[]> {
   try {
     const briefs = await prisma.brief.findMany({
       take: 50,
@@ -90,7 +105,7 @@ async function getBriefs() {
         assignee: { select: { name: true } },
       },
     });
-    return briefs;
+    return briefs as BriefWithRelations[];
   } catch {
     return [];
   }
@@ -116,7 +131,7 @@ async function getBriefStats() {
 }
 
 export default async function BriefsPage() {
-  let briefs: Awaited<ReturnType<typeof getBriefs>> = [];
+  let briefs: BriefWithRelations[] = [];
   let stats = { total: 0, inProgress: 0, completed: 0, overdue: 0 };
 
   try {
