@@ -69,6 +69,9 @@ model Organization {
   // Notification Rules
   notificationRules NotificationRule[]
 
+  // Client Instances (White-label Portals)
+  clientInstances ClientInstance[]
+
   @@map("organizations")
 }
 
@@ -6224,18 +6227,32 @@ enum BuilderWidgetType {
 model ClientInstance {
   id             String @id @default(cuid())
   organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
 
   name String
   slug String @unique
 
+  // Custom Domain Configuration
+  // Allows CNAME pointing to this instance (e.g., app.clientcompany.com)
+  customDomain       String?  @unique  // e.g., "app.clientcompany.com"
+  customDomainVerified Boolean @default(false)
+  customDomainVerifiedAt DateTime?
+
   // Branding
   logo           String?
+  logoMark       String?  // Square icon version
   primaryColor   String?
   secondaryColor String?
   favicon        String?
 
-  // Modules
+  // Theme (extended branding)
+  themeConfig    Json     @default("{}")  // fonts, dark mode, etc.
+
+  // Modules - which features are enabled for this instance
   enabledModules String[]
+
+  // Tier determines feature limits
+  tier           InstanceTier @default(PRO)
 
   // Dashboard
   defaultDashboardId String?
@@ -6252,7 +6269,14 @@ model ClientInstance {
 
   @@index([organizationId])
   @@index([slug])
+  @@index([customDomain])
   @@map("client_instances")
+}
+
+enum InstanceTier {
+  FREE        // Limited features
+  PRO         // Full SaaS features
+  ENTERPRISE  // Dedicated support, custom SLAs
 }
 
 model ClientInstanceUser {

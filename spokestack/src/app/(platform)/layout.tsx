@@ -5,6 +5,8 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Header } from "@/components/layout/header";
 import { Toaster } from "@/components/ui/sonner";
+import { TenantProvider } from "@/lib/tenant-context";
+import { getTenant } from "@/lib/get-tenant";
 
 export default async function PlatformLayout({
   children,
@@ -17,20 +19,30 @@ export default async function PlatformLayout({
     redirect("/login");
   }
 
+  // Get tenant configuration for this domain
+  const tenant = await getTenant();
+
   // Get user from database (must be pre-created via admin panel)
   const supabaseUser = await getUser();
   let user = null;
 
   if (supabaseUser) {
     try {
-      // Find user by supabaseId or email
+      // Find user by supabaseId or email, scoped to tenant's organization if available
+      const whereClause: Record<string, unknown> = {
+        OR: [
+          { supabaseId: supabaseUser.id },
+          { email: supabaseUser.email ?? undefined }
+        ]
+      };
+
+      // If tenant has an organizationId, scope user lookup to that org
+      if (tenant.organizationId) {
+        whereClause.organizationId = tenant.organizationId;
+      }
+
       user = await prisma.user.findFirst({
-        where: {
-          OR: [
-            { supabaseId: supabaseUser.id },
-            { email: supabaseUser.email ?? undefined }
-          ]
-        }
+        where: whereClause
       });
 
       // Link supabaseId if user found by email but not yet linked
@@ -47,19 +59,22 @@ export default async function PlatformLayout({
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar
-        user={{
-          name: user?.name,
-          email: user?.email,
-          avatarUrl: user?.avatarUrl,
-        }}
-      />
-      <SidebarInset>
-        <Header />
-        <main className="flex-1 p-6">{children}</main>
-      </SidebarInset>
-      <Toaster />
-    </SidebarProvider>
+    <TenantProvider tenant={tenant}>
+      <SidebarProvider>
+        <AppSidebar
+          user={{
+            name: user?.name,
+            email: user?.email,
+            avatarUrl: user?.avatarUrl,
+          }}
+          tenant={tenant}
+        />
+        <SidebarInset>
+          <Header tenant={tenant} />
+          <main className="flex-1 p-6">{children}</main>
+        </SidebarInset>
+        <Toaster />
+      </SidebarProvider>
+    </TenantProvider>
   );
 }

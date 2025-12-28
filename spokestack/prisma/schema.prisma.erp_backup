@@ -1,0 +1,5620 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================
+// MULTI-TENANCY & AUTH
+// ============================================
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  domain    String?
+  configKey String   @default("default")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Branding
+  logo          String?  // Main logo URL
+  logoMark      String?  // Square icon version
+  favicon       String?  // Browser favicon
+
+  // Theme settings (JSON)
+  themeSettings Json     @default("{}")
+
+  // General settings
+  settings      Json     @default("{}")
+
+  users            User[]
+  clients          Client[]
+  briefs           Brief[]
+  projects         Project[]
+  timeEntries      TimeEntry[]
+  rfps             RFP[]
+  clientActivities ClientActivity[]
+  deals            Deal[]
+
+  // API & Integrations
+  apiKeys              ApiKey[]
+  webhookSubscriptions WebhookSubscription[]
+
+  // Content Engine (Phase 12)
+  knowledgeDocuments   KnowledgeDocument[]
+  agentSkills          AgentSkill[]
+  agentPersonas        AgentPersona[]
+  contentEvents        ContentEvent[]
+  contentTriggers      ContentTrigger[]
+  agentInvocations     AgentInvocation[]
+  deliverables         Deliverable[]
+
+  // Enhanced CRM (Phase 20)
+  contacts         Contact[]
+  salesPipelines   SalesPipeline[]
+  crmDeals         CRMDeal[]
+  crmProducts      CRMProduct[]
+  crmCompetitors   CRMCompetitor[]
+  crmCampaigns     CRMCampaign[]
+  crmTasks         CRMTask[]
+
+  // Access Control (Phase 2)
+  accessPolicies   AccessPolicy[]
+
+  // Notification Rules
+  notificationRules NotificationRule[]
+
+  @@map("organizations")
+}
+
+model User {
+  id              String          @id @default(cuid())
+  organizationId  String
+  email           String          // Per-org unique via @@unique([organizationId, email])
+  passwordHash    String?         // For email/password auth (test accounts)
+  name            String
+  role            String
+  department      String
+  permissionLevel PermissionLevel @default(STAFF)
+  isFreelancer    Boolean         @default(false)
+  avatarUrl       String?
+  weeklyCapacity  Int             @default(40)
+  hourlyRate      Decimal?        @db.Decimal(10, 2)
+  skills          String[]        @default([])
+  teamLeadId      String?
+  isActive        Boolean         @default(true)
+  contractEnd     DateTime?
+  notes           String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Employee profile fields
+  phone           String?
+  dateOfBirth     DateTime?
+  nationality     String?
+  maritalStatus   MaritalStatus?
+  emergencyContact String?
+  emergencyPhone  String?
+
+  // UAE-specific fields
+  emiratesId      String?
+  emiratesIdExpiry DateTime?
+  passportNumber  String?
+  passportExpiry  DateTime?
+  visaStatus      VisaStatus?
+  visaExpiry      DateTime?
+
+  // Bank details
+  bankName        String?
+  bankAccountNumber String?
+  bankIban        String?
+
+  // Employment details
+  startDate       DateTime?
+  probationEnd    DateTime?
+  employmentType  EmploymentType @default(FULL_TIME)
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  teamLead       User?        @relation("TeamMembers", fields: [teamLeadId], references: [id])
+  teamMembers    User[]       @relation("TeamMembers")
+  briefsCreated    Brief[]      @relation("BriefCreator")
+  briefsAssigned   Brief[]      @relation("BriefAssignee")
+  briefsAssignedBy Brief[]      @relation("BriefAssigner")
+  timeEntries      TimeEntry[]
+  comments       Comment[]
+  documents      EmployeeDocument[]
+
+  // CRM relations
+  managedClients   Client[]         @relation("AccountManager")
+  clientActivities ClientActivity[]
+  ownedDeals       Deal[]           @relation("DealOwner")
+
+  // Leave relations
+  leaveBalances    LeaveBalance[]
+  leaveRequests    LeaveRequest[]   @relation("LeaveRequester")
+  leaveReviews     LeaveRequest[]   @relation("LeaveReviewer")
+
+  // Dashboard layouts
+  dashboardLayouts DashboardLayout[]
+
+  // Form submissions
+  submissionsCreated  FormSubmission[] @relation("FormSubmissionCreator")
+  submissionsAssigned FormSubmission[] @relation("FormSubmissionAssignee")
+  submissionsReviewed FormSubmission[] @relation("FormSubmissionReviewer")
+
+  // API & Integrations
+  apiKeysCreated      ApiKey[]             @relation("ApiKeyCreator")
+  apiKeysRevoked      ApiKey[]             @relation("ApiKeyRevoker")
+  webhooksCreated     WebhookSubscription[] @relation("WebhookCreator")
+
+  // Notifications
+  notifications           Notification[]
+  notificationPreference  NotificationPreference?
+
+  // Files
+  uploadedFiles           File[]  @relation("FileUploader")
+
+  // Events
+  entityEvents            EntityEvent[]
+
+  // WhatsApp & Complaints (Phase 15)
+  whatsappConversations   WhatsAppConversation[]
+  whatsappMessages        WhatsAppMessage[]
+  complaintsAssigned      ClientComplaint[]
+
+  // Content CMS (Phase 16)
+  contentPostsCreated     ContentPost[] @relation("ContentPostCreator")
+  contentPostsAssigned    ContentPost[] @relation("ContentPostAssignee")
+  contentVersions         ContentVersion[]
+  contentApprovalsRequested ContentApproval[] @relation("ApprovalRequester")
+  contentApprovalsAssigned  ContentApproval[] @relation("ApprovalAssignee")
+  contentComments         ContentComment[]
+
+  // Deliverables
+  deliverablesCreated     Deliverable[] @relation("DeliverableCreator")
+  deliverablesReviewed    Deliverable[] @relation("DeliverableReviewer")
+
+  // DAM (Phase 19)
+  assetsCreated           Asset[]        @relation("AssetCreator")
+  assetComments           AssetComment[]
+
+  // Chat (Phase 18)
+  channelsCreated         Channel[]          @relation("ChannelCreator")
+  channelMemberships      ChannelMember[]
+  messagesAuthored        Message[]          @relation("MessageAuthor")
+  messageReactions        MessageReaction[]
+  messageAttachments      MessageAttachment[]
+  pinnedMessages          PinnedMessage[]
+  presence                UserPresence?
+  pushSubscriptions       PushSubscription[]
+  chatPreferences         Json?              // Notification preferences
+
+  // Enhanced CRM (Phase 20)
+  contactsOwned           Contact[]          @relation("ContactOwner")
+  contactNotesCreated     ContactNote[]      @relation("ContactNoteCreator")
+  crmDealsOwned           CRMDeal[]          @relation("CRMDealOwner")
+  dealActivitiesPerformed DealActivity[]     @relation("DealActivityPerformer")
+  dealStageChanges        DealStageHistory[] @relation("DealStageChanger")
+  crmCampaignsOwned       CRMCampaign[]      @relation("CRMCampaignOwner")
+  crmTasksAssigned        CRMTask[]          @relation("CRMTaskAssignee")
+  crmTasksCreated         CRMTask[]          @relation("CRMTaskCreator")
+
+  // Access Control (Phase 2)
+  accessPoliciesCreated   AccessPolicy[]       @relation("AccessPolicyCreator")
+  accessPoliciesApproved  AccessPolicy[]       @relation("AccessPolicyApprover")
+  policyAssignments       PolicyAssignment[]   @relation("PolicyAssignmentUser")
+  policyAssignmentsMade   PolicyAssignment[]   @relation("PolicyAssignmentAssigner")
+  policyAssignmentsApproved PolicyAssignment[] @relation("PolicyAssignmentApprover")
+  policyVersionChanges    PolicyVersion[]      @relation("PolicyVersionChanger")
+
+  // Notification Rules
+  notificationRulesCreated NotificationRule[] @relation("NotificationRulesCreated")
+
+  @@unique([organizationId, email])
+  @@index([organizationId])
+  @@index([organizationId, email])
+  @@index([department])
+  @@map("users")
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+enum VisaStatus {
+  EMPLOYMENT
+  INVESTOR
+  GOLDEN
+  FREELANCE
+  DEPENDENT
+  VISIT
+  NOT_APPLICABLE
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCE
+  INTERN
+}
+
+enum PermissionLevel {
+  ADMIN
+  LEADERSHIP
+  TEAM_LEAD
+  STAFF
+  FREELANCER
+  CLIENT
+}
+
+
+// ============================================
+// CLIENTS & PROJECTS
+// ============================================
+
+model Client {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  code           String
+  industry       String?
+  isRetainer     Boolean  @default(false)
+  retainerHours  Int?
+  logoUrl        String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // CRM fields
+  companySize        CompanySize?
+  website            String?
+  linkedIn           String?
+  accountManagerId   String?
+  relationshipStatus RelationshipStatus @default(ACTIVE)
+  lifetimeValue      Decimal?           @db.Decimal(14, 2)
+  leadSource         LeadSource?
+  notes              String?            @db.Text
+
+  // Conversion tracking (source of client)
+  convertedFromDealId String?   @unique
+  convertedFromRfpId  String?   @unique
+  convertedAt         DateTime?
+
+  organization     Organization     @relation(fields: [organizationId], references: [id])
+  accountManager   User?            @relation("AccountManager", fields: [accountManagerId], references: [id])
+  convertedFromDeal Deal?           @relation("DealToClient", fields: [convertedFromDealId], references: [id])
+  convertedFromRfp  RFP?            @relation("RfpToClient", fields: [convertedFromRfpId], references: [id])
+  projects         Project[]
+  briefs           Brief[]
+  contacts         ClientContact[]
+  activities       ClientActivity[]
+  deals            Deal[]           @relation("ClientDeals")
+  onboarding       ClientOnboarding?
+  blackoutPeriods  BlackoutPeriod[]
+  npsSurveys       NPSSurvey[]
+  driveFolders     GoogleDriveFolder[]
+  clientFiles      ClientFile[]
+  portalUsers      ClientPortalUser[]
+  retainerPeriods  RetainerPeriod[]
+  whatsappConversations WhatsAppConversation[]
+  complaints       ClientComplaint[]
+
+  // Content CMS (Phase 16)
+  socialAccounts   SocialAccount[]
+  contentPosts     ContentPost[]
+
+  // DAM (Phase 19)
+  assetLibraries   AssetLibrary[]
+
+  // Enhanced CRM (Phase 20)
+  crmContacts      Contact[]      @relation("ContactCompany")
+  crmDeals         CRMDeal[]      @relation("CRMDealClient")
+  crmCampaigns     CRMCampaign[]  @relation("CRMCampaignClient")
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@index([accountManagerId])
+  @@map("clients")
+}
+
+enum CompanySize {
+  STARTUP    // 1-10
+  SMALL      // 11-50
+  MEDIUM     // 51-200
+  LARGE      // 201-1000
+  ENTERPRISE // 1000+
+}
+
+enum RelationshipStatus {
+  ACTIVE         // Current paying client
+  AT_RISK        // Relationship issues
+  CHURNED        // Left/cancelled
+  DORMANT        // No activity, but not churned
+  PAUSED         // Temporarily on hold
+}
+
+enum LeadSource {
+  REFERRAL
+  WEBSITE
+  SOCIAL_MEDIA
+  EVENT
+  COLD_OUTREACH
+  RFP_PORTAL
+  PARTNERSHIP
+  OTHER
+}
+
+model ClientContact {
+  id             String  @id @default(cuid())
+  clientId       String
+  name           String
+  email          String?
+  phone          String?
+  jobTitle       String?
+  department     String?
+  linkedIn       String?
+  isPrimary      Boolean @default(false)
+  isDecisionMaker Boolean @default(false)
+  isBillingContact Boolean @default(false)
+  isContractOwner Boolean @default(false)   // Key client POC / Contract Owner
+  isProcurementPoc Boolean @default(false)  // Key Procurement POC
+  isFinancePoc    Boolean @default(false)   // Key Finance POC
+  isNpsDesignee   Boolean @default(false)   // Receives NPS surveys
+  notes          String?
+  isActive       Boolean @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  npsSurveys   NPSSurvey[]
+  npsResponses NPSResponse[]
+  portalUsers  ClientPortalUser[]
+  whatsappConversations WhatsAppConversation[]
+  complaints   ClientComplaint[]
+
+  // Content CMS (Phase 16)
+  contentApprovals ContentApproval[]
+  contentComments  ContentComment[]
+
+  @@index([clientId])
+  @@map("client_contacts")
+}
+
+model ClientActivity {
+  id             String       @id @default(cuid())
+  organizationId String
+  clientId       String
+  userId         String
+  type           ActivityType
+  title          String
+  description    String?      @db.Text
+  meetingDate    DateTime?
+  meetingDuration Int?        // minutes
+  attendees      String[]     @default([])
+  emailSubject   String?
+  callDuration   Int?         // minutes
+  createdAt      DateTime     @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@map("client_activities")
+}
+
+enum ActivityType {
+  NOTE
+  EMAIL
+  CALL
+  MEETING
+  TASK
+  STATUS_CHANGE
+}
+
+model Deal {
+  id                String     @id @default(cuid())
+  organizationId    String
+  clientId          String?
+  name              String
+  companyName       String?    // If no client yet
+  contactName       String?
+  contactEmail      String?
+  stage             DealStage  @default(LEAD)
+  value             Decimal?   @db.Decimal(14, 2)
+  currency          String     @default("AED")
+  probability       Int?       // 0-100%
+  source            LeadSource?
+  expectedCloseDate DateTime?
+  actualCloseDate   DateTime?
+  ownerId           String
+  lostReason        String?
+  notes             String?    @db.Text
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  client            Client?      @relation("ClientDeals", fields: [clientId], references: [id])
+  owner             User         @relation("DealOwner", fields: [ownerId], references: [id])
+  convertedToClient Client?      @relation("DealToClient") // Reverse relation
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([stage])
+  @@map("deals")
+}
+
+enum DealStage {
+  LEAD           // Initial contact/interest
+  PITCH          // Proposal being prepared
+  NEGOTIATION    // Terms being discussed
+  WON            // Deal closed
+  LOST           // Deal lost
+}
+
+model Project {
+  id             String        @id @default(cuid())
+  organizationId String
+  clientId       String
+  name           String
+  code           String?
+  type           ProjectType   @default(PROJECT)
+  status         ProjectStatus @default(ACTIVE)
+  startDate      DateTime?
+  endDate        DateTime?
+  budgetHours    Int?
+  budgetAmount   Decimal?      @db.Decimal(12, 2)
+  description    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  organization     Organization        @relation(fields: [organizationId], references: [id])
+  client           Client              @relation(fields: [clientId], references: [id])
+  briefs           Brief[]
+  timeEntries      TimeEntry[]
+  driveFolders     GoogleDriveFolder[]
+  googleDocuments  GoogleDocument[]
+  projectFiles     ProjectFile[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@map("projects")
+}
+
+enum ProjectType {
+  RETAINER
+  PROJECT
+  PITCH
+  INTERNAL
+}
+
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+// ============================================
+// BRIEFING SYSTEM
+// ============================================
+
+model Brief {
+  id             String      @id @default(cuid())
+  organizationId String
+  clientId       String
+  projectId      String?
+  briefNumber    String
+  type           BriefType
+  title          String
+  status         BriefStatus @default(DRAFT)
+  priority       Priority    @default(MEDIUM)
+  createdById    String
+  assigneeId     String?
+  assignedById   String?
+  assignedAt     DateTime?
+  deadline       DateTime?
+  startDate      DateTime?
+  endDate        DateTime?
+  formData       Json        @default("{}")
+  qualityScore   Int?
+  aiSuggestions  Json?
+  estimatedHours Decimal?    @db.Decimal(6, 2)
+  actualHours    Decimal?    @db.Decimal(6, 2)
+  revisionCount  Int         @default(0)  // Track number of revisions
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  submittedAt    DateTime?
+  completedAt    DateTime?
+
+  organization  Organization         @relation(fields: [organizationId], references: [id])
+  client        Client               @relation(fields: [clientId], references: [id])
+  project       Project?             @relation(fields: [projectId], references: [id])
+  createdBy     User                 @relation("BriefCreator", fields: [createdById], references: [id])
+  assignee      User?                @relation("BriefAssignee", fields: [assigneeId], references: [id])
+  assignedBy    User?                @relation("BriefAssigner", fields: [assignedById], references: [id])
+  timeEntries      TimeEntry[]
+  comments         Comment[]
+  attachments      Attachment[]
+  statusHistory    BriefStatusHistory[]
+  calendarEvents   GoogleCalendarEvent[]
+  googleDocuments  GoogleDocument[]
+  formSubmission   FormSubmission?  // Link to original form submission
+  briefFiles       BriefFile[]
+  submissionApprovals SubmissionApproval[]  // Client approval requests
+  deliverables     Deliverable[]            // Work output from this brief
+  scopeChanges     ScopeChange[]            // Mid-execution pivots
+  whatsappConversations WhatsAppConversation[]
+  complaints       ClientComplaint[]
+
+  // Content CMS (Phase 16)
+  contentPosts     ContentPost[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([assigneeId])
+  @@index([assignedById])
+  @@index([status])
+  @@index([type])
+  @@map("briefs")
+}
+
+enum BriefType {
+  VIDEO_SHOOT
+  VIDEO_EDIT
+  DESIGN
+  COPYWRITING_EN
+  COPYWRITING_AR
+  PAID_MEDIA
+  REPORT
+}
+
+enum BriefStatus {
+  DRAFT
+  SUBMITTED
+  IN_REVIEW
+  APPROVED
+  IN_PROGRESS
+  INTERNAL_REVIEW
+  CLIENT_REVIEW
+  REVISIONS
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model BriefStatusHistory {
+  id          String       @id @default(cuid())
+  briefId     String
+  fromStatus  BriefStatus?
+  toStatus    BriefStatus
+  changedById String
+  notes       String?
+  createdAt   DateTime     @default(now())
+
+  brief Brief @relation(fields: [briefId], references: [id], onDelete: Cascade)
+
+  @@index([briefId])
+  @@map("brief_status_history")
+}
+
+// ============================================
+// TIME TRACKING
+// ============================================
+
+model TimeEntry {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  briefId        String?
+  projectId      String?
+  description    String?
+  date           DateTime @db.Date
+  hours          Decimal  @db.Decimal(5, 2)
+  startTime      DateTime?
+  endTime        DateTime?
+  isRunning      Boolean  @default(false)
+  isBillable     Boolean  @default(true)
+  isApproved     Boolean  @default(false)
+  approvedById   String?
+  approvedAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+  brief        Brief?       @relation(fields: [briefId], references: [id])
+  project      Project?     @relation(fields: [projectId], references: [id])
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([briefId])
+  @@index([date])
+  @@map("time_entries")
+}
+
+// ============================================
+// RFP MANAGEMENT
+// ============================================
+
+model RFP {
+  id              String          @id @default(cuid())
+  organizationId  String
+  name            String
+  clientName      String
+  rfpCode         String?
+  portal          String?
+  status          RFPStatus       @default(VETTING)
+  winProbability  WinProbability?
+  dateReceived    DateTime?
+  deadline        DateTime
+  estimatedValue  Decimal?        @db.Decimal(12, 2)
+  scopeOfWork     String?         @db.Text
+  requirements    String?         @db.Text
+  bidBondRequired Boolean         @default(false)
+  notes           String?         @db.Text
+  outcome         RFPOutcome?
+  outcomeNotes    String?
+  createdById     String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  submittedAt     DateTime?
+
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  subitems          RFPSubitem[]
+  attachments       Attachment[]
+  convertedToClient Client?      @relation("RfpToClient") // Reverse relation
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("rfps")
+}
+
+enum RFPStatus {
+  VETTING
+  ACTIVE
+  AWAITING_REVIEW
+  READY_TO_SUBMIT
+  SUBMITTED
+  AWAITING_RESPONSE
+  WON
+  LOST
+  ABANDONED
+}
+
+enum WinProbability {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum RFPOutcome {
+  WON
+  LOST
+  WITHDRAWN
+  CANCELLED
+}
+
+model RFPSubitem {
+  id          String        @id @default(cuid())
+  rfpId       String
+  name        String
+  description String?
+  assigneeId  String?
+  dueDate     DateTime?
+  status      SubitemStatus @default(PENDING)
+  sortOrder   Int           @default(0)
+  completedAt DateTime?
+
+  rfp RFP @relation(fields: [rfpId], references: [id], onDelete: Cascade)
+
+  @@index([rfpId])
+  @@map("rfp_subitems")
+}
+
+enum SubitemStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  BLOCKED
+}
+
+// ============================================
+// SHARED / SUPPORTING
+// ============================================
+
+model Comment {
+  id        String   @id @default(cuid())
+  briefId   String
+  userId    String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  brief Brief @relation(fields: [briefId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([briefId])
+  @@map("comments")
+}
+
+model Attachment {
+  id           String   @id @default(cuid())
+  briefId      String?
+  rfpId        String?
+  fileName     String
+  fileSize     Int
+  mimeType     String
+  storageKey   String
+  uploadedById String
+  createdAt    DateTime @default(now())
+
+  brief Brief? @relation(fields: [briefId], references: [id], onDelete: Cascade)
+  rfp   RFP?   @relation(fields: [rfpId], references: [id], onDelete: Cascade)
+
+  @@index([briefId])
+  @@index([rfpId])
+  @@map("attachments")
+}
+
+// ============================================
+// EMPLOYEE ONBOARDING
+// ============================================
+
+model EmployeeDocument {
+  id           String       @id @default(cuid())
+  userId       String
+  type         DocumentType
+  fileName     String
+  fileSize     Int
+  mimeType     String
+  storageKey   String
+  expiryDate   DateTime?
+  isVerified   Boolean      @default(false)
+  verifiedById String?
+  verifiedAt   DateTime?
+  notes        String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@map("employee_documents")
+}
+
+enum DocumentType {
+  EMIRATES_ID
+  PASSPORT
+  VISA
+  LABOR_CONTRACT
+  BANK_LETTER
+  EDUCATIONAL_CERTIFICATE
+  PROFESSIONAL_CERTIFICATE
+  PHOTO
+  OTHER
+}
+
+// ============================================
+// CLIENT ONBOARDING
+// ============================================
+
+model ClientOnboarding {
+  id             String               @id @default(cuid())
+  clientId       String               @unique
+  status         OnboardingStatus     @default(NOT_STARTED)
+  startedAt      DateTime?
+  completedAt    DateTime?
+  assignedToId   String?
+  notes          String?              @db.Text
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  client Client                   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  tasks  ClientOnboardingTask[]
+
+  @@index([status])
+  @@map("client_onboardings")
+}
+
+model ClientOnboardingTask {
+  id            String            @id @default(cuid())
+  onboardingId  String
+  title         String
+  description   String?
+  category      OnboardingCategory
+  sortOrder     Int               @default(0)
+  isRequired    Boolean           @default(true)
+  status        TaskStatus        @default(PENDING)
+  completedById String?
+  completedAt   DateTime?
+  dueDate       DateTime?
+  notes         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  onboarding ClientOnboarding @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+
+  @@index([onboardingId])
+  @@map("client_onboarding_tasks")
+}
+
+enum OnboardingStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+}
+
+enum OnboardingCategory {
+  CONTRACTS
+  ACCESS
+  BRANDING
+  COMMUNICATIONS
+  BILLING
+  KICKOFF
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
+// ============================================
+// LEAVE MANAGEMENT
+// ============================================
+
+model LeaveType {
+  id               String   @id @default(cuid())
+  organizationId   String
+  name             String   // "Annual Leave", "Sick Leave", etc.
+  code             String   // "ANNUAL", "SICK", etc.
+  defaultDays      Int      // Default annual entitlement
+  carryOverLimit   Int      @default(0) // Max days that can be carried over
+  requiresApproval Boolean  @default(true)
+  isPaid           Boolean  @default(true)
+  color            String   @default("#3B82F6") // For calendar display
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  leaveBalances LeaveBalance[]
+  leaveRequests LeaveRequest[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@map("leave_types")
+}
+
+model LeaveBalance {
+  id             String   @id @default(cuid())
+  userId         String
+  leaveTypeId    String
+  year           Int
+  entitlement    Decimal  @db.Decimal(5, 2) // Total days entitled
+  used           Decimal  @default(0) @db.Decimal(5, 2)
+  carriedOver    Decimal  @default(0) @db.Decimal(5, 2)
+  adjustment     Decimal  @default(0) @db.Decimal(5, 2) // Manual adjustments
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  @@unique([userId, leaveTypeId, year])
+  @@index([userId])
+  @@index([year])
+  @@map("leave_balances")
+}
+
+model LeaveRequest {
+  id             String        @id @default(cuid())
+  organizationId String
+  userId         String
+  leaveTypeId    String
+
+  startDate      DateTime      @db.Date
+  endDate        DateTime      @db.Date
+  totalDays      Decimal       @db.Decimal(5, 2)
+  isHalfDay      Boolean       @default(false)
+  halfDayPeriod  HalfDayPeriod?
+
+  reason         String?       @db.Text
+  status         LeaveStatus   @default(PENDING)
+
+  reviewedById   String?
+  reviewedAt     DateTime?
+  reviewNotes    String?
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user       User      @relation("LeaveRequester", fields: [userId], references: [id])
+  reviewedBy User?     @relation("LeaveReviewer", fields: [reviewedById], references: [id])
+  leaveType  LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@map("leave_requests")
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum HalfDayPeriod {
+  MORNING
+  AFTERNOON
+}
+
+model BlackoutPeriod {
+  id             String   @id @default(cuid())
+  organizationId String
+  clientId       String?  // Optional: specific to a client
+  name           String
+  reason         String?
+  startDate      DateTime @db.Date
+  endDate        DateTime @db.Date
+  isRecurring    Boolean  @default(false) // Repeats annually
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  client Client? @relation(fields: [clientId], references: [id])
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([startDate, endDate])
+  @@map("blackout_periods")
+}
+
+model PublicHoliday {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  date           DateTime @db.Date
+  year           Int
+  isOptional     Boolean  @default(false) // Some holidays are optional
+  createdAt      DateTime @default(now())
+
+  @@unique([organizationId, date])
+  @@index([organizationId, year])
+  @@map("public_holidays")
+}
+
+// ============================================
+// NPS & FEEDBACK
+// ============================================
+
+model NPSSurvey {
+  id             String       @id @default(cuid())
+  organizationId String
+  clientId       String
+  quarter        Int          // 1, 2, 3, 4
+  year           Int
+  status         SurveyStatus @default(DRAFT)
+
+  sentAt         DateTime?
+  sentToId       String?      // Contact who received the survey
+  reminderSentAt DateTime?
+
+  createdById    String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  client    Client          @relation(fields: [clientId], references: [id])
+  sentTo    ClientContact?  @relation(fields: [sentToId], references: [id])
+  responses NPSResponse[]
+
+  @@unique([clientId, quarter, year])
+  @@index([organizationId])
+  @@index([status])
+  @@map("nps_surveys")
+}
+
+model NPSResponse {
+  id            String   @id @default(cuid())
+  surveyId      String
+  contactId     String?  // The contact who responded
+  portalUserId  String?  // Portal user who submitted (if via portal)
+
+  score       Int      // 0-10 NPS score
+  category    NPSCategory // Calculated: PROMOTER, PASSIVE, DETRACTOR
+
+  // Feedback questions
+  whatWeDoWell     String? @db.Text
+  whatToImprove    String? @db.Text
+  additionalNotes  String? @db.Text
+
+  submittedAt DateTime @default(now())
+
+  survey      NPSSurvey          @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  contact     ClientContact?     @relation(fields: [contactId], references: [id])
+  portalUser  ClientPortalUser?  @relation(fields: [portalUserId], references: [id])
+  complaints  ClientComplaint[]
+
+  @@index([surveyId])
+  @@map("nps_responses")
+}
+
+enum SurveyStatus {
+  DRAFT
+  SENT
+  COMPLETED
+  EXPIRED
+}
+
+enum NPSCategory {
+  PROMOTER   // 9-10
+  PASSIVE    // 7-8
+  DETRACTOR  // 0-6
+}
+
+// ============================================
+// INTEGRATIONS & AUDIT
+// ============================================
+
+model Integration {
+  id             String    @id @default(cuid())
+  organizationId String
+  provider       String
+  isEnabled      Boolean   @default(false)
+  credentials    Json?
+  settings       Json      @default("{}")
+  lastSyncAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([organizationId, provider])
+  @@map("integrations")
+}
+
+// ============================================
+// SLACK INTEGRATION (Phase 9)
+// ============================================
+
+model SlackWorkspace {
+  id              String   @id @default(cuid())
+  organizationId  String   @unique
+
+  // Slack workspace info
+  teamId          String   @unique  // Slack team ID
+  teamName        String
+  teamDomain      String?
+
+  // OAuth tokens (encrypted)
+  accessToken     String   // Bot token (xoxb-...)
+  botUserId       String   // Bot user ID
+
+  // Status
+  isActive        Boolean  @default(true)
+
+  // Default channel for notifications
+  defaultChannelId   String?
+  defaultChannelName String?
+
+  // Timestamps
+  installedAt     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  channelMappings SlackChannelMapping[]
+  messages        SlackMessage[]
+
+  @@index([teamId])
+  @@map("slack_workspaces")
+}
+
+model SlackChannelMapping {
+  id              String   @id @default(cuid())
+  workspaceId     String
+
+  // Slack channel
+  channelId       String   // Slack channel ID (C...)
+  channelName     String
+
+  // What this channel is for
+  mappingType     SlackMappingType
+  entityId        String?  // clientId, briefId, etc.
+
+  // Notification settings for this channel
+  notifyOnBriefCreated    Boolean @default(true)
+  notifyOnBriefCompleted  Boolean @default(true)
+  notifyOnApprovalNeeded  Boolean @default(true)
+  notifyOnDeadlineNear    Boolean @default(true)
+
+  createdAt       DateTime @default(now())
+
+  workspace       SlackWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, channelId])
+  @@index([entityId])
+  @@map("slack_channel_mappings")
+}
+
+enum SlackMappingType {
+  DEFAULT       // Default org-wide notifications
+  CLIENT        // Client-specific channel
+  PROJECT       // Project-specific channel
+  TEAM          // Team/department channel
+}
+
+model SlackMessage {
+  id              String   @id @default(cuid())
+  workspaceId     String
+
+  // Message identifiers
+  channelId       String
+  messageTs       String   // Slack message timestamp (unique ID)
+  threadTs        String?  // Parent thread timestamp
+
+  // Context
+  notificationType String?  // Linked to notification type
+  entityType       String?  // "brief", "approval", etc.
+  entityId         String?
+
+  // Status
+  isDelivered     Boolean  @default(true)
+
+  sentAt          DateTime @default(now())
+
+  workspace       SlackWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, messageTs])
+  @@index([entityType, entityId])
+  @@map("slack_messages")
+}
+
+// ============================================
+// GOOGLE WORKSPACE INTEGRATION
+// ============================================
+
+model GoogleCalendarEvent {
+  id              String   @id @default(cuid())
+  organizationId  String
+  briefId         String?
+  googleEventId   String   // Google Calendar event ID
+  calendarId      String   // Which Google Calendar
+  title           String
+  description     String?  @db.Text
+  location        String?
+  startTime       DateTime
+  endTime         DateTime
+  isAllDay        Boolean  @default(false)
+  attendees       String[] @default([]) // Email addresses
+  status          CalendarEventStatus @default(CONFIRMED)
+  syncedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  brief           Brief?   @relation(fields: [briefId], references: [id])
+
+  @@unique([googleEventId])
+  @@index([organizationId])
+  @@index([briefId])
+  @@index([startTime])
+  @@map("google_calendar_events")
+}
+
+enum CalendarEventStatus {
+  CONFIRMED
+  TENTATIVE
+  CANCELLED
+}
+
+model GoogleDriveFolder {
+  id              String   @id @default(cuid())
+  organizationId  String
+  clientId        String?
+  projectId       String?
+  folderId        String   // Google Drive folder ID
+  name            String
+  parentFolderId  String?  // Parent Google Drive folder ID
+  folderType      DriveFolderType
+  driveUrl        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  client          Client?  @relation(fields: [clientId], references: [id])
+  project         Project? @relation(fields: [projectId], references: [id])
+
+  @@unique([folderId])
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([projectId])
+  @@map("google_drive_folders")
+}
+
+enum DriveFolderType {
+  ROOT          // Organization root folder
+  CLIENT        // Client folder
+  PROJECT       // Project folder
+  BRIEFS        // Briefs subfolder
+  ASSETS        // Assets subfolder
+  DELIVERABLES  // Deliverables subfolder
+}
+
+model GoogleDocument {
+  id              String   @id @default(cuid())
+  organizationId  String
+  briefId         String?
+  projectId       String?
+  documentId      String   // Google Docs/Sheets/Slides ID
+  documentType    GoogleDocType
+  title           String
+  documentUrl     String
+  folderId        String?  // Google Drive folder ID
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  brief           Brief?   @relation(fields: [briefId], references: [id])
+  project         Project? @relation(fields: [projectId], references: [id])
+
+  @@unique([documentId])
+  @@index([organizationId])
+  @@index([briefId])
+  @@index([projectId])
+  @@map("google_documents")
+}
+
+enum GoogleDocType {
+  DOCUMENT      // Google Docs
+  SPREADSHEET   // Google Sheets
+  PRESENTATION  // Google Slides
+}
+
+// NOTE: AuditLog model is defined in the ACCESS CONTROL section with comprehensive fields
+
+// ============================================
+// DASHBOARD LAYOUTS
+// ============================================
+
+model DashboardLayout {
+  id              String   @id @default(cuid())
+  userId          String
+  organizationId  String
+  name            String   @default("My Dashboard")
+  isDefault       Boolean  @default(false)
+  layout          Json     // Widget positions and configurations
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@index([organizationId])
+  @@map("dashboard_layouts")
+}
+
+// ============================================
+// ANALYTICS (Phase 8)
+// ============================================
+
+// Analytics dashboard configuration
+model AnalyticsDashboard {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String
+  description     String?
+  type            AnalyticsDashboardType
+
+  // Access control
+  isPublic        Boolean  @default(false)  // Visible to all org users
+  ownerId         String?
+
+  // Layout
+  layout          Json     @default("[]")   // Grid layout configuration
+
+  // Filters
+  defaultFilters  Json?    // Default filter state
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  widgets         AnalyticsWidget[]
+
+  @@index([organizationId])
+  @@index([type])
+  @@map("analytics_dashboards")
+}
+
+enum AnalyticsDashboardType {
+  INTERNAL_OVERVIEW    // Overall internal metrics
+  INTERNAL_TEAM        // Team performance
+  INTERNAL_RESOURCE    // Resource utilization
+  INTERNAL_FINANCIAL   // Time/cost tracking
+  EXTERNAL_REALTIME    // Live client metrics
+  EXTERNAL_PERIOD      // Historical client analytics
+  EXTERNAL_CAMPAIGN    // Campaign performance
+  CUSTOM               // User-defined
+}
+
+// Individual widgets on dashboards
+model AnalyticsWidget {
+  id              String   @id @default(cuid())
+  dashboardId     String
+
+  // Widget definition
+  name            String
+  type            AnalyticsWidgetType
+
+  // Visual configuration
+  chartType       ChartType?
+  size            String   @default("medium")  // small, medium, large, full
+  position        Json?    // { x, y, w, h } grid position
+
+  // Data configuration
+  metric          String   // What to measure
+  dimensions      String[] @default([])  // Group by fields
+  filters         Json?    // Widget-specific filters
+
+  // Time settings
+  timeRange       String?  // "realtime", "7d", "30d", "90d", "custom"
+  refreshInterval Int?     // Seconds (null = manual/page refresh)
+
+  // Comparison
+  compareWith     String?  // "previous_period", "same_period_last_year"
+
+  // Thresholds / alerts
+  thresholds      Json?    // { warning: 80, critical: 95 }
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  dashboard       AnalyticsDashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  @@index([dashboardId])
+  @@map("analytics_widgets")
+}
+
+enum AnalyticsWidgetType {
+  // Numbers
+  METRIC_CARD      // Single number with trend
+  COUNTER          // Live counter
+  GAUGE            // Progress toward goal
+
+  // Charts
+  LINE_CHART
+  BAR_CHART
+  AREA_CHART
+  PIE_CHART
+  DONUT_CHART
+
+  // Tables
+  DATA_TABLE
+  LEADERBOARD
+
+  // Time-based
+  TIMELINE
+  HEATMAP
+  CALENDAR_HEATMAP
+
+  // Relationships (Neo4j powered)
+  NETWORK_GRAPH
+  SANKEY_DIAGRAM
+  TREEMAP
+  SUNBURST
+
+  // Comparisons
+  COMPARISON_CARD
+  SPARKLINE
+}
+
+enum ChartType {
+  LINE
+  BAR
+  HORIZONTAL_BAR
+  STACKED_BAR
+  AREA
+  STACKED_AREA
+  PIE
+  DONUT
+  SCATTER
+  BUBBLE
+  RADAR
+  FUNNEL
+}
+
+// Periodic snapshots for historical analytics
+model AnalyticsSnapshot {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Timing
+  period          AnalyticsPeriod
+  periodStart     DateTime
+  periodEnd       DateTime
+
+  // Scope
+  entityType      String?  // "organization", "client", "project", "user"
+  entityId        String?
+
+  // Metrics (stored as JSON for flexibility)
+  metrics         Json
+
+  // Computed at
+  computedAt      DateTime @default(now())
+
+  @@unique([organizationId, period, periodStart, entityType, entityId])
+  @@index([organizationId, period])
+  @@index([entityType, entityId])
+  @@map("analytics_snapshots")
+}
+
+enum AnalyticsPeriod {
+  HOURLY
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+// Neo4j graph sync tracking
+model GraphSyncLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // What was synced
+  entityType      String   // "user", "client", "brief", "project", "FULL_SYNC"
+  entityId        String?  // Optional for FULL_SYNC operations
+  action          String?  // Optional for FULL_SYNC operations
+  recordCount     Int?     // Number of records synced (for FULL_SYNC)
+
+  // Sync status
+  status          String   @default("pending")  // pending, synced, failed
+  error           String?
+  errorMessage    String?  // Detailed error message
+
+  // Graph details
+  nodeLabels      String[] @default([])
+  relationshipTypes String[] @default([])
+
+  createdAt       DateTime @default(now())
+  syncedAt        DateTime?
+
+  @@index([organizationId, status])
+  @@index([entityType, entityId])
+  @@map("graph_sync_logs")
+}
+
+// Metric definitions (configurable metrics)
+model MetricDefinition {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Identity
+  code            String   // "brief_completion_rate", "avg_turnaround"
+  name            String   // "Brief Completion Rate"
+  description     String?
+  category        MetricCategory
+
+  // Calculation
+  formula         String   // SQL or expression
+  aggregation     String   // "sum", "avg", "count", "min", "max"
+
+  // Display
+  format          String   @default("number")  // number, percent, currency, duration
+  decimals        Int      @default(0)
+  prefix          String?  // "$", "£"
+  suffix          String?  // "%", "hrs"
+
+  // Trend
+  higherIsBetter  Boolean  @default(true)
+
+  // Status
+  isActive        Boolean  @default(true)
+  isSystem        Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, code])
+  @@index([organizationId, category])
+  @@map("metric_definitions")
+}
+
+enum MetricCategory {
+  // Internal
+  PRODUCTIVITY
+  EFFICIENCY
+  QUALITY
+  CAPACITY
+  FINANCIAL
+
+  // External
+  CLIENT_SATISFACTION
+  DELIVERY
+  ENGAGEMENT
+  PERFORMANCE
+}
+
+// ============================================
+// FORM TEMPLATES (Visual Form Builder)
+// ============================================
+
+model FormTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+  type            String   // Unique identifier like "VIDEO_SHOOT", "CUSTOM_1"
+  name            String   // Display name
+  description     String?
+  namingConvention String? // e.g., "Shoot: [Client] – [Topic]"
+  namingPrefix    String?  // e.g., "Shoot"
+  icon            String?  // Lucide icon name
+  config          Json     // Full form config (sections, fields, qualityRules)
+  isActive        Boolean  @default(true)
+  isSystem        Boolean  @default(false) // Built-in forms can't be deleted
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Menu/Navigation settings
+  showInMenu      Boolean  @default(false) // Show as standalone menu item
+  menuOrder       Int      @default(100)   // Sort order in menu
+  menuParent      String?  // Parent menu item (null = top level, "briefs" = under briefs)
+  requiredPermissions String[] @default([]) // Permission levels that can access
+
+  // Submission settings
+  submissionModel String   @default("brief") // "brief" or "standalone"
+
+  submissions     FormSubmission[]
+
+  @@unique([organizationId, type])
+  @@index([organizationId])
+  @@index([isActive])
+  @@index([showInMenu])
+  @@map("form_templates")
+}
+
+// Form submissions - can create briefs or be standalone
+model FormSubmission {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Template reference
+  templateId      String
+  template        FormTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  // Submission data
+  data            Json     // Form field values
+  title           String?  // Auto-generated or user-provided title
+
+  // Status workflow
+  status          FormSubmissionStatus @default(SUBMITTED)
+
+  // People
+  submittedById   String
+  submittedBy     User     @relation("FormSubmissionCreator", fields: [submittedById], references: [id])
+  assigneeId      String?
+  assignee        User?    @relation("FormSubmissionAssignee", fields: [assigneeId], references: [id])
+  reviewedById    String?
+  reviewedBy      User?    @relation("FormSubmissionReviewer", fields: [reviewedById], references: [id])
+
+  // Review feedback
+  reviewNotes     String?
+  rejectionReason String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  reviewedAt      DateTime?
+  completedAt     DateTime?
+
+  // Optional brief connection (if submissionModel = "brief")
+  briefId         String?  @unique
+  brief           Brief?   @relation(fields: [briefId], references: [id])
+
+  // Files
+  files           FormSubmissionFile[]
+
+  @@index([organizationId])
+  @@index([templateId])
+  @@index([status])
+  @@index([submittedById])
+  @@map("form_submissions")
+}
+
+enum FormSubmissionStatus {
+  DRAFT           // Started but not submitted
+  SUBMITTED       // Awaiting review
+  IN_REVIEW       // Being reviewed
+  APPROVED        // Approved, processing
+  REJECTED        // Rejected with reason
+  COMPLETED       // Finished
+  CANCELLED       // Cancelled by submitter
+}
+
+// ============================================
+// API & INTEGRATIONS (Phase 11)
+// ============================================
+
+model ApiKey {
+  id              String    @id @default(cuid())
+  organizationId  String
+
+  // Key data
+  name            String    // "n8n Production", "Zapier Integration"
+  keyHash         String    @unique  // SHA-256 of the key (never store raw)
+  keyPrefix       String    // First 8 chars for identification: "sk_live_a1b2..."
+
+  // Permissions
+  scopes          String[]  // ["briefs:read", "briefs:write", "time:read"]
+
+  // Rate limiting
+  rateLimit       Int       @default(1000)  // Requests per hour
+
+  // Status
+  isActive        Boolean   @default(true)
+  lastUsedAt      DateTime?
+  usageCount      Int       @default(0)
+
+  // Expiry
+  expiresAt       DateTime?
+
+  // Audit
+  createdById     String
+  createdAt       DateTime  @default(now())
+  revokedAt       DateTime?
+  revokedById     String?
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdBy       User         @relation("ApiKeyCreator", fields: [createdById], references: [id])
+  revokedBy       User?        @relation("ApiKeyRevoker", fields: [revokedById], references: [id])
+  requestLogs     ApiRequestLog[]
+
+  @@index([organizationId])
+  @@index([keyHash])
+  @@map("api_keys")
+}
+
+model WebhookSubscription {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Target
+  url             String   // https://hooks.zapier.com/...
+  name            String   // "Zapier Brief Notifications"
+
+  // Events to subscribe to
+  events          String[] // ["brief.created", "brief.completed"]
+
+  // Security
+  secret          String   // For HMAC signature verification
+
+  // Filtering (optional)
+  filters         Json?    // { "briefType": ["VIDEO_SHOOT"], "clientId": "xxx" }
+
+  // Status
+  isActive        Boolean  @default(true)
+
+  // Health tracking
+  lastDeliveryAt  DateTime?
+  lastStatus      Int?     // Last HTTP status code
+  failureCount    Int      @default(0)
+  disabledAt      DateTime?  // Auto-disabled after failures
+
+  // Metadata
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization      @relation(fields: [organizationId], references: [id])
+  createdBy       User              @relation("WebhookCreator", fields: [createdById], references: [id])
+  deliveries      WebhookDelivery[]
+
+  @@index([organizationId])
+  @@map("webhook_subscriptions")
+}
+
+model WebhookDelivery {
+  id              String   @id @default(cuid())
+  subscriptionId  String
+
+  // Event data
+  event           String   // "brief.created"
+  payload         Json     // The sent payload
+
+  // Delivery attempt
+  attemptNumber   Int      @default(1)
+
+  // Response
+  status          String   // "pending", "success", "failed"
+  statusCode      Int?
+  responseBody    String?  @db.Text
+  responseTime    Int?     // ms
+
+  // Error info
+  error           String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  deliveredAt     DateTime?
+  nextRetryAt     DateTime?
+
+  subscription    WebhookSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId, createdAt])
+  @@index([status, nextRetryAt])
+  @@map("webhook_deliveries")
+}
+
+model ApiRequestLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+  apiKeyId        String?
+
+  // Request
+  method          String   // GET, POST, etc.
+  path            String   // /api/v1/briefs
+  query           Json?
+
+  // Response
+  statusCode      Int
+  responseTime    Int      // ms
+
+  // Client info
+  ipAddress       String?
+  userAgent       String?
+
+  createdAt       DateTime @default(now())
+
+  apiKey          ApiKey?  @relation(fields: [apiKeyId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([apiKeyId, createdAt])
+  @@map("api_request_logs")
+}
+
+// ============================================
+// NOTIFICATIONS (Phase 6)
+// ============================================
+
+model Notification {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Recipient
+  userId          String
+
+  // Content
+  type            String   // e.g., "brief.assigned", "submission.approved"
+  title           String
+  body            String?
+
+  // Navigation
+  actionUrl       String?  // Where to go when clicked
+  actionLabel     String?  // "View Brief"
+
+  // Context
+  entityType      String?  // "brief", "submission", "rfp"
+  entityId        String?
+  metadata        Json?    // Additional context data
+
+  // Status
+  isRead          Boolean  @default(false)
+  readAt          DateTime?
+  isArchived      Boolean  @default(false)
+  archivedAt      DateTime?
+
+  // Delivery tracking
+  channels        String[] @default(["in_app"])
+  deliveryStatus  Json     @default("{}")
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime?
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+  @@index([organizationId, createdAt])
+  @@index([entityType, entityId])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+
+  // Global settings
+  emailEnabled    Boolean  @default(true)
+  slackEnabled    Boolean  @default(true)
+  inAppEnabled    Boolean  @default(true)
+
+  // Digest settings
+  emailDigest     String   @default("instant")  // "instant", "daily", "weekly", "none"
+  digestTime      String?  @default("09:00")
+
+  // Quiet hours
+  quietHoursEnabled Boolean @default(false)
+  quietHoursStart  String?  @default("22:00")
+  quietHoursEnd    String?  @default("08:00")
+  timezone         String   @default("Asia/Dubai")
+
+  // Per-type preferences
+  typePreferences  Json     @default("{}")
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}
+
+model NotificationTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  type            String   // e.g., "brief.assigned"
+  channel         String   // "email", "slack", "in_app"
+
+  // Content
+  subject         String?  // For email
+  title           String
+  body            String   @db.Text
+
+  // Slack-specific
+  slackBlocks     Json?
+
+  // Email-specific
+  emailTemplate   String?
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, type, channel])
+  @@map("notification_templates")
+}
+
+// Notification rules define when and who gets notified
+model NotificationRule {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Rule identification
+  name            String
+  description     String?  @db.Text
+
+  // Trigger configuration
+  eventType       String   // e.g., "policy.assigned", "brief.created", "submission.approved"
+
+  // Recipient configuration
+  recipientType   String   // "user", "role", "team", "custom"
+  recipientValue  String?  // userId, role name, teamId, or expression
+
+  // Optional: notify specific permission levels
+  notifyLevels    String[] @default([])
+
+  // Optional: notify related users
+  notifyCreator   Boolean  @default(false)
+  notifyAssignee  Boolean  @default(false)
+  notifyApprover  Boolean  @default(false)
+  notifyTeamLead  Boolean  @default(false)
+
+  // Conditions (JSON for flexible filtering)
+  conditions      Json?    // e.g., {"status": "SUBMITTED", "priority": "HIGH"}
+
+  // Channel configuration
+  channels        String[] @default(["in_app"])  // "in_app", "email", "slack"
+
+  // Template override (optional - uses default if not set)
+  templateId      String?
+
+  // Status
+  isActive        Boolean  @default(true)
+  priority        Int      @default(0)  // Higher priority rules evaluated first
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdById     String
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy       User     @relation("NotificationRulesCreated", fields: [createdById], references: [id])
+
+  @@unique([organizationId, name])
+  @@index([organizationId, eventType])
+  @@map("notification_rules")
+}
+
+// ============================================
+// CLIENT PORTAL (Phase 10)
+// ============================================
+
+model ClientPortalUser {
+  id              String   @id @default(cuid())
+  organizationId  String
+  clientId        String
+  contactId       String?  // Link to ClientContact if applicable
+
+  // Auth
+  email           String
+  passwordHash    String?  // For password auth (optional)
+
+  // Profile
+  name            String
+  avatarUrl       String?
+
+  // Status
+  isActive        Boolean  @default(true)
+  lastLoginAt     DateTime?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  contact         ClientContact? @relation(fields: [contactId], references: [id])
+  sessions        ClientPortalSession[]
+  magicLinks      ClientMagicLink[]
+  approvals       SubmissionApproval[]
+  comments        ClientPortalComment[]
+  briefRequests   ClientBriefRequest[]
+  npsResponses    NPSResponse[]
+
+  @@unique([organizationId, email])
+  @@index([clientId])
+  @@map("client_portal_users")
+}
+
+model ClientPortalSession {
+  id              String   @id @default(cuid())
+  userId          String
+
+  // Session data
+  token           String   @unique
+  expiresAt       DateTime
+
+  // Context
+  ipAddress       String?
+  userAgent       String?
+
+  createdAt       DateTime @default(now())
+
+  user            ClientPortalUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("client_portal_sessions")
+}
+
+model ClientMagicLink {
+  id              String   @id @default(cuid())
+  userId          String
+
+  // Token
+  token           String   @unique
+  expiresAt       DateTime
+  usedAt          DateTime?
+
+  createdAt       DateTime @default(now())
+
+  user            ClientPortalUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@map("client_magic_links")
+}
+
+// Client approval of submissions/deliverables
+model SubmissionApproval {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // What's being approved
+  briefId         String
+  submissionType  String   // "deliverable", "concept", "final"
+
+  // Status
+  status          ApprovalStatus @default(PENDING)
+
+  // Client feedback
+  approvedById    String?  // ClientPortalUser who approved/rejected
+  feedback        String?  @db.Text
+  rating          Int?     // 1-5 satisfaction rating
+
+  // Revision request
+  revisionNotes   String?  @db.Text
+  revisionCount   Int      @default(0)
+
+  // Files being approved (JSON array of file IDs)
+  fileIds         String[] @default([])
+
+  // Timestamps
+  requestedAt     DateTime @default(now())
+  respondedAt     DateTime?
+  dueDate         DateTime?
+
+  brief           Brief             @relation(fields: [briefId], references: [id])
+  approvedBy      ClientPortalUser? @relation(fields: [approvedById], references: [id])
+
+  @@index([organizationId])
+  @@index([briefId])
+  @@index([status])
+  @@map("submission_approvals")
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVISION_REQUESTED
+  EXPIRED
+}
+
+// Comments from clients on submissions
+model ClientPortalComment {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Context
+  briefId         String?
+  approvalId      String?
+
+  // Content
+  content         String   @db.Text
+
+  // Author
+  authorId        String
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  author          ClientPortalUser @relation(fields: [authorId], references: [id])
+
+  @@index([briefId])
+  @@index([approvalId])
+  @@map("client_portal_comments")
+}
+
+// Brief requests from clients
+model ClientBriefRequest {
+  id              String   @id @default(cuid())
+  organizationId  String
+  clientId        String
+
+  // Request details
+  title           String
+  description     String   @db.Text
+  briefType       String?  // Suggested type
+  priority        Priority @default(MEDIUM)
+  desiredDeadline DateTime?
+
+  // Attachments (JSON array of file IDs)
+  attachmentIds   String[] @default([])
+
+  // Status
+  status          BriefRequestStatus @default(SUBMITTED)
+
+  // Converted to brief
+  briefId         String?  @unique
+
+  // Submitter
+  submittedById   String
+
+  // Review
+  reviewedById    String?  // Internal user who reviewed
+  reviewNotes     String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  reviewedAt      DateTime?
+
+  submittedBy     ClientPortalUser @relation(fields: [submittedById], references: [id])
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@map("client_brief_requests")
+}
+
+enum BriefRequestStatus {
+  DRAFT
+  SUBMITTED
+  IN_REVIEW
+  APPROVED      // Converted to brief
+  REJECTED
+  ON_HOLD
+}
+
+// ============================================
+// FILE MANAGEMENT (Phase 7)
+// ============================================
+
+model File {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // File identity
+  name            String   // Display name
+  originalName    String   // Original upload name
+  extension       String?  // "jpg", "pdf", "mp4"
+  mimeType        String   // "image/jpeg"
+  size            Int      // Bytes
+
+  // Storage
+  storageKey      String   // R2/S3 key: "org_xxx/files/2024/abc123.jpg"
+  storageProvider String   @default("r2")
+  cdnUrl          String?  // Public CDN URL (if public)
+
+  // Thumbnails
+  thumbnailKey    String?
+  thumbnailUrl    String?
+
+  // Classification
+  category        FileCategory @default(OTHER)
+  tags            String[]     @default([])
+
+  // Folder (optional organization)
+  folderId        String?
+  folder          Folder?  @relation(fields: [folderId], references: [id])
+
+  // AI processing
+  aiStatus        AIProcessingStatus @default(PENDING)
+  aiMetadata      Json?    // Extracted text, labels, colors, etc.
+  aiProcessedAt   DateTime?
+
+  // Search
+  searchVector    String?  @db.Text
+
+  // Ownership
+  uploadedById    String
+  uploadedBy      User     @relation("FileUploader", fields: [uploadedById], references: [id])
+
+  // Soft delete
+  isArchived      Boolean  @default(false)
+  archivedAt      DateTime?
+  archivedById    String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations - polymorphic links
+  briefFiles      BriefFile[]
+  clientFiles     ClientFile[]
+  projectFiles    ProjectFile[]
+  submissionFiles FormSubmissionFile[]
+  asset           Asset?
+
+  @@index([organizationId])
+  @@index([category])
+  @@index([uploadedById])
+  @@index([folderId])
+  @@index([createdAt])
+  @@map("files")
+}
+
+enum FileCategory {
+  BRIEF_ATTACHMENT   // Reference materials for briefs
+  DELIVERABLE        // Completed work
+  CONTRACT           // Legal documents
+  BRAND_ASSET        // Logos, fonts, brand guides
+  REFERENCE          // Inspiration, moodboards
+  INVOICE            // Financial documents
+  PROFILE_PHOTO      // User avatars
+  // Media type categories
+  IMAGE              // Image files (jpg, png, gif, etc.)
+  VIDEO              // Video files (mp4, mov, etc.)
+  AUDIO              // Audio files (mp3, wav, etc.)
+  DOCUMENT           // Document files (pdf, doc, etc.)
+  DESIGN_FILE        // Design files (psd, ai, figma, etc.)
+  LOGO               // Logo files
+  OTHER
+}
+
+enum AIProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  SKIPPED
+}
+
+model Folder {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String
+  parentId        String?
+  path            String   // "/clients/CCAD/brand-assets"
+  depth           Int      @default(0)
+
+  // Permissions
+  isPublic        Boolean  @default(false)
+
+  // Relations
+  parent          Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children        Folder[] @relation("FolderHierarchy")
+  files           File[]
+
+  createdById     String
+  createdAt       DateTime @default(now())
+
+  @@unique([organizationId, path])
+  @@index([organizationId])
+  @@index([parentId])
+  @@map("folders")
+}
+
+// Junction tables for entity relationships
+model BriefFile {
+  briefId   String
+  fileId    String
+  role      String   @default("attachment")  // "attachment", "deliverable", "reference"
+  sortOrder Int      @default(0)
+  addedAt   DateTime @default(now())
+  addedById String
+
+  brief     Brief    @relation(fields: [briefId], references: [id], onDelete: Cascade)
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([briefId, fileId])
+  @@map("brief_files")
+}
+
+model ClientFile {
+  clientId  String
+  fileId    String
+  role      String   @default("asset")  // "asset", "contract", "brand", "logo"
+  sortOrder Int      @default(0)
+  addedAt   DateTime @default(now())
+  addedById String
+
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([clientId, fileId])
+  @@map("client_files")
+}
+
+model ProjectFile {
+  projectId String
+  fileId    String
+  role      String   @default("asset")
+  sortOrder Int      @default(0)
+  addedAt   DateTime @default(now())
+  addedById String
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, fileId])
+  @@map("project_files")
+}
+
+model FormSubmissionFile {
+  submissionId String
+  fileId       String
+  fieldId      String   // Which form field this was uploaded to
+  sortOrder    Int      @default(0)
+  addedAt      DateTime @default(now())
+
+  submission   FormSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  file         File           @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([submissionId, fileId])
+  @@map("form_submission_files")
+}
+
+// ============================================
+// DIGITAL ASSET MANAGEMENT (Phase 19 - DAM)
+// ============================================
+
+// Asset libraries for organizing creative assets
+model AssetLibrary {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String   // "Brand Assets", "Stock Photos"
+  slug            String
+  description     String?
+
+  libraryType     LibraryType @default(GENERAL)
+  visibility      LibraryVisibility @default(INTERNAL)
+
+  coverImageId    String?
+  clientId        String?
+  client          Client?  @relation(fields: [clientId], references: [id])
+
+  settings        Json     @default("{}")
+
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  folders         AssetFolder[]
+  assets          Asset[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([clientId])
+  @@map("asset_libraries")
+}
+
+enum LibraryType {
+  GENERAL
+  BRAND
+  STOCK
+  CLIENT
+  PROJECT
+  ARCHIVE
+}
+
+enum LibraryVisibility {
+  INTERNAL
+  CLIENT
+  PUBLIC
+}
+
+// Folder hierarchy within libraries
+model AssetFolder {
+  id              String   @id @default(cuid())
+  libraryId       String
+  library         AssetLibrary @relation(fields: [libraryId], references: [id], onDelete: Cascade)
+
+  name            String
+  slug            String
+  description     String?
+  color           String?
+
+  parentId        String?
+  parent          AssetFolder? @relation("AssetFolderHierarchy", fields: [parentId], references: [id])
+  children        AssetFolder[] @relation("AssetFolderHierarchy")
+  path            String
+  depth           Int      @default(0)
+
+  defaultMetadata Json     @default("{}")
+
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  assets          Asset[]
+
+  @@unique([libraryId, path])
+  @@index([libraryId])
+  @@index([parentId])
+  @@map("asset_folders")
+}
+
+// Core asset model with rich metadata
+model Asset {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  libraryId       String
+  library         AssetLibrary @relation(fields: [libraryId], references: [id])
+  folderId        String?
+  folder          AssetFolder? @relation(fields: [folderId], references: [id])
+
+  fileId          String   @unique
+  file            File     @relation(fields: [fileId], references: [id])
+
+  name            String
+  slug            String
+  description     String?  @db.Text
+
+  assetType       AssetType
+
+  metadata        Json     @default("{}")
+  aiMetadata      Json?
+
+  tags            String[] @default([])
+
+  status          AssetStatus @default(PENDING)
+  approvedById    String?
+  approvedAt      DateTime?
+
+  downloadCount   Int      @default(0)
+  lastDownloadedAt DateTime?
+
+  license         LicenseType?
+  licenseDetails  Json?
+  expiresAt       DateTime?
+
+  copyrightHolder String?
+  copyrightYear   Int?
+
+  sourceType      AssetSourceType @default(UPLOAD)
+  sourceUrl       String?
+
+  createdById     String
+  createdBy       User     @relation("AssetCreator", fields: [createdById], references: [id])
+  lastEditedById  String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  versions        AssetVersion[]
+  comments        AssetComment[]
+
+  @@unique([organizationId, libraryId, slug])
+  @@index([organizationId])
+  @@index([libraryId])
+  @@index([folderId])
+  @@index([assetType])
+  @@index([status])
+  @@map("assets")
+}
+
+enum AssetType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  DESIGN
+  FONT
+  TEMPLATE
+  OTHER
+}
+
+enum AssetStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
+
+enum LicenseType {
+  OWNED
+  ROYALTY_FREE
+  RIGHTS_MANAGED
+  CREATIVE_COMMONS
+  EDITORIAL
+  CUSTOM
+}
+
+enum AssetSourceType {
+  UPLOAD
+  STOCK_PURCHASE
+  AGENCY_CREATED
+  CLIENT_PROVIDED
+  AI_GENERATED
+  EXTERNAL_LINK
+}
+
+// Asset version history
+model AssetVersion {
+  id              String   @id @default(cuid())
+  assetId         String
+  asset           Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  version         Int
+  fileId          String
+  changeNote      String?
+
+  createdById     String
+  createdAt       DateTime @default(now())
+
+  @@unique([assetId, version])
+  @@index([assetId])
+  @@map("asset_versions")
+}
+
+// Asset comments/annotations
+model AssetComment {
+  id              String   @id @default(cuid())
+  assetId         String
+  asset           Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  content         String   @db.Text
+
+  parentId        String?
+  parent          AssetComment? @relation("AssetCommentThread", fields: [parentId], references: [id])
+  replies         AssetComment[] @relation("AssetCommentThread")
+
+  annotationType  String?
+  annotationData  Json?
+
+  isResolved      Boolean  @default(false)
+  resolvedAt      DateTime?
+
+  authorId        String
+  author          User     @relation(fields: [authorId], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([assetId])
+  @@map("asset_comments")
+}
+
+// ============================================
+// KNOWLEDGE MANAGEMENT (Phase 12 - Agent Intelligence)
+// ============================================
+
+// Knowledge documents that agents read for context
+model KnowledgeDocument {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // Hierarchical path: "/agents/skills/brief-creator"
+  path            String
+  slug            String
+  title           String
+  description     String?
+
+  // Document classification
+  documentType    KnowledgeDocumentType
+
+  // Content (Markdown with YAML frontmatter)
+  content         String   @db.Text
+  frontmatter     Json     @default("{}")
+
+  // Agent-specific metadata (for SKILL, PERSONA, ORCHESTRATION types)
+  agentMetadata   Json?
+  // Example for SKILL:
+  // {
+  //   "whenToUse": "When client submits a brief request via portal",
+  //   "requiredInputs": ["client_context", "request_details", "available_resources"],
+  //   "expectedOutputs": ["draft_brief", "resource_suggestions", "timeline_estimate"],
+  //   "permissions": ["brief:create", "client:read", "user:read"],
+  //   "dependencies": ["skill_time_estimator", "skill_resource_optimizer"]
+  // }
+
+  // Hierarchy
+  parentId        String?
+  parent          KnowledgeDocument? @relation("DocHierarchy", fields: [parentId], references: [id])
+  children        KnowledgeDocument[] @relation("DocHierarchy")
+
+  // Related documents
+  relatedDocIds   String[]  @default([])
+
+  // Versioning
+  version         Int       @default(1)
+  isLatest        Boolean   @default(true)
+  previousVersionId String?
+
+  // Status & lifecycle
+  status          KnowledgeDocumentStatus @default(DRAFT)
+  effectiveDate   DateTime?
+  expirationDate  DateTime?
+
+  // Access control
+  visibility      DocumentVisibility @default(INTERNAL)
+  allowedRoles    String[]  @default([])
+
+  // Audit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdById     String
+  lastEditedById  String?
+
+  // Relations
+  versions        DocumentVersion[]
+  embeddings      DocumentEmbedding[]
+  usageLog        DocumentUsage[]
+  linkedSkill     AgentSkill?   @relation("SkillDocument")
+  linkedPersona   AgentPersona? @relation("PersonaDocument")
+
+  @@unique([organizationId, path])
+  @@index([organizationId, documentType])
+  @@index([organizationId, status])
+  @@map("knowledge_documents")
+}
+
+enum KnowledgeDocumentType {
+  SKILL           // Agent capability definition
+  PERSONA         // Agent personality/context definition
+  ORCHESTRATION   // Multi-agent workflow definition
+  PROCEDURE       // Step-by-step process (SOPs)
+  POLICY          // Rules and constraints
+  CHECKLIST       // Quality gates
+  PLAYBOOK        // Situational guides (crisis, client types)
+  TEMPLATE        // Reusable content patterns
+  REFERENCE       // Static information (glossary, tools)
+  META            // System documentation (API, schemas)
+}
+
+enum KnowledgeDocumentStatus {
+  DRAFT           // Being written
+  IN_REVIEW       // Submitted for approval
+  APPROVED        // Ready but not active
+  PUBLISHED       // Active and in use
+  DEPRECATED      // Being phased out
+  ARCHIVED        // No longer active
+}
+
+enum DocumentVisibility {
+  PUBLIC          // Visible to clients via portal
+  INTERNAL        // All team members
+  RESTRICTED      // Specific roles only
+  PRIVATE         // Owner only
+}
+
+// Full snapshot versioning for knowledge documents
+model DocumentVersion {
+  id              String   @id @default(cuid())
+
+  documentId      String
+  document        KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  version         Int
+  content         String   @db.Text
+  frontmatter     Json
+
+  changeLog       String?
+  changedSections String[] @default([])
+
+  createdAt       DateTime @default(now())
+  createdById     String
+
+  @@unique([documentId, version])
+  @@index([documentId])
+  @@map("document_versions")
+}
+
+// Vector embeddings for semantic search
+model DocumentEmbedding {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  documentId      String
+  document        KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  chunkIndex      Int                 // For chunked documents
+  chunkContent    String   @db.Text   // The text content of this chunk
+  embedding       Json                // Vector as JSON array of numbers
+  tokens          Int      @default(0) // Token count for this chunk
+
+  model           String              // "text-embedding-3-small"
+  dimensions      Int      @default(1536)
+  createdAt       DateTime @default(now())
+
+  @@unique([documentId, chunkIndex])
+  @@index([organizationId])
+  @@index([documentId])
+  @@map("document_embeddings")
+}
+
+// Track how documents are used by agents and humans
+model DocumentUsage {
+  id              String   @id @default(cuid())
+
+  documentId      String
+  document        KnowledgeDocument @relation(fields: [documentId], references: [id])
+
+  usedAt          DateTime @default(now())
+  usedBy          String              // Agent slug or user ID
+  usageType       DocumentUsageType
+
+  // Context
+  sessionId       String?
+  entityType      String?             // What entity triggered this
+  entityId        String?
+  invocationId    String?             // If used during skill invocation
+
+  // Feedback
+  wasHelpful      Boolean?
+  feedback        String?
+
+  @@index([documentId])
+  @@index([usedAt])
+  @@map("document_usage")
+}
+
+enum DocumentUsageType {
+  AGENT_CONTEXT   // Injected into agent context
+  AGENT_RETRIEVAL // Retrieved via semantic search
+  USER_REFERENCE  // Human looked it up
+  API_FETCH       // Fetched via API
+}
+
+// ============================================
+// AGENT SKILLS & PERSONAS (Phase 12)
+// ============================================
+
+// A registered agent capability
+model AgentSkill {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // Identity
+  slug            String              // "brief-creator", "quality-scorer"
+  name            String              // "Brief Creator"
+  description     String
+
+  // Link to knowledge document
+  documentId      String?  @unique
+  document        KnowledgeDocument? @relation("SkillDocument", fields: [documentId], references: [id])
+
+  // Classification
+  category        SkillCategory
+
+  // Capability definition
+  triggers        Json     @default("[]")   // Events/conditions that invoke this skill
+  inputs          Json     @default("[]")   // Required inputs
+  outputs         Json     @default("[]")   // Expected outputs
+
+  // Dependencies
+  dependsOn       String[] @default([])     // Other skill slugs this depends on
+
+  // Configuration
+  config          Json?                     // Runtime configuration
+
+  // Permissions required to invoke
+  requiredPermissions String[] @default([])
+
+  // Status
+  isEnabled       Boolean  @default(true)
+  version         String   @default("1.0.0")
+
+  // Metrics (updated on each invocation)
+  invocationCount Int      @default(0)
+  successCount    Int      @default(0)
+  failureCount    Int      @default(0)
+  successRate     Float?
+  avgLatencyMs    Int?
+  lastInvokedAt   DateTime?
+
+  // Audit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  invocations     AgentInvocation[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, category])
+  @@index([isEnabled])
+  @@map("agent_skills")
+}
+
+enum SkillCategory {
+  CONTENT_CREATION    // Creates content (briefs, copy, reports)
+  CONTENT_ANALYSIS    // Analyzes content (quality scoring, sentiment)
+  WORKFLOW            // Manages workflows (routing, status updates)
+  COMMUNICATION       // Handles communication (notifications, emails)
+  DATA_PROCESSING     // Processes data (aggregation, transformation)
+  DECISION            // Makes decisions (recommendations, approvals)
+  INTEGRATION         // External integrations (API calls, syncs)
+  UTILITY             // Helper functions (formatting, validation)
+}
+
+// Agent personality/context definition
+model AgentPersona {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // Identity
+  slug            String              // "project-manager", "creative-director"
+  name            String              // "Project Manager"
+  description     String
+
+  // Link to knowledge document
+  documentId      String?  @unique
+  document        KnowledgeDocument? @relation("PersonaDocument", fields: [documentId], references: [id])
+
+  // Persona definition
+  systemPrompt    String   @db.Text   // Base system prompt
+
+  personality     Json     @default("{}")  // Tone, style, communication preferences
+  expertise       String[] @default([])    // Areas of expertise
+  constraints     String[] @default([])    // Things this persona should NOT do
+
+  // Skills this persona can use
+  allowedSkills   String[] @default([])    // Skill slugs
+
+  // Context injection
+  defaultContext  Json?                    // Default context always included
+
+  // Status
+  isEnabled       Boolean  @default(true)
+
+  // Audit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@map("agent_personas")
+}
+
+// ============================================
+// TRIGGERS & EVENTS (Phase 12)
+// ============================================
+
+// Content event log (what happened)
+model ContentEvent {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // Event identity
+  eventType       String              // "brief.created", "asset.uploaded", "deal.won"
+
+  // Source
+  sourceType      String              // "brief", "asset", "deal", "content_entry"
+  sourceId        String
+
+  // Event data
+  payload         Json
+
+  // Processing status
+  processedAt     DateTime?
+  processingError String?
+  triggersMatched Int      @default(0)
+  triggersExecuted Int     @default(0)
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId, eventType])
+  @@index([createdAt])
+  @@index([sourceType, sourceId])
+  @@map("content_events")
+}
+
+// Trigger definitions (when X happens, do Y)
+model ContentTrigger {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // Identity
+  name            String
+  description     String?
+
+  // Trigger condition
+  eventType       String              // Event to listen for
+  conditions      Json?               // Additional filtering conditions
+
+  // Action to take
+  actionType      TriggerActionType
+  actionConfig    Json
+
+  // Execution settings
+  isEnabled       Boolean  @default(true)
+  priority        Int      @default(0)  // Higher = runs first
+  debounceMs      Int?                  // Debounce rapid events
+  maxRetries      Int      @default(3)
+
+  // Metrics
+  executionCount  Int      @default(0)
+  successCount    Int      @default(0)
+  failureCount    Int      @default(0)
+  lastExecutedAt  DateTime?
+  lastError       String?
+
+  // Audit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdById     String
+
+  @@index([organizationId, eventType])
+  @@index([isEnabled])
+  @@map("content_triggers")
+}
+
+enum TriggerActionType {
+  INVOKE_SKILL    // Call an agent skill
+  NOTIFICATION    // Send a notification
+  WEBHOOK         // Call external webhook
+  WORKFLOW        // Start/advance a workflow
+  UPDATE_ENTITY   // Update the source entity
+  CREATE_ENTITY   // Create a related entity
+  CUSTOM          // Custom action handler
+}
+
+// ============================================
+// INVOCATION LOGGING (Phase 12)
+// ============================================
+
+// Log of agent skill invocations
+model AgentInvocation {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // What was invoked
+  skillId         String?
+  skill           AgentSkill? @relation(fields: [skillId], references: [id])
+  skillSlug       String              // Denormalized for queries
+
+  personaId       String?
+  personaSlug     String?
+
+  // Trigger context
+  triggeredBy     InvocationTrigger
+  triggerEventId  String?             // ContentEvent ID if triggered by event
+  triggerId       String?             // ContentTrigger ID if via trigger
+  sessionId       String?             // For conversational context
+
+  // Entity context
+  entityType      String?             // What entity this relates to
+  entityId        String?
+
+  // Execution
+  input           Json                // Input provided to skill
+  output          Json?               // Output from skill
+  error           String?             // Error message if failed
+
+  status          InvocationStatus @default(PENDING)
+
+  // Timing
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  durationMs      Int?
+
+  // Token usage (for LLM-based skills)
+  inputTokens     Int?
+  outputTokens    Int?
+  totalTokens     Int?
+  estimatedCost   Float?              // In USD
+
+  // Context used
+  documentsUsed   String[] @default([])  // KnowledgeDocument IDs
+  contextTokens   Int?                   // Tokens in context
+
+  // Human attribution
+  initiatedById   String?             // User who triggered (if manual)
+
+  // Retry tracking
+  attemptNumber   Int      @default(1)
+  parentInvocationId String?          // If this is a retry
+
+  // Relations
+  steps           InvocationStep[]
+
+  @@index([organizationId, skillId])
+  @@index([organizationId, skillSlug])
+  @@index([status])
+  @@index([startedAt])
+  @@index([entityType, entityId])
+  @@map("agent_invocations")
+}
+
+enum InvocationTrigger {
+  EVENT           // Triggered by ContentEvent
+  SCHEDULE        // Triggered by cron schedule
+  MANUAL          // Manually invoked by user
+  AGENT           // Invoked by another agent/skill
+  API             // Invoked via API
+  WEBHOOK         // Triggered by external webhook
+}
+
+enum InvocationStatus {
+  PENDING         // Queued
+  RUNNING         // In progress
+  COMPLETED       // Finished successfully
+  FAILED          // Finished with error
+  CANCELLED       // Cancelled before completion
+  TIMEOUT         // Timed out
+}
+
+// Detailed step-by-step log for complex invocations
+model InvocationStep {
+  id              String   @id @default(cuid())
+
+  invocationId    String
+  invocation      AgentInvocation @relation(fields: [invocationId], references: [id], onDelete: Cascade)
+
+  stepNumber      Int
+  stepName        String              // "retrieve_context", "generate_response", "validate_output"
+
+  input           Json?
+  output          Json?
+  error           String?
+
+  status          InvocationStatus
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  durationMs      Int?
+
+  // For LLM steps
+  promptTokens    Int?
+  completionTokens Int?
+
+  @@unique([invocationId, stepNumber])
+  @@index([invocationId])
+  @@map("invocation_steps")
+}
+
+// ============================================
+// DELIVERABLES (Phase 12 - Work Output)
+// ============================================
+
+// A piece of work output from a brief
+model Deliverable {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // Source
+  briefId         String
+  brief           Brief    @relation(fields: [briefId], references: [id])
+
+  projectId       String?
+
+  // Identity
+  title           String
+  description     String?
+  type            DeliverableType
+
+  // Version tracking
+  version         Int      @default(1)
+  revisionNumber  Int      @default(0)
+
+  // For revision chains
+  parentId        String?
+  parent          Deliverable? @relation("DeliverableRevisions", fields: [parentId], references: [id])
+  revisions       Deliverable[] @relation("DeliverableRevisions")
+
+  // Content (polymorphic based on type)
+  content         Json?               // Structured content
+  textContent     String?  @db.Text   // Text-based content (for search)
+
+  // Primary file
+  primaryFileId   String?
+
+  // Status
+  status          DeliverableStatus @default(DRAFT)
+
+  // Internal review
+  internalReviewStatus   ReviewStatus @default(PENDING)
+  internalReviewerId     String?
+  reviewedBy             User?    @relation("DeliverableReviewer", fields: [internalReviewerId], references: [id])
+  internalReviewedAt     DateTime?
+  internalFeedback       String?  @db.Text
+
+  // Client review
+  clientReviewStatus     ReviewStatus @default(PENDING)
+  clientReviewerId       String?
+  clientReviewedAt       DateTime?
+  clientFeedback         String?  @db.Text
+
+  // AI tracking
+  aiGenerated     Boolean  @default(false)
+  aiAssisted      Boolean  @default(false)
+  aiMetadata      Json?
+
+  // Quality
+  qualityScore    Int?                // 0-100
+  qualityMetadata Json?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  submittedAt     DateTime?           // Submitted for internal review
+  approvedAt      DateTime?           // Final approval
+  deliveredAt     DateTime?           // Sent to client
+
+  // Audit
+  createdById     String
+  createdBy       User     @relation("DeliverableCreator", fields: [createdById], references: [id])
+
+  // Relations
+  files           DeliverableFile[]
+  comments        DeliverableComment[]
+  history         DeliverableHistory[]
+
+  // Content CMS (Phase 16)
+  contentPosts    ContentPost[]
+
+  @@index([organizationId, briefId])
+  @@index([status])
+  @@index([clientReviewStatus])
+  @@map("deliverables")
+}
+
+enum DeliverableType {
+  VIDEO           // Video content
+  IMAGE           // Static images
+  DOCUMENT        // Documents (PDF, DOCX)
+  PRESENTATION    // Slide decks
+  DESIGN_FILE     // Source design files
+  COPY            // Written copy
+  REPORT          // Reports and analysis
+  CODE            // Code/technical deliverables
+  AUDIO           // Audio content
+  SOCIAL_PACKAGE  // Social media package
+  OTHER
+}
+
+enum DeliverableStatus {
+  DRAFT           // Being created
+  IN_PROGRESS     // Work in progress
+  INTERNAL_REVIEW // Internal review
+  REVISION_NEEDED // Changes required (internal)
+  READY_FOR_CLIENT // Ready to send to client
+  CLIENT_REVIEW   // Client reviewing
+  CLIENT_REVISION // Client requested changes
+  APPROVED        // Final approval
+  DELIVERED       // Sent to client
+  ARCHIVED        // Archived
+}
+
+enum ReviewStatus {
+  PENDING         // Not yet reviewed
+  IN_PROGRESS     // Being reviewed
+  APPROVED        // Approved
+  REJECTED        // Rejected
+  REVISION_REQUESTED // Changes requested
+}
+
+// Files attached to deliverable
+model DeliverableFile {
+  id              String   @id @default(cuid())
+
+  deliverableId   String
+  deliverable     Deliverable @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
+
+  fileId          String
+
+  role            DeliverableFileRole @default(ASSET)
+  order           Int      @default(0)
+  caption         String?
+  notes           String?
+
+  createdAt       DateTime @default(now())
+
+  @@index([deliverableId])
+  @@map("deliverable_files")
+}
+
+enum DeliverableFileRole {
+  PRIMARY         // The main deliverable file
+  SOURCE          // Source/working files
+  REFERENCE       // Reference material used
+  ASSET           // Supporting assets
+  PREVIEW         // Preview/thumbnail
+  EXPORT          // Export versions (different formats)
+}
+
+// Comments on deliverables (internal + client)
+model DeliverableComment {
+  id              String   @id @default(cuid())
+
+  deliverableId   String
+  deliverable     Deliverable @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
+
+  content         String   @db.Text
+
+  // Thread support
+  parentId        String?
+  parent          DeliverableComment? @relation("CommentThread", fields: [parentId], references: [id])
+  replies         DeliverableComment[] @relation("CommentThread")
+
+  // Annotation (for visual feedback)
+  annotationType  String?             // "text_selection", "region", "timestamp", "page"
+  annotationData  Json?
+
+  // Resolution
+  isResolved      Boolean  @default(false)
+  resolvedAt      DateTime?
+  resolvedById    String?
+
+  // Author (internal or client)
+  authorType      CommentAuthorType
+  userId          String?
+  clientUserId    String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([deliverableId])
+  @@index([parentId])
+  @@map("deliverable_comments")
+}
+
+enum CommentAuthorType {
+  USER            // Internal team member
+  CLIENT          // Client via portal
+  AGENT           // AI agent
+}
+
+// Status history for deliverables
+model DeliverableHistory {
+  id              String   @id @default(cuid())
+
+  deliverableId   String
+  deliverable     Deliverable @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
+
+  action          String              // "created", "submitted", "reviewed", "approved", etc.
+  fromStatus      DeliverableStatus?
+  toStatus        DeliverableStatus?
+
+  metadata        Json?               // Additional context
+
+  performedAt     DateTime @default(now())
+  performedById   String
+
+  @@index([deliverableId])
+  @@map("deliverable_history")
+}
+
+// ============================================
+// EVENT SYSTEM (Phase 12.4)
+// ============================================
+
+// Entity events for audit trail and triggers
+model EntityEvent {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  entityType      String              // "BRIEF", "DELIVERABLE", "CLIENT", etc.
+  entityId        String
+  action          String              // "CREATED", "UPDATED", "STATUS_CHANGED", etc.
+
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+
+  metadata        Json     @default("{}")
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId, entityType])
+  @@index([organizationId, entityId])
+  @@index([createdAt])
+  @@map("entity_events")
+}
+
+// Event subscriptions - what to do when events occur
+model EventSubscription {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  entityType      String              // "*" for all, or specific type
+  action          String              // "*" for all, or specific action
+
+  handler         String              // Handler function name
+  skillSlug       String?             // Optional skill to trigger
+
+  priority        Int      @default(100)
+  enabled         Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  logs            EventHandlerLog[]
+
+  @@index([organizationId, entityType])
+  @@index([enabled])
+  @@map("event_subscriptions")
+}
+
+// Handler execution logs
+model EventHandlerLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  eventId         String              // EntityEvent ID
+  subscriptionId  String
+  subscription    EventSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  status          String              // "SUCCESS", "FAILED"
+  error           String?
+
+  executedAt      DateTime @default(now())
+
+  @@index([organizationId, eventId])
+  @@index([subscriptionId])
+  @@map("event_handler_logs")
+}
+
+// Track status transitions for analytics
+model StatusTransition {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  entityType      String
+  entityId        String
+  fromStatus      String
+  toStatus        String
+
+  userId          String
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId, entityType])
+  @@index([entityId])
+  @@map("status_transitions")
+}
+
+// ============================================
+// SCOPE CHANGE MANAGEMENT (Phase 14)
+// ============================================
+
+// Track mid-execution pivots on briefs
+model ScopeChange {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  briefId         String
+  brief           Brief    @relation(fields: [briefId], references: [id], onDelete: Cascade)
+
+  // What changed
+  title           String              // Short summary: "Pivot from Instagram to TikTok"
+  originalDirection   String   @db.Text   // What we were doing
+  newDirection        String   @db.Text   // What we're now doing
+  reason              String?  @db.Text   // Why the change happened
+
+  // Impact assessment
+  impactLevel         ScopeChangeImpact @default(MODERATE)
+  hoursSpentBefore    Decimal? @db.Decimal(6, 2)  // Hours already invested
+  estimatedAdditionalHours Decimal? @db.Decimal(6, 2)  // Extra hours needed
+  costImpact          Decimal? @db.Decimal(12, 2) // Estimated cost impact
+
+  // Client acknowledgment (optional workflow)
+  requiresApproval    Boolean  @default(false)
+  approvalStatus      ScopeApprovalStatus @default(NOT_REQUIRED)
+  clientApprovedAt    DateTime?
+  clientApprovedById  String?  // ClientPortalUser ID
+  clientNotes         String?  @db.Text
+
+  // Audit
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([briefId])
+  @@index([createdAt])
+  @@map("scope_changes")
+}
+
+enum ScopeChangeImpact {
+  MINOR       // Small adjustment, minimal timeline/cost impact
+  MODERATE    // Noticeable impact, some rework needed
+  MAJOR       // Significant rework, timeline affected
+  CRITICAL    // Complete pivot, substantial cost/timeline impact
+}
+
+enum ScopeApprovalStatus {
+  NOT_REQUIRED    // Internal scope change, no client approval needed
+  PENDING         // Awaiting client acknowledgment
+  ACKNOWLEDGED    // Client acknowledged
+  APPROVED        // Client formally approved
+  DISPUTED        // Client disputes the characterization
+}
+
+// ============================================
+// RETAINER TRACKING (Phase 14)
+// ============================================
+
+// Monthly retainer period tracking
+model RetainerPeriod {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  clientId        String
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  // Period
+  year            Int
+  month           Int      // 1-12
+
+  // Contract terms (deliverable-based)
+  plannedDeliverables Int?        // Number of deliverables committed
+  deliverableBreakdown Json?      // { "VIDEO_EDIT": 5, "DESIGN": 10, ... }
+
+  // Internal budget (hours-based, not shown to client)
+  budgetHours         Decimal?    @db.Decimal(6, 2)
+  budgetValue         Decimal?    @db.Decimal(12, 2) // Internal cost budget
+
+  // Contract value
+  contractValue       Decimal?    @db.Decimal(12, 2) // What client pays
+
+  // Actuals (calculated from briefs/deliverables)
+  actualDeliverables  Int         @default(0)
+  actualHours         Decimal     @default(0) @db.Decimal(6, 2)
+  actualCost          Decimal     @default(0) @db.Decimal(12, 2)
+
+  // Derived metrics (updated periodically)
+  burnRate            Decimal?    @db.Decimal(5, 2) // % of deliverables complete
+  marginPercent       Decimal?    @db.Decimal(5, 2) // (contract - cost) / contract * 100
+
+  // Status
+  status              RetainerPeriodStatus @default(ACTIVE)
+
+  // Notes
+  notes               String?     @db.Text
+  rolloverDeliverables Int?       // Deliverables rolled from previous month
+  rolloverHours       Decimal?    @db.Decimal(6, 2)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([clientId, year, month])
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([year, month])
+  @@map("retainer_periods")
+}
+
+enum RetainerPeriodStatus {
+  PLANNED     // Future period
+  ACTIVE      // Current period
+  COMPLETED   // Past period, finalized
+  RECONCILED  // Reviewed and closed out
+}
+
+// ============================================
+// WHATSAPP INTEGRATION (Phase 15)
+// ============================================
+
+// WhatsApp conversation thread
+model WhatsAppConversation {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Linked entities (optional)
+  clientId        String?
+  client          Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  briefId         String?
+  brief           Brief?   @relation(fields: [briefId], references: [id], onDelete: SetNull)
+  contactId       String?
+  contact         ClientContact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  // WhatsApp identifiers
+  waPhoneNumber   String            // The external WhatsApp number
+  waDisplayName   String?           // Contact name from WhatsApp
+  waProfilePic    String?           // Profile picture URL
+
+  // Conversation state
+  status          ConversationStatus @default(ACTIVE)
+  assignedToId    String?
+  assignedTo      User?    @relation(fields: [assignedToId], references: [id])
+
+  // Last activity
+  lastMessageAt   DateTime?
+  lastMessagePreview String?
+  unreadCount     Int      @default(0)
+
+  // Provider info
+  provider        String   @default("whatsapp_business") // whatsapp_business, gupshup, etc.
+  externalId      String?  // Provider's conversation ID
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  messages        WhatsAppMessage[]
+
+  @@unique([organizationId, waPhoneNumber])
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@index([lastMessageAt])
+  @@map("whatsapp_conversations")
+}
+
+enum ConversationStatus {
+  ACTIVE
+  ARCHIVED
+  BLOCKED
+}
+
+// Individual WhatsApp message
+model WhatsAppMessage {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  conversationId  String
+  conversation    WhatsAppConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // Message direction
+  direction       MessageDirection
+  senderId        String?  // User ID if outbound
+  sender          User?    @relation(fields: [senderId], references: [id])
+
+  // Content
+  messageType     MessageType @default(TEXT)
+  content         String?  @db.Text   // Text content or caption
+  mediaUrl        String?             // URL for media messages
+  mediaMimeType   String?
+  mediaSize       Int?                // File size in bytes
+
+  // Voice note specific
+  voiceDuration   Int?                // Duration in seconds
+  transcription   VoiceNoteTranscription?
+
+  // WhatsApp metadata
+  waMessageId     String?  @unique    // WhatsApp's message ID
+  waTimestamp     DateTime?           // WhatsApp's timestamp
+  waStatus        String?             // sent, delivered, read, failed
+
+  // Reply context
+  replyToId       String?
+  replyTo         WhatsAppMessage? @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies         WhatsAppMessage[] @relation("MessageReplies")
+
+  // Processing flags
+  isProcessed     Boolean  @default(false)  // For automation triggers
+  processedAt     DateTime?
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([conversationId])
+  @@index([createdAt])
+  @@index([messageType])
+  @@map("whatsapp_messages")
+}
+
+enum MessageDirection {
+  INBOUND   // From client to org
+  OUTBOUND  // From org to client
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  VOICE_NOTE
+  DOCUMENT
+  STICKER
+  LOCATION
+  CONTACT
+}
+
+// Voice note transcription
+model VoiceNoteTranscription {
+  id              String   @id @default(cuid())
+
+  messageId       String   @unique
+  message         WhatsAppMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  // Transcription result
+  transcription   String   @db.Text
+  language        String?             // Detected language (ar, en, etc.)
+  confidence      Decimal? @db.Decimal(3, 2)  // 0.00 to 1.00
+
+  // Provider info
+  provider        String              // openai_whisper, google_stt, azure_stt
+  durationMs      Int?                // Processing duration
+  cost            Decimal? @db.Decimal(8, 4)  // Cost in USD
+
+  // Manual corrections
+  correctedText   String?  @db.Text
+  correctedById   String?
+  correctedAt     DateTime?
+
+  createdAt       DateTime @default(now())
+
+  @@map("voice_note_transcriptions")
+}
+
+// ============================================
+// COMPLAINT & FEEDBACK INTEGRATION (Phase 15)
+// ============================================
+
+// Client complaint (integrates with NPS)
+model ClientComplaint {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  clientId        String
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  // Source of complaint
+  source          ComplaintSource
+  sourceId        String?             // WhatsApp message ID, email ID, etc.
+  sourceUrl       String?             // Link to original
+
+  // Contact who complained
+  contactId       String?
+  contact         ClientContact? @relation(fields: [contactId], references: [id])
+
+  // Complaint details
+  title           String
+  description     String   @db.Text
+  category        ComplaintCategory?
+
+  // Related entities
+  briefId         String?
+  brief           Brief?   @relation(fields: [briefId], references: [id])
+  npsResponseId   String?
+  npsResponse     NPSResponse? @relation(fields: [npsResponseId], references: [id])
+
+  // Severity and status
+  severity        ComplaintSeverity @default(MEDIUM)
+  status          ComplaintStatus @default(NEW)
+  priority        Int      @default(0)  // Higher = more urgent
+
+  // Assignment
+  assignedToId    String?
+  assignedTo      User?    @relation(fields: [assignedToId], references: [id])
+
+  // Resolution
+  resolution      String?  @db.Text
+  resolvedAt      DateTime?
+  resolvedById    String?
+
+  // Follow-up
+  followUpDate    DateTime?
+  followUpNotes   String?  @db.Text
+
+  // Sentiment analysis (if applicable)
+  sentimentScore  Decimal? @db.Decimal(3, 2)  // -1.00 to 1.00
+  keywords        String[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@index([severity])
+  @@index([createdAt])
+  @@map("client_complaints")
+}
+
+enum ComplaintSource {
+  EMAIL
+  WHATSAPP
+  PHONE_CALL
+  NPS_SURVEY
+  MEETING
+  PORTAL
+  OTHER
+}
+
+enum ComplaintCategory {
+  QUALITY
+  TIMELINE
+  COMMUNICATION
+  SCOPE
+  BILLING
+  PERSONNEL
+  OTHER
+}
+
+enum ComplaintSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ComplaintStatus {
+  NEW
+  ACKNOWLEDGED
+  IN_PROGRESS
+  PENDING_CLIENT
+  RESOLVED
+  CLOSED
+}
+
+// ============================================
+// CONTENT CALENDAR & SOCIAL CMS (Phase 16)
+// ============================================
+
+// Social platform enum - comprehensive list
+enum SocialPlatform {
+  // Meta platforms
+  INSTAGRAM_FEED
+  INSTAGRAM_STORY
+  INSTAGRAM_REEL
+  FACEBOOK_PAGE
+  FACEBOOK_STORY
+  THREADS
+
+  // Video platforms
+  TIKTOK
+  YOUTUBE_VIDEO
+  YOUTUBE_SHORT
+
+  // Professional
+  LINKEDIN_PAGE
+  LINKEDIN_PERSONAL
+  LINKEDIN_ARTICLE
+
+  // Twitter/X
+  X_TWEET
+  X_THREAD
+
+  // CMS/Web
+  WORDPRESS
+  CUSTOM_CMS
+
+  // Other
+  PINTEREST
+  SNAPCHAT
+}
+
+// Content types
+enum ContentType {
+  SINGLE_IMAGE
+  CAROUSEL           // Multiple images
+  VIDEO              // Standard video
+  SHORT_VIDEO        // Reels, Shorts, TikTok
+  STORY              // 24hr ephemeral
+  TEXT_ONLY          // Text post (X, LinkedIn)
+  ARTICLE            // Long-form (LinkedIn, WordPress)
+  LIVE               // Live stream
+}
+
+// Post workflow status
+enum ContentPostStatus {
+  DRAFT              // Being created
+  INTERNAL_REVIEW    // Ready for internal review
+  CLIENT_REVIEW      // Sent to client for approval
+  REVISION_REQUESTED // Client requested changes
+  APPROVED           // Client approved, ready to schedule
+  SCHEDULED          // Scheduled for publishing
+  PUBLISHING         // Currently being published
+  PUBLISHED          // Successfully published
+  FAILED             // Publishing failed
+  ARCHIVED           // No longer active
+}
+
+// Approval status
+enum ContentApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVISION_REQUESTED
+}
+
+// Client's connected social account
+model SocialAccount {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  clientId        String
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  // Platform details
+  platform        SocialPlatform
+  accountName     String              // Display name / handle
+  accountId       String?             // Platform's internal ID
+  accountUrl      String?             // Profile URL
+  avatarUrl       String?             // Profile picture
+
+  // Authentication (encrypted)
+  accessToken     String?  @db.Text   // OAuth access token (encrypted)
+  refreshToken    String?  @db.Text   // OAuth refresh token (encrypted)
+  tokenExpiresAt  DateTime?
+
+  // Account management model
+  managementType  AccountManagementType @default(AGENCY_MANAGED)
+
+  // Platform-specific settings
+  settings        Json     @default("{}")  // Platform-specific config
+
+  // Status
+  isActive        Boolean  @default(true)
+  lastSyncAt      DateTime?
+  lastError       String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  contentPosts    ContentPost[]
+  publishJobs     PublishJob[]
+
+  @@unique([clientId, platform, accountId])
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([platform])
+  @@map("social_accounts")
+}
+
+enum AccountManagementType {
+  AGENCY_MANAGED       // Agency has full access/credentials
+  CLIENT_CONNECTED     // Client connected via OAuth
+  THIRD_PARTY          // Managed via third-party tool (Loomly, etc.)
+  MANUAL               // No direct access, manual publishing
+}
+
+// Main content post entity
+model ContentPost {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Client and account
+  clientId        String
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  socialAccountId String?
+  socialAccount   SocialAccount? @relation(fields: [socialAccountId], references: [id])
+
+  // Content identification
+  title           String              // Internal title for reference
+  slug            String?             // URL-friendly identifier
+
+  // Platform targeting
+  platforms       SocialPlatform[]    // Can target multiple platforms
+  contentType     ContentType
+
+  // Content body
+  caption         String   @db.Text   // Main post text/caption
+  captionAr       String?  @db.Text   // Arabic version if needed
+  hashtags        String[]            // Extracted/managed hashtags
+  mentions        String[]            // @mentions
+
+  // Link handling
+  linkUrl         String?             // Link in bio / swipe up
+  linkText        String?             // CTA text
+
+  // Location tagging
+  locationName    String?
+  locationId      String?             // Platform location ID
+
+  // Scheduling
+  scheduledFor    DateTime?           // When to publish
+  publishedAt     DateTime?           // When actually published
+  timezone        String   @default("Asia/Dubai")
+
+  // Workflow status
+  status          ContentPostStatus @default(DRAFT)
+
+  // Version tracking
+  currentVersion  Int      @default(1)
+
+  // Related entities
+  briefId         String?
+  brief           Brief?   @relation(fields: [briefId], references: [id])
+  deliverableId   String?
+  deliverable     Deliverable? @relation(fields: [deliverableId], references: [id])
+
+  // Assignment
+  createdById     String
+  createdBy       User     @relation("ContentPostCreator", fields: [createdById], references: [id])
+  assignedToId    String?
+  assignedTo      User?    @relation("ContentPostAssignee", fields: [assignedToId], references: [id])
+
+  // Publishing result
+  platformPostId  String?             // ID returned by platform after publish
+  platformPostUrl String?             // Direct link to published post
+  publishError    String?  @db.Text   // Error message if failed
+
+  // Engagement metrics (synced from platform)
+  likes           Int?
+  comments        Int?
+  shares          Int?
+  saves           Int?
+  reach           Int?
+  impressions     Int?
+  engagementRate  Decimal? @db.Decimal(5, 2)
+  metricsUpdatedAt DateTime?
+
+  // Platform-specific data
+  platformData    Json     @default("{}")  // Platform-specific fields
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  assets          ContentAsset[]
+  versions        ContentVersion[]
+  approvals       ContentApproval[]
+  contentComments ContentComment[]
+  publishJobs     PublishJob[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@index([scheduledFor])
+  @@index([createdById])
+  @@map("content_posts")
+}
+
+// Media assets for posts
+model ContentAsset {
+  id              String   @id @default(cuid())
+
+  postId          String
+  post            ContentPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Asset details
+  type            ContentAssetType
+  fileName        String
+  fileUrl         String              // Storage URL
+  thumbnailUrl    String?             // Thumbnail for videos
+  fileSize        Int?                // Bytes
+  mimeType        String?
+
+  // Media dimensions
+  width           Int?
+  height          Int?
+  duration        Int?                // Video/audio duration in seconds
+  aspectRatio     String?             // e.g., "16:9", "1:1", "9:16"
+
+  // Carousel/ordering
+  sortOrder       Int      @default(0)
+
+  // Alt text for accessibility
+  altText         String?
+  altTextAr       String?
+
+  // Video-specific
+  hasAudio        Boolean  @default(true)
+  captions        String?  @db.Text   // SRT or VTT captions
+
+  // Platform variants (different crops/versions)
+  variants        Json     @default("[]")  // Array of platform-specific versions
+
+  createdAt       DateTime @default(now())
+
+  @@index([postId])
+  @@map("content_assets")
+}
+
+enum ContentAssetType {
+  IMAGE
+  VIDEO
+  GIF
+  DOCUMENT        // For WordPress/CMS
+}
+
+// Version history for posts
+model ContentVersion {
+  id              String   @id @default(cuid())
+
+  postId          String
+  post            ContentPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  versionNumber   Int
+
+  // Snapshot of content at this version
+  caption         String   @db.Text
+  captionAr       String?  @db.Text
+  hashtags        String[]
+  platforms       SocialPlatform[]
+
+  // Who created this version
+  createdById     String
+  createdBy       User     @relation(fields: [createdById], references: [id])
+
+  // Change notes
+  changeNotes     String?  @db.Text
+
+  createdAt       DateTime @default(now())
+
+  @@unique([postId, versionNumber])
+  @@index([postId])
+  @@map("content_versions")
+}
+
+// Approval workflow
+model ContentApproval {
+  id              String   @id @default(cuid())
+
+  postId          String
+  post            ContentPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Approval type
+  approvalType    ApprovalType
+
+  // Who requested
+  requestedById   String
+  requestedBy     User     @relation("ApprovalRequester", fields: [requestedById], references: [id])
+  requestedAt     DateTime @default(now())
+
+  // Who needs to approve
+  assignedToId    String?
+  assignedTo      User?    @relation("ApprovalAssignee", fields: [assignedToId], references: [id])
+
+  // Client portal approval
+  clientContactId String?
+  clientContact   ClientContact? @relation(fields: [clientContactId], references: [id])
+
+  // Approval status
+  status          ContentApprovalStatus @default(PENDING)
+
+  // Response
+  respondedAt     DateTime?
+  respondedById   String?
+  responseNotes   String?  @db.Text
+
+  // WhatsApp integration
+  whatsappMessageId String?           // If sent via WhatsApp
+  whatsappResponseId String?          // Response message ID
+
+  // Version being approved
+  versionNumber   Int?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([postId])
+  @@index([status])
+  @@map("content_approvals")
+}
+
+enum ApprovalType {
+  INTERNAL        // Team review
+  CLIENT          // Client approval
+  LEGAL           // Legal/compliance review
+  FINAL           // Final sign-off before publish
+}
+
+// Comments and feedback on posts
+model ContentComment {
+  id              String   @id @default(cuid())
+
+  postId          String
+  post            ContentPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Comment author (internal user or client contact)
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id])
+  clientContactId String?
+  clientContact   ClientContact? @relation(fields: [clientContactId], references: [id])
+
+  // Comment content
+  content         String   @db.Text
+
+  // If this is a reply to another comment
+  parentId        String?
+  parent          ContentComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies         ContentComment[] @relation("CommentReplies")
+
+  // Version this comment refers to
+  versionNumber   Int?
+
+  // Resolution (for revision requests)
+  isResolved      Boolean  @default(false)
+  resolvedAt      DateTime?
+  resolvedById    String?
+
+  // Source (where comment came from)
+  source          CommentSource @default(PORTAL)
+  sourceMessageId String?             // WhatsApp message ID if from WhatsApp
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([postId])
+  @@index([userId])
+  @@index([clientContactId])
+  @@map("content_comments")
+}
+
+enum CommentSource {
+  PORTAL          // Client portal
+  INTERNAL        // Internal UI
+  WHATSAPP        // WhatsApp message
+  EMAIL           // Email response
+}
+
+// Platform specifications (reference data)
+model PlatformSpec {
+  id              String   @id @default(cuid())
+
+  platform        SocialPlatform @unique
+  displayName     String              // Human readable name
+
+  // Character limits
+  captionMaxLength Int?
+  hashtagMaxCount Int?
+  mentionMaxCount Int?
+
+  // Media specs
+  imageMaxSize    Int?                // Bytes
+  videoMaxSize    Int?                // Bytes
+  videoMaxDuration Int?               // Seconds
+  videoMinDuration Int?               // Seconds
+
+  // Aspect ratios
+  supportedAspectRatios String[]      // ["1:1", "4:5", "16:9", "9:16"]
+  recommendedAspectRatio String?
+
+  // Features
+  supportsCarousel Boolean @default(false)
+  maxCarouselItems Int?
+  supportsScheduling Boolean @default(true)
+  supportsStories Boolean @default(false)
+  supportsLinks   Boolean @default(true)
+  supportsHashtags Boolean @default(true)
+  supportsMentions Boolean @default(true)
+  supportsLocation Boolean @default(false)
+
+  // API info
+  apiEndpoint     String?
+  apiVersion      String?
+  apiDocsUrl      String?
+
+  // Brand colors for UI
+  brandColor      String?             // Hex color
+  iconName        String?             // Lucide icon name
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("platform_specs")
+}
+
+// ============================================
+// PUBLISHING QUEUE (Phase 16.3)
+// ============================================
+
+// Publishing job queue
+model PublishJob {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  postId          String
+  post            ContentPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Target platform for this job (one job per platform)
+  platform        SocialPlatform
+
+  // Social account to publish to
+  socialAccountId String?
+  socialAccount   SocialAccount? @relation(fields: [socialAccountId], references: [id])
+
+  // Scheduling
+  scheduledFor    DateTime
+  timezone        String   @default("Asia/Dubai")
+
+  // Job status
+  status          PublishJobStatus @default(PENDING)
+  priority        Int      @default(0)  // Higher = more urgent
+
+  // Execution tracking
+  attempts        Int      @default(0)
+  maxAttempts     Int      @default(3)
+  lastAttemptAt   DateTime?
+  nextRetryAt     DateTime?
+
+  // Result
+  publishedAt     DateTime?
+  platformPostId  String?              // ID from platform
+  platformPostUrl String?              // URL on platform
+
+  // Error handling
+  errorCode       String?
+  errorMessage    String?  @db.Text
+  errorDetails    Json?                // Full error response
+
+  // Metadata
+  metadata        Json     @default("{}")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  logs            PublishLog[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([scheduledFor])
+  @@index([postId])
+  @@map("publish_jobs")
+}
+
+enum PublishJobStatus {
+  PENDING         // Waiting to be processed
+  QUEUED          // In the processing queue
+  PROCESSING      // Currently being published
+  PUBLISHED       // Successfully published
+  FAILED          // All retries exhausted
+  CANCELLED       // Manually cancelled
+  SKIPPED         // Skipped (e.g., account disconnected)
+}
+
+// Publishing audit log
+model PublishLog {
+  id              String   @id @default(cuid())
+
+  jobId           String
+  job             PublishJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  // Event details
+  event           PublishLogEvent
+  message         String?
+
+  // Request/Response data (for debugging)
+  requestData     Json?
+  responseData    Json?
+
+  // Timing
+  durationMs      Int?
+
+  createdAt       DateTime @default(now())
+
+  @@index([jobId])
+  @@map("publish_logs")
+}
+
+enum PublishLogEvent {
+  JOB_CREATED
+  JOB_QUEUED
+  PUBLISH_STARTED
+  PUBLISH_SUCCESS
+  PUBLISH_FAILED
+  RETRY_SCHEDULED
+  JOB_CANCELLED
+  JOB_SKIPPED
+}
+
+// ============================================
+// CHAT / INTERNAL COMMUNICATIONS
+// ============================================
+
+enum ChannelType {
+  PUBLIC        // Open to all org members
+  PRIVATE       // Invite only
+  DM            // Direct message (1:1 or group)
+}
+
+enum ChannelMemberRole {
+  OWNER         // Channel creator, full control
+  ADMIN         // Can manage members, edit channel
+  MEMBER        // Regular member
+}
+
+// Chat channels (#general, #creative, etc.)
+model Channel {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String            // Display name
+  slug            String            // URL-friendly identifier
+  description     String?  @db.Text
+  type            ChannelType       @default(PUBLIC)
+  icon            String?           // Emoji or icon identifier
+
+  // For DMs - store participant IDs for quick lookup
+  dmParticipantIds String[]         // User IDs for DM channels
+
+  // Settings
+  isArchived      Boolean  @default(false)
+  isDefault       Boolean  @default(false)  // Auto-join for new members
+
+  // Metadata
+  lastMessageAt   DateTime?
+  messageCount    Int      @default(0)
+
+  createdById     String
+  createdBy       User     @relation("ChannelCreator", fields: [createdById], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  members         ChannelMember[]
+  messages        Message[]
+  pinnedMessages  PinnedMessage[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([type])
+  @@index([lastMessageAt])
+  @@map("channels")
+}
+
+// Channel membership
+model ChannelMember {
+  id              String   @id @default(cuid())
+
+  channelId       String
+  channel         Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role            ChannelMemberRole @default(MEMBER)
+
+  // Notification preferences for this channel
+  notifyAll       Boolean  @default(true)   // All messages
+  notifyMentions  Boolean  @default(true)   // @mentions only
+  notifyNone      Boolean  @default(false)  // Muted
+
+  // Reading state
+  lastReadAt      DateTime?
+  lastReadMessageId String?
+
+  joinedAt        DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([channelId, userId])
+  @@index([userId])
+  @@map("channel_members")
+}
+
+// Chat messages
+model Message {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  channelId       String
+  channel         Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  userId          String
+  user            User     @relation("MessageAuthor", fields: [userId], references: [id])
+
+  // Content (stored as Tiptap JSON or plain text)
+  content         String   @db.Text
+  contentFormat   MessageFormat @default(TIPTAP)
+
+  // Threading
+  parentId        String?           // If reply to another message
+  parent          Message?  @relation("MessageThread", fields: [parentId], references: [id], onDelete: SetNull)
+  replies         Message[] @relation("MessageThread")
+  replyCount      Int      @default(0)
+
+  // Editing
+  isEdited        Boolean  @default(false)
+  editedAt        DateTime?
+
+  // Soft delete
+  isDeleted       Boolean  @default(false)
+  deletedAt       DateTime?
+  deletedById     String?
+
+  // Mentions extracted from content
+  mentionedUserIds String[]
+  mentionedChannelIds String[]
+  hasMentionAll    Boolean @default(false)  // @channel or @here
+
+  // Metadata
+  metadata        Json     @default("{}")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  reactions       MessageReaction[]
+  attachments     MessageAttachment[]
+  pinnedIn        PinnedMessage[]
+  readReceipts    MessageReadReceipt[]
+
+  @@index([channelId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([createdAt])
+  @@index([organizationId])
+  @@map("messages")
+}
+
+enum MessageFormat {
+  PLAIN           // Plain text
+  TIPTAP          // Tiptap JSON
+  MARKDOWN        // Markdown
+  SYSTEM          // System-generated message
+}
+
+// Emoji reactions on messages
+model MessageReaction {
+  id              String   @id @default(cuid())
+
+  messageId       String
+  message         Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  emoji           String   // Emoji character or shortcode
+
+  createdAt       DateTime @default(now())
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@map("message_reactions")
+}
+
+// File attachments on messages
+model MessageAttachment {
+  id              String   @id @default(cuid())
+
+  messageId       String
+  message         Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  // File details
+  fileName        String
+  fileType        String            // MIME type
+  fileSize        Int               // Bytes
+  fileUrl         String
+
+  // For images/videos
+  width           Int?
+  height          Int?
+  thumbnailUrl    String?
+
+  // Metadata
+  metadata        Json     @default("{}")
+
+  uploadedById    String
+  uploadedBy      User     @relation(fields: [uploadedById], references: [id])
+
+  createdAt       DateTime @default(now())
+
+  @@index([messageId])
+  @@map("message_attachments")
+}
+
+// Pinned messages in channels
+model PinnedMessage {
+  id              String   @id @default(cuid())
+
+  channelId       String
+  channel         Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  messageId       String
+  message         Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  pinnedById      String
+  pinnedBy        User     @relation(fields: [pinnedById], references: [id])
+
+  pinnedAt        DateTime @default(now())
+
+  @@unique([channelId, messageId])
+  @@index([channelId])
+  @@map("pinned_messages")
+}
+
+// User presence/status
+model UserPresence {
+  id              String   @id @default(cuid())
+
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status          PresenceStatus @default(OFFLINE)
+  statusText      String?        // Custom status message
+  statusEmoji     String?        // Custom status emoji
+
+  lastSeenAt      DateTime @default(now())
+  lastActiveAt    DateTime @default(now())
+
+  // Device tracking
+  activeDevices   Int      @default(0)
+
+  updatedAt       DateTime @updatedAt
+
+  @@map("user_presence")
+}
+
+enum PresenceStatus {
+  ONLINE
+  AWAY
+  DND             // Do not disturb
+  OFFLINE
+}
+
+// Push notification subscriptions
+model PushSubscription {
+  id          String   @id @default(cuid())
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  endpoint    String   @db.Text
+  p256dh      String   // Encryption key
+  auth        String   // Auth secret
+
+  // Device info
+  userAgent   String?
+  platform    String?  // "web", "ios", "android"
+  deviceName  String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, endpoint])
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+// Message read receipts
+model MessageReadReceipt {
+  id          String   @id @default(cuid())
+
+  messageId   String
+  message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  userId      String
+  readAt      DateTime @default(now())
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+  @@map("message_read_receipts")
+}
+
+// ============================================
+// ENHANCED CRM (Phase 20)
+// ============================================
+
+// Extended contact model for CRM
+model Contact {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Identity
+  firstName       String
+  lastName        String
+  email           String?
+  phone           String?
+  mobile          String?
+
+  // Professional
+  jobTitle        String?
+  department      String?
+  companyName     String?
+  companyId       String?  // Link to Client if applicable
+
+  // Social
+  linkedIn        String?
+  twitter         String?
+  instagram       String?
+
+  // Avatar
+  avatarUrl       String?
+
+  // Address
+  addressLine1    String?
+  addressLine2    String?
+  city            String?
+  state           String?
+  postalCode      String?
+  country         String?
+
+  // Classification
+  contactType     ContactType @default(PROSPECT)
+  status          ContactStatus @default(ACTIVE)
+  source          LeadSource?
+
+  // Scoring
+  leadScore       Int      @default(0)
+  engagementScore Int      @default(0)
+  lastScoreUpdate DateTime?
+
+  // Tags
+  tags            String[] @default([])
+
+  // Custom fields (schema-less)
+  customFields    Json     @default("{}")
+
+  // Ownership
+  ownerId         String?  // Sales rep owner
+
+  // GDPR
+  marketingConsent    Boolean @default(false)
+  marketingConsentDate DateTime?
+  dataProcessingConsent Boolean @default(false)
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  lastContactedAt DateTime?
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  company         Client?  @relation("ContactCompany", fields: [companyId], references: [id])
+  owner           User?    @relation("ContactOwner", fields: [ownerId], references: [id])
+  activities      ContactActivity[]
+  deals           DealContact[]
+  campaignMembers CampaignMember[]
+  emailInteractions EmailInteraction[]
+  tasks           CRMTask[]
+  notes           ContactNote[]
+  formSubmissions ContactFormSubmission[]
+
+  @@unique([organizationId, email])
+  @@index([organizationId])
+  @@index([companyId])
+  @@index([ownerId])
+  @@index([status])
+  @@index([tags])
+  @@map("contacts")
+}
+
+enum ContactType {
+  PROSPECT
+  LEAD
+  CUSTOMER
+  PARTNER
+  VENDOR
+  INFLUENCER
+  PRESS
+  INVESTOR
+  OTHER
+}
+
+enum ContactStatus {
+  ACTIVE
+  INACTIVE
+  UNSUBSCRIBED
+  BOUNCED
+  DO_NOT_CONTACT
+  ARCHIVED
+}
+
+// Contact activity log
+model ContactActivity {
+  id              String   @id @default(cuid())
+  contactId       String
+  contact         Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  activityType    ContactActivityType
+  subject         String
+  description     String?  @db.Text
+
+  // Related entities
+  dealId          String?
+  campaignId      String?
+
+  // Meeting/call details
+  scheduledAt     DateTime?
+  duration        Int?     // Minutes
+  outcome         String?
+
+  // Email details
+  emailId         String?
+
+  // Ownership
+  performedById   String?
+
+  createdAt       DateTime @default(now())
+
+  @@index([contactId, createdAt])
+  @@index([activityType])
+  @@map("contact_activities")
+}
+
+enum ContactActivityType {
+  EMAIL_SENT
+  EMAIL_RECEIVED
+  EMAIL_OPENED
+  EMAIL_CLICKED
+  CALL_OUTBOUND
+  CALL_INBOUND
+  MEETING
+  NOTE
+  TASK_COMPLETED
+  DEAL_CREATED
+  DEAL_WON
+  DEAL_LOST
+  FORM_SUBMISSION
+  WEBSITE_VISIT
+  DOCUMENT_VIEWED
+  CAMPAIGN_ADDED
+  STATUS_CHANGED
+}
+
+// Contact notes
+model ContactNote {
+  id              String   @id @default(cuid())
+  contactId       String
+  contact         Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  content         String   @db.Text
+  isPinned        Boolean  @default(false)
+
+  createdById     String
+  createdBy       User     @relation("ContactNoteCreator", fields: [createdById], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([contactId])
+  @@map("contact_notes")
+}
+
+// Form submissions linked to contacts
+model ContactFormSubmission {
+  id              String   @id @default(cuid())
+  contactId       String
+  contact         Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  formId          String
+  formName        String
+  data            Json
+
+  sourceUrl       String?
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+
+  submittedAt     DateTime @default(now())
+
+  @@index([contactId])
+  @@map("contact_form_submissions")
+}
+
+// Custom sales pipelines
+model SalesPipeline {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String   // "New Business", "Upsell", "Partnerships"
+  description     String?
+
+  // Pipeline stages (JSON array)
+  stages          Json
+
+  isDefault       Boolean  @default(false)
+  isActive        Boolean  @default(true)
+
+  // Defaults
+  defaultCurrency String   @default("USD")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  deals           CRMDeal[]
+
+  @@index([organizationId])
+  @@map("sales_pipelines")
+}
+
+// Enhanced deal model with pipeline support
+model CRMDeal {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  pipelineId      String
+  pipeline        SalesPipeline @relation(fields: [pipelineId], references: [id])
+
+  // Deal info
+  name            String
+  description     String?  @db.Text
+
+  // Stage
+  stageId         String
+  probability     Int?
+
+  // Value
+  amount          Decimal? @db.Decimal(14, 2)
+  currency        String   @default("USD")
+
+  // Recurring revenue
+  isRecurring     Boolean  @default(false)
+  recurringPeriod String?
+  mrr             Decimal? @db.Decimal(12, 2)
+
+  // Timeline
+  expectedCloseDate DateTime?
+  actualCloseDate   DateTime?
+
+  // Association
+  clientId        String?
+  primaryContactId String?
+
+  // Ownership
+  ownerId         String
+
+  // Outcome
+  lostReason      String?
+  lostReasonDetails String? @db.Text
+  competitorId    String?
+
+  // Source
+  source          LeadSource?
+  sourceDetails   String?
+  campaignId      String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  lastActivityAt  DateTime?
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  client          Client?  @relation("CRMDealClient", fields: [clientId], references: [id])
+  owner           User     @relation("CRMDealOwner", fields: [ownerId], references: [id])
+  contacts        DealContact[]
+  activities      DealActivity[]
+  products        DealProduct[]
+  competitors     DealCompetitor[]
+  history         DealStageHistory[]
+  tasks           CRMTask[]
+
+  @@index([organizationId])
+  @@index([pipelineId, stageId])
+  @@index([ownerId])
+  @@index([clientId])
+  @@map("crm_deals")
+}
+
+// Many-to-many deal-contact relationship
+model DealContact {
+  id              String   @id @default(cuid())
+  dealId          String
+  deal            CRMDeal  @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  contactId       String
+  contact         Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  role            DealContactRole @default(INFLUENCER)
+  isPrimary       Boolean  @default(false)
+
+  addedAt         DateTime @default(now())
+
+  @@unique([dealId, contactId])
+  @@index([dealId])
+  @@index([contactId])
+  @@map("deal_contacts")
+}
+
+enum DealContactRole {
+  DECISION_MAKER
+  INFLUENCER
+  CHAMPION
+  BLOCKER
+  END_USER
+  PROCUREMENT
+  FINANCE
+  LEGAL
+  TECHNICAL
+}
+
+// Deal activity log
+model DealActivity {
+  id              String   @id @default(cuid())
+  dealId          String
+  deal            CRMDeal  @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  activityType    DealActivityType
+  subject         String
+  description     String?  @db.Text
+
+  // Additional context
+  oldValue        String?
+  newValue        String?
+
+  performedById   String
+  performedBy     User     @relation("DealActivityPerformer", fields: [performedById], references: [id])
+  createdAt       DateTime @default(now())
+
+  @@index([dealId, createdAt])
+  @@map("deal_activities")
+}
+
+enum DealActivityType {
+  CREATED
+  STAGE_CHANGED
+  AMOUNT_CHANGED
+  OWNER_CHANGED
+  CONTACT_ADDED
+  CONTACT_REMOVED
+  NOTE_ADDED
+  MEETING_SCHEDULED
+  PROPOSAL_SENT
+  WON
+  LOST
+  REOPENED
+}
+
+// Deal stage history
+model DealStageHistory {
+  id              String   @id @default(cuid())
+  dealId          String
+  deal            CRMDeal  @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  fromStageId     String?
+  toStageId       String
+
+  daysInStage     Int?
+
+  changedById     String
+  changedBy       User     @relation("DealStageChanger", fields: [changedById], references: [id])
+  changedAt       DateTime @default(now())
+
+  @@index([dealId, changedAt])
+  @@map("deal_stage_history")
+}
+
+// Products/line items on deals
+model DealProduct {
+  id              String   @id @default(cuid())
+  dealId          String
+  deal            CRMDeal  @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  productId       String?
+  product         CRMProduct? @relation(fields: [productId], references: [id])
+  name            String
+  description     String?
+
+  quantity        Decimal  @db.Decimal(10, 2) @default(1)
+  unitPrice       Decimal  @db.Decimal(12, 2)
+  discount        Decimal  @db.Decimal(5, 2) @default(0)
+  total           Decimal  @db.Decimal(14, 2)
+
+  isRecurring     Boolean  @default(false)
+  billingPeriod   String?
+
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@index([dealId])
+  @@map("deal_products")
+}
+
+// Competitor tracking on deals
+model DealCompetitor {
+  id              String   @id @default(cuid())
+  dealId          String
+  deal            CRMDeal  @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  competitorId    String?
+  competitor      CRMCompetitor? @relation(fields: [competitorId], references: [id])
+  name            String
+
+  strengthsWeaknesses String? @db.Text
+  pricing         String?
+  status          String?
+
+  createdAt       DateTime @default(now())
+
+  @@index([dealId])
+  @@map("deal_competitors")
+}
+
+// Product catalog
+model CRMProduct {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String
+  code            String
+  description     String?  @db.Text
+
+  unitPrice       Decimal  @db.Decimal(12, 2)
+  currency        String   @default("USD")
+
+  productType     CRMProductType @default(SERVICE)
+
+  isRecurring     Boolean  @default(false)
+  billingPeriod   String?
+
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  dealProducts    DealProduct[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@map("crm_products")
+}
+
+enum CRMProductType {
+  SERVICE
+  RETAINER
+  PROJECT
+  HOURLY
+  LICENSE
+  PHYSICAL
+}
+
+// Competitor database
+model CRMCompetitor {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String
+  website         String?
+  description     String?  @db.Text
+
+  strengths       String[] @default([])
+  weaknesses      String[] @default([])
+
+  marketPosition  String?
+  pricePosition   String?
+
+  notes           String?  @db.Text
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  dealCompetitors DealCompetitor[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("crm_competitors")
+}
+
+// Marketing campaigns
+model CRMCampaign {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String
+  description     String?  @db.Text
+
+  campaignType    CRMCampaignType
+  channels        String[] @default([])
+
+  status          CRMCampaignStatus @default(DRAFT)
+
+  startDate       DateTime?
+  endDate         DateTime?
+
+  budgetAmount    Decimal? @db.Decimal(12, 2)
+  budgetCurrency  String   @default("USD")
+  actualSpend     Decimal? @db.Decimal(12, 2)
+
+  goals           Json?
+
+  clientId        String?
+
+  ownerId         String
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  launchedAt      DateTime?
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  client          Client?  @relation("CRMCampaignClient", fields: [clientId], references: [id])
+  owner           User     @relation("CRMCampaignOwner", fields: [ownerId], references: [id])
+  members         CampaignMember[]
+  activities      CampaignActivity[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([clientId])
+  @@map("crm_campaigns")
+}
+
+enum CRMCampaignType {
+  BRAND_AWARENESS
+  LEAD_GENERATION
+  PRODUCT_LAUNCH
+  EVENT_PROMOTION
+  CONTENT_MARKETING
+  EMAIL_NURTURE
+  RETARGETING
+  SEASONAL
+  REFERRAL
+  OTHER
+}
+
+enum CRMCampaignStatus {
+  DRAFT
+  PLANNED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+// Campaign members (contacts in campaign)
+model CampaignMember {
+  id              String   @id @default(cuid())
+  campaignId      String
+  campaign        CRMCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contactId       String
+  contact         Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  memberStatus    CampaignMemberStatus @default(SENT)
+
+  respondedAt     DateTime?
+  responseType    String?
+
+  convertedAt     DateTime?
+  convertedDealId String?
+
+  addedAt         DateTime @default(now())
+  addedById       String?
+
+  @@unique([campaignId, contactId])
+  @@index([campaignId])
+  @@index([contactId])
+  @@map("campaign_members")
+}
+
+enum CampaignMemberStatus {
+  PENDING
+  SENT
+  OPENED
+  CLICKED
+  RESPONDED
+  CONVERTED
+  UNSUBSCRIBED
+  BOUNCED
+}
+
+// Campaign activity log
+model CampaignActivity {
+  id              String   @id @default(cuid())
+  campaignId      String
+  campaign        CRMCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  activityType    String
+  description     String
+
+  performedById   String?
+  createdAt       DateTime @default(now())
+
+  @@index([campaignId, createdAt])
+  @@map("campaign_activities")
+}
+
+// Email interactions (for contact timeline)
+model EmailInteraction {
+  id              String   @id @default(cuid())
+  contactId       String
+  contact         Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  emailCampaignId String?
+  subject         String
+
+  interactionType EmailInteractionType
+  occurredAt      DateTime @default(now())
+
+  linkUrl         String?
+  userAgent       String?
+  ipAddress       String?
+
+  @@index([contactId, occurredAt])
+  @@map("email_interactions")
+}
+
+enum EmailInteractionType {
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  UNSUBSCRIBED
+  BOUNCED
+  COMPLAINED
+}
+
+// CRM tasks
+model CRMTask {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  title           String
+  description     String?  @db.Text
+
+  taskType        CRMTaskType @default(TODO)
+  priority        Priority @default(MEDIUM)
+
+  status          CRMTaskStatus @default(PENDING)
+
+  dueDate         DateTime?
+  reminderAt      DateTime?
+
+  contactId       String?
+  contact         Contact? @relation(fields: [contactId], references: [id])
+  dealId          String?
+  deal            CRMDeal? @relation(fields: [dealId], references: [id])
+
+  assignedToId    String
+  assignedTo      User     @relation("CRMTaskAssignee", fields: [assignedToId], references: [id])
+
+  completedAt     DateTime?
+  completedById   String?
+
+  createdById     String
+  createdBy       User     @relation("CRMTaskCreator", fields: [createdById], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([contactId])
+  @@index([dealId])
+  @@index([assignedToId, status])
+  @@index([dueDate])
+  @@map("crm_tasks")
+}
+
+enum CRMTaskType {
+  TODO
+  CALL
+  EMAIL
+  MEETING
+  FOLLOW_UP
+  DEMO
+  PROPOSAL
+  CONTRACT
+  OTHER
+}
+
+enum CRMTaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DEFERRED
+}
+
+// ============================================
+// CONFIGURABLE ACCESS CONTROL (Phase 2)
+// ============================================
+
+// AccessPolicy defines a named set of access rules
+// Leadership can draft, Admin approves
+model AccessPolicy {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String   // e.g., "Freelancer Restricted", "Account Manager"
+  description     String?  @db.Text
+
+  // Default assignment - which permission level gets this policy by default
+  defaultLevel    PermissionLevel?
+
+  // Approval workflow
+  status          PolicyStatus @default(DRAFT)
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  approvedById    String?
+  rejectedAt      DateTime?
+  rejectionReason String?
+
+  isActive        Boolean  @default(true)
+  priority        Int      @default(0)  // Higher priority wins conflicts
+  version         Int      @default(1)  // For version tracking
+
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdBy       User     @relation("AccessPolicyCreator", fields: [createdById], references: [id])
+  approvedBy      User?    @relation("AccessPolicyApprover", fields: [approvedById], references: [id])
+
+  rules           AccessRule[]
+  assignments     PolicyAssignment[]
+  versions        PolicyVersion[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([defaultLevel])
+  @@index([status])
+  @@map("access_policies")
+}
+
+enum PolicyStatus {
+  DRAFT       // Created by Leadership, pending submission
+  SUBMITTED   // Submitted for Admin approval
+  APPROVED    // Approved and active
+  REJECTED    // Rejected by Admin (with reason)
+  ARCHIVED    // No longer in use
+}
+
+// AccessRule defines individual permissions within a policy
+model AccessRule {
+  id              String   @id @default(cuid())
+  policyId        String
+
+  // What resource this rule applies to
+  resource        String   // "clients", "projects", "briefs", "users", "time_entries"
+
+  // What action this rule controls
+  action          AccessAction   // LIST, VIEW, CREATE, UPDATE, DELETE
+
+  // Rule effect
+  effect          AccessEffect   @default(ALLOW)  // ALLOW or DENY
+
+  // Condition type - how to filter records
+  conditionType   AccessCondition @default(ALL)
+
+  // Condition parameters (JSON)
+  // Examples:
+  // - { "field": "assigneeId", "operator": "eq", "value": "$userId" }
+  // - { "field": "clientId", "operator": "in", "value": "$assignedClientIds" }
+  // - { "relationPath": "briefs.assigneeId", "value": "$userId" }
+  conditionParams Json     @default("{}")
+
+  // Field-level restrictions (which fields can be seen/edited)
+  // Empty = all fields, otherwise list of allowed fields
+  allowedFields   String[] @default([])
+  deniedFields    String[] @default([])
+
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  policy          AccessPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  @@unique([policyId, resource, action])
+  @@index([policyId])
+  @@index([resource, action])
+  @@map("access_rules")
+}
+
+// PolicyAssignment links policies to users (overrides default level)
+model PolicyAssignment {
+  id              String   @id @default(cuid())
+  organizationId  String
+  policyId        String
+
+  // Assign to specific user (null = applies to default level only)
+  userId          String?
+
+  // Documentation & paper trail (required for override assignments)
+  reason          String   @db.Text  // Why this override was granted
+  businessCase    String?  @db.Text  // Business justification
+  approvedById    String?            // Who approved this override (if different from assigner)
+
+  assignedById    String
+  assignedAt      DateTime @default(now())
+  expiresAt       DateTime?  // Optional expiry for temporary access
+
+  // Notification tracking
+  notifiedAt      DateTime?  // When affected parties were notified
+  notifiedUsers   String[]   @default([])  // User IDs who were notified
+
+  policy          AccessPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  user            User?    @relation("PolicyAssignmentUser", fields: [userId], references: [id])
+  assignedBy      User     @relation("PolicyAssignmentAssigner", fields: [assignedById], references: [id])
+  approvedBy      User?    @relation("PolicyAssignmentApprover", fields: [approvedById], references: [id])
+
+  @@unique([policyId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("policy_assignments")
+}
+
+// PolicyVersion stores historical snapshots of policies for version control
+model PolicyVersion {
+  id              String   @id @default(cuid())
+  policyId        String
+  version         Int
+
+  // Snapshot of policy state at this version
+  name            String
+  description     String?  @db.Text
+  defaultLevel    PermissionLevel?
+  priority        Int
+  rulesSnapshot   Json     // Full snapshot of rules at this version
+
+  // Change tracking
+  changeType      PolicyChangeType
+  changeSummary   String   @db.Text  // Human-readable summary of changes
+  changedById     String
+  changedAt       DateTime @default(now())
+
+  policy          AccessPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  changedBy       User     @relation("PolicyVersionChanger", fields: [changedById], references: [id])
+
+  @@unique([policyId, version])
+  @@index([policyId, changedAt])
+  @@map("policy_versions")
+}
+
+enum PolicyChangeType {
+  CREATED
+  UPDATED
+  APPROVED
+  REJECTED
+  RULE_ADDED
+  RULE_REMOVED
+  RULE_MODIFIED
+  ARCHIVED
+  RESTORED
+}
+
+enum AccessAction {
+  LIST      // Can list/search records
+  VIEW      // Can view single record details
+  CREATE    // Can create new records
+  UPDATE    // Can modify existing records
+  DELETE    // Can delete/archive records
+  EXPORT    // Can export data
+  ASSIGN    // Can assign records to others
+}
+
+enum AccessEffect {
+  ALLOW
+  DENY
+}
+
+enum AccessCondition {
+  ALL       // Access all records (within tenant)
+  OWN       // Only records where user is owner/creator
+  ASSIGNED  // Only records assigned to user
+  TEAM      // Records for user's team (via teamLeadId)
+  CLIENT    // Only records for assigned clients
+  CUSTOM    // Use conditionParams for custom logic
+}
+
+// ============================================
+// COMPREHENSIVE AUDIT LOGGING
+// ============================================
+
+// AuditLog captures all significant actions for compliance and debugging
+model AuditLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Who performed the action
+  userId          String?
+  userEmail       String?  // Captured at time of action (in case user deleted)
+  userName        String?
+  userRole        String?
+  ipAddress       String?
+  userAgent       String?
+
+  // What happened
+  action          AuditAction
+  resource        String       // "access_policy", "user", "client", "brief", etc.
+  resourceId      String?      // ID of the affected record
+  resourceName    String?      // Human-readable name at time of action
+
+  // Change details
+  previousState   Json?        // State before change (for updates/deletes)
+  newState        Json?        // State after change (for creates/updates)
+  changesSummary  String?      // Human-readable summary
+
+  // Access control specific
+  accessDecision  AccessEffect?  // ALLOW or DENY (for access checks)
+  accessRuleId    String?        // Which rule was applied
+  accessPolicyId  String?        // Which policy was applied
+
+  // Context
+  requestPath     String?      // API path
+  requestMethod   String?      // GET, POST, etc.
+  sessionId       String?
+  correlationId   String?      // For tracing related actions
+
+  // Timestamps
+  occurredAt      DateTime @default(now())
+
+  // For backup/sync tracking
+  syncedAt        DateTime?
+  syncStatus      SyncStatus @default(PENDING)
+
+  @@index([organizationId, occurredAt])
+  @@index([userId, occurredAt])
+  @@index([resource, resourceId])
+  @@index([action, occurredAt])
+  @@index([syncStatus])
+  @@map("audit_logs")
+}
+
+enum AuditAction {
+  // CRUD operations
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  ARCHIVE
+  RESTORE
+
+  // Access control
+  ACCESS_GRANTED
+  ACCESS_DENIED
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+
+  // Policy management
+  POLICY_CREATED
+  POLICY_SUBMITTED
+  POLICY_APPROVED
+  POLICY_REJECTED
+  POLICY_UPDATED
+  POLICY_ARCHIVED
+  RULE_ADDED
+  RULE_UPDATED
+  RULE_REMOVED
+  ASSIGNMENT_CREATED
+  ASSIGNMENT_REMOVED
+  ASSIGNMENT_EXPIRED
+
+  // Data export/import
+  EXPORT
+  IMPORT
+  BULK_UPDATE
+  BULK_DELETE
+}
+
+enum SyncStatus {
+  PENDING     // Awaiting backup sync
+  SYNCED      // Successfully backed up
+  FAILED      // Sync failed (will retry)
+  SKIPPED     // Not eligible for sync
+}
+
+// AuditLogBackup stores backed up audit logs for long-term retention
+model AuditLogBackup {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Backup metadata
+  backupDate      DateTime
+  logsCount       Int
+  startDate       DateTime  // Earliest log in this backup
+  endDate         DateTime  // Latest log in this backup
+
+  // Storage
+  storageKey      String    // S3/R2 key for the backup file
+  storageProvider String    @default("supabase")
+  fileSizeBytes   Int
+  checksum        String    // SHA-256 for integrity
+
+  // Status
+  status          BackupStatus @default(PENDING)
+  verifiedAt      DateTime?
+  expiresAt       DateTime?   // When this backup will be deleted (retention policy)
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId, backupDate])
+  @@index([status])
+  @@map("audit_log_backups")
+}
+
+enum BackupStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  VERIFIED
+  FAILED
+  EXPIRED
+}
+
+// ============================================
+// DOC TEMPLATES (Doc Engine Integration)
+// ============================================
+
+model DocTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Basic info
+  name            String
+  description     String?
+  category        DocTemplateCategory @default(OTHER)
+  isActive        Boolean  @default(true)
+
+  // Figma source
+  figmaFileKey    String
+  figmaFileUrl    String?
+
+  // Google Doc target
+  googleDocId     String
+  outputFolder    String?  // Google Drive folder ID
+  namingPattern   String?  // e.g., "Generated Doc - {{date}} - {{client}}"
+
+  // Field mappings (array of {figma_node: string, doc_var: string})
+  mappings        Json     @default("[]")
+
+  // Stats
+  generationCount Int      @default(0)
+  lastGeneratedAt DateTime?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, name])
+  @@index([organizationId, category])
+  @@map("doc_templates")
+}
+
+enum DocTemplateCategory {
+  BRIEF
+  PROPOSAL
+  REPORT
+  CONTRACT
+  INVOICE
+  OTHER
+}

@@ -20,7 +20,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bell, Search, CheckCircle2, AlertCircle, Info, Users, Megaphone } from "lucide-react";
+import { Bell, Search, CheckCircle2, AlertCircle, Info } from "lucide-react";
+import type { TenantConfig } from "@/lib/tenant";
 
 // Mock notifications data
 const mockNotifications = [
@@ -68,6 +69,14 @@ const mockNotifications = [
 
 // Breadcrumb configuration
 const breadcrumbConfig: Record<string, { label: string; parent?: string }> = {
+  // Super Admin
+  "/superadmin": { label: "Super Admin" },
+  "/superadmin/organizations": { label: "Organizations", parent: "/superadmin" },
+  "/superadmin/organizations/new": { label: "New Organization", parent: "/superadmin/organizations" },
+  "/superadmin/instances": { label: "Instances", parent: "/superadmin" },
+  "/superadmin/instances/new": { label: "Create Instance", parent: "/superadmin/instances" },
+  "/superadmin/domains": { label: "Domains", parent: "/superadmin" },
+  // Admin
   "/admin": { label: "Dashboard" },
   "/admin/organizations": { label: "Organizations", parent: "/admin" },
   "/admin/users": { label: "Users", parent: "/admin" },
@@ -76,25 +85,31 @@ const breadcrumbConfig: Record<string, { label: string; parent?: string }> = {
   "/admin/crm/contacts": { label: "Contacts", parent: "/admin" },
   "/admin/crm/deals": { label: "Deals", parent: "/admin" },
   "/admin/crm/tasks": { label: "Tasks", parent: "/admin" },
+  "/admin/integrations": { label: "Integrations", parent: "/admin" },
+  "/admin/settings": { label: "Settings", parent: "/admin" },
+  "/admin/settings/portal": { label: "Portal Settings", parent: "/admin/settings" },
+  // Listening
   "/listening": { label: "Listening" },
   "/listening/creators": { label: "Creators", parent: "/listening" },
   "/listening/creators/new": { label: "Add Creator", parent: "/listening/creators" },
   "/listening/content": { label: "Content", parent: "/listening" },
   "/listening/campaigns": { label: "Campaigns", parent: "/listening" },
+  // Media Buying
   "/mediabuying": { label: "Media Buying" },
   "/mediabuying/accounts": { label: "Accounts", parent: "/mediabuying" },
   "/mediabuying/campaigns": { label: "Campaigns", parent: "/mediabuying" },
   "/mediabuying/budgets": { label: "Budgets", parent: "/mediabuying" },
+  // Analytics
   "/analytics": { label: "Analytics" },
   "/analytics/campaigns": { label: "Campaigns", parent: "/analytics" },
   "/analytics/creators": { label: "Creators", parent: "/analytics" },
   "/analytics/platforms": { label: "Platforms", parent: "/analytics" },
+  // Builder
   "/builder": { label: "Builder" },
   "/builder/dashboards": { label: "Dashboards", parent: "/builder" },
   "/builder/dashboards/new": { label: "New Dashboard", parent: "/builder/dashboards" },
   "/builder/widgets": { label: "Widgets", parent: "/builder" },
   "/builder/templates": { label: "Templates", parent: "/builder" },
-  "/admin/integrations": { label: "Integrations", parent: "/admin" },
 };
 
 function getBreadcrumbs(pathname: string) {
@@ -116,10 +131,17 @@ function getBreadcrumbs(pathname: string) {
   return crumbs;
 }
 
-export function Header() {
+interface HeaderProps {
+  tenant?: TenantConfig;
+}
+
+export function Header({ tenant }: HeaderProps) {
   const pathname = usePathname();
   const breadcrumbs = getBreadcrumbs(pathname);
   const [notifications, setNotifications] = useState(mockNotifications);
+
+  // Use tenant primary color for accent
+  const primaryColor = tenant?.primaryColor || "#52EDC7";
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -184,7 +206,10 @@ export function Header() {
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#52EDC7] text-[10px] font-medium text-[#0A1628] flex items-center justify-center">
+                <span
+                  className="absolute -top-1 -right-1 h-4 w-4 rounded-full text-[10px] font-medium text-[#0A1628] flex items-center justify-center"
+                  style={{ backgroundColor: primaryColor }}
+                >
                   {unreadCount}
                 </span>
               )}
@@ -230,7 +255,10 @@ export function Header() {
                               {notification.title}
                             </p>
                             {!notification.read && (
-                              <span className="h-2 w-2 rounded-full bg-[#52EDC7] flex-shrink-0" />
+                              <span
+                                className="h-2 w-2 rounded-full flex-shrink-0"
+                                style={{ backgroundColor: primaryColor }}
+                              />
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">

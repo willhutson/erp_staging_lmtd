@@ -30,7 +30,6 @@ import {
   Building2,
   Handshake,
   CheckSquare,
-  MessageSquare,
   Settings,
   Megaphone,
   BarChart3,
@@ -44,10 +43,27 @@ import {
   Sparkles,
   Palette,
   Plug,
+  Shield,
+  Layers,
 } from "lucide-react";
+import type { TenantConfig } from "@/lib/tenant";
 
 // Module navigation configuration
 const modules = [
+  {
+    id: "superadmin",
+    label: "Super Admin",
+    icon: Shield,
+    href: "/superadmin",
+    color: "text-red-500",
+    superAdminOnly: true,
+    items: [
+      { label: "Dashboard", href: "/superadmin", icon: LayoutDashboard },
+      { label: "Organizations", href: "/superadmin/organizations", icon: Building2 },
+      { label: "Instances", href: "/superadmin/instances", icon: Layers },
+      { label: "Domains", href: "/superadmin/domains", icon: Globe },
+    ],
+  },
   {
     id: "admin",
     label: "Admin",
@@ -132,13 +148,28 @@ interface AppSidebarProps {
     email?: string | null;
     avatarUrl?: string | null;
   };
+  tenant?: TenantConfig;
 }
 
-export function AppSidebar({ user }: AppSidebarProps) {
+export function AppSidebar({ user, tenant }: AppSidebarProps) {
   const pathname = usePathname();
+
+  // Check if this is the default SpokeStack tenant (super admin access)
+  const isSpokeStackAdmin = !tenant?.organizationId || tenant?.id === "default";
+
+  // Filter modules based on tenant's enabled modules
+  const enabledModules = tenant?.enabledModules || ["admin", "crm", "listening", "mediabuying", "analytics", "builder"];
+  const filteredModules = modules.filter((m) => {
+    // Super admin module only shows for SpokeStack staff
+    if ((m as { superAdminOnly?: boolean }).superAdminOnly) {
+      return isSpokeStackAdmin;
+    }
+    return enabledModules.includes(m.id);
+  });
 
   // Determine which module is active
   const getActiveModule = () => {
+    if (pathname.startsWith("/superadmin")) return "superadmin";
     if (pathname.startsWith("/listening")) return "listening";
     if (pathname.startsWith("/mediabuying")) return "media-buying";
     if (pathname.startsWith("/analytics")) return "analytics";
@@ -148,14 +179,26 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   const activeModule = getActiveModule();
 
+  // Use tenant branding or defaults
+  const brandName = tenant?.name || "SpokeStack";
+  const brandInitial = brandName.charAt(0).toUpperCase();
+  const primaryColor = tenant?.primaryColor || "#52EDC7";
+
   return (
     <Sidebar className="border-r">
       <SidebarHeader className="border-b px-6 py-4">
         <Link href="/admin" className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-[#52EDC7] flex items-center justify-center">
-            <span className="text-[#0A1628] font-bold text-sm">S</span>
-          </div>
-          <span className="font-semibold text-lg">SpokeStack</span>
+          {tenant?.logoMark ? (
+            <img src={tenant.logoMark} alt={brandName} className="h-8 w-8 rounded-lg" />
+          ) : (
+            <div
+              className="h-8 w-8 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: primaryColor }}
+            >
+              <span className="text-[#0A1628] font-bold text-sm">{brandInitial}</span>
+            </div>
+          )}
+          <span className="font-semibold text-lg">{brandName}</span>
         </Link>
       </SidebarHeader>
 
@@ -167,7 +210,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {modules.map((module) => {
+              {filteredModules.map((module) => {
                 const isActive = activeModule === module.id;
                 const Icon = module.icon;
 
