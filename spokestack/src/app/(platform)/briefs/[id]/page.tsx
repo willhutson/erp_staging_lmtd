@@ -235,18 +235,6 @@ export default async function BriefDetailPage({ params }: PageProps) {
         </Card>
       </div>
 
-      {/* Description */}
-      {brief.description && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Description</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="whitespace-pre-wrap">{brief.description}</p>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Form Data - Dynamic Fields */}
       {Object.keys(formData).length > 0 && (
         <Card>
