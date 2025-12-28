@@ -45,6 +45,10 @@ import {
   Plug,
   Shield,
   Layers,
+  FileText,
+  Clock,
+  Palmtree,
+  Target,
 } from "lucide-react";
 import type { TenantConfig } from "@/lib/tenant";
 
@@ -75,6 +79,7 @@ const modules = [
       { label: "Organizations", href: "/admin/organizations", icon: Building2 },
       { label: "Users", href: "/admin/users", icon: Users },
       { label: "Roles", href: "/admin/roles", icon: UserCircle },
+      { label: "Client Portals", href: "/admin/instances", icon: Layers },
       { label: "Integrations", href: "/admin/integrations", icon: Plug },
     ],
   },
@@ -140,6 +145,67 @@ const modules = [
       { label: "Templates", href: "/builder/templates", icon: Palette },
     ],
   },
+  // ERP Modules
+  {
+    id: "briefs",
+    label: "Briefs",
+    icon: FileText,
+    href: "/briefs",
+    color: "text-indigo-500",
+    items: [
+      { label: "All Briefs", href: "/briefs", icon: FileText },
+      { label: "My Briefs", href: "/briefs/my", icon: UserCircle },
+      { label: "Pending Review", href: "/briefs/pending", icon: CheckSquare },
+    ],
+  },
+  {
+    id: "time",
+    label: "Time",
+    icon: Clock,
+    href: "/time",
+    color: "text-emerald-500",
+    items: [
+      { label: "Timer", href: "/time", icon: Clock },
+      { label: "Timesheet", href: "/time/timesheet", icon: Grid3X3 },
+      { label: "Approvals", href: "/time/approvals", icon: CheckSquare },
+    ],
+  },
+  {
+    id: "leave",
+    label: "Leave",
+    icon: Palmtree,
+    href: "/leave",
+    color: "text-teal-500",
+    items: [
+      { label: "My Leave", href: "/leave", icon: Palmtree },
+      { label: "Calendar", href: "/leave/calendar", icon: Grid3X3 },
+      { label: "Approvals", href: "/leave/approvals", icon: CheckSquare },
+    ],
+  },
+  {
+    id: "team",
+    label: "Team",
+    icon: Users,
+    href: "/team",
+    color: "text-cyan-500",
+    items: [
+      { label: "Directory", href: "/team", icon: Users },
+      { label: "Departments", href: "/team/departments", icon: Building2 },
+      { label: "Org Chart", href: "/team/org-chart", icon: Grid3X3 },
+    ],
+  },
+  {
+    id: "rfp",
+    label: "RFP",
+    icon: Target,
+    href: "/rfp",
+    color: "text-rose-500",
+    items: [
+      { label: "Pipeline", href: "/rfp", icon: Target },
+      { label: "Active", href: "/rfp/active", icon: FileText },
+      { label: "Won/Lost", href: "/rfp/closed", icon: CheckSquare },
+    ],
+  },
 ];
 
 interface AppSidebarProps {
@@ -174,6 +240,11 @@ export function AppSidebar({ user, tenant }: AppSidebarProps) {
     if (pathname.startsWith("/mediabuying")) return "media-buying";
     if (pathname.startsWith("/analytics")) return "analytics";
     if (pathname.startsWith("/builder")) return "builder";
+    if (pathname.startsWith("/briefs")) return "briefs";
+    if (pathname.startsWith("/time")) return "time";
+    if (pathname.startsWith("/leave")) return "leave";
+    if (pathname.startsWith("/team")) return "team";
+    if (pathname.startsWith("/rfp")) return "rfp";
     return "admin";
   };
 

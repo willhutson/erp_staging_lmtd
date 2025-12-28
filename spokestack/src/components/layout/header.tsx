@@ -86,8 +86,30 @@ const breadcrumbConfig: Record<string, { label: string; parent?: string }> = {
   "/admin/crm/deals": { label: "Deals", parent: "/admin" },
   "/admin/crm/tasks": { label: "Tasks", parent: "/admin" },
   "/admin/integrations": { label: "Integrations", parent: "/admin" },
+  "/admin/instances": { label: "Client Portals", parent: "/admin" },
+  "/admin/instances/new": { label: "Create Portal", parent: "/admin/instances" },
   "/admin/settings": { label: "Settings", parent: "/admin" },
   "/admin/settings/portal": { label: "Portal Settings", parent: "/admin/settings" },
+  // Briefs
+  "/briefs": { label: "Briefs" },
+  "/briefs/my": { label: "My Briefs", parent: "/briefs" },
+  "/briefs/pending": { label: "Pending Review", parent: "/briefs" },
+  // Time
+  "/time": { label: "Time" },
+  "/time/timesheet": { label: "Timesheet", parent: "/time" },
+  "/time/approvals": { label: "Approvals", parent: "/time" },
+  // Leave
+  "/leave": { label: "Leave" },
+  "/leave/calendar": { label: "Calendar", parent: "/leave" },
+  "/leave/approvals": { label: "Approvals", parent: "/leave" },
+  // Team
+  "/team": { label: "Team" },
+  "/team/departments": { label: "Departments", parent: "/team" },
+  "/team/org-chart": { label: "Org Chart", parent: "/team" },
+  // RFP
+  "/rfp": { label: "RFP" },
+  "/rfp/active": { label: "Active", parent: "/rfp" },
+  "/rfp/closed": { label: "Closed", parent: "/rfp" },
   // Listening
   "/listening": { label: "Listening" },
   "/listening/creators": { label: "Creators", parent: "/listening" },
