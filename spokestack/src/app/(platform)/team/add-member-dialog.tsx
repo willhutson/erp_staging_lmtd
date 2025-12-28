@@ -60,7 +60,7 @@ export function AddMemberDialog({ departments }: AddMemberDialogProps) {
     weeklyCapacity: 40,
   });
 
-  const allDepartments = [...new Set([...DEFAULT_DEPARTMENTS, ...departments])].sort();
+  const allDepartments = Array.from(new Set([...DEFAULT_DEPARTMENTS, ...departments])).sort();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
