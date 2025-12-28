@@ -66,6 +66,9 @@ import {
   Repeat,
   Radio,
   Home,
+  MessageSquare,
+  Eye,
+  FileCheck,
 } from "lucide-react";
 import type { TenantConfig } from "@/lib/tenant";
 
@@ -159,6 +162,7 @@ const moduleBundles = [
           { label: "Org Chart", href: "/team/org-chart" },
         ],
       },
+      { id: "chat", label: "SpokeChat", icon: MessageSquare, href: "/chat" },
     ],
   },
   {
@@ -232,6 +236,20 @@ const moduleBundles = [
       },
     ],
   },
+  {
+    id: "portal",
+    label: "Client Portal",
+    tagline: "Client Access",
+    icon: Eye,
+    color: "text-cyan-500",
+    bgColor: "bg-cyan-500",
+    modules: [
+      { id: "portal-dashboard", label: "Dashboard", icon: Grid3X3, href: "/portal" },
+      { id: "portal-approvals", label: "Approvals", icon: FileCheck, href: "/portal/approvals" },
+      { id: "portal-deliverables", label: "Deliverables", icon: FolderKanban, href: "/portal/deliverables" },
+      { id: "portal-reports", label: "Reports", icon: BarChart3, href: "/portal/reports" },
+    ],
+  },
 ];
 
 interface AppSidebarProps {
@@ -245,7 +263,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ user, tenant }: AppSidebarProps) {
   const pathname = usePathname();
-  const [expandedBundles, setExpandedBundles] = useState<string[]>(["erp", "agency", "marketing"]);
+  const [expandedBundles, setExpandedBundles] = useState<string[]>(["erp", "agency", "marketing", "portal"]);
   const [expandedModules, setExpandedModules] = useState<string[]>([]);
 
   // Check if this is the default SpokeStack tenant (super admin access)
