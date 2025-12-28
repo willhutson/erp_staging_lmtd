@@ -152,8 +152,8 @@ export function AppSidebar({ user }: AppSidebarProps) {
     <Sidebar className="border-r">
       <SidebarHeader className="border-b px-6 py-4">
         <Link href="/Admin" className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">S</span>
+          <div className="h-8 w-8 rounded-lg bg-[#52EDC7] flex items-center justify-center">
+            <span className="text-[#0A1628] font-bold text-sm">S</span>
           </div>
           <span className="font-semibold text-lg">SpokeStack</span>
         </Link>
@@ -244,7 +244,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user?.avatarUrl || undefined} />
-                      <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-cyan-500 text-white text-xs">
+                      <AvatarFallback className="bg-[#52EDC7] text-[#0A1628] text-xs font-medium">
                         {user?.name
                           ?.split(" ")
                           .map((n) => n[0])

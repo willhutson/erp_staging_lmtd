@@ -31,6 +31,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
+import {
   Building2,
   Plus,
   Search,
@@ -39,7 +47,12 @@ import {
   Trash2,
   Users,
   Settings,
-  ExternalLink
+  ExternalLink,
+  Calendar,
+  Globe,
+  Shield,
+  Mail,
+  Phone
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -88,6 +101,7 @@ const mockOrganizations = [
 export default function OrganizationsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedOrg, setSelectedOrg] = useState<typeof mockOrganizations[0] | null>(null);
 
   const filteredOrganizations = mockOrganizations.filter(
     (org) =>
@@ -325,7 +339,7 @@ export default function OrganizationsPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSelectedOrg(org)}>
                           <ExternalLink className="mr-2 h-4 w-4" />
                           View Details
                         </DropdownMenuItem>
@@ -355,6 +369,131 @@ export default function OrganizationsPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Organization Details Sheet */}
+      <Sheet open={!!selectedOrg} onOpenChange={(open) => !open && setSelectedOrg(null)}>
+        <SheetContent className="sm:max-w-[500px] overflow-y-auto">
+          {selectedOrg && (
+            <>
+              <SheetHeader>
+                <div className="flex items-center gap-4">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#52EDC7]/20">
+                    <Building2 className="h-7 w-7 text-[#52EDC7]" />
+                  </div>
+                  <div>
+                    <SheetTitle className="text-xl">{selectedOrg.name}</SheetTitle>
+                    <SheetDescription className="flex items-center gap-2">
+                      <Globe className="h-3 w-3" />
+                      /{selectedOrg.slug}
+                    </SheetDescription>
+                  </div>
+                </div>
+              </SheetHeader>
+
+              <div className="mt-6 space-y-6">
+                {/* Status & Type */}
+                <div className="flex items-center gap-3">
+                  <Badge variant={selectedOrg.isActive ? "default" : "secondary"}>
+                    {selectedOrg.isActive ? "Active" : "Inactive"}
+                  </Badge>
+                  <Badge variant="outline">{selectedOrg.type}</Badge>
+                </div>
+
+                <Separator />
+
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-lg border p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Users className="h-4 w-4" />
+                      Members
+                    </div>
+                    <p className="text-2xl font-bold mt-1">{selectedOrg.memberCount}</p>
+                  </div>
+                  <div className="rounded-lg border p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Shield className="h-4 w-4" />
+                      Modules
+                    </div>
+                    <p className="text-2xl font-bold mt-1">{selectedOrg.enabledModules.length}</p>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Details */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">Details</h4>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        Created
+                      </span>
+                      <span className="text-sm font-medium">
+                        {new Date(selectedOrg.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Mail className="h-4 w-4" />
+                        Contact Email
+                      </span>
+                      <span className="text-sm font-medium">admin@{selectedOrg.slug}.com</span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Phone className="h-4 w-4" />
+                        Phone
+                      </span>
+                      <span className="text-sm font-medium">+971 4 XXX XXXX</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Enabled Modules */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">Enabled Modules</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedOrg.enabledModules.map((module) => (
+                      <Badge key={module} variant="secondary" className="text-xs">
+                        {module}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Actions */}
+                <div className="space-y-2">
+                  <Button className="w-full" variant="outline">
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit Organization
+                  </Button>
+                  <Button className="w-full" variant="outline">
+                    <Users className="mr-2 h-4 w-4" />
+                    Manage Members
+                  </Button>
+                  <Button className="w-full" variant="outline">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
