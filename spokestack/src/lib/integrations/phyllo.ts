@@ -157,7 +157,7 @@ class PhylloService {
 
     // Return cached token if still valid
     if (this.accessToken && this.tokenExpiry && new Date() < this.tokenExpiry) {
-      return this.accessToken;
+      return this.accessToken as string;
     }
 
     // Request new token
@@ -182,7 +182,7 @@ class PhylloService {
     // Token expires in 1 hour, refresh 5 minutes early
     this.tokenExpiry = new Date(Date.now() + (55 * 60 * 1000));
 
-    return this.accessToken;
+    return this.accessToken as string;
   }
 
   /**

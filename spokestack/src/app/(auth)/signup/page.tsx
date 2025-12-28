@@ -29,6 +29,10 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabase) {
+      setError("Authentication not configured");
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -54,6 +58,10 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignup = async () => {
+    if (!supabase) {
+      setError("Authentication not configured");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
