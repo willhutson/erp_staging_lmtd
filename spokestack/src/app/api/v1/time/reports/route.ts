@@ -75,22 +75,24 @@ export async function GET(request: Request) {
       },
     });
 
+    type Entry = typeof entries[number];
+
     // Calculate summaries
-    const totalHours = entries.reduce((sum, e) => sum + Number(e.hours), 0);
+    const totalHours = entries.reduce((sum: number, e: Entry) => sum + Number(e.hours), 0);
     const billableHours = entries
-      .filter((e) => e.isBillable)
-      .reduce((sum, e) => sum + Number(e.hours), 0);
+      .filter((e: Entry) => e.isBillable)
+      .reduce((sum: number, e: Entry) => sum + Number(e.hours), 0);
 
     // Group by day
     const byDay: Record<string, number> = {};
-    entries.forEach((e) => {
+    entries.forEach((e: Entry) => {
       const day = e.date.toISOString().split("T")[0];
       byDay[day] = (byDay[day] || 0) + Number(e.hours);
     });
 
     // Group by user (if multiple users)
-    const byUser: Record<string, { name: string; hours: number }> = {};
-    entries.forEach((e) => {
+    const byUser: Record<string, { name: string | null; hours: number }> = {};
+    entries.forEach((e: Entry) => {
       if (!byUser[e.userId]) {
         byUser[e.userId] = { name: e.user.name, hours: 0 };
       }
@@ -99,7 +101,7 @@ export async function GET(request: Request) {
 
     // Group by brief
     const byBrief: Record<string, { title: string; hours: number }> = {};
-    entries.forEach((e) => {
+    entries.forEach((e: Entry) => {
       if (e.briefId && e.brief) {
         if (!byBrief[e.briefId]) {
           byBrief[e.briefId] = { title: e.brief.title, hours: 0 };

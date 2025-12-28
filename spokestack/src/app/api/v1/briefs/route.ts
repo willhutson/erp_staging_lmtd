@@ -186,7 +186,7 @@ export async function POST(request: Request) {
         status: "DRAFT",
         assignedById: data.assigneeId ? context.user.id : null,
         assignedAt: data.assigneeId ? new Date() : null,
-        formData: data.formData || {},
+        formData: (data.formData || {}) as unknown,
       },
       select: {
         id: true,

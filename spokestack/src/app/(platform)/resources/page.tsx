@@ -17,10 +17,29 @@ import {
 } from "lucide-react";
 import { ResourcesView } from "./resources-view";
 
+type TeamUser = {
+  id: string;
+  name: string | null;
+  role: string | null;
+  department: string | null;
+  avatarUrl: string | null;
+  weeklyCapacity: number | null;
+};
+
+type TimeEntrySummary = {
+  userId: string;
+  _sum: { hours: number | null };
+};
+
+type BriefCountSummary = {
+  assigneeId: string | null;
+  _count: number;
+};
+
 async function getTeamCapacity() {
   try {
     // Get all active team members with their capacity
-    const users = await prisma.user.findMany({
+    const users: TeamUser[] = await prisma.user.findMany({
       where: { isActive: true },
       select: {
         id: true,
@@ -64,9 +83,9 @@ async function getTeamCapacity() {
     });
 
     // Merge data
-    return users.map((user) => {
-      const timeEntry = timeEntries.find((t) => t.userId === user.id);
-      const briefCount = briefCounts.find((b) => b.assigneeId === user.id);
+    return users.map((user: TeamUser) => {
+      const timeEntry = timeEntries.find((t: TimeEntrySummary) => t.userId === user.id);
+      const briefCount = briefCounts.find((b: BriefCountSummary) => b.assigneeId === user.id);
       const hoursLogged = Number(timeEntry?._sum.hours || 0);
       const capacity = user.weeklyCapacity || 40;
       const utilization = capacity > 0 ? (hoursLogged / capacity) * 100 : 0;
@@ -84,14 +103,16 @@ async function getTeamCapacity() {
   }
 }
 
+type CapacityUser = { weeklyCapacity: number | null };
+
 async function getResourceStats() {
   try {
-    const users = await prisma.user.findMany({
+    const users: CapacityUser[] = await prisma.user.findMany({
       where: { isActive: true },
       select: { weeklyCapacity: true },
     });
 
-    const totalCapacity = users.reduce((sum, u) => sum + (u.weeklyCapacity || 40), 0);
+    const totalCapacity = users.reduce((sum: number, u: CapacityUser) => sum + (u.weeklyCapacity || 40), 0);
 
     // Get this week's logged hours
     const now = new Date();
@@ -116,7 +137,7 @@ async function getResourceStats() {
     const avgUtilization = totalCapacity > 0 ? (totalLogged / totalCapacity) * 100 : 0;
 
     // Count overallocated (>100% utilization)
-    const overallocated = users.filter((u) => {
+    const overallocated = users.filter((u: CapacityUser) => {
       const capacity = u.weeklyCapacity || 40;
       return false; // Simplified - would need per-user calculation
     }).length;

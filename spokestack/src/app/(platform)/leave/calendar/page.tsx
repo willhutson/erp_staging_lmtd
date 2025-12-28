@@ -9,38 +9,37 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 
 async function getMonthLeave(year: number, month: number) {
-  try {
-    const startOfMonth = new Date(year, month, 1);
-    const endOfMonth = new Date(year, month + 1, 0);
+  const startOfMonth = new Date(year, month, 1);
+  const endOfMonth = new Date(year, month + 1, 0);
 
-    return prisma.leaveRequest.findMany({
-      where: {
-        status: "APPROVED",
-        OR: [
-          {
-            startDate: { gte: startOfMonth, lte: endOfMonth },
-          },
-          {
-            endDate: { gte: startOfMonth, lte: endOfMonth },
-          },
-          {
-            AND: [
-              { startDate: { lte: startOfMonth } },
-              { endDate: { gte: endOfMonth } },
-            ],
-          },
-        ],
-      },
-      include: {
-        user: { select: { name: true, avatarUrl: true } },
-        leaveType: { select: { name: true } },
-      },
-      orderBy: { startDate: "asc" },
-    });
-  } catch {
-    return [];
-  }
+  const result = await prisma.leaveRequest.findMany({
+    where: {
+      status: "APPROVED",
+      OR: [
+        {
+          startDate: { gte: startOfMonth, lte: endOfMonth },
+        },
+        {
+          endDate: { gte: startOfMonth, lte: endOfMonth },
+        },
+        {
+          AND: [
+            { startDate: { lte: startOfMonth } },
+            { endDate: { gte: endOfMonth } },
+          ],
+        },
+      ],
+    },
+    include: {
+      user: { select: { name: true, avatarUrl: true } },
+      leaveType: { select: { name: true } },
+    },
+    orderBy: { startDate: "asc" },
+  });
+  return result;
 }
+
+type LeaveEntry = Awaited<ReturnType<typeof getMonthLeave>>[number];
 
 function getDaysInMonth(year: number, month: number) {
   return new Date(year, month + 1, 0).getDate();
@@ -84,7 +83,7 @@ export default async function LeaveCalendarPage() {
 
   // Group leaves by date
   const leavesByDate: Record<number, typeof leaves> = {};
-  leaves.forEach((leave) => {
+  leaves.forEach((leave: LeaveEntry) => {
     const start = new Date(leave.startDate);
     const end = new Date(leave.endDate);
 
@@ -170,7 +169,7 @@ export default async function LeaveCalendarPage() {
                         {day}
                       </span>
                       <div className="mt-1 space-y-1">
-                        {dayLeaves.slice(0, 2).map((leave, i) => (
+                        {dayLeaves.slice(0, 2).map((leave: LeaveEntry, i: number) => (
                           <div
                             key={`${leave.id}-${i}`}
                             className="flex items-center gap-1 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-1 py-0.5 rounded truncate"
@@ -210,7 +209,7 @@ export default async function LeaveCalendarPage() {
               <p className="text-sm text-muted-foreground">No approved leave this month</p>
             ) : (
               <div className="space-y-3">
-                {leaves.map((leave) => (
+                {leaves.map((leave: LeaveEntry) => (
                   <div key={leave.id} className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={leave.user?.avatarUrl || undefined} />

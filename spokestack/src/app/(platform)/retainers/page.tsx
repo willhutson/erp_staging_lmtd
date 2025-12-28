@@ -37,27 +37,33 @@ const MONTHS = [
 ];
 
 async function getRetainerPeriods() {
-  try {
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1;
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1;
 
-    return prisma.retainerPeriod.findMany({
-      where: {
-        year: currentYear,
-        month: currentMonth,
+  const result = await prisma.retainerPeriod.findMany({
+    where: {
+      year: currentYear,
+      month: currentMonth,
+    },
+    orderBy: { client: { name: "asc" } },
+    include: {
+      client: {
+        select: { id: true, name: true, code: true, logoUrl: true },
       },
-      orderBy: { client: { name: "asc" } },
-      include: {
-        client: {
-          select: { id: true, name: true, code: true, logoUrl: true },
-        },
-      },
-    });
-  } catch {
-    return [];
-  }
+    },
+  });
+  return result;
 }
+
+type RetainerPeriodItem = Awaited<ReturnType<typeof getRetainerPeriods>>[number];
+
+type RetainerPeriodStats = {
+  budgetHours: number | null;
+  actualHours: number | null;
+  contractValue: unknown;
+  burnRate: number | null;
+};
 
 async function getRetainerStats() {
   try {
@@ -65,15 +71,15 @@ async function getRetainerStats() {
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth() + 1;
 
-    const periods = await prisma.retainerPeriod.findMany({
+    const periods: RetainerPeriodStats[] = await prisma.retainerPeriod.findMany({
       where: { year: currentYear, month: currentMonth },
     });
 
-    const totalBudgetHours = periods.reduce((sum, p) => sum + Number(p.budgetHours || 0), 0);
-    const totalActualHours = periods.reduce((sum, p) => sum + Number(p.actualHours || 0), 0);
-    const totalContractValue = periods.reduce((sum, p) => sum + Number(p.contractValue || 0), 0);
+    const totalBudgetHours = periods.reduce((sum: number, p: RetainerPeriodStats) => sum + Number(p.budgetHours || 0), 0);
+    const totalActualHours = periods.reduce((sum: number, p: RetainerPeriodStats) => sum + Number(p.actualHours || 0), 0);
+    const totalContractValue = periods.reduce((sum: number, p: RetainerPeriodStats) => sum + Number(p.contractValue || 0), 0);
     const avgBurnRate = periods.length > 0
-      ? periods.reduce((sum, p) => sum + Number(p.burnRate || 0), 0) / periods.length
+      ? periods.reduce((sum: number, p: RetainerPeriodStats) => sum + Number(p.burnRate || 0), 0) / periods.length
       : 0;
 
     return {
@@ -163,7 +169,7 @@ export default async function RetainersPage() {
   const currentMonth = MONTHS[currentDate.getMonth()];
   const currentYear = currentDate.getFullYear();
 
-  const overBudget = periods.filter((p) => Number(p.burnRate || 0) >= 90);
+  const overBudget = periods.filter((p: RetainerPeriodItem) => Number(p.burnRate || 0) >= 90);
 
   return (
     <div className="space-y-6">
@@ -279,7 +285,7 @@ export default async function RetainersPage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {overBudget.map((p) => (
+              {overBudget.map((p: RetainerPeriodItem) => (
                 <Badge key={p.id} variant="outline" className="border-amber-500 text-amber-700 dark:text-amber-400">
                   {p.client.name} ({Math.round(Number(p.burnRate))}%)
                 </Badge>
@@ -318,7 +324,7 @@ export default async function RetainersPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                periods.map((period) => {
+                periods.map((period: RetainerPeriodItem) => {
                   const budgetHours = Number(period.budgetHours || 0);
                   const actualHours = Number(period.actualHours || 0);
                   const burnRate = Number(period.burnRate || 0);

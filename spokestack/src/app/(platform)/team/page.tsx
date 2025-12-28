@@ -21,26 +21,25 @@ import {
 import { AddMemberDialog } from "./add-member-dialog";
 
 async function getTeamMembers() {
-  try {
-    return prisma.user.findMany({
-      where: { isActive: true },
-      orderBy: [{ department: "asc" }, { name: "asc" }],
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        department: true,
-        avatarUrl: true,
-        permissionLevel: true,
-        isFreelancer: true,
-        skills: true,
-      },
-    });
-  } catch {
-    return [];
-  }
+  const result = await prisma.user.findMany({
+    where: { isActive: true },
+    orderBy: [{ department: "asc" }, { name: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      department: true,
+      avatarUrl: true,
+      permissionLevel: true,
+      isFreelancer: true,
+      skills: true,
+    },
+  });
+  return result;
 }
+
+type TeamMember = Awaited<ReturnType<typeof getTeamMembers>>[number];
 
 async function getTeamStats() {
   try {
@@ -102,12 +101,12 @@ export default async function TeamPage() {
   }
 
   // Group by department
-  const departments = members.reduce((acc, member) => {
+  const departments = members.reduce((acc: Record<string, TeamMember[]>, member: TeamMember) => {
     const dept = member.department || "Other";
     if (!acc[dept]) acc[dept] = [];
     acc[dept].push(member);
     return acc;
-  }, {} as Record<string, typeof members>);
+  }, {} as Record<string, TeamMember[]>);
 
   return (
     <div className="space-y-6">
@@ -212,7 +211,7 @@ export default async function TeamPage() {
         </TabsList>
 
         <TabsContent value="all" className="space-y-8">
-          {Object.entries(departments)
+          {(Object.entries(departments) as [string, TeamMember[]][])
             .sort(([a], [b]) => a.localeCompare(b))
             .map(([dept, deptMembers]) => (
               <div key={dept}>
@@ -240,7 +239,7 @@ export default async function TeamPage() {
 
                           {member.skills && member.skills.length > 0 && (
                             <div className="flex flex-wrap justify-center gap-1 mt-3">
-                              {member.skills.slice(0, 3).map((skill) => (
+                              {member.skills.slice(0, 3).map((skill: string) => (
                                 <Badge key={skill} variant="outline" className="text-xs">
                                   {skill}
                                 </Badge>
@@ -274,7 +273,7 @@ export default async function TeamPage() {
             ))}
         </TabsContent>
 
-        {Object.entries(departments).map(([dept, deptMembers]) => (
+        {(Object.entries(departments) as [string, TeamMember[]][]).map(([dept, deptMembers]) => (
           <TabsContent key={dept} value={dept}>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {deptMembers.map((member) => (

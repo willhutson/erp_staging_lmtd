@@ -31,21 +31,19 @@ import {
 } from "lucide-react";
 
 async function getClientInstances() {
-  try {
-    const instances = await prisma.clientInstance.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        organization: { select: { name: true, slug: true } },
-        _count: {
-          select: { users: true },
-        },
+  const instances = await prisma.clientInstance.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      organization: { select: { name: true, slug: true } },
+      _count: {
+        select: { users: true },
       },
-    }).catch(() => []);
-    return instances;
-  } catch {
-    return [];
-  }
+    },
+  });
+  return instances;
 }
+
+type InstanceItem = Awaited<ReturnType<typeof getClientInstances>>[number];
 
 function getTierColor(tier: string) {
   switch (tier) {
@@ -108,7 +106,7 @@ export default async function InstancesPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                instances.map((instance) => (
+                instances.map((instance: InstanceItem) => (
                   <TableRow key={instance.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
