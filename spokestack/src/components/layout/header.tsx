@@ -20,7 +20,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bell, Search, CheckCircle2, AlertCircle, Info, MessageSquare } from "lucide-react";
+import { Bell, Search, CheckCircle2, AlertCircle, Info, MessageSquare, Megaphone } from "lucide-react";
 import Link from "next/link";
 import type { TenantConfig } from "@/lib/tenant";
 
@@ -244,8 +244,11 @@ export function Header({ tenant }: HeaderProps) {
 
         {/* SpokeChat Quick Access */}
         <Button variant="ghost" size="icon" asChild className="relative">
-          <Link href="/chat">
+          <Link href="/chat" className="flex items-center gap-0.5">
             <MessageSquare className="h-4 w-4" />
+            <span className="relative flex items-center justify-center h-5 w-5 rounded-full ring-1 ring-muted-foreground/30">
+              <Megaphone className="h-3 w-3" />
+            </span>
             {/* Mock unread indicator */}
             <span
               className="absolute -top-1 -right-1 h-4 w-4 rounded-full text-[10px] font-medium text-[#0A1628] flex items-center justify-center"
