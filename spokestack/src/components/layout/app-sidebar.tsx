@@ -238,11 +238,12 @@ const moduleBundles = [
   },
   {
     id: "portal",
-    label: "Client Portal",
-    tagline: "Client Access",
+    label: "Client",
+    tagline: "Clients Only",
     icon: Eye,
     color: "text-cyan-500",
     bgColor: "bg-cyan-500",
+    badge: "Clients",
     modules: [
       { id: "portal-dashboard", label: "Dashboard", icon: Grid3X3, href: "/portal" },
       { id: "portal-approvals", label: "Approvals", icon: FileCheck, href: "/portal/approvals" },
@@ -441,9 +442,15 @@ export function AppSidebar({ user, tenant }: AppSidebarProps) {
                       <span className="text-xs font-semibold uppercase tracking-wider">
                         {bundle.label}
                       </span>
-                      <span className="text-[9px] text-muted-foreground font-normal normal-case">
-                        {bundle.tagline}
-                      </span>
+                      {"badge" in bundle && bundle.badge ? (
+                        <Badge variant="outline" className="text-[9px] px-1 py-0 font-normal text-cyan-600 border-cyan-300">
+                          {bundle.badge}
+                        </Badge>
+                      ) : (
+                        <span className="text-[9px] text-muted-foreground font-normal normal-case">
+                          {bundle.tagline}
+                        </span>
+                      )}
                     </div>
                     <ChevronRight
                       className={cn(
