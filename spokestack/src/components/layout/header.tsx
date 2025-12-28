@@ -90,7 +90,8 @@ const breadcrumbConfig: Record<string, { label: string; parent?: string }> = {
   "/admin/instances": { label: "Client Portals", parent: "/admin" },
   "/admin/instances/new": { label: "Create Portal", parent: "/admin/instances" },
   "/admin/settings": { label: "Settings", parent: "/admin" },
-  "/admin/settings/portal": { label: "Portal Settings", parent: "/admin/settings" },
+  "/admin/settings/profile": { label: "Profile", parent: "/admin/settings" },
+  "/admin/settings/portal": { label: "Portal Branding", parent: "/admin/settings" },
   // Briefs
   "/briefs": { label: "Briefs" },
   "/briefs/my": { label: "My Briefs", parent: "/briefs" },
