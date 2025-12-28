@@ -34,12 +34,25 @@ import {
   Activity,
   Calendar,
 } from "lucide-react";
-import {
-  SiInstagram,
-  SiTiktok,
-  SiYoutube,
-  SiX,
-} from "@icons-pack/react-simple-icons";
+
+// Platform styling
+const platformColors: Record<string, string> = {
+  instagram: "bg-pink-500",
+  tiktok: "bg-black",
+  youtube: "bg-red-600",
+  twitter: "bg-black",
+  linkedin: "bg-blue-600",
+  facebook: "bg-blue-500",
+};
+
+const platformLabels: Record<string, string> = {
+  instagram: "IG",
+  tiktok: "TT",
+  youtube: "YT",
+  twitter: "X",
+  linkedin: "LI",
+  facebook: "FB",
+};
 
 // Mock tracker data
 const tracker = {
@@ -152,13 +165,6 @@ const stats = {
     youtube: 15,
     twitter: 12,
   },
-};
-
-const platformIcons: Record<string, React.ReactNode> = {
-  instagram: <SiInstagram className="h-4 w-4" color="#E4405F" />,
-  tiktok: <SiTiktok className="h-4 w-4" />,
-  youtube: <SiYoutube className="h-4 w-4" color="#FF0000" />,
-  twitter: <SiX className="h-4 w-4" />,
 };
 
 const sentimentColors = {
@@ -362,9 +368,9 @@ export default function TrackerDashboardPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="p-1.5 rounded-md bg-muted">
-                        {platformIcons[mention.platform]}
-                      </div>
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold text-white ${platformColors[mention.platform]}`}>
+                        {platformLabels[mention.platform]}
+                      </span>
                       <Badge className={sentimentColors[mention.sentiment as keyof typeof sentimentColors]}>
                         {sentimentIcons[mention.sentiment as keyof typeof sentimentIcons]}
                         <span className="ml-1 capitalize">{mention.sentiment}</span>
@@ -418,7 +424,9 @@ export default function TrackerDashboardPage() {
                 <div key={platform} className="space-y-1">
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
-                      {platformIcons[platform]}
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold text-white ${platformColors[platform]}`}>
+                        {platformLabels[platform]}
+                      </span>
                       <span className="capitalize">{platform}</span>
                     </div>
                     <span className="font-medium">{percentage}%</span>

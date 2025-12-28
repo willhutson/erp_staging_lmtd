@@ -30,14 +30,25 @@ import {
   MessageCircle,
   Hash,
 } from "lucide-react";
-import {
-  SiInstagram,
-  SiTiktok,
-  SiYoutube,
-  SiX,
-  SiLinkedin,
-  SiFacebook,
-} from "@icons-pack/react-simple-icons";
+
+// Platform badge colors
+const platformColors: Record<string, string> = {
+  instagram: "bg-pink-500",
+  tiktok: "bg-black",
+  youtube: "bg-red-600",
+  twitter: "bg-black",
+  linkedin: "bg-blue-600",
+  facebook: "bg-blue-500",
+};
+
+const platformLabels: Record<string, string> = {
+  instagram: "IG",
+  tiktok: "TT",
+  youtube: "YT",
+  twitter: "X",
+  linkedin: "LI",
+  facebook: "FB",
+};
 
 // Mock trackers data
 const mockTrackers = [
@@ -99,15 +110,6 @@ const mockTrackers = [
     lastUpdated: "1 hour ago",
   },
 ];
-
-const platformIcons: Record<string, React.ReactNode> = {
-  instagram: <SiInstagram className="h-4 w-4" color="#E4405F" />,
-  tiktok: <SiTiktok className="h-4 w-4" />,
-  youtube: <SiYoutube className="h-4 w-4" color="#FF0000" />,
-  twitter: <SiX className="h-4 w-4" />,
-  linkedin: <SiLinkedin className="h-4 w-4" color="#0A66C2" />,
-  facebook: <SiFacebook className="h-4 w-4" color="#1877F2" />,
-};
 
 export default function TrackersPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -274,11 +276,14 @@ export default function TrackersPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Platforms */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 {tracker.platforms.map((platform) => (
-                  <div key={platform} className="p-1.5 rounded-md bg-muted">
-                    {platformIcons[platform]}
-                  </div>
+                  <span
+                    key={platform}
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold text-white ${platformColors[platform]}`}
+                  >
+                    {platformLabels[platform]}
+                  </span>
                 ))}
               </div>
 

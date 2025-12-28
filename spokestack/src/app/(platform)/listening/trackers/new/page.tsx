@@ -26,24 +26,20 @@ import {
   Radio,
   Eye,
   AlertTriangle,
+  Instagram,
+  Youtube,
+  Linkedin,
+  Facebook,
 } from "lucide-react";
-import {
-  SiInstagram,
-  SiTiktok,
-  SiYoutube,
-  SiX,
-  SiLinkedin,
-  SiFacebook,
-} from "@icons-pack/react-simple-icons";
 import { toast } from "sonner";
 
 const PLATFORMS = [
-  { id: "instagram", name: "Instagram", icon: SiInstagram, color: "#E4405F" },
-  { id: "tiktok", name: "TikTok", icon: SiTiktok, color: "#000000" },
-  { id: "youtube", name: "YouTube", icon: SiYoutube, color: "#FF0000" },
-  { id: "twitter", name: "X (Twitter)", icon: SiX, color: "#000000" },
-  { id: "linkedin", name: "LinkedIn", icon: SiLinkedin, color: "#0A66C2" },
-  { id: "facebook", name: "Facebook", icon: SiFacebook, color: "#1877F2" },
+  { id: "instagram", name: "Instagram", color: "bg-pink-500", label: "IG" },
+  { id: "tiktok", name: "TikTok", color: "bg-black", label: "TT" },
+  { id: "youtube", name: "YouTube", color: "bg-red-600", label: "YT" },
+  { id: "twitter", name: "X (Twitter)", color: "bg-black", label: "X" },
+  { id: "linkedin", name: "LinkedIn", color: "bg-blue-600", label: "LI" },
+  { id: "facebook", name: "Facebook", color: "bg-blue-500", label: "FB" },
 ];
 
 // Mock clients
@@ -248,7 +244,6 @@ export default function NewTrackerPage() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {PLATFORMS.map((platform) => {
-                const Icon = platform.icon;
                 const isSelected = formData.platforms.includes(platform.id);
                 return (
                   <div
@@ -261,7 +256,9 @@ export default function NewTrackerPage() {
                     }`}
                   >
                     <Checkbox checked={isSelected} />
-                    <Icon className="h-5 w-5" color={platform.color} />
+                    <span className={`px-2 py-1 rounded text-xs font-bold text-white ${platform.color}`}>
+                      {platform.label}
+                    </span>
                     <span className="font-medium">{platform.name}</span>
                   </div>
                 );
