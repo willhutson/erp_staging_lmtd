@@ -20,7 +20,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bell, Search, CheckCircle2, AlertCircle, Info } from "lucide-react";
+import { Bell, Search, CheckCircle2, AlertCircle, Info, MessageSquare } from "lucide-react";
+import Link from "next/link";
 import type { TenantConfig } from "@/lib/tenant";
 
 // Mock notifications data
@@ -132,6 +133,24 @@ const breadcrumbConfig: Record<string, { label: string; parent?: string }> = {
   "/builder/dashboards/new": { label: "New Dashboard", parent: "/builder/dashboards" },
   "/builder/widgets": { label: "Widgets", parent: "/builder" },
   "/builder/templates": { label: "Templates", parent: "/builder" },
+  // Chat
+  "/chat": { label: "SpokeChat" },
+  // Portal
+  "/portal": { label: "Client Portal" },
+  "/portal/approvals": { label: "Approvals", parent: "/portal" },
+  "/portal/deliverables": { label: "Deliverables", parent: "/portal" },
+  "/portal/reports": { label: "Reports", parent: "/portal" },
+  // Hub
+  "/hub": { label: "Hub" },
+  // Trackers
+  "/listening/trackers": { label: "Trackers", parent: "/listening" },
+  "/listening/trackers/new": { label: "New Tracker", parent: "/listening/trackers" },
+  // Agency
+  "/clients": { label: "Clients" },
+  "/retainers": { label: "Retainers" },
+  "/projects": { label: "Projects" },
+  "/resources": { label: "Resources" },
+  "/crm": { label: "CRM" },
 };
 
 function getBreadcrumbs(pathname: string) {
@@ -222,6 +241,20 @@ export function Header({ tenant }: HeaderProps) {
             className="w-64 pl-8 bg-muted/50"
           />
         </div>
+
+        {/* SpokeChat Quick Access */}
+        <Button variant="ghost" size="icon" asChild className="relative">
+          <Link href="/chat">
+            <MessageSquare className="h-4 w-4" />
+            {/* Mock unread indicator */}
+            <span
+              className="absolute -top-1 -right-1 h-4 w-4 rounded-full text-[10px] font-medium text-[#0A1628] flex items-center justify-center"
+              style={{ backgroundColor: primaryColor }}
+            >
+              3
+            </span>
+          </Link>
+        </Button>
 
         <Popover>
           <PopoverTrigger asChild>
