@@ -1,15 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Key,
   ArrowLeft,
@@ -25,6 +25,7 @@ import {
   Briefcase,
   TrendingUp,
   UserCheck,
+  ChevronDown,
 } from "lucide-react";
 
 type Endpoint = {
@@ -237,6 +238,54 @@ function MethodBadge({ method }: { method: string }) {
   );
 }
 
+function ApiCategorySection({ category }: { category: ApiCategory }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const Icon = category.icon;
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <div className="border rounded-lg">
+        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50">
+          <div className="flex items-center gap-3">
+            <Icon className="h-5 w-5 text-muted-foreground" />
+            <div className="text-left">
+              <span className="font-medium">{category.title}</span>
+              <span className="ml-2 text-sm text-muted-foreground">
+                ({category.endpoints.length} endpoints)
+              </span>
+            </div>
+          </div>
+          <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="px-4 pb-4">
+            <p className="text-sm text-muted-foreground mb-4">{category.description}</p>
+            <div className="space-y-2">
+              {category.endpoints.map((endpoint, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50"
+                >
+                  <MethodBadge method={endpoint.method} />
+                  <code className="text-sm font-mono flex-1">{endpoint.path}</code>
+                  <span className="text-sm text-muted-foreground hidden md:block">
+                    {endpoint.description}
+                  </span>
+                  {endpoint.auth && (
+                    <Badge variant="outline" className="text-xs">
+                      {endpoint.auth}
+                    </Badge>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
+  );
+}
+
 export default function ApiSettingsPage() {
   const totalEndpoints = API_CATEGORIES.reduce((sum, cat) => sum + cat.endpoints.length, 0);
 
@@ -289,48 +338,11 @@ export default function ApiSettingsPage() {
       {/* API Categories */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Endpoints</h2>
-        <Accordion type="multiple" className="space-y-2">
-          {API_CATEGORIES.map((category) => {
-            const Icon = category.icon;
-            return (
-              <AccordionItem key={category.title} value={category.title} className="border rounded-lg px-4">
-                <AccordionTrigger className="hover:no-underline">
-                  <div className="flex items-center gap-3">
-                    <Icon className="h-5 w-5 text-muted-foreground" />
-                    <div className="text-left">
-                      <span className="font-medium">{category.title}</span>
-                      <span className="ml-2 text-sm text-muted-foreground">
-                        ({category.endpoints.length} endpoints)
-                      </span>
-                    </div>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <p className="text-sm text-muted-foreground mb-4">{category.description}</p>
-                  <div className="space-y-2">
-                    {category.endpoints.map((endpoint, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50"
-                      >
-                        <MethodBadge method={endpoint.method} />
-                        <code className="text-sm font-mono flex-1">{endpoint.path}</code>
-                        <span className="text-sm text-muted-foreground hidden md:block">
-                          {endpoint.description}
-                        </span>
-                        {endpoint.auth && (
-                          <Badge variant="outline" className="text-xs">
-                            {endpoint.auth}
-                          </Badge>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
+        <div className="space-y-2">
+          {API_CATEGORIES.map((category) => (
+            <ApiCategorySection key={category.title} category={category} />
+          ))}
+        </div>
       </div>
 
       {/* Webhook Events */}
