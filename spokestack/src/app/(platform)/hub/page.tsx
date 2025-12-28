@@ -29,6 +29,9 @@ import {
   Globe,
   UserCircle,
   Plug,
+  MessageSquare,
+  FileCheck,
+  Eye,
 } from "lucide-react";
 
 // Admin sections (left side)
@@ -74,7 +77,7 @@ const MODULE_BUNDLES = [
     id: "erp",
     label: "ERP",
     tagline: "Core Operations",
-    description: "Briefs, time tracking, leave management, and team operations",
+    description: "Briefs, time tracking, leave management, team, and communication",
     icon: Briefcase,
     href: "/briefs",
     color: "from-indigo-500 to-indigo-600",
@@ -84,6 +87,7 @@ const MODULE_BUNDLES = [
       { label: "Time Tracking", href: "/time", icon: Clock, description: "Timer & timesheets" },
       { label: "Leave", href: "/leave", icon: Palmtree, description: "PTO & approvals" },
       { label: "Team", href: "/team", icon: Users, description: "Directory & org chart" },
+      { label: "SpokeChat", href: "/chat", icon: MessageSquare, description: "Team communication" },
     ],
   },
   {
@@ -119,6 +123,22 @@ const MODULE_BUNDLES = [
       { label: "Media Buying", href: "/mediabuying", icon: CreditCard, description: "Ad campaigns" },
       { label: "Analytics", href: "/analytics", icon: BarChart3, description: "Performance data" },
       { label: "Builder", href: "/builder", icon: Palette, description: "Custom dashboards" },
+    ],
+  },
+  {
+    id: "portal",
+    label: "Client Portal",
+    tagline: "Client Access",
+    description: "Client-facing portal for approvals, deliverables, and reports",
+    icon: Eye,
+    href: "/portal",
+    color: "from-cyan-500 to-cyan-600",
+    bgColor: "bg-cyan-500",
+    modules: [
+      { label: "Dashboard", href: "/portal", icon: Grid3X3, description: "Overview & stats" },
+      { label: "Approvals", href: "/portal/approvals", icon: FileCheck, description: "Review deliverables" },
+      { label: "Deliverables", href: "/portal/deliverables", icon: FolderKanban, description: "All project assets" },
+      { label: "Reports", href: "/portal/reports", icon: BarChart3, description: "Campaign analytics" },
     ],
   },
 ];
@@ -202,7 +222,7 @@ export default function HubPage() {
             Module Bundles
           </h2>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {MODULE_BUNDLES.map((bundle) => {
               const Icon = bundle.icon;
               return (
