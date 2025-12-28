@@ -294,8 +294,12 @@ export default function HubPage() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm">Documentation</Button>
-                  <Button size="sm">Contact Support</Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/docs">Documentation</Link>
+                  </Button>
+                  <Button size="sm" asChild>
+                    <a href="mailto:support@spokestack.io">Contact Support</a>
+                  </Button>
                 </div>
               </div>
             </CardContent>
