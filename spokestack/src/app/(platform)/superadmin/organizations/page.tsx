@@ -22,18 +22,23 @@ import {
 import { Plus, MoreHorizontal, Building2, Users, ExternalLink } from "lucide-react";
 
 async function getOrganizations() {
-  return prisma.organization.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      _count: {
-        select: {
-          users: true,
-          clients: true,
-          clientInstances: true,
+  try {
+    return prisma.organization.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        _count: {
+          select: {
+            users: true,
+            clients: true,
+            clientInstances: true,
+          },
         },
       },
-    },
-  });
+    });
+  } catch (error) {
+    console.error("Error fetching organizations:", error);
+    return [];
+  }
 }
 
 export default async function OrganizationsPage() {

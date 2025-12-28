@@ -31,15 +31,20 @@ import {
 } from "lucide-react";
 
 async function getClientInstances() {
-  return prisma.clientInstance.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      organization: { select: { name: true, slug: true } },
-      _count: {
-        select: { users: true },
+  try {
+    return prisma.clientInstance.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        organization: { select: { name: true, slug: true } },
+        _count: {
+          select: { users: true },
+        },
       },
-    },
-  });
+    });
+  } catch (error) {
+    console.error("Error fetching client instances:", error);
+    return [];
+  }
 }
 
 function getTierColor(tier: string) {

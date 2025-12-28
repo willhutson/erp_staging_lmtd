@@ -33,17 +33,22 @@ import {
 
 // TODO: Get organizationId from session
 async function getOrgInstances(organizationId?: string) {
-  // For now, get all instances - will filter by org from session later
-  return prisma.clientInstance.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      _count: {
-        select: { users: true },
+  try {
+    // For now, get all instances - will filter by org from session later
+    return prisma.clientInstance.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        _count: {
+          select: { users: true },
+        },
       },
-    },
-    // When we have session:
-    // where: { organizationId },
-  });
+      // When we have session:
+      // where: { organizationId },
+    });
+  } catch (error) {
+    console.error("Error fetching instances:", error);
+    return [];
+  }
 }
 
 function getTierColor(tier: string) {

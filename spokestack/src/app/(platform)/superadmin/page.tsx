@@ -17,36 +17,51 @@ import {
 } from "lucide-react";
 
 async function getStats() {
-  const [orgCount, userCount, instanceCount, activeInstances] = await Promise.all([
-    prisma.organization.count(),
-    prisma.user.count(),
-    prisma.clientInstance.count(),
-    prisma.clientInstance.count({ where: { isActive: true } }),
-  ]);
+  try {
+    const [orgCount, userCount, instanceCount, activeInstances] = await Promise.all([
+      prisma.organization.count(),
+      prisma.user.count(),
+      prisma.clientInstance.count().catch(() => 0),
+      prisma.clientInstance.count({ where: { isActive: true } }).catch(() => 0),
+    ]);
 
-  return { orgCount, userCount, instanceCount, activeInstances };
+    return { orgCount, userCount, instanceCount, activeInstances };
+  } catch (error) {
+    console.error("Error fetching stats:", error);
+    return { orgCount: 0, userCount: 0, instanceCount: 0, activeInstances: 0 };
+  }
 }
 
 async function getRecentOrganizations() {
-  return prisma.organization.findMany({
-    take: 5,
-    orderBy: { createdAt: "desc" },
-    include: {
-      _count: {
-        select: { users: true, clients: true },
+  try {
+    return prisma.organization.findMany({
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      include: {
+        _count: {
+          select: { users: true, clients: true },
+        },
       },
-    },
-  });
+    });
+  } catch (error) {
+    console.error("Error fetching organizations:", error);
+    return [];
+  }
 }
 
 async function getRecentInstances() {
-  return prisma.clientInstance.findMany({
-    take: 5,
-    orderBy: { createdAt: "desc" },
-    include: {
-      organization: { select: { name: true, slug: true } },
-    },
-  });
+  try {
+    return prisma.clientInstance.findMany({
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      include: {
+        organization: { select: { name: true, slug: true } },
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching instances:", error);
+    return [];
+  }
 }
 
 export default async function SuperAdminPage() {
