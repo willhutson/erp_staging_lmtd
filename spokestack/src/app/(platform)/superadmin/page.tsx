@@ -19,22 +19,21 @@ import {
 async function getStats() {
   try {
     const [orgCount, userCount, instanceCount, activeInstances] = await Promise.all([
-      prisma.organization.count(),
-      prisma.user.count(),
+      prisma.organization.count().catch(() => 0),
+      prisma.user.count().catch(() => 0),
       prisma.clientInstance.count().catch(() => 0),
       prisma.clientInstance.count({ where: { isActive: true } }).catch(() => 0),
     ]);
 
     return { orgCount, userCount, instanceCount, activeInstances };
-  } catch (error) {
-    console.error("Error fetching stats:", error);
+  } catch {
     return { orgCount: 0, userCount: 0, instanceCount: 0, activeInstances: 0 };
   }
 }
 
 async function getRecentOrganizations() {
   try {
-    return prisma.organization.findMany({
+    return await prisma.organization.findMany({
       take: 5,
       orderBy: { createdAt: "desc" },
       include: {
@@ -43,33 +42,39 @@ async function getRecentOrganizations() {
         },
       },
     });
-  } catch (error) {
-    console.error("Error fetching organizations:", error);
+  } catch {
     return [];
   }
 }
 
 async function getRecentInstances() {
   try {
-    return prisma.clientInstance.findMany({
+    return await prisma.clientInstance.findMany({
       take: 5,
       orderBy: { createdAt: "desc" },
       include: {
         organization: { select: { name: true, slug: true } },
       },
     });
-  } catch (error) {
-    console.error("Error fetching instances:", error);
+  } catch {
     return [];
   }
 }
 
 export default async function SuperAdminPage() {
-  const [stats, recentOrgs, recentInstances] = await Promise.all([
-    getStats(),
-    getRecentOrganizations(),
-    getRecentInstances(),
-  ]);
+  let stats = { orgCount: 0, userCount: 0, instanceCount: 0, activeInstances: 0 };
+  let recentOrgs: Awaited<ReturnType<typeof getRecentOrganizations>> = [];
+  let recentInstances: Awaited<ReturnType<typeof getRecentInstances>> = [];
+
+  try {
+    [stats, recentOrgs, recentInstances] = await Promise.all([
+      getStats(),
+      getRecentOrganizations(),
+      getRecentInstances(),
+    ]);
+  } catch {
+    // Fallback to defaults on error
+  }
 
   return (
     <div className="space-y-8">
