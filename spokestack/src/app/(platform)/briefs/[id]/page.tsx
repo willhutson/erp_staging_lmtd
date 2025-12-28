@@ -228,7 +228,7 @@ export default async function BriefDetailPage({ params }: PageProps) {
             <p className="font-medium">{totalHours.toFixed(1)}h</p>
             {brief.estimatedHours && (
               <p className="text-xs text-muted-foreground">
-                of {brief.estimatedHours}h estimated
+                of {Number(brief.estimatedHours)}h estimated
               </p>
             )}
           </CardContent>
