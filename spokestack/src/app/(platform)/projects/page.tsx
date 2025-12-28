@@ -33,20 +33,19 @@ import {
 import { ProjectsView } from "./projects-view";
 
 async function getProjects() {
-  try {
-    return prisma.project.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        client: { select: { id: true, name: true, code: true } },
-        _count: {
-          select: { briefs: true, timeEntries: true },
-        },
+  const result = await prisma.project.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      client: { select: { id: true, name: true, code: true } },
+      _count: {
+        select: { briefs: true, timeEntries: true },
       },
-    });
-  } catch {
-    return [];
-  }
+    },
+  });
+  return result;
 }
+
+type ProjectItem = Awaited<ReturnType<typeof getProjects>>[number];
 
 async function getProjectStats() {
   try {
@@ -124,9 +123,9 @@ export default async function ProjectsPage() {
     // Fallback to defaults
   }
 
-  const activeProjects = projects.filter((p) => p.status === "ACTIVE");
-  const completedProjects = projects.filter((p) => p.status === "COMPLETED");
-  const draftProjects = projects.filter((p) => p.status === "DRAFT");
+  const activeProjects = projects.filter((p: ProjectItem) => p.status === "ACTIVE");
+  const completedProjects = projects.filter((p: ProjectItem) => p.status === "COMPLETED");
+  const draftProjects = projects.filter((p: ProjectItem) => p.status === "DRAFT");
 
   return (
     <div className="space-y-6">

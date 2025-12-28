@@ -111,12 +111,15 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       throw ApiError.notFound("Brief");
     }
 
+    const updateData = {
+      ...data,
+      formData: data.formData as unknown,
+      updatedAt: new Date(),
+    };
+
     const updated = await prisma.brief.update({
       where: { id },
-      data: {
-        ...data,
-        updatedAt: new Date(),
-      },
+      data: updateData,
       select: {
         id: true,
         briefNumber: true,

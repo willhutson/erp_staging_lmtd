@@ -6,7 +6,9 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import { ApiError } from "./errors";
-import type { PermissionLevel } from "@prisma/client";
+
+// Permission levels defined locally to avoid Prisma client import issues
+type PermissionLevel = "ADMIN" | "LEADERSHIP" | "TEAM_LEAD" | "STAFF" | "FREELANCER" | "CLIENT";
 
 export interface AuthContext {
   user: {

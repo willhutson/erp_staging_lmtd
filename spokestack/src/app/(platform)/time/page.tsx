@@ -59,20 +59,19 @@ async function getTimeStats() {
 }
 
 async function getRecentEntries() {
-  try {
-    return prisma.timeEntry.findMany({
-      take: 20,
-      orderBy: { date: "desc" },
-      include: {
-        user: { select: { name: true } },
-        brief: { select: { title: true, briefNumber: true } },
-        project: { select: { name: true } },
-      },
-    });
-  } catch {
-    return [];
-  }
+  const result = await prisma.timeEntry.findMany({
+    take: 20,
+    orderBy: { date: "desc" },
+    include: {
+      user: { select: { name: true } },
+      brief: { select: { title: true, briefNumber: true } },
+      project: { select: { name: true } },
+    },
+  });
+  return result;
 }
+
+type TimeEntryItem = Awaited<ReturnType<typeof getRecentEntries>>[number];
 
 export default async function TimePage() {
   let stats = { todayHours: 0, weekHours: 0, pendingApproval: 0 };
@@ -221,7 +220,7 @@ export default async function TimePage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    entries.map((entry) => (
+                    entries.map((entry: TimeEntryItem) => (
                       <TableRow key={entry.id}>
                         <TableCell>
                           {new Date(entry.date).toLocaleDateString()}

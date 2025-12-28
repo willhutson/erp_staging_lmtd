@@ -32,34 +32,32 @@ async function getStats() {
 }
 
 async function getRecentOrganizations() {
-  try {
-    return await prisma.organization.findMany({
-      take: 5,
-      orderBy: { createdAt: "desc" },
-      include: {
-        _count: {
-          select: { users: true, clients: true },
-        },
+  const result = await prisma.organization.findMany({
+    take: 5,
+    orderBy: { createdAt: "desc" },
+    include: {
+      _count: {
+        select: { users: true, clients: true },
       },
-    });
-  } catch {
-    return [];
-  }
+    },
+  });
+  return result;
 }
 
+type RecentOrg = Awaited<ReturnType<typeof getRecentOrganizations>>[number];
+
 async function getRecentInstances() {
-  try {
-    return await prisma.clientInstance.findMany({
-      take: 5,
-      orderBy: { createdAt: "desc" },
-      include: {
-        organization: { select: { name: true, slug: true } },
-      },
-    });
-  } catch {
-    return [];
-  }
+  const result = await prisma.clientInstance.findMany({
+    take: 5,
+    orderBy: { createdAt: "desc" },
+    include: {
+      organization: { select: { name: true, slug: true } },
+    },
+  });
+  return result;
 }
+
+type RecentInstance = Awaited<ReturnType<typeof getRecentInstances>>[number];
 
 export default async function SuperAdminPage() {
   let stats = { orgCount: 0, userCount: 0, instanceCount: 0, activeInstances: 0 };
@@ -206,7 +204,7 @@ export default async function SuperAdminPage() {
               {recentOrgs.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No organizations yet</p>
               ) : (
-                recentOrgs.map((org) => (
+                recentOrgs.map((org: RecentOrg) => (
                   <div key={org.id} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -237,7 +235,7 @@ export default async function SuperAdminPage() {
               {recentInstances.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No instances yet</p>
               ) : (
-                recentInstances.map((instance) => (
+                recentInstances.map((instance: RecentInstance) => (
                   <div key={instance.id} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div

@@ -31,26 +31,24 @@ import {
 } from "lucide-react";
 
 async function getDomainsWithInstances() {
-  try {
-    const instances = await prisma.clientInstance.findMany({
-      where: {
-        customDomain: { not: null },
-      },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        customDomain: true,
-        customDomainVerified: true,
-        organization: { select: { name: true, slug: true } },
-      },
-    });
-    return instances;
-  } catch {
-    return [];
-  }
+  const instances = await prisma.clientInstance.findMany({
+    where: {
+      customDomain: { not: null },
+    },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      customDomain: true,
+      customDomainVerified: true,
+      organization: { select: { name: true, slug: true } },
+    },
+  });
+  return instances;
 }
+
+type DomainItem = Awaited<ReturnType<typeof getDomainsWithInstances>>[number];
 
 async function getDomainStats() {
   try {
@@ -159,7 +157,7 @@ export default async function DomainsPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                domains.map((domain) => (
+                domains.map((domain: DomainItem) => (
                   <TableRow key={domain.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">

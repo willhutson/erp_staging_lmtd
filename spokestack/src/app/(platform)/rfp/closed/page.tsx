@@ -32,17 +32,16 @@ function getOutcomeBadge(outcome: string | null) {
 }
 
 async function getClosedRfps() {
-  try {
-    return prisma.rFP.findMany({
-      where: {
-        outcome: { not: null },
-      },
-      orderBy: { updatedAt: "desc" },
-    });
-  } catch {
-    return [];
-  }
+  const result = await prisma.rFP.findMany({
+    where: {
+      outcome: { not: null },
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+  return result;
 }
+
+type RfpItem = Awaited<ReturnType<typeof getClosedRfps>>[number];
 
 async function getStats() {
   try {
@@ -90,9 +89,9 @@ export default async function ClosedRfpPage() {
     // Fallback to defaults
   }
 
-  const wonRfps = rfps.filter((r) => r.outcome === "WON");
-  const lostRfps = rfps.filter((r) => r.outcome === "LOST");
-  const otherRfps = rfps.filter((r) => r.outcome !== "WON" && r.outcome !== "LOST");
+  const wonRfps = rfps.filter((r: RfpItem) => r.outcome === "WON");
+  const lostRfps = rfps.filter((r: RfpItem) => r.outcome === "LOST");
+  const otherRfps = rfps.filter((r: RfpItem) => r.outcome !== "WON" && r.outcome !== "LOST");
 
   return (
     <div className="space-y-6">
@@ -209,7 +208,7 @@ function RfpTable({ rfps }: { rfps: Awaited<ReturnType<typeof getClosedRfps>> })
             </TableCell>
           </TableRow>
         ) : (
-          rfps.map((rfp) => (
+          rfps.map((rfp: RfpItem) => (
             <TableRow key={rfp.id}>
               <TableCell>
                 <Link href={`/rfp/${rfp.id}`} className="font-medium hover:underline">

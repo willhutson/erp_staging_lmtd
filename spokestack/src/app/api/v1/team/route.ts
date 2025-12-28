@@ -65,13 +65,15 @@ export async function GET(request: Request) {
       },
     });
 
+    type Member = typeof members[number];
+
     // Handle different view modes
     const view = filters.view || "list";
 
     if (view === "by-department") {
       // Group by department
-      const byDepartment: Record<string, typeof members> = {};
-      members.forEach((member) => {
+      const byDepartment: Record<string, Member[]> = {};
+      members.forEach((member: Member) => {
         const dept = member.department || "Unassigned";
         if (!byDepartment[dept]) {
           byDepartment[dept] = [];
@@ -81,10 +83,10 @@ export async function GET(request: Request) {
 
       return success({
         view: "by-department",
-        departments: Object.entries(byDepartment).map(([name, members]) => ({
+        departments: Object.entries(byDepartment).map(([name, deptMembers]) => ({
           name,
-          count: members.length,
-          members,
+          count: deptMembers.length,
+          members: deptMembers,
         })),
         total: members.length,
       });
@@ -92,11 +94,11 @@ export async function GET(request: Request) {
 
     if (view === "org-chart") {
       // Build org chart hierarchy
-      const leadership = members.filter((m) =>
+      const leadership = members.filter((m: Member) =>
         ["ADMIN", "LEADERSHIP"].includes(m.permissionLevel)
       );
-      const teamLeads = members.filter((m) => m.permissionLevel === "TEAM_LEAD");
-      const staff = members.filter((m) =>
+      const teamLeads = members.filter((m: Member) => m.permissionLevel === "TEAM_LEAD");
+      const staff = members.filter((m: Member) =>
         ["STAFF", "FREELANCER"].includes(m.permissionLevel)
       );
 

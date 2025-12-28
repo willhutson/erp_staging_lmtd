@@ -55,14 +55,16 @@ export async function GET(request: Request, { params }: RouteParams) {
       },
     });
 
+    type TimeEntry = typeof timeEntries[number];
+
     // Calculate totals
     const totalHours = timeEntries.reduce(
-      (sum, entry) => sum + Number(entry.hours),
+      (sum: number, entry: TimeEntry) => sum + Number(entry.hours),
       0
     );
     const billableHours = timeEntries
-      .filter((e) => e.isBillable)
-      .reduce((sum, entry) => sum + Number(entry.hours), 0);
+      .filter((e: TimeEntry) => e.isBillable)
+      .reduce((sum: number, entry: TimeEntry) => sum + Number(entry.hours), 0);
 
     return success({
       entries: timeEntries,

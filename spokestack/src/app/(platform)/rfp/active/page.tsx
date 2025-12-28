@@ -56,22 +56,21 @@ function getProbabilityBadge(probability: string | null) {
 }
 
 async function getActiveRfps() {
-  try {
-    return prisma.rFP.findMany({
-      where: {
-        status: {
-          in: ["VETTING", "ACTIVE", "AWAITING_REVIEW", "READY_TO_SUBMIT", "SUBMITTED", "AWAITING_RESPONSE"],
-        },
+  const result = await prisma.rFP.findMany({
+    where: {
+      status: {
+        in: ["VETTING", "ACTIVE", "AWAITING_REVIEW", "READY_TO_SUBMIT", "SUBMITTED", "AWAITING_RESPONSE"],
       },
-      orderBy: { deadline: "asc" },
-      include: {
-        _count: { select: { subitems: true } },
-      },
-    });
-  } catch {
-    return [];
-  }
+    },
+    orderBy: { deadline: "asc" },
+    include: {
+      _count: { select: { subitems: true } },
+    },
+  });
+  return result;
 }
+
+type RfpItem = Awaited<ReturnType<typeof getActiveRfps>>[number];
 
 function formatCurrency(value: number) {
   if (value >= 1000000) {
@@ -135,7 +134,7 @@ export default async function ActiveRfpPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                rfps.map((rfp) => (
+                rfps.map((rfp: RfpItem) => (
                   <TableRow key={rfp.id}>
                     <TableCell>
                       <div>

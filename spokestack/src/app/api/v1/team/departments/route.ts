@@ -24,6 +24,8 @@ export async function GET() {
       },
     });
 
+    type UserItem = typeof users[number];
+
     // Aggregate by department
     const deptMap: Record<string, {
       count: number;
@@ -32,7 +34,7 @@ export async function GET() {
       freelancers: number;
     }> = {};
 
-    users.forEach((user) => {
+    users.forEach((user: UserItem) => {
       const dept = user.department || "Unassigned";
       if (!deptMap[dept]) {
         deptMap[dept] = { count: 0, leads: 0, staff: 0, freelancers: 0 };

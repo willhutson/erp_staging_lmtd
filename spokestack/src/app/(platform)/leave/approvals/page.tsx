@@ -54,39 +54,37 @@ function getStatusBadge(status: string) {
 }
 
 async function getPendingRequests() {
-  try {
-    return prisma.leaveRequest.findMany({
-      where: { status: "PENDING" },
-      orderBy: { createdAt: "asc" },
-      include: {
-        user: { select: { name: true, avatarUrl: true, department: true } },
-        leaveType: { select: { name: true } },
-      },
-    });
-  } catch {
-    return [];
-  }
+  const result = await prisma.leaveRequest.findMany({
+    where: { status: "PENDING" },
+    orderBy: { createdAt: "asc" },
+    include: {
+      user: { select: { name: true, avatarUrl: true, department: true } },
+      leaveType: { select: { name: true } },
+    },
+  });
+  return result;
 }
 
+type PendingRequest = Awaited<ReturnType<typeof getPendingRequests>>[number];
+
 async function getRecentDecisions() {
-  try {
-    return prisma.leaveRequest.findMany({
-      where: {
-        status: { in: ["APPROVED", "REJECTED"] },
-        reviewedAt: { not: null },
-      },
-      take: 20,
-      orderBy: { reviewedAt: "desc" },
-      include: {
-        user: { select: { name: true, avatarUrl: true } },
-        reviewedBy: { select: { name: true } },
-        leaveType: { select: { name: true } },
-      },
-    });
-  } catch {
-    return [];
-  }
+  const result = await prisma.leaveRequest.findMany({
+    where: {
+      status: { in: ["APPROVED", "REJECTED"] },
+      reviewedAt: { not: null },
+    },
+    take: 20,
+    orderBy: { reviewedAt: "desc" },
+    include: {
+      user: { select: { name: true, avatarUrl: true } },
+      reviewedBy: { select: { name: true } },
+      leaveType: { select: { name: true } },
+    },
+  });
+  return result;
 }
+
+type RecentDecision = Awaited<ReturnType<typeof getRecentDecisions>>[number];
 
 async function getStats() {
   try {
@@ -219,7 +217,7 @@ export default async function LeaveApprovalsPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    pending.map((request) => (
+                    pending.map((request: PendingRequest) => (
                       <TableRow key={request.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
@@ -296,7 +294,7 @@ export default async function LeaveApprovalsPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    recent.map((request) => (
+                    recent.map((request: RecentDecision) => (
                       <TableRow key={request.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">

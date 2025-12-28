@@ -67,8 +67,10 @@ export async function GET(request: Request) {
       },
     });
 
+    type Balance = typeof balances[number];
+
     // Calculate remaining for each type
-    const balancesWithRemaining = balances.map((b) => ({
+    const balancesWithRemaining = balances.map((b: Balance) => ({
       ...b,
       remaining: b.entitlement + b.carriedOver - b.used - b.pending,
     }));

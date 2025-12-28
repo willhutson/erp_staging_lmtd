@@ -22,24 +22,22 @@ import {
 import { Plus, MoreHorizontal, Building2, Users, ExternalLink } from "lucide-react";
 
 async function getOrganizations() {
-  try {
-    const orgs = await prisma.organization.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        _count: {
-          select: {
-            users: true,
-            clients: true,
-            clientInstances: true,
-          },
+  const orgs = await prisma.organization.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      _count: {
+        select: {
+          users: true,
+          clients: true,
+          clientInstances: true,
         },
       },
-    }).catch(() => []);
-    return orgs;
-  } catch {
-    return [];
-  }
+    },
+  });
+  return orgs;
 }
+
+type OrgItem = Awaited<ReturnType<typeof getOrganizations>>[number];
 
 export default async function OrganizationsPage() {
   let organizations: Awaited<ReturnType<typeof getOrganizations>> = [];
@@ -90,7 +88,7 @@ export default async function OrganizationsPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                organizations.map((org) => (
+                organizations.map((org: OrgItem) => (
                   <TableRow key={org.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">

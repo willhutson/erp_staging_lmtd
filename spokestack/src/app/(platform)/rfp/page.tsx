@@ -84,18 +84,17 @@ async function getRfpStats() {
 }
 
 async function getRfps() {
-  try {
-    return prisma.rFP.findMany({
-      take: 50,
-      orderBy: { deadline: "asc" },
-      include: {
-        _count: { select: { subitems: true } },
-      },
-    });
-  } catch {
-    return [];
-  }
+  const result = await prisma.rFP.findMany({
+    take: 50,
+    orderBy: { deadline: "asc" },
+    include: {
+      _count: { select: { subitems: true } },
+    },
+  });
+  return result;
 }
+
+type RfpItem = Awaited<ReturnType<typeof getRfps>>[number];
 
 function formatCurrency(value: number) {
   if (value >= 1000000) {
@@ -118,11 +117,11 @@ export default async function RfpPage() {
 
   // Separate by status for pipeline
   const pipeline = {
-    vetting: rfps.filter((r) => r.status === "VETTING"),
-    active: rfps.filter((r) => r.status === "ACTIVE"),
-    awaitingReview: rfps.filter((r) => r.status === "AWAITING_REVIEW"),
-    readyToSubmit: rfps.filter((r) => r.status === "READY_TO_SUBMIT"),
-    submitted: rfps.filter((r) => ["SUBMITTED", "AWAITING_RESPONSE"].includes(r.status)),
+    vetting: rfps.filter((r: RfpItem) => r.status === "VETTING"),
+    active: rfps.filter((r: RfpItem) => r.status === "ACTIVE"),
+    awaitingReview: rfps.filter((r: RfpItem) => r.status === "AWAITING_REVIEW"),
+    readyToSubmit: rfps.filter((r: RfpItem) => r.status === "READY_TO_SUBMIT"),
+    submitted: rfps.filter((r: RfpItem) => ["SUBMITTED", "AWAITING_RESPONSE"].includes(r.status)),
   };
 
   return (
