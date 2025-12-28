@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Calendar,
 } from "lucide-react";
+import { ResourcesView } from "./resources-view";
 
 async function getTeamCapacity() {
   try {
@@ -295,103 +296,8 @@ export default async function ResourcesPage() {
         </Card>
       )}
 
-      {/* Team Capacity by Department */}
-      <Card>
-        <CardContent className="p-0">
-          <Tabs defaultValue="all" className="w-full">
-            <div className="border-b px-4">
-              <TabsList className="h-12">
-                <TabsTrigger value="all">All ({team.length})</TabsTrigger>
-                {Object.keys(departments).slice(0, 5).map((dept) => (
-                  <TabsTrigger key={dept} value={dept}>
-                    {dept} ({departments[dept].length})
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </div>
-
-            <TabsContent value="all" className="m-0">
-              <TeamCapacityGrid team={team} />
-            </TabsContent>
-
-            {Object.entries(departments).map(([dept, members]) => (
-              <TabsContent key={dept} value={dept} className="m-0">
-                <TeamCapacityGrid team={members} />
-              </TabsContent>
-            ))}
-          </Tabs>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function TeamCapacityGrid({ team }: { team: Awaited<ReturnType<typeof getTeamCapacity>> }) {
-  if (team.length === 0) {
-    return (
-      <div className="text-center py-12 text-muted-foreground">
-        No team members found
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid gap-4 p-4 md:grid-cols-2 lg:grid-cols-3">
-      {team.map((member) => (
-        <Card key={member.id} className="overflow-hidden">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={member.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                  {member.name
-                    ?.split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <Link href={`/team/${member.id}`} className="font-medium hover:underline truncate">
-                    {member.name}
-                  </Link>
-                  {getUtilizationBadge(member.utilization)}
-                </div>
-                <p className="text-xs text-muted-foreground truncate">{member.role}</p>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              <div>
-                <div className="flex items-center justify-between text-sm mb-1">
-                  <span className="text-muted-foreground">Utilization</span>
-                  <span className={`font-medium ${getUtilizationColor(member.utilization)}`}>
-                    {member.utilization}%
-                  </span>
-                </div>
-                <Progress
-                  value={Math.min(member.utilization, 100)}
-                  className="h-2"
-                />
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Hours</span>
-                <span>
-                  <span className="font-medium">{member.hoursLogged}h</span>
-                  <span className="text-muted-foreground"> / {member.capacity}h</span>
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Active Briefs</span>
-                <Badge variant="secondary">{member.activeBriefs}</Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      {/* Resources View with Capacity/Workload/Timeline switcher */}
+      <ResourcesView />
     </div>
   );
 }
