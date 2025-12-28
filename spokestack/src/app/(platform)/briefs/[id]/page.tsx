@@ -116,14 +116,13 @@ export default async function BriefDetailPage({ params }: PageProps) {
   const TypeIcon = typeConfig.icon;
 
   // Calculate time stats
-  type TimeEntry = { hours: number | null; isBillable: boolean };
   const totalHours = brief.timeEntries.reduce(
-    (sum: number, e: TimeEntry) => sum + Number(e.hours || 0),
+    (sum, e) => sum + Number(e.hours || 0),
     0
   );
   const billableHours = brief.timeEntries
-    .filter((e: TimeEntry) => e.isBillable)
-    .reduce((sum: number, e: TimeEntry) => sum + Number(e.hours || 0), 0);
+    .filter((e) => e.isBillable)
+    .reduce((sum, e) => sum + Number(e.hours || 0), 0);
 
   const formData = (brief.formData || {}) as Record<string, unknown>;
 
@@ -229,24 +228,12 @@ export default async function BriefDetailPage({ params }: PageProps) {
             <p className="font-medium">{totalHours.toFixed(1)}h</p>
             {brief.estimatedHours && (
               <p className="text-xs text-muted-foreground">
-                of {brief.estimatedHours}h estimated
+                of {Number(brief.estimatedHours)}h estimated
               </p>
             )}
           </CardContent>
         </Card>
       </div>
-
-      {/* Description */}
-      {brief.description && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Description</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="whitespace-pre-wrap">{brief.description}</p>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Form Data - Dynamic Fields */}
       {Object.keys(formData).length > 0 && (
