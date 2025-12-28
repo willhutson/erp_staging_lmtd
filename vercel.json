@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "cd spokestack && pnpm install && pnpm build",
+  "buildCommand": "cd spokestack && pnpm install && npx prisma generate && pnpm build",
   "installCommand": "cd spokestack && pnpm install",
   "outputDirectory": "spokestack/.next"
 }
