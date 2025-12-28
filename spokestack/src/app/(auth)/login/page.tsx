@@ -45,7 +45,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/admin");
+    router.push("/hub");
     router.refresh();
   };
 
