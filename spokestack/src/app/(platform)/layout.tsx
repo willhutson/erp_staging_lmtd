@@ -17,27 +17,28 @@ export default async function PlatformLayout({
     redirect("/login");
   }
 
-  // Get or create user in database
+  // Get user from database (must be pre-created via admin panel)
   const supabaseUser = await getUser();
   let user = null;
 
   if (supabaseUser) {
-    user = await prisma.user.upsert({
-      where: { supabaseId: supabaseUser.id },
-      update: {
-        email: supabaseUser.email!,
-        lastLoginAt: new Date(),
-      },
-      create: {
-        supabaseId: supabaseUser.id,
-        email: supabaseUser.email!,
-        name:
-          supabaseUser.user_metadata.name ||
-          supabaseUser.user_metadata.full_name,
-        avatarUrl: supabaseUser.user_metadata.avatar_url,
-        lastLoginAt: new Date(),
-      },
+    // Find user by supabaseId or email
+    user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { supabaseId: supabaseUser.id },
+          { email: supabaseUser.email }
+        ]
+      }
     });
+
+    // Link supabaseId if user found by email but not yet linked
+    if (user && !user.supabaseId) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { supabaseId: supabaseUser.id }
+      });
+    }
   }
 
   return (
