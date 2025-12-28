@@ -21,12 +21,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Building2, Megaphone, Check } from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+
+// Module bundles for quick selection
+const MODULE_BUNDLES = [
+  {
+    id: "agency",
+    label: "Agency",
+    description: "Full professional services suite: Clients, Retainers, Projects, CRM, RFP, Resources",
+    modules: ["agency", "briefs", "time", "leave", "team"],
+    color: "bg-emerald-500",
+  },
+  {
+    id: "marketing",
+    label: "Marketing",
+    description: "Creator tracking, media buying, analytics, and campaign management",
+    modules: ["listening", "mediabuying", "analytics", "builder"],
+    color: "bg-purple-500",
+  },
+];
 
 const AVAILABLE_MODULES = [
-  { id: "admin", label: "Admin", description: "User and org management" },
-  { id: "crm", label: "CRM", description: "Companies, contacts, deals" },
+  { id: "admin", label: "Admin", description: "User and org management", required: true },
+  { id: "agency", label: "Agency", description: "Clients, Retainers, Projects, CRM, RFP, Resources" },
   { id: "listening", label: "Listening", description: "Creator and content tracking" },
   { id: "mediabuying", label: "Media Buying", description: "Ad accounts and campaigns" },
   { id: "analytics", label: "Analytics", description: "Performance dashboards" },
@@ -35,7 +54,6 @@ const AVAILABLE_MODULES = [
   { id: "time", label: "Time Tracking", description: "Timesheets and billing" },
   { id: "leave", label: "Leave Management", description: "PTO and absence tracking" },
   { id: "team", label: "Team", description: "Team directory and structure" },
-  { id: "rfp", label: "RFP", description: "Proposal pipeline management" },
 ];
 
 interface Organization {
@@ -57,7 +75,7 @@ export default function NewInstancePage() {
     tier: "PRO",
     primaryColor: "#52EDC7",
     secondaryColor: "#1BA098",
-    enabledModules: ["admin", "crm", "analytics"],
+    enabledModules: ["admin"],
   });
 
   useEffect(() => {
@@ -88,12 +106,35 @@ export default function NewInstancePage() {
   };
 
   const toggleModule = (moduleId: string) => {
+    const module = AVAILABLE_MODULES.find(m => m.id === moduleId);
+    if (module && 'required' in module && module.required) return; // Can't toggle required modules
+
     setFormData((prev) => ({
       ...prev,
       enabledModules: prev.enabledModules.includes(moduleId)
         ? prev.enabledModules.filter((m) => m !== moduleId)
         : [...prev.enabledModules, moduleId],
     }));
+  };
+
+  const toggleBundle = (bundleId: string) => {
+    const bundle = MODULE_BUNDLES.find(b => b.id === bundleId);
+    if (!bundle) return;
+
+    const hasAllModules = bundle.modules.every(m => formData.enabledModules.includes(m));
+
+    setFormData((prev) => ({
+      ...prev,
+      enabledModules: hasAllModules
+        ? prev.enabledModules.filter((m) => !bundle.modules.includes(m) || m === "admin")
+        : Array.from(new Set([...prev.enabledModules, ...bundle.modules])),
+    }));
+  };
+
+  const isBundleEnabled = (bundleId: string) => {
+    const bundle = MODULE_BUNDLES.find(b => b.id === bundleId);
+    if (!bundle) return false;
+    return bundle.modules.every(m => formData.enabledModules.includes(m));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -318,33 +359,93 @@ export default function NewInstancePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Enabled Modules</CardTitle>
+            <CardTitle>Module Bundles</CardTitle>
             <CardDescription>
-              Select which modules are available in this instance
+              Quick-start with pre-configured module packages
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2">
+              {MODULE_BUNDLES.map((bundle) => {
+                const isEnabled = isBundleEnabled(bundle.id);
+                const Icon = bundle.id === "agency" ? Building2 : Megaphone;
+                return (
+                  <div
+                    key={bundle.id}
+                    onClick={() => toggleBundle(bundle.id)}
+                    className={`relative flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                      isEnabled
+                        ? "border-primary bg-primary/5"
+                        : "border-muted hover:border-muted-foreground/30"
+                    }`}
+                  >
+                    {isEnabled && (
+                      <div className="absolute top-2 right-2">
+                        <Check className="h-5 w-5 text-primary" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className={`h-10 w-10 rounded-lg ${bundle.color} flex items-center justify-center`}>
+                        <Icon className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">{bundle.label}</h4>
+                        <p className="text-xs text-muted-foreground">{bundle.modules.length} modules</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{bundle.description}</p>
+                    <div className="flex flex-wrap gap-1 mt-3">
+                      {bundle.modules.map((m) => (
+                        <Badge key={m} variant="secondary" className="text-xs">
+                          {AVAILABLE_MODULES.find((mod) => mod.id === m)?.label || m}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Individual Modules</CardTitle>
+            <CardDescription>
+              Fine-tune which modules are available in this instance
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 md:grid-cols-2">
-              {AVAILABLE_MODULES.map((module) => (
-                <div
-                  key={module.id}
-                  className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
-                >
-                  <Checkbox
-                    id={module.id}
-                    checked={formData.enabledModules.includes(module.id)}
-                    onCheckedChange={() => toggleModule(module.id)}
-                  />
-                  <div className="space-y-0.5">
-                    <Label htmlFor={module.id} className="cursor-pointer font-medium">
-                      {module.label}
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      {module.description}
-                    </p>
+              {AVAILABLE_MODULES.map((module) => {
+                const isRequired = 'required' in module && module.required;
+                return (
+                  <div
+                    key={module.id}
+                    className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors ${
+                      isRequired ? "bg-muted/50" : "hover:bg-muted/50"
+                    }`}
+                  >
+                    <Checkbox
+                      id={module.id}
+                      checked={formData.enabledModules.includes(module.id)}
+                      onCheckedChange={() => toggleModule(module.id)}
+                      disabled={isRequired}
+                    />
+                    <div className="space-y-0.5">
+                      <Label htmlFor={module.id} className={`font-medium ${isRequired ? "" : "cursor-pointer"}`}>
+                        {module.label}
+                        {isRequired && (
+                          <Badge variant="outline" className="ml-2 text-xs">Required</Badge>
+                        )}
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        {module.description}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>

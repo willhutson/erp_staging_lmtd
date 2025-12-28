@@ -49,6 +49,11 @@ import {
   Clock,
   Palmtree,
   Target,
+  Briefcase,
+  Calendar,
+  FolderKanban,
+  Repeat,
+  TrendingUp,
 } from "lucide-react";
 import type { TenantConfig } from "@/lib/tenant";
 
@@ -84,16 +89,18 @@ const modules = [
     ],
   },
   {
-    id: "crm",
-    label: "CRM",
-    icon: Handshake,
-    href: "/admin/crm",
-    color: "text-blue-500",
+    id: "agency",
+    label: "Agency",
+    icon: Briefcase,
+    href: "/clients",
+    color: "text-emerald-500",
     items: [
-      { label: "Companies", href: "/admin/crm/companies", icon: Building2 },
-      { label: "Contacts", href: "/admin/crm/contacts", icon: Users },
-      { label: "Deals", href: "/admin/crm/deals", icon: Handshake },
-      { label: "Tasks", href: "/admin/crm/tasks", icon: CheckSquare },
+      { label: "Clients", href: "/clients", icon: Building2 },
+      { label: "Retainers", href: "/retainers", icon: Repeat },
+      { label: "Projects", href: "/projects", icon: FolderKanban },
+      { label: "Resources", href: "/resources", icon: Calendar },
+      { label: "CRM", href: "/crm", icon: Handshake },
+      { label: "RFP Pipeline", href: "/rfp", icon: Target },
     ],
   },
   {
@@ -194,19 +201,7 @@ const modules = [
       { label: "Org Chart", href: "/team/org-chart", icon: Grid3X3 },
     ],
   },
-  {
-    id: "rfp",
-    label: "RFP",
-    icon: Target,
-    href: "/rfp",
-    color: "text-rose-500",
-    items: [
-      { label: "Pipeline", href: "/rfp", icon: Target },
-      { label: "Active", href: "/rfp/active", icon: FileText },
-      { label: "Won/Lost", href: "/rfp/closed", icon: CheckSquare },
-    ],
-  },
-];
+  ];
 
 interface AppSidebarProps {
   user?: {
@@ -236,6 +231,14 @@ export function AppSidebar({ user, tenant }: AppSidebarProps) {
   // Determine which module is active
   const getActiveModule = () => {
     if (pathname.startsWith("/superadmin")) return "superadmin";
+    // Agency module routes
+    if (pathname.startsWith("/clients")) return "agency";
+    if (pathname.startsWith("/retainers")) return "agency";
+    if (pathname.startsWith("/projects")) return "agency";
+    if (pathname.startsWith("/resources")) return "agency";
+    if (pathname.startsWith("/crm")) return "agency";
+    if (pathname.startsWith("/rfp")) return "agency";
+    // Other modules
     if (pathname.startsWith("/listening")) return "listening";
     if (pathname.startsWith("/mediabuying")) return "media-buying";
     if (pathname.startsWith("/analytics")) return "analytics";
@@ -244,7 +247,6 @@ export function AppSidebar({ user, tenant }: AppSidebarProps) {
     if (pathname.startsWith("/time")) return "time";
     if (pathname.startsWith("/leave")) return "leave";
     if (pathname.startsWith("/team")) return "team";
-    if (pathname.startsWith("/rfp")) return "rfp";
     return "admin";
   };
 
