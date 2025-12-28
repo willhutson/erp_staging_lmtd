@@ -116,14 +116,13 @@ export default async function BriefDetailPage({ params }: PageProps) {
   const TypeIcon = typeConfig.icon;
 
   // Calculate time stats
-  type TimeEntry = { hours: number | null; isBillable: boolean };
   const totalHours = brief.timeEntries.reduce(
-    (sum: number, e: TimeEntry) => sum + Number(e.hours || 0),
+    (sum, e) => sum + Number(e.hours || 0),
     0
   );
   const billableHours = brief.timeEntries
-    .filter((e: TimeEntry) => e.isBillable)
-    .reduce((sum: number, e: TimeEntry) => sum + Number(e.hours || 0), 0);
+    .filter((e) => e.isBillable)
+    .reduce((sum, e) => sum + Number(e.hours || 0), 0);
 
   const formData = (brief.formData || {}) as Record<string, unknown>;
 
