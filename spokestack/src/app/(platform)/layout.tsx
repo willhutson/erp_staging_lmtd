@@ -22,22 +22,27 @@ export default async function PlatformLayout({
   let user = null;
 
   if (supabaseUser) {
-    // Find user by supabaseId or email
-    user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { supabaseId: supabaseUser.id },
-          { email: supabaseUser.email }
-        ]
-      }
-    });
-
-    // Link supabaseId if user found by email but not yet linked
-    if (user && !user.supabaseId) {
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { supabaseId: supabaseUser.id }
+    try {
+      // Find user by supabaseId or email
+      user = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { supabaseId: supabaseUser.id },
+            { email: supabaseUser.email ?? undefined }
+          ]
+        }
       });
+
+      // Link supabaseId if user found by email but not yet linked
+      if (user && !user.supabaseId) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { supabaseId: supabaseUser.id }
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user from database:", error);
+      // Continue without user data - they can still access the app
     }
   }
 
