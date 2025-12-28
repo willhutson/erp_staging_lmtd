@@ -31,11 +31,26 @@ import {
   Settings,
 } from "lucide-react";
 
+interface InstanceWithCount {
+  id: string;
+  name: string;
+  slug: string;
+  customDomain: string | null;
+  customDomainVerified: boolean;
+  tier: string;
+  isActive: boolean;
+  primaryColor: string | null;
+  logoMark: string | null;
+  enabledModules: string[];
+  createdAt: Date;
+  _count: { users: number };
+}
+
 // TODO: Get organizationId from session
-async function getOrgInstances(organizationId?: string) {
+async function getOrgInstances(organizationId?: string): Promise<InstanceWithCount[]> {
   try {
     // For now, get all instances - will filter by org from session later
-    return prisma.clientInstance.findMany({
+    const instances = await prisma.clientInstance.findMany({
       orderBy: { createdAt: "desc" },
       include: {
         _count: {
@@ -45,6 +60,7 @@ async function getOrgInstances(organizationId?: string) {
       // When we have session:
       // where: { organizationId },
     });
+    return instances as InstanceWithCount[];
   } catch (error) {
     console.error("Error fetching instances:", error);
     return [];
