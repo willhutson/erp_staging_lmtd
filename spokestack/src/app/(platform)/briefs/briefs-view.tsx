@@ -280,7 +280,7 @@ function GanttView({ briefs }: { briefs: typeof DUMMY_BRIEFS }) {
   });
 
   // Group briefs by assignee
-  const assignees = [...new Set(briefs.map((b) => b.assignee))];
+  const assignees = Array.from(new Set(briefs.map((b) => b.assignee)));
 
   const getBarPosition = (deadline: string) => {
     const deadlineDate = new Date(deadline);

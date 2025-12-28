@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -21,50 +20,125 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Loader2, Building2, Megaphone, Check, ClipboardList } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  Building2,
+  Megaphone,
+  Check,
+  ClipboardList,
+  Eye,
+  MessageSquare,
+  Users,
+  FolderKanban,
+  Handshake,
+  Target,
+  Briefcase,
+  Clock,
+  Palmtree,
+  Headphones,
+  CreditCard,
+  BarChart3,
+  Palette,
+  FileCheck,
+  TrendingUp,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 // Module bundles for quick selection
 const MODULE_BUNDLES = [
   {
     id: "erp",
     label: "ERP",
-    description: "Core business operations: work requests, timesheets, leave management, team directory",
-    modules: ["briefs", "time", "leave", "team"],
+    tagline: "Core Operations",
+    description: "Business operations: work requests, time tracking, leave management, team directory, and RFP pipeline",
+    modules: ["briefs", "time", "leave", "team", "rfp"],
     color: "bg-indigo-500",
-    icon: "clipboard",
+    icon: ClipboardList,
   },
   {
     id: "agency",
     label: "Agency",
-    description: "Professional services suite: client management, retainers, projects, CRM, new business pipeline",
-    modules: ["agency"],
+    tagline: "Professional Services",
+    description: "Client management, retainers, project budgets, resource allocation, and CRM",
+    modules: ["clients", "retainers", "projects", "resources", "crm"],
     color: "bg-emerald-500",
-    icon: "building",
+    icon: Building2,
   },
   {
     id: "marketing",
     label: "Marketing",
-    description: "Digital marketing tools: creator tracking, media buying, analytics, custom dashboards",
-    modules: ["listening", "mediabuying", "analytics", "builder"],
+    tagline: "Digital Tools",
+    description: "Creator tracking, brand trackers, media buying, analytics, and custom dashboard builder",
+    modules: ["listening", "trackers", "mediabuying", "analytics", "builder"],
     color: "bg-purple-500",
-    icon: "megaphone",
+    icon: Megaphone,
+  },
+  {
+    id: "portal",
+    label: "Client",
+    tagline: "Client Access",
+    description: "White-label client portal for approvals, deliverables, and performance reports",
+    modules: ["portal-dashboard", "portal-approvals", "portal-deliverables", "portal-reports"],
+    color: "bg-cyan-500",
+    icon: Eye,
   },
 ];
 
-const AVAILABLE_MODULES = [
-  { id: "admin", label: "Admin", description: "User and org management", required: true },
-  { id: "agency", label: "Agency", description: "Clients, Retainers, Projects, CRM, RFP, Resources" },
-  { id: "listening", label: "Listening", description: "Creator and content tracking" },
-  { id: "mediabuying", label: "Media Buying", description: "Ad accounts and campaigns" },
-  { id: "analytics", label: "Analytics", description: "Performance dashboards" },
-  { id: "builder", label: "Builder", description: "Custom dashboards and widgets" },
-  { id: "briefs", label: "Briefs", description: "Work request management" },
-  { id: "time", label: "Time Tracking", description: "Timesheets and billing" },
-  { id: "leave", label: "Leave Management", description: "PTO and absence tracking" },
-  { id: "team", label: "Team", description: "Team directory and structure" },
+// All available modules grouped by category
+const MODULE_CATEGORIES = [
+  {
+    category: "Core",
+    modules: [
+      { id: "admin", label: "Admin", description: "User & org management, roles, settings", icon: Users, required: true },
+      { id: "chat", label: "SpokeChat", description: "Team messaging, channels, DMs, announcements", icon: MessageSquare },
+    ],
+  },
+  {
+    category: "ERP",
+    modules: [
+      { id: "briefs", label: "Briefs", description: "Work requests with kanban, list, and timeline views", icon: FileCheck },
+      { id: "time", label: "Time Tracking", description: "Timesheets, timers, and billing", icon: Clock },
+      { id: "leave", label: "Leave", description: "PTO requests, calendar, approvals", icon: Palmtree },
+      { id: "team", label: "Team", description: "Directory, departments, org chart", icon: Users },
+      { id: "rfp", label: "RFP", description: "New business pipeline with kanban and timeline", icon: Target },
+    ],
+  },
+  {
+    category: "Agency",
+    modules: [
+      { id: "clients", label: "Clients", description: "Client profiles and brand settings", icon: Building2 },
+      { id: "retainers", label: "Retainers", description: "Monthly retainer tracking and allocation", icon: Briefcase },
+      { id: "projects", label: "Projects", description: "Project budgets, hours, and Gantt charts", icon: FolderKanban },
+      { id: "resources", label: "Resources", description: "Team capacity, workload, and scheduling", icon: TrendingUp },
+      { id: "crm", label: "CRM", description: "Deals, contacts, companies pipeline", icon: Handshake },
+    ],
+  },
+  {
+    category: "Marketing",
+    modules: [
+      { id: "listening", label: "Listening", description: "Creator roster and content tracking", icon: Headphones },
+      { id: "trackers", label: "Brand Trackers", description: "Multi-platform brand monitoring", icon: TrendingUp },
+      { id: "mediabuying", label: "Media Buying", description: "Ad accounts, campaigns, budgets", icon: CreditCard },
+      { id: "analytics", label: "Analytics", description: "Performance dashboards and reporting", icon: BarChart3 },
+      { id: "builder", label: "Builder", description: "Custom dashboards and widget library", icon: Palette },
+    ],
+  },
+  {
+    category: "Client Portal",
+    modules: [
+      { id: "portal-dashboard", label: "Portal Dashboard", description: "Client overview and stats", icon: Eye },
+      { id: "portal-approvals", label: "Approvals", description: "Deliverable review and approval workflow", icon: FileCheck },
+      { id: "portal-deliverables", label: "Deliverables", description: "Asset library with downloads", icon: FolderKanban },
+      { id: "portal-reports", label: "Reports", description: "Performance reports and analytics", icon: BarChart3 },
+    ],
+  },
 ];
+
+// Flatten for easy lookup
+const ALL_MODULES = MODULE_CATEGORIES.flatMap(cat => cat.modules);
 
 interface Organization {
   id: string;
@@ -116,7 +190,7 @@ export default function NewInstancePage() {
   };
 
   const toggleModule = (moduleId: string) => {
-    const module = AVAILABLE_MODULES.find(m => m.id === moduleId);
+    const module = ALL_MODULES.find(m => m.id === moduleId);
     if (module && 'required' in module && module.required) return; // Can't toggle required modules
 
     setFormData((prev) => ({
@@ -375,10 +449,10 @@ export default function NewInstancePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {MODULE_BUNDLES.map((bundle) => {
                 const isEnabled = isBundleEnabled(bundle.id);
-                const Icon = bundle.id === "erp" ? ClipboardList : bundle.id === "agency" ? Building2 : Megaphone;
+                const Icon = bundle.icon;
                 return (
                   <div
                     key={bundle.id}
@@ -400,14 +474,14 @@ export default function NewInstancePage() {
                       </div>
                       <div>
                         <h4 className="font-semibold">{bundle.label}</h4>
-                        <p className="text-xs text-muted-foreground">{bundle.modules.length} modules</p>
+                        <p className="text-xs text-muted-foreground">{bundle.tagline}</p>
                       </div>
                     </div>
                     <p className="text-sm text-muted-foreground">{bundle.description}</p>
                     <div className="flex flex-wrap gap-1 mt-3">
                       {bundle.modules.map((m) => (
                         <Badge key={m} variant="secondary" className="text-xs">
-                          {AVAILABLE_MODULES.find((mod) => mod.id === m)?.label || m}
+                          {ALL_MODULES.find((mod) => mod.id === m)?.label || m}
                         </Badge>
                       ))}
                     </div>
@@ -425,38 +499,52 @@ export default function NewInstancePage() {
               Fine-tune which modules are available in this instance
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 md:grid-cols-2">
-              {AVAILABLE_MODULES.map((module) => {
-                const isRequired = 'required' in module && module.required;
-                return (
-                  <div
-                    key={module.id}
-                    className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors ${
-                      isRequired ? "bg-muted/50" : "hover:bg-muted/50"
-                    }`}
-                  >
-                    <Checkbox
-                      id={module.id}
-                      checked={formData.enabledModules.includes(module.id)}
-                      onCheckedChange={() => toggleModule(module.id)}
-                      disabled={isRequired}
-                    />
-                    <div className="space-y-0.5">
-                      <Label htmlFor={module.id} className={`font-medium ${isRequired ? "" : "cursor-pointer"}`}>
-                        {module.label}
-                        {isRequired && (
-                          <Badge variant="outline" className="ml-2 text-xs">Required</Badge>
-                        )}
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        {module.description}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+          <CardContent className="space-y-6">
+            {MODULE_CATEGORIES.map((category) => (
+              <div key={category.category}>
+                <h4 className="text-sm font-semibold text-muted-foreground mb-3">{category.category}</h4>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {category.modules.map((module) => {
+                    const isRequired = 'required' in module && module.required;
+                    const Icon = module.icon;
+                    return (
+                      <div
+                        key={module.id}
+                        onClick={() => !isRequired && toggleModule(module.id)}
+                        className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                          formData.enabledModules.includes(module.id)
+                            ? "border-primary bg-primary/5"
+                            : "hover:bg-muted/50"
+                        } ${isRequired ? "bg-muted/50 cursor-default" : ""}`}
+                      >
+                        <div className={`h-8 w-8 rounded-md flex items-center justify-center flex-shrink-0 ${
+                          formData.enabledModules.includes(module.id) ? "bg-primary/20" : "bg-muted"
+                        }`}>
+                          <Icon className={`h-4 w-4 ${formData.enabledModules.includes(module.id) ? "text-primary" : "text-muted-foreground"}`} />
+                        </div>
+                        <div className="space-y-0.5 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm">{module.label}</span>
+                            {isRequired && (
+                              <Badge variant="outline" className="text-xs">Required</Badge>
+                            )}
+                            {formData.enabledModules.includes(module.id) && !isRequired && (
+                              <Check className="h-4 w-4 text-primary ml-auto" />
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {module.description}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {category.category !== MODULE_CATEGORIES[MODULE_CATEGORIES.length - 1].category && (
+                  <Separator className="mt-6" />
+                )}
+              </div>
+            ))}
           </CardContent>
         </Card>
 
