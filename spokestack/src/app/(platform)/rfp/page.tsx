@@ -1,29 +1,9 @@
 export const dynamic = "force-dynamic";
 
-import Link from "next/link";
 import prisma from "@/lib/prisma";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import {
-  Plus,
   Target,
   Trophy,
   XCircle,
@@ -147,17 +127,11 @@ export default async function RfpPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">RFP Pipeline</h1>
-          <p className="text-muted-foreground">
-            Track and manage request for proposals
-          </p>
-        </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          New RFP
-        </Button>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">RFP Pipeline</h1>
+        <p className="text-muted-foreground">
+          Track and manage request for proposals
+        </p>
       </div>
 
       {/* Stats */}
