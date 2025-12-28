@@ -5,7 +5,7 @@ export default async function Home() {
   const session = await getSession()
 
   if (session) {
-    redirect("/admin") // Go to dashboard if logged in
+    redirect("/hub") // Go to module hub if logged in
   } else {
     redirect("/login") // Go to login if not
   }
