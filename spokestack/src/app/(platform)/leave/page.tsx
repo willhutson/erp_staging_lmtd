@@ -1,7 +1,7 @@
-export const dynamic = "force-dynamic";
+"use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import prisma from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Plus,
   Calendar,
   Palmtree,
@@ -26,13 +34,12 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  AlertCircle,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-// Leave type configurations
-const LEAVE_TYPES = [
+// Leave type configurations - Sick leave removed from top display
+const LEAVE_TYPES_DISPLAY = [
   { id: "ANNUAL", label: "Annual Leave", icon: Palmtree, color: "text-green-500", days: 22 },
-  { id: "SICK", label: "Sick Leave", icon: Stethoscope, color: "text-red-500", days: 15 },
   { id: "PERSONAL", label: "Personal Leave", icon: CalendarDays, color: "text-blue-500", days: 5 },
   { id: "PARENTAL", label: "Parental Leave", icon: Baby, color: "text-purple-500", days: 45 },
 ];
@@ -71,70 +78,55 @@ function getStatusBadge(status: string) {
   }
 }
 
-async function getLeaveBalance() {
-  // Mock data - in production, calculate from actual leave requests
-  return {
-    annual: { used: 8, total: 22 },
-    sick: { used: 2, total: 15 },
-    personal: { used: 1, total: 5 },
-    parental: { used: 0, total: 45 },
-  };
+interface LeaveBalance {
+  annual: { used: number; total: number };
+  sick: { used: number; total: number };
+  personal: { used: number; total: number };
+  parental: { used: number; total: number };
 }
 
-async function getLeaveRequests() {
-  try {
-    return prisma.leaveRequest.findMany({
-      take: 20,
-      orderBy: { createdAt: "desc" },
-      include: {
-        user: { select: { name: true, avatarUrl: true } },
-        reviewedBy: { select: { name: true } },
-        leaveType: { select: { name: true } },
-      },
-    });
-  } catch {
-    return [];
-  }
+interface LeaveRequest {
+  id: string;
+  startDate: Date;
+  endDate: Date;
+  totalDays: number;
+  status: string;
+  leaveType?: { name: string } | null;
+  user?: { name: string; avatarUrl: string | null } | null;
 }
 
-async function getUpcomingLeave() {
-  try {
-    const today = new Date();
-    return prisma.leaveRequest.findMany({
-      where: {
-        status: "APPROVED",
-        startDate: { gte: today },
-      },
-      take: 5,
-      orderBy: { startDate: "asc" },
-      include: {
-        user: { select: { name: true, avatarUrl: true } },
-      },
-    });
-  } catch {
-    return [];
-  }
-}
-
-export default async function LeavePage() {
-  let balance = {
+export default function LeavePage() {
+  const router = useRouter();
+  const [sickLeaveDialogOpen, setSickLeaveDialogOpen] = useState(false);
+  const [balance, setBalance] = useState<LeaveBalance>({
     annual: { used: 0, total: 22 },
     sick: { used: 0, total: 15 },
     personal: { used: 0, total: 5 },
     parental: { used: 0, total: 45 },
-  };
-  let requests: Awaited<ReturnType<typeof getLeaveRequests>> = [];
-  let upcoming: Awaited<ReturnType<typeof getUpcomingLeave>> = [];
+  });
+  const [requests, setRequests] = useState<LeaveRequest[]>([]);
+  const [upcoming, setUpcoming] = useState<LeaveRequest[]>([]);
 
-  try {
-    [balance, requests, upcoming] = await Promise.all([
-      getLeaveBalance(),
-      getLeaveRequests(),
-      getUpcomingLeave(),
-    ]);
-  } catch {
-    // Fallback to defaults on error
-  }
+  useEffect(() => {
+    // Mock data - in production, fetch from API
+    setBalance({
+      annual: { used: 8, total: 22 },
+      sick: { used: 2, total: 15 },
+      personal: { used: 1, total: 5 },
+      parental: { used: 0, total: 45 },
+    });
+  }, []);
+
+  const sickDaysRemaining = balance.sick.total - balance.sick.used;
+
+  const handleSickLeaveClick = () => {
+    setSickLeaveDialogOpen(true);
+  };
+
+  const handleContinueToSickLeave = () => {
+    setSickLeaveDialogOpen(false);
+    router.push("/leave/request?type=sick");
+  };
 
   return (
     <div className="space-y-6">
@@ -146,21 +138,25 @@ export default async function LeavePage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
-            <Calendar className="mr-2 h-4 w-4" />
-            View Calendar
+          <Button variant="outline" asChild>
+            <Link href="/leave/calendar">
+              <Calendar className="mr-2 h-4 w-4" />
+              View Calendar
+            </Link>
           </Button>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Request Leave
+          <Button asChild>
+            <Link href="/leave/request">
+              <Plus className="mr-2 h-4 w-4" />
+              Request Leave
+            </Link>
           </Button>
         </div>
       </div>
 
-      {/* Leave Balances */}
-      <div className="grid gap-4 md:grid-cols-4">
-        {LEAVE_TYPES.map((type) => {
-          const balanceKey = type.id.toLowerCase() as keyof typeof balance;
+      {/* Leave Balances - Only shows Annual, Personal, Parental (not Sick) */}
+      <div className="grid gap-4 md:grid-cols-3">
+        {LEAVE_TYPES_DISPLAY.map((type) => {
+          const balanceKey = type.id.toLowerCase() as keyof LeaveBalance;
           const typeBalance = balance[balanceKey] || { used: 0, total: type.days };
           const remaining = typeBalance.total - typeBalance.used;
           const usedPercent = (typeBalance.used / typeBalance.total) * 100;
@@ -270,7 +266,7 @@ export default async function LeavePage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-medium">Upcoming Leave</CardTitle>
-              <CardDescription>Who's off soon</CardDescription>
+              <CardDescription>Who&apos;s off soon</CardDescription>
             </CardHeader>
             <CardContent>
               {upcoming.length === 0 ? (
@@ -315,22 +311,68 @@ export default async function LeavePage() {
               <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start" size="sm">
-                <Palmtree className="mr-2 h-4 w-4 text-green-500" />
-                Request Annual Leave
+              <Button variant="outline" className="w-full justify-start" size="sm" asChild>
+                <Link href="/leave/request?type=annual">
+                  <Palmtree className="mr-2 h-4 w-4 text-green-500" />
+                  Request Annual Leave
+                </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start" size="sm">
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                size="sm"
+                onClick={handleSickLeaveClick}
+              >
                 <Stethoscope className="mr-2 h-4 w-4 text-red-500" />
-                Report Sick Day
+                Request Sick Day
               </Button>
-              <Button variant="outline" className="w-full justify-start" size="sm">
-                <Calendar className="mr-2 h-4 w-4" />
-                View Team Calendar
+              <Button variant="outline" className="w-full justify-start" size="sm" asChild>
+                <Link href="/leave/calendar">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  View Team Calendar
+                </Link>
               </Button>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Sick Leave Confirmation Dialog */}
+      <Dialog open={sickLeaveDialogOpen} onOpenChange={setSickLeaveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Stethoscope className="h-5 w-5 text-red-500" />
+              Request Sick Day
+            </DialogTitle>
+            <DialogDescription>
+              You have <span className="font-semibold text-foreground">{sickDaysRemaining} sick days</span> remaining this year.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+              <div>
+                <p className="text-sm font-medium">Sick Leave Balance</p>
+                <p className="text-xs text-muted-foreground">
+                  {balance.sick.used} of {balance.sick.total} days used
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold">{sickDaysRemaining}</p>
+                <p className="text-xs text-muted-foreground">days remaining</p>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSickLeaveDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleContinueToSickLeave}>
+              Continue to Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
