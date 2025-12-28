@@ -1,0 +1,1247 @@
+// SpokeStack - Social Media Buying & Listening Platform
+// Prisma Schema v1.0
+//
+// Standalone SaaS platform with modules:
+// - /Admin - Organization & user management
+// - /MediaBuying - Ad account management
+// - /Analytics - Performance dashboards
+// - /Listening - Creator/influencer management
+// - /Builder - WYSIWYG dashboard builder
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AUTHENTICATION & USERS
+// ═══════════════════════════════════════════════════════════════════════════
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  avatarUrl     String?
+
+  // Supabase Auth
+  supabaseId    String?   @unique
+
+  // Profile
+  phone         String?
+  timezone      String    @default("UTC")
+
+  // Status
+  isActive      Boolean   @default(true)
+  emailVerified DateTime?
+  lastLoginAt   DateTime?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  memberships       OrganizationMember[]
+  clientAccess      ClientInstanceUser[]
+
+  // CRM ownership
+  ownedContacts     CrmContact[]        @relation("ContactOwner")
+  ownedDeals        CrmDeal[]           @relation("DealOwner")
+
+  // CRM tasks
+  assignedTasks     CrmTask[]           @relation("TaskAssignee")
+  createdTasks      CrmTask[]           @relation("TaskCreator")
+
+  // Notes & Activities
+  notes             CrmNote[]
+  activities        CrmActivity[]
+
+  // Ad accounts
+  connectedAdAccounts AdAccount[]
+
+  // Dashboards
+  createdDashboards Dashboard[]         @relation("DashboardCreator")
+
+  @@index([email])
+  @@index([supabaseId])
+  @@map("users")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MULTI-TENANCY
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  type        OrgType  @default(AGENCY)
+
+  // Hierarchy
+  parentId    String?
+  parent      Organization?  @relation("OrgHierarchy", fields: [parentId], references: [id])
+  children    Organization[] @relation("OrgHierarchy")
+
+  // Branding
+  logo        String?
+  primaryColor String?
+
+  // Settings
+  settings    Json     @default("{}")
+
+  // Module enablement
+  enabledModules String[] @default(["ADMIN"])
+
+  // Status
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members         OrganizationMember[]
+  companies       CrmCompany[]
+  contacts        CrmContact[]
+  deals           CrmDeal[]
+  tasks           CrmTask[]
+  notes           CrmNote[]
+  activities      CrmActivity[]
+  creators        Creator[]
+  campaigns       SocialCampaign[]
+  adAccounts      AdAccount[]
+  dashboards      Dashboard[]
+  clientInstances ClientInstance[]
+
+  @@index([slug])
+  @@index([parentId])
+  @@map("organizations")
+}
+
+enum OrgType {
+  PLATFORM  // SpokeStack system level
+  AGENCY    // Marketing agencies (e.g., LMTD)
+  BRAND     // End clients managed by agencies
+}
+
+model OrganizationMember {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role            MemberRole   @default(MEMBER)
+  permissions     String[]     // Granular permission overrides
+
+  invitedBy       String?
+  invitedAt       DateTime?
+  joinedAt        DateTime     @default(now())
+  isActive        Boolean      @default(true)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+  @@index([organizationId])
+  @@map("organization_members")
+}
+
+enum MemberRole {
+  OWNER   // Full access, can delete org
+  ADMIN   // Full access except billing/deletion
+  MEMBER  // Standard access
+  VIEWER  // Read-only access
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CRM CORE
+// ═══════════════════════════════════════════════════════════════════════════
+
+model CrmCompany {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Identity
+  name            String
+  legalName       String?
+  industry        String?
+  website         String?
+  logo            String?
+
+  // Classification
+  size            CompanySize?
+  type            CompanyType  @default(PROSPECT)
+
+  // Contact info
+  email           String?
+  phone           String?
+
+  // Address
+  address         String?
+  city            String?
+  state           String?
+  country         String?
+  postalCode      String?
+
+  // Social
+  linkedinUrl     String?
+  twitterHandle   String?
+
+  // Relations
+  contacts        CrmContact[]
+  deals           CrmDeal[]
+
+  // Metadata
+  tags            String[]
+  customFields    Json      @default("{}")
+
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, name])
+  @@index([type])
+  @@map("crm_companies")
+}
+
+enum CompanySize {
+  SOLO        // 1 person
+  SMALL       // 2-10
+  MEDIUM      // 11-50
+  LARGE       // 51-200
+  ENTERPRISE  // 200+
+}
+
+enum CompanyType {
+  PROSPECT
+  CLIENT
+  PARTNER
+  VENDOR
+  COMPETITOR
+}
+
+model CrmContact {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  companyId       String?
+  company         CrmCompany? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  // Identity
+  firstName       String
+  lastName        String
+  email           String?
+  phone           String?
+  mobile          String?
+  avatar          String?
+
+  // Professional
+  title           String?
+  department      String?
+
+  // Classification
+  type            ContactType   @default(LEAD)
+  status          ContactStatus @default(ACTIVE)
+  source          String?
+
+  // Social
+  linkedinUrl     String?
+  twitterHandle   String?
+
+  // CRM Relations
+  deals           CrmDeal[]
+  tasks           CrmTask[]
+  notes           CrmNote[]
+  activities      CrmActivity[]
+
+  // Creator extension
+  creator         Creator?
+
+  // Owner
+  ownerId         String?
+  owner           User?    @relation("ContactOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
+  // Metadata
+  tags            String[]
+  customFields    Json      @default("{}")
+
+  isActive        Boolean   @default(true)
+  lastContactedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, email])
+  @@index([companyId])
+  @@index([type])
+  @@index([status])
+  @@index([ownerId])
+  @@map("crm_contacts")
+}
+
+enum ContactType {
+  LEAD
+  PROSPECT
+  CLIENT
+  PARTNER
+  CREATOR
+  VENDOR
+  OTHER
+}
+
+enum ContactStatus {
+  ACTIVE
+  INACTIVE
+  CHURNED
+  DO_NOT_CONTACT
+}
+
+model CrmDeal {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contactId       String?
+  contact         CrmContact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  companyId       String?
+  company         CrmCompany? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  // Deal info
+  name            String
+  description     String?  @db.Text
+
+  // Pipeline
+  stage           DealStage @default(LEAD)
+  probability     Int       @default(0)  // 0-100
+
+  // Value
+  amount          Decimal?  @db.Decimal(12, 2)
+  currency        String    @default("USD")
+  recurringType   RecurringType?
+
+  // Dates
+  expectedClose   DateTime?
+  actualClose     DateTime?
+
+  // Outcome
+  status          DealStatus @default(OPEN)
+  lostReason      String?
+  wonReason       String?
+
+  // Owner
+  ownerId         String?
+  owner           User?    @relation("DealOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
+  // Relations
+  tasks           CrmTask[]
+  notes           CrmNote[]
+  activities      CrmActivity[]
+  campaigns       SocialCampaign[]
+
+  // Metadata
+  tags            String[]
+  customFields    Json      @default("{}")
+
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([organizationId])
+  @@index([stage])
+  @@index([status])
+  @@index([ownerId])
+  @@index([expectedClose])
+  @@map("crm_deals")
+}
+
+enum DealStage {
+  LEAD
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATION
+  CLOSED
+}
+
+enum DealStatus {
+  OPEN
+  WON
+  LOST
+}
+
+enum RecurringType {
+  ONE_TIME
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+}
+
+model CrmTask {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contactId       String?
+  contact         CrmContact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  dealId          String?
+  deal            CrmDeal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
+
+  // Task details
+  title           String
+  description     String?  @db.Text
+
+  // Scheduling
+  dueDate         DateTime?
+  reminderAt      DateTime?
+
+  // Status
+  completed       Boolean  @default(false)
+  completedAt     DateTime?
+  priority        CrmPriority @default(MEDIUM)
+
+  // Assignment
+  assignedToId    String?
+  assignedTo      User?    @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdById     String
+  createdBy       User     @relation("TaskCreator", fields: [createdById], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([assignedToId])
+  @@index([dueDate])
+  @@index([completed])
+  @@index([contactId])
+  @@index([dealId])
+  @@map("crm_tasks")
+}
+
+enum CrmPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model CrmNote {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contactId       String?
+  contact         CrmContact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  dealId          String?
+  deal            CrmDeal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
+
+  // Content
+  content         String   @db.Text
+
+  // Email capture
+  isEmail         Boolean  @default(false)
+  emailFrom       String?
+  emailTo         String[]
+  emailCc         String[]
+  emailSubject    String?
+  emailDate       DateTime?
+  emailMessageId  String?
+
+  // Attachments
+  attachments     Json[]   @default([])
+
+  // Author
+  authorId        String
+  author          User     @relation(fields: [authorId], references: [id])
+
+  isPrivate       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([contactId])
+  @@index([dealId])
+  @@index([authorId])
+  @@map("crm_notes")
+}
+
+model CrmActivity {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contactId       String?
+  contact         CrmContact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  dealId          String?
+  deal            CrmDeal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
+
+  // Actor
+  actorId         String
+  actor           User     @relation(fields: [actorId], references: [id])
+
+  // Activity details
+  type            CrmActivityType
+  description     String
+  metadata        Json     @default("{}")
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([contactId])
+  @@index([dealId])
+  @@index([actorId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("crm_activities")
+}
+
+enum CrmActivityType {
+  CONTACT_CREATED
+  CONTACT_UPDATED
+  CONTACT_DELETED
+  COMPANY_CREATED
+  COMPANY_UPDATED
+  DEAL_CREATED
+  DEAL_UPDATED
+  DEAL_STAGE_CHANGED
+  DEAL_WON
+  DEAL_LOST
+  TASK_CREATED
+  TASK_COMPLETED
+  TASK_OVERDUE
+  NOTE_ADDED
+  EMAIL_RECEIVED
+  EMAIL_SENT
+  CAMPAIGN_LAUNCHED
+  CAMPAIGN_PAUSED
+  CAMPAIGN_COMPLETED
+  CREATOR_SIGNED
+  PLATFORM_CONNECTED
+  CONTENT_PUBLISHED
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CREATOR MANAGEMENT (Listening Module)
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Creator {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Link to base contact
+  contactId       String   @unique
+  contact         CrmContact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  // Status
+  status          CreatorStatus @default(PROSPECT)
+
+  // Contract
+  commissionRate  Decimal? @db.Decimal(4, 2)
+  contractStart   DateTime?
+  contractEnd     DateTime?
+  exclusivityType ExclusivityType?
+
+  // Phyllo integration
+  phylloUserId    String?  @unique
+
+  // Aggregated metrics
+  totalFollowers      Int      @default(0)
+  avgEngagementRate   Decimal? @db.Decimal(5, 4)
+  primaryPlatform     SocialPlatform?
+  estimatedReach      Int?
+
+  // Categories
+  categories      String[]
+
+  // Relations
+  platforms       CreatorPlatform[]
+  campaigns       CampaignCreator[]
+  content         CreatorContent[]
+
+  notes           String?  @db.Text
+  customFields    Json     @default("{}")
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([totalFollowers])
+  @@index([primaryPlatform])
+  @@map("creators")
+}
+
+enum CreatorStatus {
+  PROSPECT
+  OUTREACH
+  NEGOTIATION
+  SIGNED
+  INACTIVE
+}
+
+enum ExclusivityType {
+  NONE
+  CATEGORY
+  PLATFORM
+  FULL
+}
+
+model CreatorPlatform {
+  id              String   @id @default(cuid())
+  creatorId       String
+  creator         Creator  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  platform        SocialPlatform
+  handle          String
+  platformUserId  String?
+  profileUrl      String?
+
+  // Metrics
+  followers       Int      @default(0)
+  following       Int?
+  engagementRate  Decimal? @db.Decimal(5, 4)
+  avgViews        Int?
+  avgLikes        Int?
+  avgComments     Int?
+  postsCount      Int?
+
+  // Audience
+  audienceDemo    Json?
+
+  // Phyllo connection
+  phylloAccountId String?  @unique
+  isConnected     Boolean  @default(false)
+  connectedAt     DateTime?
+  lastSyncAt      DateTime?
+  syncError       String?
+
+  isVerified      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([creatorId, platform])
+  @@index([platform])
+  @@index([followers])
+  @@index([creatorId])
+  @@map("creator_platforms")
+}
+
+enum SocialPlatform {
+  INSTAGRAM
+  TIKTOK
+  YOUTUBE
+  TWITTER
+  LINKEDIN
+  SNAPCHAT
+  PINTEREST
+  TWITCH
+  FACEBOOK
+}
+
+model CreatorContent {
+  id              String   @id @default(cuid())
+  creatorId       String
+  creator         Creator  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  platformId      String
+
+  platform        SocialPlatform
+  contentId       String
+  contentType     ContentType
+  contentUrl      String?
+
+  caption         String?  @db.Text
+  hashtags        String[]
+  mentions        String[]
+  thumbnailUrl    String?
+
+  // Metrics
+  views           BigInt?
+  likes           Int?
+  comments        Int?
+  shares          Int?
+  saves           Int?
+  engagementRate  Decimal? @db.Decimal(6, 4)
+
+  // Campaign
+  campaignId      String?
+  campaign        SocialCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  publishedAt     DateTime
+  syncedAt        DateTime @default(now())
+
+  @@unique([platform, contentId])
+  @@index([creatorId])
+  @@index([campaignId])
+  @@index([publishedAt])
+  @@index([platformId])
+  @@map("creator_content")
+}
+
+enum ContentType {
+  POST
+  STORY
+  REEL
+  VIDEO
+  SHORT
+  CAROUSEL
+  LIVE
+  TWEET
+  THREAD
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AD ACCOUNTS (Media Buying Module)
+// ═══════════════════════════════════════════════════════════════════════════
+
+model AdAccount {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  platform        AdPlatform
+  accountId       String
+  accountName     String?
+
+  // Hierarchy
+  parentId        String?
+  parent          AdAccount? @relation("AdAccountHierarchy", fields: [parentId], references: [id])
+  children        AdAccount[] @relation("AdAccountHierarchy")
+  isAgencyAccount Boolean  @default(false)
+
+  // OAuth tokens (encrypted)
+  accessTokenEncrypted   String?
+  refreshTokenEncrypted  String?
+  tokenExpiresAt         DateTime?
+  tokenScopes            String[]
+
+  // Connection
+  connected       Boolean  @default(false)
+  connectedById   String?
+  connectedBy     User?    @relation(fields: [connectedById], references: [id], onDelete: SetNull)
+  connectedAt     DateTime?
+
+  // Sync
+  lastSyncAt      DateTime?
+  syncStatus      SyncStatus @default(PENDING)
+  syncError       String?
+
+  // Budget limits
+  dailyBudgetLimit   Decimal? @db.Decimal(10, 2)
+  monthlyBudgetLimit Decimal? @db.Decimal(12, 2)
+
+  // Relations
+  campaigns       CampaignAdAccount[]
+  metrics         CampaignMetric[]
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([platform, accountId])
+  @@index([organizationId])
+  @@index([platform])
+  @@index([connected])
+  @@index([parentId])
+  @@map("ad_accounts")
+}
+
+enum AdPlatform {
+  META
+  GOOGLE
+  TIKTOK
+  SNAPCHAT
+  LINKEDIN
+  TWITTER
+  PINTEREST
+  AMAZON
+  DV360
+}
+
+enum SyncStatus {
+  PENDING
+  SYNCING
+  SUCCESS
+  ERROR
+  PAUSED
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CAMPAIGNS
+// ═══════════════════════════════════════════════════════════════════════════
+
+model SocialCampaign {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  dealId          String?
+  deal            CrmDeal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
+
+  name            String
+  description     String?  @db.Text
+  objective       CampaignObjective?
+
+  status          CampaignStatus @default(DRAFT)
+
+  budget          Decimal? @db.Decimal(12, 2)
+  currency        String   @default("USD")
+
+  startDate       DateTime?
+  endDate         DateTime?
+
+  // Aggregated metrics
+  totalSpend      Decimal  @default(0) @db.Decimal(12, 2)
+  impressions     BigInt   @default(0)
+  clicks          Int      @default(0)
+  conversions     Int      @default(0)
+  reach           BigInt?
+  frequency       Decimal? @db.Decimal(4, 2)
+
+  // Calculated
+  cpm             Decimal? @db.Decimal(8, 4)
+  cpc             Decimal? @db.Decimal(8, 4)
+  ctr             Decimal? @db.Decimal(6, 4)
+  cpa             Decimal? @db.Decimal(10, 4)
+  roas            Decimal? @db.Decimal(8, 4)
+
+  // Relations
+  creators        CampaignCreator[]
+  adAccounts      CampaignAdAccount[]
+  metrics         CampaignMetric[]
+  content         CreatorContent[]
+
+  tags            String[]
+  customFields    Json     @default("{}")
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([dealId])
+  @@index([startDate])
+  @@map("social_campaigns")
+}
+
+enum CampaignObjective {
+  AWARENESS
+  REACH
+  TRAFFIC
+  ENGAGEMENT
+  APP_INSTALLS
+  VIDEO_VIEWS
+  LEAD_GENERATION
+  CONVERSIONS
+  CATALOG_SALES
+  STORE_TRAFFIC
+}
+
+enum CampaignStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+model CampaignCreator {
+  id              String   @id @default(cuid())
+  campaignId      String
+  campaign        SocialCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  creatorId       String
+  creator         Creator  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  role            CreatorRole @default(PRIMARY)
+
+  feeAmount       Decimal? @db.Decimal(10, 2)
+  feeType         FeeType  @default(FLAT)
+
+  deliverables    Json     @default("{}")
+
+  status          CreatorCampaignStatus @default(PENDING)
+  briefSentAt     DateTime?
+  acceptedAt      DateTime?
+  completedAt     DateTime?
+
+  impressions     BigInt?
+  engagements     Int?
+  clicks          Int?
+  conversions     Int?
+
+  notes           String?  @db.Text
+
+  @@unique([campaignId, creatorId])
+  @@index([campaignId])
+  @@index([creatorId])
+  @@index([status])
+  @@map("campaign_creators")
+}
+
+enum CreatorRole {
+  PRIMARY
+  SUPPORTING
+  AFFILIATE
+  UGC
+}
+
+enum FeeType {
+  FLAT
+  CPM
+  CPC
+  CPA
+  REVENUE_SHARE
+  HYBRID
+}
+
+enum CreatorCampaignStatus {
+  PENDING
+  INVITED
+  ACCEPTED
+  IN_PROGRESS
+  SUBMITTED
+  APPROVED
+  COMPLETED
+  DECLINED
+  CANCELLED
+}
+
+model CampaignAdAccount {
+  id                  String   @id @default(cuid())
+  campaignId          String
+  campaign            SocialCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  adAccountId         String
+  adAccount           AdAccount @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
+
+  platformCampaignId  String?
+  platformCampaignUrl String?
+
+  allocatedBudget     Decimal? @db.Decimal(12, 2)
+
+  status              AdCampaignStatus @default(NOT_STARTED)
+
+  @@unique([campaignId, adAccountId])
+  @@index([campaignId])
+  @@index([adAccountId])
+  @@map("campaign_ad_accounts")
+}
+
+enum AdCampaignStatus {
+  NOT_STARTED
+  SETTING_UP
+  ACTIVE
+  PAUSED
+  ENDED
+  ERROR
+}
+
+model CampaignMetric {
+  id              String   @id @default(cuid())
+  campaignId      String
+  campaign        SocialCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  adAccountId     String
+  adAccount       AdAccount @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
+  date            DateTime @db.Date
+
+  spend           Decimal  @db.Decimal(10, 2)
+  impressions     BigInt
+  clicks          Int
+  conversions     Int
+
+  reach           BigInt?
+  frequency       Decimal? @db.Decimal(4, 2)
+
+  cpm             Decimal? @db.Decimal(8, 4)
+  cpc             Decimal? @db.Decimal(8, 4)
+  ctr             Decimal? @db.Decimal(6, 4)
+  cpa             Decimal? @db.Decimal(10, 4)
+  roas            Decimal? @db.Decimal(8, 4)
+
+  videoViews      BigInt?
+  videoViews25    BigInt?
+  videoViews50    BigInt?
+  videoViews75    BigInt?
+  videoViews100   BigInt?
+
+  platformData    Json     @default("{}")
+
+  syncedAt        DateTime @default(now())
+
+  @@unique([campaignId, adAccountId, date])
+  @@index([date])
+  @@index([campaignId, date])
+  @@index([adAccountId])
+  @@map("campaign_metrics")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DASHBOARD BUILDER
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Dashboard {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  name            String
+  description     String?
+  slug            String?
+
+  isDefault       Boolean  @default(false)
+  isPublished     Boolean  @default(false)
+  isTemplate      Boolean  @default(false)
+
+  // Layout (react-grid-layout)
+  layout          Json     @default("[]")
+
+  // Theme
+  theme           Json     @default("{}")
+
+  // Relations
+  widgets         DashboardWidget[]
+  clientInstances ClientInstance[]
+
+  // Access
+  visibility      DashboardVisibility @default(PRIVATE)
+  allowedRoles    String[]
+
+  // Audit
+  createdById     String
+  createdBy       User     @relation("DashboardCreator", fields: [createdById], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  publishedAt     DateTime?
+
+  @@index([organizationId])
+  @@index([visibility])
+  @@index([isTemplate])
+  @@map("dashboards")
+}
+
+enum DashboardVisibility {
+  PRIVATE
+  ORGANIZATION
+  CLIENT
+  PUBLIC
+}
+
+model DashboardWidget {
+  id              String   @id @default(cuid())
+  dashboardId     String
+  dashboard       Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  type            WidgetType
+  title           String
+  description     String?
+
+  // Grid position
+  x               Int      @default(0)
+  y               Int      @default(0)
+  width           Int      @default(4)
+  height          Int      @default(3)
+  minWidth        Int?
+  minHeight       Int?
+
+  // Data
+  dataSource      Json     @default("{}")
+  visualization   Json     @default("{}")
+  filters         Json     @default("[]")
+
+  // Permissions
+  requiredRole    String?
+  isHidden        Boolean  @default(false)
+
+  // Interactivity
+  isDrillDown     Boolean  @default(false)
+  drillDownConfig Json?
+
+  refreshInterval Int?
+
+  sortOrder       Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([dashboardId])
+  @@index([type])
+  @@map("dashboard_widgets")
+}
+
+enum WidgetType {
+  // KPI
+  KPI_CARD
+  SPARKLINE
+  GAUGE
+  COUNTER
+
+  // Charts
+  LINE_CHART
+  BAR_CHART
+  PIE_CHART
+  DONUT_CHART
+  AREA_CHART
+  STACKED_BAR
+  COMBO_CHART
+
+  // Tables
+  DATA_TABLE
+  LEADERBOARD
+  ACTIVITY_FEED
+
+  // Specialized
+  HEATMAP
+  FUNNEL
+  SCATTER_PLOT
+  GEO_MAP
+
+  // Module-specific
+  CAMPAIGN_LIST
+  CREATOR_ROSTER
+  AD_ACCOUNT_STATUS
+  SPEND_TRACKER
+  PLATFORM_COMPARE
+
+  // Content
+  TEXT_BLOCK
+  IMAGE
+  EMBED
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CLIENT INSTANCES
+// ═══════════════════════════════════════════════════════════════════════════
+
+model ClientInstance {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  name            String
+  slug            String   @unique
+
+  // Branding
+  logo            String?
+  primaryColor    String?
+  secondaryColor  String?
+  favicon         String?
+
+  // Modules
+  enabledModules  String[]
+
+  // Dashboard
+  defaultDashboardId String?
+  defaultDashboard   Dashboard? @relation(fields: [defaultDashboardId], references: [id], onDelete: SetNull)
+
+  settings        Json     @default("{}")
+
+  // Users
+  users           ClientInstanceUser[]
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([slug])
+  @@map("client_instances")
+}
+
+model ClientInstanceUser {
+  id                String   @id @default(cuid())
+  clientInstanceId  String
+  clientInstance    ClientInstance @relation(fields: [clientInstanceId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role              ClientRole @default(VIEWER)
+  permissions       String[]
+  moduleAccess      Json     @default("{}")
+
+  invitedById       String?
+  invitedAt         DateTime?
+  acceptedAt        DateTime?
+
+  isActive          Boolean  @default(true)
+  lastAccessAt      DateTime?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([clientInstanceId, userId])
+  @@index([clientInstanceId])
+  @@index([userId])
+  @@map("client_instance_users")
+}
+
+enum ClientRole {
+  ADMIN
+  MANAGER
+  EDITOR
+  VIEWER
+}
+
+model DashboardTemplate {
+  id              String   @id @default(cuid())
+
+  name            String
+  description     String?
+  category        String?
+  thumbnail       String?
+
+  config          Json
+
+  usageCount      Int      @default(0)
+
+  isPublic        Boolean  @default(true)
+  organizationId  String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([category])
+  @@index([isPublic])
+  @@map("dashboard_templates")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════
+
+model WebhookEvent {
+  id              String   @id @default(cuid())
+  source          String
+  eventType       String
+  payload         Json
+  signature       String?
+
+  processed       Boolean  @default(false)
+  processedAt     DateTime?
+  error           String?
+
+  createdAt       DateTime @default(now())
+
+  @@index([source, eventType])
+  @@index([processed])
+  @@index([createdAt])
+  @@map("webhook_events")
+}
+
+model SyncJob {
+  id              String   @id @default(cuid())
+  type            String
+  status          SyncStatus
+
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+
+  recordsProcessed Int     @default(0)
+  errors          Json[]   @default([])
+
+  metadata        Json     @default("{}")
+
+  @@index([type, status])
+  @@index([startedAt])
+  @@map("sync_jobs")
+}
