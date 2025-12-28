@@ -24,14 +24,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus,
-  MoreHorizontal,
   FolderKanban,
   Clock,
   DollarSign,
   TrendingUp,
   CheckCircle2,
-  AlertCircle,
 } from "lucide-react";
+import { ProjectsView } from "./projects-view";
 
 async function getProjects() {
   try {
@@ -213,138 +212,8 @@ export default async function ProjectsPage() {
         </Card>
       </div>
 
-      {/* Projects Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Tabs defaultValue="all" className="w-full">
-            <div className="border-b px-4">
-              <TabsList className="h-12">
-                <TabsTrigger value="all">All ({projects.length})</TabsTrigger>
-                <TabsTrigger value="active">Active ({activeProjects.length})</TabsTrigger>
-                <TabsTrigger value="completed">Completed ({completedProjects.length})</TabsTrigger>
-                <TabsTrigger value="draft">Draft ({draftProjects.length})</TabsTrigger>
-              </TabsList>
-            </div>
-
-            <TabsContent value="all" className="m-0">
-              <ProjectTable projects={projects} />
-            </TabsContent>
-
-            <TabsContent value="active" className="m-0">
-              <ProjectTable projects={activeProjects} />
-            </TabsContent>
-
-            <TabsContent value="completed" className="m-0">
-              <ProjectTable projects={completedProjects} />
-            </TabsContent>
-
-            <TabsContent value="draft" className="m-0">
-              <ProjectTable projects={draftProjects} />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+      {/* Projects View with List/Board/Gantt switcher */}
+      <ProjectsView />
     </div>
-  );
-}
-
-function ProjectTable({ projects }: { projects: Awaited<ReturnType<typeof getProjects>> }) {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Project</TableHead>
-          <TableHead>Client</TableHead>
-          <TableHead>Type</TableHead>
-          <TableHead>Budget</TableHead>
-          <TableHead>Hours</TableHead>
-          <TableHead>Briefs</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="w-[50px]"></TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {projects.length === 0 ? (
-          <TableRow>
-            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-              No projects found
-            </TableCell>
-          </TableRow>
-        ) : (
-          projects.map((project) => (
-            <TableRow key={project.id}>
-              <TableCell>
-                <div>
-                  <Link
-                    href={`/projects/${project.id}`}
-                    className="font-medium hover:underline"
-                  >
-                    {project.name}
-                  </Link>
-                  {project.code && (
-                    <p className="text-xs text-muted-foreground font-mono">
-                      {project.code}
-                    </p>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell>
-                <Link
-                  href={`/clients/${project.clientId}`}
-                  className="text-sm hover:underline"
-                >
-                  {project.client.name}
-                </Link>
-              </TableCell>
-              <TableCell>{getTypeBadge(project.type)}</TableCell>
-              <TableCell>
-                {project.budgetAmount ? (
-                  <span className="font-medium">
-                    {formatCurrency(Number(project.budgetAmount))}
-                  </span>
-                ) : (
-                  <span className="text-muted-foreground">-</span>
-                )}
-              </TableCell>
-              <TableCell>
-                {project.budgetHours ? (
-                  <span className="text-sm">{project.budgetHours}h</span>
-                ) : (
-                  <span className="text-muted-foreground">-</span>
-                )}
-              </TableCell>
-              <TableCell>
-                <span className="text-sm font-medium">{project._count.briefs}</span>
-              </TableCell>
-              <TableCell>{getStatusBadge(project.status)}</TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                      <Link href={`/projects/${project.id}`}>View Details</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href={`/projects/${project.id}/edit`}>Edit</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href={`/briefs?project=${project.id}`}>View Briefs</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href={`/time?project=${project.id}`}>View Time</Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))
-        )}
-      </TableBody>
-    </Table>
   );
 }

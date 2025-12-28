@@ -127,13 +127,14 @@ const MODULE_BUNDLES = [
   },
   {
     id: "portal",
-    label: "Client Portal",
-    tagline: "Client Access",
+    label: "Client",
+    tagline: "Clients Only",
     description: "Client-facing portal for approvals, deliverables, and reports",
     icon: Eye,
     href: "/portal",
     color: "from-cyan-500 to-cyan-600",
     bgColor: "bg-cyan-500",
+    badge: true,
     modules: [
       { label: "Dashboard", href: "/portal", icon: Grid3X3, description: "Overview & stats" },
       { label: "Approvals", href: "/portal/approvals", icon: FileCheck, description: "Review deliverables" },
