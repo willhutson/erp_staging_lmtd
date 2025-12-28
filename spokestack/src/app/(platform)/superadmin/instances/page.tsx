@@ -32,7 +32,7 @@ import {
 
 async function getClientInstances() {
   try {
-    return prisma.clientInstance.findMany({
+    const instances = await prisma.clientInstance.findMany({
       orderBy: { createdAt: "desc" },
       include: {
         organization: { select: { name: true, slug: true } },
@@ -40,9 +40,9 @@ async function getClientInstances() {
           select: { users: true },
         },
       },
-    });
-  } catch (error) {
-    console.error("Error fetching client instances:", error);
+    }).catch(() => []);
+    return instances;
+  } catch {
     return [];
   }
 }
@@ -60,7 +60,13 @@ function getTierColor(tier: string) {
 }
 
 export default async function InstancesPage() {
-  const instances = await getClientInstances();
+  let instances: Awaited<ReturnType<typeof getClientInstances>> = [];
+
+  try {
+    instances = await getClientInstances();
+  } catch {
+    // Fallback to empty array on error
+  }
 
   return (
     <div className="space-y-6">

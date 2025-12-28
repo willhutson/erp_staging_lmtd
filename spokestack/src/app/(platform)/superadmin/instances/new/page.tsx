@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,8 @@ const AVAILABLE_MODULES = [
   { id: "briefs", label: "Briefs", description: "Work request management" },
   { id: "time", label: "Time Tracking", description: "Timesheets and billing" },
   { id: "leave", label: "Leave Management", description: "PTO and absence tracking" },
-  { id: "hr", label: "HR", description: "Employee management" },
+  { id: "team", label: "Team", description: "Team directory and structure" },
+  { id: "rfp", label: "RFP", description: "Proposal pipeline management" },
 ];
 
 interface Organization {
@@ -45,15 +46,14 @@ interface Organization {
 
 export default function NewInstancePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const preselectedOrg = searchParams.get("org");
 
   const [loading, setLoading] = useState(false);
+  const [loadingOrgs, setLoadingOrgs] = useState(true);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
-    organizationId: preselectedOrg || "",
+    organizationId: "",
     tier: "PRO",
     primaryColor: "#52EDC7",
     secondaryColor: "#1BA098",
@@ -63,9 +63,20 @@ export default function NewInstancePage() {
   useEffect(() => {
     // Fetch organizations
     fetch("/api/superadmin/organizations")
-      .then((res) => res.json())
-      .then((data) => setOrganizations(data))
-      .catch(console.error);
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
+      .then((data) => {
+        setOrganizations(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        console.error("Error fetching organizations:", err);
+        setOrganizations([]);
+      })
+      .finally(() => {
+        setLoadingOrgs(false);
+      });
   }, []);
 
   const handleSlugify = (name: string) => {
@@ -169,23 +180,36 @@ export default function NewInstancePage() {
 
             <div className="space-y-2">
               <Label htmlFor="organization">Organization</Label>
-              <Select
-                value={formData.organizationId}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, organizationId: value }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select an organization" />
-                </SelectTrigger>
-                <SelectContent>
-                  {organizations.map((org) => (
-                    <SelectItem key={org.id} value={org.id}>
-                      {org.name} ({org.slug})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {loadingOrgs ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading organizations...
+                </div>
+              ) : (
+                <Select
+                  value={formData.organizationId}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, organizationId: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an organization" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {organizations.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground">
+                        No organizations found
+                      </div>
+                    ) : (
+                      organizations.map((org) => (
+                        <SelectItem key={org.id} value={org.id}>
+                          {org.name} ({org.slug})
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             <div className="space-y-2">

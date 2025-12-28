@@ -116,7 +116,14 @@ async function getBriefStats() {
 }
 
 export default async function BriefsPage() {
-  const [briefs, stats] = await Promise.all([getBriefs(), getBriefStats()]);
+  let briefs: Awaited<ReturnType<typeof getBriefs>> = [];
+  let stats = { total: 0, inProgress: 0, completed: 0, overdue: 0 };
+
+  try {
+    [briefs, stats] = await Promise.all([getBriefs(), getBriefStats()]);
+  } catch {
+    // Fallback to defaults on error
+  }
 
   return (
     <div className="space-y-6">

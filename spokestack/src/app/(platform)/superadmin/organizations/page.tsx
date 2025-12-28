@@ -23,7 +23,7 @@ import { Plus, MoreHorizontal, Building2, Users, ExternalLink } from "lucide-rea
 
 async function getOrganizations() {
   try {
-    return prisma.organization.findMany({
+    const orgs = await prisma.organization.findMany({
       orderBy: { createdAt: "desc" },
       include: {
         _count: {
@@ -34,15 +34,21 @@ async function getOrganizations() {
           },
         },
       },
-    });
-  } catch (error) {
-    console.error("Error fetching organizations:", error);
+    }).catch(() => []);
+    return orgs;
+  } catch {
     return [];
   }
 }
 
 export default async function OrganizationsPage() {
-  const organizations = await getOrganizations();
+  let organizations: Awaited<ReturnType<typeof getOrganizations>> = [];
+
+  try {
+    organizations = await getOrganizations();
+  } catch {
+    // Fallback to empty array on error
+  }
 
   return (
     <div className="space-y-6">

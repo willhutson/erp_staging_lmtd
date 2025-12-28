@@ -117,11 +117,24 @@ async function getUpcomingLeave() {
 }
 
 export default async function LeavePage() {
-  const [balance, requests, upcoming] = await Promise.all([
-    getLeaveBalance(),
-    getLeaveRequests(),
-    getUpcomingLeave(),
-  ]);
+  let balance = {
+    annual: { used: 0, total: 22 },
+    sick: { used: 0, total: 15 },
+    personal: { used: 0, total: 5 },
+    parental: { used: 0, total: 45 },
+  };
+  let requests: Awaited<ReturnType<typeof getLeaveRequests>> = [];
+  let upcoming: Awaited<ReturnType<typeof getUpcomingLeave>> = [];
+
+  try {
+    [balance, requests, upcoming] = await Promise.all([
+      getLeaveBalance(),
+      getLeaveRequests(),
+      getUpcomingLeave(),
+    ]);
+  } catch {
+    // Fallback to defaults on error
+  }
 
   return (
     <div className="space-y-6">

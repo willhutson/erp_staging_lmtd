@@ -10,15 +10,13 @@ export async function GET() {
         name: true,
         slug: true,
       },
-    });
+    }).catch(() => []);
 
     return NextResponse.json(organizations);
   } catch (error) {
     console.error("Error fetching organizations:", error);
-    return NextResponse.json(
-      { message: "Failed to fetch organizations" },
-      { status: 500 }
-    );
+    // Return empty array on error so client doesn't crash
+    return NextResponse.json([]);
   }
 }
 

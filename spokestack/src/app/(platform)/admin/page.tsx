@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Building2,
@@ -10,7 +12,119 @@ import {
   TrendingUp,
   DollarSign,
   BarChart3,
+  Shield,
+  Settings,
+  Headphones,
+  CreditCard,
+  Palette,
+  FileText,
+  Clock,
+  Palmtree,
+  Target,
+  ArrowRight,
+  Layers,
 } from "lucide-react";
+
+// Module cards for quick navigation
+const QUICK_MODULES = [
+  {
+    id: "superadmin",
+    label: "Super Admin",
+    description: "Platform management",
+    icon: Shield,
+    href: "/superadmin",
+    color: "bg-red-500",
+    badge: "Staff",
+  },
+  {
+    id: "crm",
+    label: "CRM",
+    description: "Deals & contacts",
+    icon: Handshake,
+    href: "/admin/crm/companies",
+    color: "bg-blue-500",
+  },
+  {
+    id: "listening",
+    label: "Listening",
+    description: "Creators & content",
+    icon: Headphones,
+    href: "/listening",
+    color: "bg-purple-500",
+  },
+  {
+    id: "mediabuying",
+    label: "Media Buying",
+    description: "Ad campaigns",
+    icon: CreditCard,
+    href: "/mediabuying",
+    color: "bg-green-500",
+  },
+  {
+    id: "analytics",
+    label: "Analytics",
+    description: "Reports & insights",
+    icon: BarChart3,
+    href: "/analytics",
+    color: "bg-orange-500",
+  },
+  {
+    id: "briefs",
+    label: "Briefs",
+    description: "Work requests",
+    icon: FileText,
+    href: "/briefs",
+    color: "bg-indigo-500",
+  },
+  {
+    id: "time",
+    label: "Time",
+    description: "Track hours",
+    icon: Clock,
+    href: "/time",
+    color: "bg-emerald-500",
+  },
+  {
+    id: "leave",
+    label: "Leave",
+    description: "PTO & absences",
+    icon: Palmtree,
+    href: "/leave",
+    color: "bg-teal-500",
+  },
+  {
+    id: "team",
+    label: "Team",
+    description: "Directory",
+    icon: Users,
+    href: "/team",
+    color: "bg-cyan-500",
+  },
+  {
+    id: "rfp",
+    label: "RFP",
+    description: "Proposals",
+    icon: Target,
+    href: "/rfp",
+    color: "bg-rose-500",
+  },
+  {
+    id: "builder",
+    label: "Builder",
+    description: "Custom dashboards",
+    icon: Palette,
+    href: "/builder",
+    color: "bg-pink-500",
+  },
+  {
+    id: "instances",
+    label: "Portals",
+    description: "White-label",
+    icon: Layers,
+    href: "/admin/instances",
+    color: "bg-slate-500",
+  },
+];
 
 // Stats card component
 function StatsCard({
@@ -74,7 +188,6 @@ function StatsCardSkeleton() {
 }
 
 async function DashboardStats() {
-  // In a real app, fetch these from the database
   const stats = [
     {
       title: "Organizations",
@@ -104,34 +217,6 @@ async function DashboardStats() {
       icon: Megaphone,
       trend: { value: 3, positive: false },
     },
-    {
-      title: "Creators",
-      value: "156",
-      description: "Signed & active",
-      icon: Sparkles,
-      trend: { value: 15, positive: true },
-    },
-    {
-      title: "Ad Spend",
-      value: "$284K",
-      description: "This month",
-      icon: DollarSign,
-      trend: { value: 22, positive: true },
-    },
-    {
-      title: "ROAS",
-      value: "4.2x",
-      description: "Average return",
-      icon: BarChart3,
-      trend: { value: 8, positive: true },
-    },
-    {
-      title: "Engagement",
-      value: "3.8%",
-      description: "Creator average",
-      icon: TrendingUp,
-      trend: { value: 0.5, positive: true },
-    },
   ];
 
   return (
@@ -145,87 +230,127 @@ async function DashboardStats() {
 
 export default function AdminDashboard() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome to SpokeStack. Here&apos;s an overview of your platform.
+          Welcome to SpokeStack. Select a module to get started.
         </p>
       </div>
 
-      <Suspense
-        fallback={
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <StatsCardSkeleton key={i} />
-            ))}
-          </div>
-        }
-      >
-        <DashboardStats />
-      </Suspense>
+      {/* Quick Module Navigation */}
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        {QUICK_MODULES.map((module) => {
+          const Icon = module.icon;
+          return (
+            <Link key={module.id} href={module.href}>
+              <Card className="h-full hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer group">
+                <CardContent className="p-4">
+                  <div className="flex flex-col items-center text-center gap-2">
+                    <div className={`p-2 rounded-lg ${module.color}`}>
+                      <Icon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm group-hover:text-primary transition-colors">
+                        {module.label}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {module.description}
+                      </p>
+                    </div>
+                    {module.badge && (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                        {module.badge}
+                      </Badge>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* Stats Overview */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4">Overview</h2>
+        <Suspense
+          fallback={
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <StatsCardSkeleton key={i} />
+              ))}
+            </div>
+          }
+        >
+          <DashboardStats />
+        </Suspense>
+      </div>
 
       {/* Quick Actions */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-blue-500" />
-              Organizations
-            </CardTitle>
-            <CardDescription>
-              Manage agencies, brands, and their hierarchies
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <a
-              href="/admin/organizations"
-              className="inline-flex items-center text-sm text-primary hover:underline"
-            >
-              View organizations →
-            </a>
-          </CardContent>
-        </Card>
+      <div>
+        <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Building2 className="h-5 w-5 text-blue-500" />
+                Organizations
+              </CardTitle>
+              <CardDescription>
+                Manage agencies, brands, and their settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link
+                href="/admin/organizations"
+                className="inline-flex items-center text-sm text-primary hover:underline"
+              >
+                View organizations <ArrowRight className="ml-1 h-3 w-3" />
+              </Link>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-green-500" />
-              CRM
-            </CardTitle>
-            <CardDescription>
-              Companies, contacts, deals, and pipeline management
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <a
-              href="/admin/crm/deals"
-              className="inline-flex items-center text-sm text-primary hover:underline"
-            >
-              View deals →
-            </a>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Users className="h-5 w-5 text-green-500" />
+                Users & Roles
+              </CardTitle>
+              <CardDescription>
+                Manage team members and permissions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link
+                href="/admin/users"
+                className="inline-flex items-center text-sm text-primary hover:underline"
+              >
+                View users <ArrowRight className="ml-1 h-3 w-3" />
+              </Link>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-purple-500" />
-              Creators
-            </CardTitle>
-            <CardDescription>
-              Manage influencers, content, and campaigns
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <a
-              href="/listening/creators"
-              className="inline-flex items-center text-sm text-primary hover:underline"
-            >
-              View creators →
-            </a>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Settings className="h-5 w-5 text-slate-500" />
+                Settings
+              </CardTitle>
+              <CardDescription>
+                Configure integrations and preferences
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link
+                href="/admin/integrations"
+                className="inline-flex items-center text-sm text-primary hover:underline"
+              >
+                View integrations <ArrowRight className="ml-1 h-3 w-3" />
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

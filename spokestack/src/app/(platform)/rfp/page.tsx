@@ -131,7 +131,14 @@ function formatCurrency(value: number) {
 }
 
 export default async function RfpPage() {
-  const [stats, rfps] = await Promise.all([getRfpStats(), getRfps()]);
+  let stats = { total: 0, active: 0, won: 0, lost: 0, winRate: 0, pipelineValue: 0 };
+  let rfps: Awaited<ReturnType<typeof getRfps>> = [];
+
+  try {
+    [stats, rfps] = await Promise.all([getRfpStats(), getRfps()]);
+  } catch {
+    // Fallback to defaults on error
+  }
 
   // Separate by status for pipeline
   const pipeline = {

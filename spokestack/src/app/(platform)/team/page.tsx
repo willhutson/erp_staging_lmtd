@@ -101,7 +101,14 @@ function getRoleBadge(permissionLevel: string) {
 }
 
 export default async function TeamPage() {
-  const [members, stats] = await Promise.all([getTeamMembers(), getTeamStats()]);
+  let members: Awaited<ReturnType<typeof getTeamMembers>> = [];
+  let stats = { total: 0, fullTime: 0, freelancers: 0, departmentCount: 0 };
+
+  try {
+    [members, stats] = await Promise.all([getTeamMembers(), getTeamStats()]);
+  } catch {
+    // Fallback to defaults on error
+  }
 
   // Group by department
   const departments = members.reduce((acc, member) => {

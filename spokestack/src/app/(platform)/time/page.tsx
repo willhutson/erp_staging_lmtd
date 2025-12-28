@@ -75,7 +75,14 @@ async function getRecentEntries() {
 }
 
 export default async function TimePage() {
-  const [stats, entries] = await Promise.all([getTimeStats(), getRecentEntries()]);
+  let stats = { todayHours: 0, weekHours: 0, pendingApproval: 0 };
+  let entries: Awaited<ReturnType<typeof getRecentEntries>> = [];
+
+  try {
+    [stats, entries] = await Promise.all([getTimeStats(), getRecentEntries()]);
+  } catch {
+    // Fallback to defaults on error
+  }
 
   const weeklyTarget = 40;
   const weeklyProgress = (stats.weekHours / weeklyTarget) * 100;
