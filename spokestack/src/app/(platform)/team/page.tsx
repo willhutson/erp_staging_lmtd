@@ -2,32 +2,18 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import prisma from "@/lib/prisma";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Plus,
-  Search,
-  MoreHorizontal,
   Users,
   Building2,
   Mail,
-  Phone,
   Briefcase,
-  Filter,
-  Grid,
-  List,
 } from "lucide-react";
+import { AddMemberDialog } from "./add-member-dialog";
 
 async function getTeamMembers() {
   try {
@@ -127,10 +113,7 @@ export default async function TeamPage() {
             Manage team members and organizational structure
           </p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Member
-        </Button>
+        <AddMemberDialog departments={Object.keys(departments)} />
       </div>
 
       {/* Stats */}
