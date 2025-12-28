@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -14,8 +15,16 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   LayoutDashboard,
   Users,
@@ -40,6 +50,7 @@ import {
   UserCircle,
   LogOut,
   ChevronUp,
+  ChevronRight,
   Sparkles,
   Palette,
   Plug,
@@ -53,33 +64,20 @@ import {
   Calendar,
   FolderKanban,
   Repeat,
-  TrendingUp,
   Radio,
+  Home,
 } from "lucide-react";
 import type { TenantConfig } from "@/lib/tenant";
 
-// Module navigation configuration
-const modules = [
-  {
-    id: "superadmin",
-    label: "Super Admin",
-    icon: Shield,
-    href: "/superadmin",
-    color: "text-red-500",
-    superAdminOnly: true,
-    items: [
-      { label: "Dashboard", href: "/superadmin", icon: LayoutDashboard },
-      { label: "Organizations", href: "/superadmin/organizations", icon: Building2 },
-      { label: "Instances", href: "/superadmin/instances", icon: Layers },
-      { label: "Domains", href: "/superadmin/domains", icon: Globe },
-    ],
-  },
+// Administration modules
+const adminModules = [
   {
     id: "admin",
     label: "Admin",
     icon: Settings,
     href: "/admin",
     color: "text-slate-500",
+    bgColor: "bg-slate-500",
     items: [
       { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
       { label: "Organizations", href: "/admin/organizations", icon: Building2 },
@@ -90,120 +88,151 @@ const modules = [
     ],
   },
   {
+    id: "superadmin",
+    label: "Super Admin",
+    icon: Shield,
+    href: "/superadmin",
+    color: "text-red-500",
+    bgColor: "bg-red-500",
+    superAdminOnly: true,
+    badge: "Staff",
+    items: [
+      { label: "Dashboard", href: "/superadmin", icon: LayoutDashboard },
+      { label: "Organizations", href: "/superadmin/organizations", icon: Building2 },
+      { label: "Instances", href: "/superadmin/instances", icon: Layers },
+      { label: "Domains", href: "/superadmin/domains", icon: Globe },
+    ],
+  },
+];
+
+// Module bundles with nested modules
+const moduleBundles = [
+  {
+    id: "erp",
+    label: "ERP",
+    tagline: "Core Operations",
+    icon: Briefcase,
+    color: "text-indigo-500",
+    bgColor: "bg-indigo-500",
+    modules: [
+      {
+        id: "briefs",
+        label: "Briefs",
+        icon: FileText,
+        href: "/briefs",
+        items: [
+          { label: "All Briefs", href: "/briefs" },
+          { label: "My Briefs", href: "/briefs/my" },
+          { label: "Pending Review", href: "/briefs/pending" },
+        ],
+      },
+      {
+        id: "time",
+        label: "Time",
+        icon: Clock,
+        href: "/time",
+        items: [
+          { label: "Timer", href: "/time" },
+          { label: "Timesheet", href: "/time/timesheet" },
+          { label: "Approvals", href: "/time/approvals" },
+        ],
+      },
+      {
+        id: "leave",
+        label: "Leave",
+        icon: Palmtree,
+        href: "/leave",
+        items: [
+          { label: "My Leave", href: "/leave" },
+          { label: "Calendar", href: "/leave/calendar" },
+          { label: "Approvals", href: "/leave/approvals" },
+        ],
+      },
+      {
+        id: "team",
+        label: "Team",
+        icon: Users,
+        href: "/team",
+        items: [
+          { label: "Directory", href: "/team" },
+          { label: "Departments", href: "/team/departments" },
+          { label: "Org Chart", href: "/team/org-chart" },
+        ],
+      },
+    ],
+  },
+  {
     id: "agency",
     label: "Agency",
-    icon: Briefcase,
-    href: "/clients",
+    tagline: "Client Services",
+    icon: Building2,
     color: "text-emerald-500",
-    items: [
-      { label: "Clients", href: "/clients", icon: Building2 },
-      { label: "Retainers", href: "/retainers", icon: Repeat },
-      { label: "Projects", href: "/projects", icon: FolderKanban },
-      { label: "Resources", href: "/resources", icon: Calendar },
-      { label: "CRM", href: "/crm", icon: Handshake },
-      { label: "RFP Pipeline", href: "/rfp", icon: Target },
+    bgColor: "bg-emerald-500",
+    modules: [
+      { id: "clients", label: "Clients", icon: Building2, href: "/clients" },
+      { id: "retainers", label: "Retainers", icon: Repeat, href: "/retainers" },
+      { id: "projects", label: "Projects", icon: FolderKanban, href: "/projects" },
+      { id: "resources", label: "Resources", icon: Calendar, href: "/resources" },
+      { id: "crm", label: "CRM", icon: Handshake, href: "/crm" },
+      { id: "rfp", label: "RFP Pipeline", icon: Target, href: "/rfp" },
     ],
   },
   {
-    id: "listening",
-    label: "Listening",
-    icon: Headphones,
-    href: "/listening",
+    id: "marketing",
+    label: "Marketing",
+    tagline: "Digital Tools",
+    icon: Megaphone,
     color: "text-purple-500",
-    items: [
-      { label: "Trackers", href: "/listening/trackers", icon: Radio },
-      { label: "Creators", href: "/listening/creators", icon: Sparkles },
-      { label: "Content", href: "/listening/content", icon: Grid3X3 },
-      { label: "Campaigns", href: "/listening/campaigns", icon: Megaphone },
+    bgColor: "bg-purple-500",
+    modules: [
+      {
+        id: "listening",
+        label: "Listening",
+        icon: Headphones,
+        href: "/listening",
+        items: [
+          { label: "Overview", href: "/listening" },
+          { label: "Trackers", href: "/listening/trackers" },
+          { label: "Creators", href: "/listening/creators" },
+          { label: "Content", href: "/listening/content" },
+        ],
+      },
+      {
+        id: "mediabuying",
+        label: "Media Buying",
+        icon: CreditCard,
+        href: "/mediabuying",
+        items: [
+          { label: "Accounts", href: "/mediabuying/accounts" },
+          { label: "Campaigns", href: "/mediabuying/campaigns" },
+          { label: "Budgets", href: "/mediabuying/budgets" },
+        ],
+      },
+      {
+        id: "analytics",
+        label: "Analytics",
+        icon: BarChart3,
+        href: "/analytics",
+        items: [
+          { label: "Overview", href: "/analytics" },
+          { label: "Campaigns", href: "/analytics/campaigns" },
+          { label: "Platforms", href: "/analytics/platforms" },
+        ],
+      },
+      {
+        id: "builder",
+        label: "Builder",
+        icon: Palette,
+        href: "/builder",
+        items: [
+          { label: "Dashboards", href: "/builder/dashboards" },
+          { label: "Widgets", href: "/builder/widgets" },
+          { label: "Templates", href: "/builder/templates" },
+        ],
+      },
     ],
   },
-  {
-    id: "media-buying",
-    label: "Media Buying",
-    icon: CreditCard,
-    href: "/mediabuying",
-    color: "text-green-500",
-    items: [
-      { label: "Accounts", href: "/mediabuying/accounts", icon: Globe },
-      { label: "Campaigns", href: "/mediabuying/campaigns", icon: Megaphone },
-      { label: "Budgets", href: "/mediabuying/budgets", icon: CreditCard },
-    ],
-  },
-  {
-    id: "analytics",
-    label: "Analytics",
-    icon: BarChart3,
-    href: "/analytics",
-    color: "text-orange-500",
-    items: [
-      { label: "Overview", href: "/analytics", icon: LayoutDashboard },
-      { label: "Campaigns", href: "/analytics/campaigns", icon: Megaphone },
-      { label: "Creators", href: "/analytics/creators", icon: Sparkles },
-      { label: "Platforms", href: "/analytics/platforms", icon: Globe },
-    ],
-  },
-  {
-    id: "builder",
-    label: "Builder",
-    icon: Palette,
-    href: "/builder",
-    color: "text-pink-500",
-    items: [
-      { label: "Dashboards", href: "/builder/dashboards", icon: Grid3X3 },
-      { label: "Widgets", href: "/builder/widgets", icon: LayoutDashboard },
-      { label: "Templates", href: "/builder/templates", icon: Palette },
-    ],
-  },
-  // ERP Modules
-  {
-    id: "briefs",
-    label: "Briefs",
-    icon: FileText,
-    href: "/briefs",
-    color: "text-indigo-500",
-    items: [
-      { label: "All Briefs", href: "/briefs", icon: FileText },
-      { label: "My Briefs", href: "/briefs/my", icon: UserCircle },
-      { label: "Pending Review", href: "/briefs/pending", icon: CheckSquare },
-    ],
-  },
-  {
-    id: "time",
-    label: "Time",
-    icon: Clock,
-    href: "/time",
-    color: "text-emerald-500",
-    items: [
-      { label: "Timer", href: "/time", icon: Clock },
-      { label: "Timesheet", href: "/time/timesheet", icon: Grid3X3 },
-      { label: "Approvals", href: "/time/approvals", icon: CheckSquare },
-    ],
-  },
-  {
-    id: "leave",
-    label: "Leave",
-    icon: Palmtree,
-    href: "/leave",
-    color: "text-teal-500",
-    items: [
-      { label: "My Leave", href: "/leave", icon: Palmtree },
-      { label: "Calendar", href: "/leave/calendar", icon: Grid3X3 },
-      { label: "Approvals", href: "/leave/approvals", icon: CheckSquare },
-    ],
-  },
-  {
-    id: "team",
-    label: "Team",
-    icon: Users,
-    href: "/team",
-    color: "text-cyan-500",
-    items: [
-      { label: "Directory", href: "/team", icon: Users },
-      { label: "Departments", href: "/team/departments", icon: Building2 },
-      { label: "Org Chart", href: "/team/org-chart", icon: Grid3X3 },
-    ],
-  },
-  ];
+];
 
 interface AppSidebarProps {
   user?: {
@@ -216,43 +245,44 @@ interface AppSidebarProps {
 
 export function AppSidebar({ user, tenant }: AppSidebarProps) {
   const pathname = usePathname();
+  const [expandedBundles, setExpandedBundles] = useState<string[]>(["erp", "agency", "marketing"]);
+  const [expandedModules, setExpandedModules] = useState<string[]>([]);
 
   // Check if this is the default SpokeStack tenant (super admin access)
   const isSpokeStackAdmin = !tenant?.organizationId || tenant?.id === "default";
 
-  // Filter modules based on tenant's enabled modules
-  const enabledModules = tenant?.enabledModules || ["admin", "crm", "listening", "mediabuying", "analytics", "builder"];
-  const filteredModules = modules.filter((m) => {
-    // Super admin module only shows for SpokeStack staff
-    if ((m as { superAdminOnly?: boolean }).superAdminOnly) {
-      return isSpokeStackAdmin;
-    }
-    return enabledModules.includes(m.id);
+  // Filter admin modules
+  const filteredAdminModules = adminModules.filter((m) => {
+    if (m.superAdminOnly) return isSpokeStackAdmin;
+    return true;
   });
 
-  // Determine which module is active
-  const getActiveModule = () => {
-    if (pathname.startsWith("/superadmin")) return "superadmin";
-    // Agency module routes
-    if (pathname.startsWith("/clients")) return "agency";
-    if (pathname.startsWith("/retainers")) return "agency";
-    if (pathname.startsWith("/projects")) return "agency";
-    if (pathname.startsWith("/resources")) return "agency";
-    if (pathname.startsWith("/crm")) return "agency";
-    if (pathname.startsWith("/rfp")) return "agency";
-    // Other modules
-    if (pathname.startsWith("/listening")) return "listening";
-    if (pathname.startsWith("/mediabuying")) return "media-buying";
-    if (pathname.startsWith("/analytics")) return "analytics";
-    if (pathname.startsWith("/builder")) return "builder";
-    if (pathname.startsWith("/briefs")) return "briefs";
-    if (pathname.startsWith("/time")) return "time";
-    if (pathname.startsWith("/leave")) return "leave";
-    if (pathname.startsWith("/team")) return "team";
-    return "admin";
+  // Check if path is within a bundle/module
+  const isPathInBundle = (bundleId: string) => {
+    const bundle = moduleBundles.find((b) => b.id === bundleId);
+    if (!bundle) return false;
+    return bundle.modules.some((m) => pathname.startsWith(m.href));
   };
 
-  const activeModule = getActiveModule();
+  const isPathInModule = (moduleHref: string) => {
+    return pathname.startsWith(moduleHref);
+  };
+
+  const toggleBundle = (bundleId: string) => {
+    setExpandedBundles((prev) =>
+      prev.includes(bundleId)
+        ? prev.filter((id) => id !== bundleId)
+        : [...prev, bundleId]
+    );
+  };
+
+  const toggleModule = (moduleId: string) => {
+    setExpandedModules((prev) =>
+      prev.includes(moduleId)
+        ? prev.filter((id) => id !== moduleId)
+        : [...prev, moduleId]
+    );
+  };
 
   // Use tenant branding or defaults
   const brandName = tenant?.name || "SpokeStack";
@@ -261,8 +291,8 @@ export function AppSidebar({ user, tenant }: AppSidebarProps) {
 
   return (
     <Sidebar className="border-r">
-      <SidebarHeader className="border-b px-6 py-4">
-        <Link href="/admin" className="flex items-center gap-3">
+      <SidebarHeader className="border-b px-4 py-3">
+        <Link href="/hub" className="flex items-center gap-3">
           {tenant?.logoMark ? (
             <img src={tenant.logoMark} alt={brandName} className="h-8 w-8 rounded-lg" />
           ) : (
@@ -277,77 +307,213 @@ export function AppSidebar({ user, tenant }: AppSidebarProps) {
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-3">
-        {/* Module Navigation */}
-        <SidebarGroup className="mt-2">
-          <SidebarGroupLabel className="px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            Modules
+      <SidebarContent className="px-2">
+        {/* Hub Link */}
+        <SidebarGroup className="pt-2">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname === "/hub"}>
+                <Link href="/hub">
+                  <Home className="h-4 w-4" />
+                  <span>Hub</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarSeparator className="my-2" />
+
+        {/* Administration */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+            Administration
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {filteredModules.map((module) => {
-                const isActive = activeModule === module.id;
+              {filteredAdminModules.map((module) => {
                 const Icon = module.icon;
+                const isActive = pathname.startsWith(module.href);
+                const isExpanded = expandedModules.includes(module.id) || isActive;
 
                 return (
-                  <SidebarMenuItem key={module.id}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      className={cn(
-                        "transition-colors",
-                        isActive && "bg-accent"
-                      )}
-                    >
-                      <Link href={module.href}>
-                        <Icon className={cn("h-4 w-4", module.color)} />
-                        <span>{module.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  <Collapsible
+                    key={module.id}
+                    open={isExpanded}
+                    onOpenChange={() => toggleModule(module.id)}
+                  >
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton
+                          className={cn(
+                            "w-full justify-between",
+                            isActive && "bg-accent"
+                          )}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Icon className={cn("h-4 w-4", module.color)} />
+                            <span>{module.label}</span>
+                            {module.badge && (
+                              <Badge variant="destructive" className="text-[9px] px-1 py-0">
+                                {module.badge}
+                              </Badge>
+                            )}
+                          </div>
+                          <ChevronRight
+                            className={cn(
+                              "h-4 w-4 transition-transform",
+                              isExpanded && "rotate-90"
+                            )}
+                          />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {module.items.map((item) => {
+                            const ItemIcon = item.icon;
+                            return (
+                              <SidebarMenuSubItem key={item.href}>
+                                <SidebarMenuSubButton
+                                  asChild
+                                  isActive={pathname === item.href}
+                                >
+                                  <Link href={item.href}>
+                                    <ItemIcon className="h-3.5 w-3.5" />
+                                    <span>{item.label}</span>
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  </Collapsible>
                 );
               })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarSeparator className="my-4" />
+        <SidebarSeparator className="my-2" />
 
-        {/* Active Module Sub-Navigation */}
-        {modules.map((module) => {
-          if (activeModule !== module.id) return null;
+        {/* Module Bundles */}
+        {moduleBundles.map((bundle) => {
+          const BundleIcon = bundle.icon;
+          const isBundleExpanded = expandedBundles.includes(bundle.id);
+          const isBundleActive = isPathInBundle(bundle.id);
 
           return (
-            <SidebarGroup key={module.id}>
-              <SidebarGroupLabel className="px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                {module.label}
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {module.items.map((item) => {
-                    const isActive = pathname === item.href;
-                    const Icon = item.icon;
+            <SidebarGroup key={bundle.id}>
+              <Collapsible
+                open={isBundleExpanded}
+                onOpenChange={() => toggleBundle(bundle.id)}
+              >
+                <CollapsibleTrigger asChild>
+                  <SidebarGroupLabel
+                    className={cn(
+                      "flex items-center justify-between cursor-pointer hover:bg-accent rounded-md px-2 py-1.5 transition-colors",
+                      isBundleActive && "bg-accent/50"
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className={cn("p-1 rounded", bundle.bgColor + "/10")}>
+                        <BundleIcon className={cn("h-3.5 w-3.5", bundle.color)} />
+                      </div>
+                      <span className="text-xs font-semibold uppercase tracking-wider">
+                        {bundle.label}
+                      </span>
+                      <span className="text-[9px] text-muted-foreground font-normal normal-case">
+                        {bundle.tagline}
+                      </span>
+                    </div>
+                    <ChevronRight
+                      className={cn(
+                        "h-3.5 w-3.5 text-muted-foreground transition-transform",
+                        isBundleExpanded && "rotate-90"
+                      )}
+                    />
+                  </SidebarGroupLabel>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarGroupContent className="mt-1">
+                    <SidebarMenu>
+                      {bundle.modules.map((module) => {
+                        const ModuleIcon = module.icon;
+                        const isModuleActive = isPathInModule(module.href);
+                        const hasItems = "items" in module && module.items;
+                        const isModuleExpanded =
+                          expandedModules.includes(module.id) || isModuleActive;
 
-                    return (
-                      <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={isActive}
-                          className={cn(
-                            "transition-colors",
-                            isActive && "bg-primary/10 text-primary font-medium"
-                          )}
-                        >
-                          <Link href={item.href}>
-                            <Icon className="h-4 w-4" />
-                            <span>{item.label}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
+                        if (hasItems) {
+                          return (
+                            <Collapsible
+                              key={module.id}
+                              open={isModuleExpanded}
+                              onOpenChange={() => toggleModule(module.id)}
+                            >
+                              <SidebarMenuItem>
+                                <CollapsibleTrigger asChild>
+                                  <SidebarMenuButton
+                                    className={cn(
+                                      "w-full justify-between",
+                                      isModuleActive && "bg-primary/10 text-primary"
+                                    )}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <ModuleIcon className="h-4 w-4" />
+                                      <span>{module.label}</span>
+                                    </div>
+                                    <ChevronRight
+                                      className={cn(
+                                        "h-3.5 w-3.5 transition-transform",
+                                        isModuleExpanded && "rotate-90"
+                                      )}
+                                    />
+                                  </SidebarMenuButton>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                  <SidebarMenuSub>
+                                    {module.items.map((item) => (
+                                      <SidebarMenuSubItem key={item.href}>
+                                        <SidebarMenuSubButton
+                                          asChild
+                                          isActive={pathname === item.href}
+                                        >
+                                          <Link href={item.href}>
+                                            <span>{item.label}</span>
+                                          </Link>
+                                        </SidebarMenuSubButton>
+                                      </SidebarMenuSubItem>
+                                    ))}
+                                  </SidebarMenuSub>
+                                </CollapsibleContent>
+                              </SidebarMenuItem>
+                            </Collapsible>
+                          );
+                        }
+
+                        return (
+                          <SidebarMenuItem key={module.id}>
+                            <SidebarMenuButton
+                              asChild
+                              isActive={isModuleActive}
+                              className={cn(
+                                isModuleActive && "bg-primary/10 text-primary font-medium"
+                              )}
+                            >
+                              <Link href={module.href}>
+                                <ModuleIcon className="h-4 w-4" />
+                                <span>{module.label}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        );
+                      })}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </Collapsible>
             </SidebarGroup>
           );
         })}
