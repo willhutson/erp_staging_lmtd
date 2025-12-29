@@ -133,7 +133,7 @@ export async function POST(request: Request) {
         ...data,
         rfpCode,
         organizationId: context.organizationId,
-        createdById: context.userId,
+        createdById: context.user.id,
         status: "VETTING",
       },
       select: {
