@@ -117,20 +117,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       data: { status: "CANCELLED" },
     });
 
-    // Return pending days to balance
-    const year = leaveRequest.startDate.getFullYear();
-    await prisma.leaveBalance.update({
-      where: {
-        userId_leaveTypeId_year: {
-          userId: leaveRequest.userId,
-          leaveTypeId: leaveRequest.leaveTypeId,
-          year,
-        },
-      },
-      data: {
-        pending: { decrement: leaveRequest.days },
-      },
-    });
+    // Note: No balance adjustment needed - pending requests don't affect balance
+    // Balance is only updated when a request is approved
 
     return noContent();
   });
@@ -176,8 +164,8 @@ export async function POST(request: Request, { params }: RouteParams) {
         },
       });
 
-      // Move from pending to used
-      await prisma.leaveBalance.update({
+      // Update used balance when approved
+      await prisma.leaveBalance.upsert({
         where: {
           userId_leaveTypeId_year: {
             userId: leaveRequest.userId,
@@ -185,9 +173,16 @@ export async function POST(request: Request, { params }: RouteParams) {
             year,
           },
         },
-        data: {
-          pending: { decrement: leaveRequest.days },
-          used: { increment: leaveRequest.days },
+        update: {
+          used: { increment: Number(leaveRequest.totalDays) },
+        },
+        create: {
+          userId: leaveRequest.userId,
+          leaveTypeId: leaveRequest.leaveTypeId,
+          year,
+          entitlement: leaveRequest.leaveType.defaultDays,
+          used: Number(leaveRequest.totalDays),
+          carriedOver: 0,
         },
       });
 
@@ -204,19 +199,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         },
       });
 
-      // Return pending days to balance
-      await prisma.leaveBalance.update({
-        where: {
-          userId_leaveTypeId_year: {
-            userId: leaveRequest.userId,
-            leaveTypeId: leaveRequest.leaveTypeId,
-            year,
-          },
-        },
-        data: {
-          pending: { decrement: leaveRequest.days },
-        },
-      });
+      // No balance adjustment needed for rejected requests
 
       return success({ status: "REJECTED", message: "Leave request rejected" });
     }

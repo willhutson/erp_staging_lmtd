@@ -142,7 +142,7 @@ export async function POST(request: Request) {
     });
 
     const available = balance
-      ? balance.entitlement + balance.carriedOver - balance.used - balance.pending
+      ? Number(balance.entitlement) + Number(balance.carriedOver) + Number(balance.adjustment) - Number(balance.used)
       : 0;
 
     if (days > available) {
@@ -189,30 +189,9 @@ export async function POST(request: Request) {
       },
     });
 
-    // Update pending balance
-    if (leaveType.requiresApproval) {
-      await prisma.leaveBalance.upsert({
-        where: {
-          userId_leaveTypeId_year: {
-            userId: context.user.id,
-            leaveTypeId: data.leaveTypeId,
-            year,
-          },
-        },
-        update: {
-          pending: { increment: days },
-        },
-        create: {
-          userId: context.user.id,
-          leaveTypeId: data.leaveTypeId,
-          year,
-          entitlement: leaveType.defaultDays,
-          used: 0,
-          pending: days,
-          carriedOver: 0,
-        },
-      });
-    } else {
+    // Update balance only for auto-approved requests
+    // Pending requests update balance when approved
+    if (!leaveType.requiresApproval) {
       // Auto-approved, update used directly
       await prisma.leaveBalance.upsert({
         where: {
@@ -231,7 +210,6 @@ export async function POST(request: Request) {
           year,
           entitlement: leaveType.defaultDays,
           used: days,
-          pending: 0,
           carriedOver: 0,
         },
       });
