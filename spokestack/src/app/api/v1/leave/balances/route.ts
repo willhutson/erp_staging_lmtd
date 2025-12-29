@@ -54,8 +54,8 @@ export async function GET(request: Request) {
         year: true,
         entitlement: true,
         used: true,
-        pending: true,
         carriedOver: true,
+        adjustment: true,
         leaveType: {
           select: {
             id: true,
@@ -72,7 +72,7 @@ export async function GET(request: Request) {
     // Calculate remaining for each type
     const balancesWithRemaining = balances.map((b: Balance) => ({
       ...b,
-      remaining: b.entitlement + b.carriedOver - b.used - b.pending,
+      remaining: Number(b.entitlement) + Number(b.carriedOver) + Number(b.adjustment) - Number(b.used),
     }));
 
     return success({
