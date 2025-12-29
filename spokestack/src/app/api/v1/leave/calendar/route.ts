@@ -53,9 +53,9 @@ export async function GET(request: Request) {
         id: true,
         startDate: true,
         endDate: true,
-        days: true,
+        totalDays: true,
         isHalfDay: true,
-        halfDayType: true,
+        halfDayPeriod: true,
         user: {
           select: {
             id: true,
