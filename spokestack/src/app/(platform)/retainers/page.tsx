@@ -58,28 +58,21 @@ async function getRetainerPeriods() {
 
 type RetainerPeriodItem = Awaited<ReturnType<typeof getRetainerPeriods>>[number];
 
-type RetainerPeriodStats = {
-  budgetHours: number | null;
-  actualHours: number | null;
-  contractValue: unknown;
-  burnRate: number | null;
-};
-
 async function getRetainerStats() {
   try {
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth() + 1;
 
-    const periods: RetainerPeriodStats[] = await prisma.retainerPeriod.findMany({
+    const periods = await prisma.retainerPeriod.findMany({
       where: { year: currentYear, month: currentMonth },
     });
 
-    const totalBudgetHours = periods.reduce((sum: number, p: RetainerPeriodStats) => sum + Number(p.budgetHours || 0), 0);
-    const totalActualHours = periods.reduce((sum: number, p: RetainerPeriodStats) => sum + Number(p.actualHours || 0), 0);
-    const totalContractValue = periods.reduce((sum: number, p: RetainerPeriodStats) => sum + Number(p.contractValue || 0), 0);
+    const totalBudgetHours = periods.reduce((sum, p) => sum + Number(p.budgetHours || 0), 0);
+    const totalActualHours = periods.reduce((sum, p) => sum + Number(p.actualHours || 0), 0);
+    const totalContractValue = periods.reduce((sum, p) => sum + Number(p.contractValue || 0), 0);
     const avgBurnRate = periods.length > 0
-      ? periods.reduce((sum: number, p: RetainerPeriodStats) => sum + Number(p.burnRate || 0), 0) / periods.length
+      ? periods.reduce((sum, p) => sum + Number(p.burnRate || 0), 0) / periods.length
       : 0;
 
     return {

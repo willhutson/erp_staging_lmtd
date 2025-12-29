@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Collapsible,
@@ -11,831 +12,969 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
+  BookOpen,
+  Rocket,
+  LayoutDashboard,
+  MessageSquare,
+  Settings,
+  Users,
+  Shield,
+  Package,
+  Building2,
+  Megaphone,
+  Globe,
+  Code,
+  Database,
+  Key,
+  Github,
+  Mail,
+  ChevronDown,
+  ChevronRight,
   FileText,
   Clock,
   Calendar,
-  Users,
   Briefcase,
-  TrendingUp,
   FolderKanban,
-  Building2,
+  TrendingUp,
   Activity,
-  BookOpen,
-  Zap,
-  Shield,
-  Target,
-  ChevronDown,
+  Headphones,
+  Radio,
+  BarChart3,
+  Layers,
   CheckCircle,
   AlertCircle,
-  Info,
+  ExternalLink,
+  ArrowRight,
 } from "lucide-react";
 
+type DocSection = {
+  id: string;
+  title: string;
+  description: string;
+  icon: typeof BookOpen;
+  color: string;
+  href?: string;
+  content?: React.ReactNode;
+};
+
 export default function DocsPage() {
+  const [activeSection, setActiveSection] = useState<string | null>(null);
+
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
+    <div className="space-y-8 max-w-6xl mx-auto">
       {/* Header */}
-      <div>
+      <div className="border-b pb-6">
         <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
           <BookOpen className="h-8 w-8 text-primary" />
-          SpokeStack Documentation
+          Documentation
         </h1>
-        <p className="text-muted-foreground mt-2">
-          Product specifications, user guides, and module documentation
+        <p className="text-muted-foreground mt-2 text-lg">
+          Everything you need to know about using SpokeStack
         </p>
         <div className="flex flex-wrap gap-2 mt-4">
           <Badge variant="outline">Version 1.0</Badge>
-          <Badge variant="outline">Last updated: December 2024</Badge>
+          <Badge variant="outline">Last updated: December 2025</Badge>
         </div>
       </div>
 
-      {/* Quick Links */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-primary/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Zap className="h-4 w-4 text-primary" />
-              Quick Start
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              New to SpokeStack? Start with Briefs and Time Tracking below.
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Shield className="h-4 w-4 text-amber-500" />
-              Permissions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              See Team Directory section for permission levels.
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Target className="h-4 w-4 text-green-500" />
-              API Reference
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Link href="/admin/settings/api" className="text-sm text-primary hover:underline">
-              View API documentation →
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Modules */}
-      <Tabs defaultValue="briefs" className="space-y-4">
-        <TabsList className="flex-wrap h-auto gap-1 bg-transparent p-0">
-          <TabsTrigger value="briefs" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <FileText className="h-4 w-4" />
-            Briefs
+      {/* Documentation Sections */}
+      <Tabs defaultValue="guides" className="space-y-6">
+        <TabsList className="grid grid-cols-2 md:grid-cols-5 h-auto gap-2 bg-transparent p-0">
+          <TabsTrigger value="guides" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Rocket className="h-4 w-4" />
+            User Guides
           </TabsTrigger>
-          <TabsTrigger value="time" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Clock className="h-4 w-4" />
-            Time
+          <TabsTrigger value="admin" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Settings className="h-4 w-4" />
+            Admin Guides
           </TabsTrigger>
-          <TabsTrigger value="leave" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Calendar className="h-4 w-4" />
-            Leave
+          <TabsTrigger value="modules" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Package className="h-4 w-4" />
+            Modules
           </TabsTrigger>
-          <TabsTrigger value="team" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Users className="h-4 w-4" />
-            Team
-          </TabsTrigger>
-          <TabsTrigger value="clients" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Building2 className="h-4 w-4" />
-            Clients
-          </TabsTrigger>
-          <TabsTrigger value="projects" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <FolderKanban className="h-4 w-4" />
-            Projects
-          </TabsTrigger>
-          <TabsTrigger value="rfp" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Briefcase className="h-4 w-4" />
-            RFP
-          </TabsTrigger>
-          <TabsTrigger value="deals" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <TrendingUp className="h-4 w-4" />
-            Deals
+          <TabsTrigger value="technical" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Code className="h-4 w-4" />
+            Technical
           </TabsTrigger>
           <TabsTrigger value="resources" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Activity className="h-4 w-4" />
+            <ExternalLink className="h-4 w-4" />
             Resources
           </TabsTrigger>
         </TabsList>
 
-        {/* ========== BRIEFS ========== */}
-        <TabsContent value="briefs" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-blue-500" />
-                Briefs Module
-              </CardTitle>
-              <CardDescription>Creative brief management and workflow system</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <section>
-                <h3 className="font-semibold text-lg mb-3">Product Specification</h3>
-                <div className="bg-muted/50 p-4 rounded-lg space-y-4">
-                  <div>
-                    <h4 className="font-medium mb-2">Purpose</h4>
-                    <p className="text-sm text-muted-foreground">
-                      The Briefs module is the core work management system for creative projects at TeamLMTD.
-                      Each brief represents a discrete piece of work with a defined scope, deadline, and deliverables.
-                      Briefs track work from initial request through completion, enabling visibility across the team.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-2">Key Entities</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• <strong>Brief</strong> - The work item with title, type, status, deadline</li>
-                      <li>• <strong>Client</strong> - The client account the work is for</li>
-                      <li>• <strong>Project</strong> - Optional grouping for related briefs</li>
-                      <li>• <strong>Assignee</strong> - Team member responsible for delivery</li>
-                      <li>• <strong>Time Entries</strong> - Hours logged against the brief</li>
-                    </ul>
-                  </div>
-                </div>
-              </section>
+        {/* ========== USER GUIDES ========== */}
+        <TabsContent value="guides" className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-3">
+            <DocCard
+              icon={Rocket}
+              iconColor="text-green-500"
+              title="Getting Started"
+              description="First steps for new users"
+              isActive={activeSection === "getting-started"}
+              onClick={() => setActiveSection(activeSection === "getting-started" ? null : "getting-started")}
+            />
+            <DocCard
+              icon={LayoutDashboard}
+              iconColor="text-blue-500"
+              title="Hub Overview"
+              description="Understanding the main dashboard"
+              isActive={activeSection === "hub-overview"}
+              onClick={() => setActiveSection(activeSection === "hub-overview" ? null : "hub-overview")}
+            />
+            <DocCard
+              icon={MessageSquare}
+              iconColor="text-purple-500"
+              title="SpokeChat"
+              description="Team messaging and communication"
+              isActive={activeSection === "spokechat"}
+              onClick={() => setActiveSection(activeSection === "spokechat" ? null : "spokechat")}
+            />
+          </div>
 
-              <section>
-                <h3 className="font-semibold mb-3">Brief Types</h3>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {[
-                    { type: "VIDEO_SHOOT", desc: "On-location or studio video production", naming: "Shoot: [Client] – [Topic]" },
-                    { type: "VIDEO_EDIT", desc: "Post-production editing and effects", naming: "Edit: [Client] – [Topic]" },
-                    { type: "DESIGN", desc: "Graphic design and visual assets", naming: "Design: [Client] – [Topic]" },
-                    { type: "COPYWRITING_EN", desc: "English copywriting and content", naming: "Copy: [Client] – [Topic]" },
-                    { type: "COPYWRITING_AR", desc: "Arabic copywriting and content", naming: "Copy: [Client] – [Topic]" },
-                    { type: "PAID_MEDIA", desc: "Paid advertising campaigns", naming: "Paid Media: [Client] – [Topic]" },
-                  ].map((item) => (
-                    <div key={item.type} className="p-3 border rounded-lg">
-                      <Badge variant="outline" className="font-mono text-xs mb-2">{item.type}</Badge>
-                      <p className="text-sm text-muted-foreground">{item.desc}</p>
-                      <p className="text-xs text-muted-foreground mt-1 italic">Naming: {item.naming}</p>
+          {/* Expanded Content */}
+          {activeSection === "getting-started" && (
+            <ExpandedSection title="Getting Started" icon={Rocket} iconColor="text-green-500">
+              <div className="space-y-6">
+                <section>
+                  <h3 className="font-semibold text-lg mb-3">Welcome to SpokeStack</h3>
+                  <p className="text-muted-foreground mb-4">
+                    SpokeStack is your all-in-one platform for managing creative projects, tracking time,
+                    and collaborating with your team. This guide will help you get up and running quickly.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold mb-3">1. Complete Your Profile</h3>
+                  <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+                    <li>Click your avatar in the top-right corner</li>
+                    <li>Select "Profile Settings"</li>
+                    <li>Upload a profile photo</li>
+                    <li>Fill in your job title and department</li>
+                    <li>Set your weekly capacity hours (default is 40)</li>
+                  </ol>
+                  <Button variant="outline" size="sm" className="mt-3" asChild>
+                    <Link href="/admin/settings/profile">Go to Profile Settings <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  </Button>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold mb-3">2. Explore the Dashboard</h3>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Your Hub shows an overview of your work including:
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• <strong>My Briefs</strong> - Work assigned to you</li>
+                    <li>• <strong>Time This Week</strong> - Hours logged</li>
+                    <li>• <strong>Upcoming Deadlines</strong> - What's due soon</li>
+                    <li>• <strong>Team Activity</strong> - Recent updates</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold mb-3">3. Start Tracking Time</h3>
+                  <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+                    <li>Click the clock icon in the header to start the timer</li>
+                    <li>Or go to Time → Add Entry for manual logging</li>
+                    <li>Link your time to a brief or project</li>
+                    <li>Mark billable hours when working on client projects</li>
+                  </ol>
+                  <Button variant="outline" size="sm" className="mt-3" asChild>
+                    <Link href="/time">Go to Time Tracking <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  </Button>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold mb-3">4. View Your Briefs</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Briefs are the core of your work in SpokeStack. View all briefs assigned to you,
+                    update their status, and log time against them.
+                  </p>
+                  <Button variant="outline" size="sm" className="mt-3" asChild>
+                    <Link href="/briefs">View Briefs <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  </Button>
+                </section>
+              </div>
+            </ExpandedSection>
+          )}
+
+          {activeSection === "hub-overview" && (
+            <ExpandedSection title="Hub Overview" icon={LayoutDashboard} iconColor="text-blue-500">
+              <div className="space-y-6">
+                <section>
+                  <h3 className="font-semibold text-lg mb-3">Your Personal Dashboard</h3>
+                  <p className="text-muted-foreground mb-4">
+                    The Hub is your central command center in SpokeStack. It gives you a quick overview
+                    of your work, deadlines, and team activity all in one place.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold mb-3">Dashboard Widgets</h3>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="p-4 border rounded-lg">
+                      <h4 className="font-medium mb-2 flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-blue-500" />
+                        Active Briefs
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        Shows briefs assigned to you that are in progress, with status and deadline.
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </section>
+                    <div className="p-4 border rounded-lg">
+                      <h4 className="font-medium mb-2 flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-purple-500" />
+                        Time Summary
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        Your logged hours this week vs. your capacity target.
+                      </p>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <h4 className="font-medium mb-2 flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-red-500" />
+                        Upcoming Deadlines
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        Briefs due in the next 7 days, sorted by urgency.
+                      </p>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <h4 className="font-medium mb-2 flex items-center gap-2">
+                        <Activity className="h-4 w-4 text-green-500" />
+                        Recent Activity
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        Team updates, brief status changes, and comments.
+                      </p>
+                    </div>
+                  </div>
+                </section>
 
-              <section>
-                <h3 className="font-semibold mb-3">Status Workflow</h3>
-                <div className="space-y-3">
-                  <div className="flex flex-wrap gap-2">
+                <section>
+                  <h3 className="font-semibold mb-3">Navigation Sidebar</h3>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    The left sidebar provides quick access to all modules:
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• <strong>Hub</strong> - Return to your dashboard</li>
+                    <li>• <strong>Briefs</strong> - All briefs and work items</li>
+                    <li>• <strong>Time</strong> - Time tracking and reports</li>
+                    <li>• <strong>Leave</strong> - Request and manage time off</li>
+                    <li>• <strong>Team</strong> - Directory and org chart</li>
+                    <li>• <strong>Clients</strong> - Client accounts</li>
+                    <li>• <strong>Projects</strong> - Project management</li>
+                  </ul>
+                </section>
+              </div>
+            </ExpandedSection>
+          )}
+
+          {activeSection === "spokechat" && (
+            <ExpandedSection title="SpokeChat" icon={MessageSquare} iconColor="text-purple-500">
+              <div className="space-y-6">
+                <section>
+                  <h3 className="font-semibold text-lg mb-3">Team Communication</h3>
+                  <p className="text-muted-foreground mb-4">
+                    SpokeChat is the built-in messaging system for real-time team communication.
+                    Send messages, share files, and stay connected with your team.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold mb-3">Features</h3>
+                  <ul className="text-sm text-muted-foreground space-y-2">
+                    <li>• <strong>Direct Messages</strong> - Private 1:1 conversations with team members</li>
+                    <li>• <strong>Group Channels</strong> - Team or project-based discussions</li>
+                    <li>• <strong>File Sharing</strong> - Share images, documents, and links</li>
+                    <li>• <strong>@Mentions</strong> - Tag team members to get their attention</li>
+                    <li>• <strong>Notifications</strong> - Desktop and mobile alerts for new messages</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold mb-3">Getting Started with Chat</h3>
+                  <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+                    <li>Click "Chat" in the sidebar navigation</li>
+                    <li>Start a new conversation with the + button</li>
+                    <li>Search for team members by name</li>
+                    <li>Type your message and press Enter to send</li>
+                  </ol>
+                  <Button variant="outline" size="sm" className="mt-3" asChild>
+                    <Link href="/chat">Open SpokeChat <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  </Button>
+                </section>
+              </div>
+            </ExpandedSection>
+          )}
+        </TabsContent>
+
+        {/* ========== ADMIN GUIDES ========== */}
+        <TabsContent value="admin" className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-3">
+            <DocCard
+              icon={Settings}
+              iconColor="text-gray-500"
+              title="Admin Dashboard"
+              description="Managing your organization"
+              isActive={activeSection === "admin-dashboard"}
+              onClick={() => setActiveSection(activeSection === "admin-dashboard" ? null : "admin-dashboard")}
+            />
+            <DocCard
+              icon={Users}
+              iconColor="text-blue-500"
+              title="User Management"
+              description="Adding and managing team members"
+              isActive={activeSection === "user-management"}
+              onClick={() => setActiveSection(activeSection === "user-management" ? null : "user-management")}
+            />
+            <DocCard
+              icon={Shield}
+              iconColor="text-amber-500"
+              title="Permission Levels"
+              description="Understanding roles and access"
+              isActive={activeSection === "permissions"}
+              onClick={() => setActiveSection(activeSection === "permissions" ? null : "permissions")}
+            />
+          </div>
+
+          {activeSection === "admin-dashboard" && (
+            <ExpandedSection title="Admin Dashboard" icon={Settings} iconColor="text-gray-500">
+              <div className="space-y-6">
+                <section>
+                  <h3 className="font-semibold text-lg mb-3">Organization Administration</h3>
+                  <p className="text-muted-foreground mb-4">
+                    The Admin section provides tools for managing your organization's settings,
+                    users, integrations, and more. Only users with Admin permission level can access these features.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold mb-3">Admin Menu</h3>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="p-4 border rounded-lg">
+                      <h4 className="font-medium mb-2">Organization Settings</h4>
+                      <p className="text-sm text-muted-foreground">Company name, logo, timezone, and branding</p>
+                      <Button variant="outline" size="sm" className="mt-2" asChild>
+                        <Link href="/admin/settings/organization">Configure <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                      </Button>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <h4 className="font-medium mb-2">User Management</h4>
+                      <p className="text-sm text-muted-foreground">Add, edit, and deactivate team members</p>
+                      <Button variant="outline" size="sm" className="mt-2" asChild>
+                        <Link href="/admin/users">Manage Users <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                      </Button>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <h4 className="font-medium mb-2">Integrations</h4>
+                      <p className="text-sm text-muted-foreground">Connect external tools and services</p>
+                      <Button variant="outline" size="sm" className="mt-2" asChild>
+                        <Link href="/admin/integrations">View Integrations <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                      </Button>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <h4 className="font-medium mb-2">Billing</h4>
+                      <p className="text-sm text-muted-foreground">Subscription, invoices, and payment methods</p>
+                      <Button variant="outline" size="sm" className="mt-2" asChild>
+                        <Link href="/admin/settings/billing">View Billing <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                      </Button>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="bg-amber-500/10 border border-amber-500/50 p-4 rounded-lg">
+                  <p className="text-sm flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-amber-500" />
+                    <strong>Admin access required</strong> - Only users with Admin permission level can access these settings
+                  </p>
+                </section>
+              </div>
+            </ExpandedSection>
+          )}
+
+          {activeSection === "user-management" && (
+            <ExpandedSection title="User Management" icon={Users} iconColor="text-blue-500">
+              <div className="space-y-6">
+                <section>
+                  <h3 className="font-semibold text-lg mb-3">Managing Team Members</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Add new team members, update profiles, set permissions, and manage access to your organization.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold mb-3">Adding a New User</h3>
+                  <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+                    <li>Go to Admin → Users</li>
+                    <li>Click "Add User" button</li>
+                    <li>Enter name, email, and job title</li>
+                    <li>Select department and team lead</li>
+                    <li>Choose permission level</li>
+                    <li>Set weekly capacity hours</li>
+                    <li>Click Save - an invitation email will be sent</li>
+                  </ol>
+                  <Button variant="outline" size="sm" className="mt-3" asChild>
+                    <Link href="/admin/users">Go to Users <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  </Button>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold mb-3">User Status</h3>
+                  <div className="flex gap-2 flex-wrap">
+                    <Badge className="bg-green-500">Active</Badge>
+                    <Badge variant="secondary">Pending Invite</Badge>
+                    <Badge variant="destructive">Deactivated</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Deactivated users cannot log in but their historical data is preserved.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold mb-3">Bulk Actions</h3>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• <strong>Export Users</strong> - Download CSV of all users</li>
+                    <li>• <strong>Resend Invites</strong> - Re-send pending invitations</li>
+                    <li>• <strong>Update Department</strong> - Move multiple users at once</li>
+                  </ul>
+                </section>
+              </div>
+            </ExpandedSection>
+          )}
+
+          {activeSection === "permissions" && (
+            <ExpandedSection title="Permission Levels" icon={Shield} iconColor="text-amber-500">
+              <div className="space-y-6">
+                <section>
+                  <h3 className="font-semibold text-lg mb-3">Role-Based Access Control</h3>
+                  <p className="text-muted-foreground mb-4">
+                    SpokeStack uses permission levels to control what each user can see and do.
+                    Each user is assigned one permission level that determines their access across all modules.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold mb-3">Permission Levels</h3>
+                  <div className="space-y-3">
                     {[
-                      { status: "DRAFT", color: "bg-gray-500" },
-                      { status: "SUBMITTED", color: "bg-blue-500" },
-                      { status: "APPROVED", color: "bg-indigo-500" },
-                      { status: "IN_PROGRESS", color: "bg-amber-500" },
-                      { status: "IN_REVIEW", color: "bg-purple-500" },
-                      { status: "COMPLETED", color: "bg-green-500" },
-                      { status: "CANCELLED", color: "bg-red-500" },
-                    ].map((s) => (
-                      <Badge key={s.status} className={s.color}>{s.status}</Badge>
+                      { level: "ADMIN", desc: "Full system access. Can manage users, organization settings, billing, and all data. Typically reserved for system administrators.", color: "bg-red-500" },
+                      { level: "LEADERSHIP", desc: "All data access including RFPs, deals, and financials. Can run organization-wide reports. For department heads and executives.", color: "bg-purple-500" },
+                      { level: "TEAM_LEAD", desc: "Team management capabilities. Can assign work, approve time/leave for their team, and view team metrics.", color: "bg-blue-500" },
+                      { level: "STAFF", desc: "Standard employee access. Can create briefs, log time, request leave, and view their own work.", color: "bg-green-500" },
+                      { level: "FREELANCER", desc: "Limited contractor access. Can only see work assigned to them and log time against it.", color: "bg-amber-500" },
+                      { level: "CLIENT", desc: "External portal access only. Can view and approve deliverables for their projects.", color: "bg-gray-500" },
+                    ].map((p) => (
+                      <div key={p.level} className="flex items-start gap-3 p-4 border rounded-lg">
+                        <Badge className={`${p.color} font-mono shrink-0`}>{p.level}</Badge>
+                        <p className="text-sm text-muted-foreground">{p.desc}</p>
+                      </div>
                     ))}
                   </div>
-                  <div className="text-sm text-muted-foreground space-y-1">
-                    <p>• <strong>DRAFT</strong> → Work in progress, not yet submitted for approval</p>
-                    <p>• <strong>SUBMITTED</strong> → Awaiting team lead/client approval</p>
-                    <p>• <strong>APPROVED</strong> → Ready to begin work</p>
-                    <p>• <strong>IN_PROGRESS</strong> → Active work underway</p>
-                    <p>• <strong>IN_REVIEW</strong> → Work complete, pending client review</p>
-                    <p>• <strong>COMPLETED</strong> → Delivered and accepted</p>
-                    <p>• <strong>CANCELLED</strong> → Work stopped, not to be completed</p>
-                  </div>
-                </div>
-              </section>
+                </section>
 
-              <section>
-                <h3 className="font-semibold mb-3">User Guide</h3>
-                <div className="space-y-4">
-                  <CollapsibleSection title="Creating a Brief">
-                    <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                      <li>Navigate to Briefs → Click "New Brief"</li>
-                      <li>Select the brief type (Video Shoot, Design, etc.)</li>
-                      <li>Fill in required fields: Title, Client, Deadline</li>
-                      <li>Add description and any specific requirements</li>
-                      <li>Save as Draft or Submit for approval</li>
-                    </ol>
-                  </CollapsibleSection>
-                  <CollapsibleSection title="Assigning a Brief">
-                    <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                      <li>Open the brief detail page</li>
-                      <li>Click the Assignee field</li>
-                      <li>Select a team member from the dropdown</li>
-                      <li>The assignee will be notified automatically</li>
-                    </ol>
-                    <p className="text-sm text-muted-foreground mt-2 flex items-center gap-2">
-                      <Info className="h-4 w-4" />
-                      Only Team Leads and above can assign briefs.
-                    </p>
-                  </CollapsibleSection>
-                  <CollapsibleSection title="Logging Time">
-                    <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                      <li>Open the brief you worked on</li>
-                      <li>Click "Log Time" or use the timer</li>
-                      <li>Enter hours, description, and date</li>
-                      <li>Mark as billable if client-chargeable</li>
-                      <li>Submit the time entry</li>
-                    </ol>
-                  </CollapsibleSection>
-                </div>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Permissions</h3>
-                <div className="border rounded-lg overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead className="bg-muted">
-                      <tr>
-                        <th className="text-left p-3">Action</th>
-                        <th className="text-center p-3">Staff</th>
-                        <th className="text-center p-3">Team Lead</th>
-                        <th className="text-center p-3">Leadership</th>
-                        <th className="text-center p-3">Admin</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[
-                        { action: "View own briefs", staff: true, lead: true, leadership: true, admin: true },
-                        { action: "View all briefs", staff: false, lead: true, leadership: true, admin: true },
-                        { action: "Create briefs", staff: true, lead: true, leadership: true, admin: true },
-                        { action: "Assign briefs", staff: false, lead: true, leadership: true, admin: true },
-                        { action: "Approve briefs", staff: false, lead: true, leadership: true, admin: true },
-                        { action: "Delete briefs", staff: false, lead: false, leadership: false, admin: true },
-                      ].map((row) => (
-                        <tr key={row.action} className="border-t">
-                          <td className="p-3">{row.action}</td>
-                          <td className="text-center p-3">{row.staff ? <CheckCircle className="h-4 w-4 text-green-500 mx-auto" /> : <AlertCircle className="h-4 w-4 text-muted-foreground mx-auto" />}</td>
-                          <td className="text-center p-3">{row.lead ? <CheckCircle className="h-4 w-4 text-green-500 mx-auto" /> : <AlertCircle className="h-4 w-4 text-muted-foreground mx-auto" />}</td>
-                          <td className="text-center p-3">{row.leadership ? <CheckCircle className="h-4 w-4 text-green-500 mx-auto" /> : <AlertCircle className="h-4 w-4 text-muted-foreground mx-auto" />}</td>
-                          <td className="text-center p-3">{row.admin ? <CheckCircle className="h-4 w-4 text-green-500 mx-auto" /> : <AlertCircle className="h-4 w-4 text-muted-foreground mx-auto" />}</td>
+                <section>
+                  <h3 className="font-semibold mb-3">Module Access Matrix</h3>
+                  <div className="border rounded-lg overflow-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted">
+                        <tr>
+                          <th className="text-left p-3">Feature</th>
+                          <th className="text-center p-3">Staff</th>
+                          <th className="text-center p-3">Team Lead</th>
+                          <th className="text-center p-3">Leadership</th>
+                          <th className="text-center p-3">Admin</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-            </CardContent>
-          </Card>
+                      </thead>
+                      <tbody>
+                        {[
+                          { feature: "View own briefs & time", staff: true, lead: true, leadership: true, admin: true },
+                          { feature: "Create briefs", staff: true, lead: true, leadership: true, admin: true },
+                          { feature: "View team data", staff: false, lead: true, leadership: true, admin: true },
+                          { feature: "Approve time/leave", staff: false, lead: true, leadership: true, admin: true },
+                          { feature: "View RFPs & Deals", staff: false, lead: false, leadership: true, admin: true },
+                          { feature: "Manage clients", staff: false, lead: false, leadership: true, admin: true },
+                          { feature: "Admin settings", staff: false, lead: false, leadership: false, admin: true },
+                          { feature: "User management", staff: false, lead: false, leadership: false, admin: true },
+                        ].map((row) => (
+                          <tr key={row.feature} className="border-t">
+                            <td className="p-3">{row.feature}</td>
+                            <td className="text-center p-3">{row.staff ? <CheckCircle className="h-4 w-4 text-green-500 mx-auto" /> : <AlertCircle className="h-4 w-4 text-muted-foreground mx-auto" />}</td>
+                            <td className="text-center p-3">{row.lead ? <CheckCircle className="h-4 w-4 text-green-500 mx-auto" /> : <AlertCircle className="h-4 w-4 text-muted-foreground mx-auto" />}</td>
+                            <td className="text-center p-3">{row.leadership ? <CheckCircle className="h-4 w-4 text-green-500 mx-auto" /> : <AlertCircle className="h-4 w-4 text-muted-foreground mx-auto" />}</td>
+                            <td className="text-center p-3">{row.admin ? <CheckCircle className="h-4 w-4 text-green-500 mx-auto" /> : <AlertCircle className="h-4 w-4 text-muted-foreground mx-auto" />}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+            </ExpandedSection>
+          )}
         </TabsContent>
 
-        {/* ========== TIME TRACKING ========== */}
-        <TabsContent value="time" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-purple-500" />
-                Time Tracking Module
-              </CardTitle>
-              <CardDescription>Log hours, track billable time, and generate reports</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <section>
-                <h3 className="font-semibold text-lg mb-3">Product Specification</h3>
-                <div className="bg-muted/50 p-4 rounded-lg space-y-4">
-                  <div>
-                    <h4 className="font-medium mb-2">Purpose</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Track time spent on client work and internal tasks. Enables accurate billing,
-                      resource utilization analysis, and project cost tracking. Supports both
-                      manual entry and live timer functionality.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-2">Key Features</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• <strong>Manual Entry</strong> - Log hours with date, duration, description</li>
-                      <li>• <strong>Live Timer</strong> - Start/stop timer for real-time tracking</li>
-                      <li>• <strong>Billable Flag</strong> - Mark time as billable for invoicing</li>
-                      <li>• <strong>Project/Brief Link</strong> - Associate time with work items</li>
-                      <li>• <strong>Approval Workflow</strong> - Team leads approve entries</li>
-                      <li>• <strong>Reports</strong> - By user, client, project, or date range</li>
-                    </ul>
-                  </div>
-                </div>
-              </section>
+        {/* ========== MODULE DOCUMENTATION ========== */}
+        <TabsContent value="modules" className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <DocCard
+              icon={Package}
+              iconColor="text-blue-500"
+              title="ERP Bundle"
+              description="Briefs, Time Tracking, Leave, Team, RFP"
+              isActive={activeSection === "erp-bundle"}
+              onClick={() => setActiveSection(activeSection === "erp-bundle" ? null : "erp-bundle")}
+            />
+            <DocCard
+              icon={Building2}
+              iconColor="text-green-500"
+              title="Agency Bundle"
+              description="Clients, Retainers, Projects, Resources, CRM"
+              isActive={activeSection === "agency-bundle"}
+              onClick={() => setActiveSection(activeSection === "agency-bundle" ? null : "agency-bundle")}
+            />
+            <DocCard
+              icon={Megaphone}
+              iconColor="text-purple-500"
+              title="Marketing Bundle"
+              description="Listening, Trackers, Media Buying, Analytics, Builder"
+              isActive={activeSection === "marketing-bundle"}
+              onClick={() => setActiveSection(activeSection === "marketing-bundle" ? null : "marketing-bundle")}
+            />
+            <DocCard
+              icon={Globe}
+              iconColor="text-amber-500"
+              title="Client Portal"
+              description="Dashboard, Approvals, Deliverables, Reports"
+              isActive={activeSection === "client-portal"}
+              onClick={() => setActiveSection(activeSection === "client-portal" ? null : "client-portal")}
+            />
+          </div>
 
-              <section>
-                <h3 className="font-semibold mb-3">User Guide</h3>
-                <div className="space-y-4">
-                  <CollapsibleSection title="Logging Time Manually">
-                    <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                      <li>Navigate to Time → Click "Add Entry"</li>
-                      <li>Select the date and enter hours worked</li>
-                      <li>Choose a Brief or Project (optional)</li>
-                      <li>Add a description of work completed</li>
-                      <li>Toggle billable if client-chargeable</li>
-                      <li>Save the entry</li>
-                    </ol>
-                  </CollapsibleSection>
-                  <CollapsibleSection title="Using the Timer">
-                    <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                      <li>Click "Start Timer" from Time page or header</li>
-                      <li>Select what you're working on (optional)</li>
-                      <li>Timer runs in the background</li>
-                      <li>Click "Stop" when done</li>
-                      <li>Review and edit the entry before saving</li>
-                    </ol>
-                  </CollapsibleSection>
-                  <CollapsibleSection title="Viewing Reports">
-                    <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                      <li>Navigate to Time → Reports tab</li>
-                      <li>Select date range and grouping (user/client/project)</li>
-                      <li>Filter by billable status if needed</li>
-                      <li>Export to CSV for payroll or invoicing</li>
-                    </ol>
-                  </CollapsibleSection>
-                </div>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Permissions</h3>
-                <div className="text-sm text-muted-foreground space-y-1">
-                  <p>• <strong>All users</strong> can log their own time and view their entries</p>
-                  <p>• <strong>Team Leads+</strong> can view and approve team member entries</p>
-                  <p>• <strong>Leadership+</strong> can view all entries and run organization-wide reports</p>
-                </div>
-              </section>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* ========== LEAVE ========== */}
-        <TabsContent value="leave" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-green-500" />
-                Leave Management Module
-              </CardTitle>
-              <CardDescription>Request time off, track balances, and manage approvals</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <section>
-                <h3 className="font-semibold text-lg mb-3">Product Specification</h3>
-                <div className="bg-muted/50 p-4 rounded-lg space-y-4">
-                  <div>
-                    <h4 className="font-medium mb-2">Purpose</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Manage employee time off requests, track leave balances, and maintain
-                      team availability visibility. Integrates with resource planning to
-                      adjust capacity calculations.
-                    </p>
-                  </div>
-                </div>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Leave Types</h3>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { type: "ANNUAL", desc: "Paid annual leave" },
-                    { type: "SICK", desc: "Illness or medical appointments" },
-                    { type: "UNPAID", desc: "Unpaid time off" },
-                    { type: "MATERNITY", desc: "Maternity leave" },
-                    { type: "PATERNITY", desc: "Paternity leave" },
-                    { type: "COMPASSIONATE", desc: "Bereavement or emergency" },
-                    { type: "STUDY", desc: "Educational leave" },
-                  ].map((t) => (
-                    <div key={t.type} className="p-2 border rounded">
-                      <Badge variant="outline" className="text-xs">{t.type}</Badge>
-                      <p className="text-xs text-muted-foreground mt-1">{t.desc}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Request Workflow</h3>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {["PENDING", "APPROVED", "REJECTED", "CANCELLED"].map((status) => (
-                    <Badge key={status} variant="secondary">{status}</Badge>
-                  ))}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Requests route to the user's team lead. Leadership can approve on behalf of any team.
-                  Approved leave automatically updates the employee's balance.
+          {activeSection === "erp-bundle" && (
+            <ExpandedSection title="ERP Bundle" icon={Package} iconColor="text-blue-500">
+              <div className="space-y-6">
+                <p className="text-muted-foreground">
+                  The ERP Bundle provides core business operations for creative agencies: work management,
+                  time tracking, leave management, team directory, and new business tracking.
                 </p>
-              </section>
 
-              <section>
-                <h3 className="font-semibold mb-3">User Guide</h3>
-                <div className="space-y-4">
-                  <CollapsibleSection title="Requesting Leave">
-                    <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                      <li>Navigate to Leave → Click "Request Leave"</li>
-                      <li>Select leave type and date range</li>
-                      <li>Add reason (optional but recommended)</li>
-                      <li>Submit request</li>
-                      <li>Your team lead will be notified</li>
-                    </ol>
-                  </CollapsibleSection>
-                  <CollapsibleSection title="Approving Requests (Team Leads)">
-                    <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                      <li>Go to Leave → Approvals tab</li>
-                      <li>Review pending requests from your team</li>
-                      <li>Check team calendar for conflicts</li>
-                      <li>Approve or reject with optional note</li>
-                    </ol>
-                  </CollapsibleSection>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <ModuleCard
+                    icon={FileText}
+                    title="Briefs"
+                    description="Creative brief management and workflow. Track work from request to delivery."
+                    href="/briefs"
+                    features={["7 brief types", "Status workflow", "Time tracking", "Client assignment"]}
+                  />
+                  <ModuleCard
+                    icon={Clock}
+                    title="Time Tracking"
+                    description="Log hours, use timers, and generate reports for billing and payroll."
+                    href="/time"
+                    features={["Manual & timer entry", "Billable flagging", "Weekly reports", "Export to CSV"]}
+                  />
+                  <ModuleCard
+                    icon={Calendar}
+                    title="Leave Management"
+                    description="Request time off, track balances, and manage approvals."
+                    href="/leave"
+                    features={["Multiple leave types", "Approval workflow", "Balance tracking", "Team calendar"]}
+                  />
+                  <ModuleCard
+                    icon={Users}
+                    title="Team Directory"
+                    description="Employee profiles, departments, and organization structure."
+                    href="/team"
+                    features={["Profile management", "Org chart", "Skills tracking", "Contact info"]}
+                  />
+                  <ModuleCard
+                    icon={Briefcase}
+                    title="RFP Management"
+                    description="Track proposals from receipt through submission. Leadership only."
+                    href="/rfp"
+                    features={["Pipeline tracking", "Sub-task management", "Outcome tracking", "Win rate analysis"]}
+                  />
                 </div>
-              </section>
+              </div>
+            </ExpandedSection>
+          )}
 
-              <section>
-                <h3 className="font-semibold mb-3">Permissions</h3>
-                <div className="text-sm text-muted-foreground space-y-1">
-                  <p>• <strong>All users</strong> can request leave and view own balances</p>
-                  <p>• <strong>Team Leads+</strong> can approve/reject team requests</p>
-                  <p>• <strong>Leadership+</strong> can view all requests and balances</p>
-                  <p>• <strong>Admins</strong> can manually adjust balances</p>
+          {activeSection === "agency-bundle" && (
+            <ExpandedSection title="Agency Bundle" icon={Building2} iconColor="text-green-500">
+              <div className="space-y-6">
+                <p className="text-muted-foreground">
+                  The Agency Bundle handles client relationships, project management, resource planning,
+                  and CRM functionality for managing your agency's client work.
+                </p>
+
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <ModuleCard
+                    icon={Building2}
+                    title="Clients"
+                    description="Client account management, contacts, and relationships."
+                    href="/clients"
+                    features={["Client profiles", "Contact management", "Industry tracking", "Account managers"]}
+                  />
+                  <ModuleCard
+                    icon={FolderKanban}
+                    title="Projects"
+                    description="Project and retainer management with budget tracking."
+                    href="/projects"
+                    features={["Budget tracking", "Hours allocation", "Brief grouping", "Utilization reporting"]}
+                  />
+                  <ModuleCard
+                    icon={Activity}
+                    title="Resources"
+                    description="Team capacity planning and utilization monitoring."
+                    href="/resources"
+                    features={["Capacity tracking", "Utilization %", "Availability view", "Leave integration"]}
+                  />
+                  <ModuleCard
+                    icon={TrendingUp}
+                    title="Deals"
+                    description="Sales pipeline and opportunity tracking. Leadership only."
+                    href="/crm/deals"
+                    features={["Pipeline stages", "Value tracking", "Probability %", "Client conversion"]}
+                  />
+                  <ModuleCard
+                    icon={Users}
+                    title="CRM Contacts"
+                    description="External contacts and relationship management."
+                    href="/crm/contacts"
+                    features={["Contact database", "Company linking", "Activity history", "Notes"]}
+                  />
                 </div>
-              </section>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </div>
+            </ExpandedSection>
+          )}
 
-        {/* ========== TEAM ========== */}
-        <TabsContent value="team" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-amber-500" />
-                Team Directory Module
-              </CardTitle>
-              <CardDescription>Employee profiles, departments, and org structure</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <section>
-                <h3 className="font-semibold text-lg mb-3">Product Specification</h3>
-                <div className="bg-muted/50 p-4 rounded-lg space-y-4">
-                  <div>
-                    <h4 className="font-medium mb-2">Purpose</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Central directory of all team members with profiles, contact info,
-                      department assignments, and reporting structure. Foundation for
-                      permissions and resource planning.
-                    </p>
-                  </div>
+          {activeSection === "marketing-bundle" && (
+            <ExpandedSection title="Marketing Bundle" icon={Megaphone} iconColor="text-purple-500">
+              <div className="space-y-6">
+                <p className="text-muted-foreground">
+                  The Marketing Bundle provides social listening, campaign tracking, media buying management,
+                  analytics dashboards, and custom report building.
+                </p>
+
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <ModuleCard
+                    icon={Headphones}
+                    title="Social Listening"
+                    description="Monitor brand mentions, hashtags, and competitor activity."
+                    href="/listening"
+                    features={["Brand monitoring", "Hashtag tracking", "Sentiment analysis", "Alerts"]}
+                  />
+                  <ModuleCard
+                    icon={Radio}
+                    title="Trackers"
+                    description="Track keywords, URLs, and content across platforms."
+                    href="/listening/trackers"
+                    features={["Keyword tracking", "URL monitoring", "Platform filtering", "Trend analysis"]}
+                  />
+                  <ModuleCard
+                    icon={TrendingUp}
+                    title="Media Buying"
+                    description="Manage ad accounts, budgets, and campaign spend."
+                    href="/mediabuying"
+                    features={["Budget management", "Platform accounts", "Spend tracking", "ROI reporting"]}
+                  />
+                  <ModuleCard
+                    icon={BarChart3}
+                    title="Analytics"
+                    description="Performance dashboards and campaign reporting."
+                    href="/analytics"
+                    features={["Custom dashboards", "Platform analytics", "Creator tracking", "Campaign metrics"]}
+                  />
+                  <ModuleCard
+                    icon={Layers}
+                    title="Builder"
+                    description="Create custom dashboards and report templates."
+                    href="/builder"
+                    features={["Drag-and-drop", "Widget library", "Data sources", "Export options"]}
+                  />
                 </div>
-              </section>
+              </div>
+            </ExpandedSection>
+          )}
 
-              <section>
-                <h3 className="font-semibold mb-3">Permission Levels</h3>
-                <div className="space-y-2">
-                  {[
-                    { level: "ADMIN", desc: "Full system access. Can manage users, settings, and all data.", color: "bg-red-500" },
-                    { level: "LEADERSHIP", desc: "All data access. Can view RFPs, deals, and run reports.", color: "bg-purple-500" },
-                    { level: "TEAM_LEAD", desc: "Team management. Can assign work, approve time/leave.", color: "bg-blue-500" },
-                    { level: "STAFF", desc: "Standard access. Can create briefs, log time, request leave.", color: "bg-green-500" },
-                    { level: "FREELANCER", desc: "Limited access. Can only see assigned work.", color: "bg-amber-500" },
-                    { level: "CLIENT", desc: "Portal access only. Reviews and approves deliverables.", color: "bg-gray-500" },
-                  ].map((p) => (
-                    <div key={p.level} className="flex items-start gap-3 p-3 border rounded-lg">
-                      <Badge className={`${p.color} font-mono w-28 justify-center`}>{p.level}</Badge>
-                      <p className="text-sm text-muted-foreground flex-1">{p.desc}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
+          {activeSection === "client-portal" && (
+            <ExpandedSection title="Client Portal" icon={Globe} iconColor="text-amber-500">
+              <div className="space-y-6">
+                <p className="text-muted-foreground">
+                  The Client Portal provides a dedicated space for external clients to review work,
+                  approve deliverables, and access project reports.
+                </p>
 
-              <section>
-                <h3 className="font-semibold mb-3">Profile Fields</h3>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <h4 className="font-medium mb-2">Basic Info</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• Name, Email, Phone</li>
-                      <li>• Avatar/Profile photo</li>
-                      <li>• Job title and Department</li>
-                      <li>• Team Lead (reporting to)</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-2">Work Details</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• Weekly capacity (hours)</li>
-                      <li>• Skills and expertise</li>
-                      <li>• Hourly rate (for costing)</li>
-                      <li>• Contract end date</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-2">UAE Fields</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• Emirates ID + expiry</li>
-                      <li>• Passport number + expiry</li>
-                      <li>• Visa status + expiry</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-2">Bank Details</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• Bank name</li>
-                      <li>• Account number</li>
-                      <li>• IBAN</li>
-                    </ul>
-                  </div>
+                  <ModuleCard
+                    icon={LayoutDashboard}
+                    title="Portal Dashboard"
+                    description="Client overview of their projects and pending items."
+                    href="/portal"
+                    features={["Project summary", "Pending approvals", "Recent activity", "Quick links"]}
+                  />
+                  <ModuleCard
+                    icon={CheckCircle}
+                    title="Approvals"
+                    description="Review and approve briefs and deliverables."
+                    href="/portal/approvals"
+                    features={["Pending queue", "Approve/reject", "Comments", "Version history"]}
+                  />
+                  <ModuleCard
+                    icon={FileText}
+                    title="Deliverables"
+                    description="Access completed work and download files."
+                    href="/portal/deliverables"
+                    features={["File downloads", "Status tracking", "Feedback", "Archive access"]}
+                  />
+                  <ModuleCard
+                    icon={BarChart3}
+                    title="Reports"
+                    description="View project reports and analytics."
+                    href="/portal/reports"
+                    features={["Time reports", "Budget status", "Performance metrics", "Export options"]}
+                  />
                 </div>
-              </section>
-            </CardContent>
-          </Card>
+
+                <section className="bg-blue-500/10 border border-blue-500/50 p-4 rounded-lg">
+                  <h4 className="font-medium mb-2">Setting Up Client Access</h4>
+                  <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                    <li>Create a user with CLIENT permission level</li>
+                    <li>Link them to their client account</li>
+                    <li>Share the portal login URL with them</li>
+                    <li>They'll only see projects for their client</li>
+                  </ol>
+                </section>
+              </div>
+            </ExpandedSection>
+          )}
         </TabsContent>
 
-        {/* ========== CLIENTS ========== */}
-        <TabsContent value="clients" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-cyan-500" />
-                Clients Module
-              </CardTitle>
-              <CardDescription>Client account management and contacts</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <section>
-                <h3 className="font-semibold text-lg mb-3">Product Specification</h3>
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    Manage client accounts, contacts, and relationships. Clients are the
-                    foundation for projects, briefs, and billing. Each client has a unique
-                    code for easy reference (e.g., CCAD, DET, ADEK).
-                  </p>
-                </div>
-              </section>
+        {/* ========== TECHNICAL DOCUMENTATION ========== */}
+        <TabsContent value="technical" className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-3">
+            <DocCard
+              icon={Code}
+              iconColor="text-gray-500"
+              title="Architecture"
+              description="System design and tech stack"
+              isActive={activeSection === "architecture"}
+              onClick={() => setActiveSection(activeSection === "architecture" ? null : "architecture")}
+            />
+            <DocCard
+              icon={Key}
+              iconColor="text-green-500"
+              title="API Reference"
+              description="Endpoints and integration"
+              href="/admin/settings/api"
+            />
+            <DocCard
+              icon={Database}
+              iconColor="text-blue-500"
+              title="Database Schema"
+              description="Data models and relationships"
+              isActive={activeSection === "database"}
+              onClick={() => setActiveSection(activeSection === "database" ? null : "database")}
+            />
+          </div>
 
-              <section>
-                <h3 className="font-semibold mb-3">Client Status</h3>
-                <div className="flex flex-wrap gap-2">
-                  <Badge className="bg-green-500">ACTIVE</Badge>
-                  <Badge variant="secondary">INACTIVE</Badge>
-                  <Badge variant="outline">PROSPECT</Badge>
-                </div>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Client Fields</h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• <strong>Name & Code</strong> - Company name and short code</li>
-                  <li>• <strong>Industry</strong> - Business sector for reporting</li>
-                  <li>• <strong>Account Manager</strong> - Internal point of contact</li>
-                  <li>• <strong>Billing Currency</strong> - Default for invoicing</li>
-                  <li>• <strong>Contacts</strong> - Multiple contacts per client</li>
-                </ul>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Permissions</h3>
-                <div className="text-sm text-muted-foreground space-y-1">
-                  <p>• <strong>All users</strong> can view clients</p>
-                  <p>• <strong>Leadership+</strong> can create and edit clients</p>
-                  <p>• <strong>Admins</strong> can archive/delete clients</p>
-                </div>
-              </section>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* ========== PROJECTS ========== */}
-        <TabsContent value="projects" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FolderKanban className="h-5 w-5 text-indigo-500" />
-                Projects Module
-              </CardTitle>
-              <CardDescription>Project and retainer management</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <section>
-                <h3 className="font-semibold text-lg mb-3">Product Specification</h3>
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    Projects group related briefs together and provide budget tracking.
-                    Supports both fixed-scope projects and ongoing retainers. Track hours
-                    and budget utilization in real-time.
-                  </p>
-                </div>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Project Types</h3>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { type: "RETAINER", desc: "Ongoing monthly engagement" },
-                    { type: "PROJECT", desc: "Fixed-scope deliverable" },
-                    { type: "PITCH", desc: "New business proposal" },
-                    { type: "INTERNAL", desc: "Internal company work" },
-                  ].map((t) => (
-                    <div key={t.type} className="p-2 border rounded">
-                      <Badge variant="outline">{t.type}</Badge>
-                      <p className="text-xs text-muted-foreground mt-1">{t.desc}</p>
+          {activeSection === "architecture" && (
+            <ExpandedSection title="Architecture" icon={Code} iconColor="text-gray-500">
+              <div className="space-y-6">
+                <section>
+                  <h3 className="font-semibold text-lg mb-3">Technology Stack</h3>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="p-4 border rounded-lg">
+                      <h4 className="font-medium mb-2">Frontend</h4>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        <li>• <strong>Next.js 14</strong> - React framework with App Router</li>
+                        <li>• <strong>TypeScript</strong> - Type-safe development</li>
+                        <li>• <strong>Tailwind CSS</strong> - Utility-first styling</li>
+                        <li>• <strong>shadcn/ui</strong> - Component library</li>
+                        <li>• <strong>Lucide Icons</strong> - Icon system</li>
+                      </ul>
                     </div>
-                  ))}
-                </div>
-              </section>
+                    <div className="p-4 border rounded-lg">
+                      <h4 className="font-medium mb-2">Backend</h4>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        <li>• <strong>Next.js API Routes</strong> - REST API</li>
+                        <li>• <strong>Prisma</strong> - Database ORM</li>
+                        <li>• <strong>PostgreSQL</strong> - Primary database</li>
+                        <li>• <strong>Supabase Auth</strong> - Authentication</li>
+                      </ul>
+                    </div>
+                  </div>
+                </section>
 
-              <section>
-                <h3 className="font-semibold mb-3">Budget Tracking</h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• <strong>Hours Budget</strong> - Total hours allocated</li>
-                  <li>• <strong>Amount Budget</strong> - Monetary value</li>
-                  <li>• <strong>Hours Used</strong> - Sum of time entries</li>
-                  <li>• <strong>Utilization %</strong> - Used ÷ Budget</li>
-                </ul>
-              </section>
-            </CardContent>
-          </Card>
+                <section>
+                  <h3 className="font-semibold mb-3">Core Principles</h3>
+                  <ul className="text-sm text-muted-foreground space-y-2">
+                    <li>• <strong>Multi-tenant Architecture</strong> - All data is isolated by organizationId</li>
+                    <li>• <strong>Server-First</strong> - Use Server Components and Server Actions by default</li>
+                    <li>• <strong>Config-Driven</strong> - Tenant behavior defined in /config, never hardcoded</li>
+                    <li>• <strong>Type Safety</strong> - Full TypeScript with strict mode enabled</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold mb-3">Project Structure</h3>
+                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto">
+{`/src
+  /app              # Next.js App Router pages
+    /(auth)         # Login, signup
+    /(platform)     # Main app (protected)
+    /portal         # Client portal
+    /api            # REST API routes
+
+  /components
+    /ui             # shadcn/ui components
+    /layout         # Shell, sidebar, header
+
+  /lib
+    prisma.ts       # Database client
+    auth.ts         # Authentication config`}
+                  </pre>
+                </section>
+              </div>
+            </ExpandedSection>
+          )}
+
+          {activeSection === "database" && (
+            <ExpandedSection title="Database Schema" icon={Database} iconColor="text-blue-500">
+              <div className="space-y-6">
+                <section>
+                  <h3 className="font-semibold text-lg mb-3">Core Entities</h3>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {[
+                      { name: "Organization", desc: "Multi-tenant root entity" },
+                      { name: "User", desc: "Team members with permission levels" },
+                      { name: "Client", desc: "Client accounts (CCAD, DET, etc.)" },
+                      { name: "Project", desc: "Project and retainer containers" },
+                      { name: "Brief", desc: "Work items with 7 types" },
+                      { name: "TimeEntry", desc: "Logged hours with billable flag" },
+                      { name: "LeaveRequest", desc: "Time off requests" },
+                      { name: "RFP", desc: "Request for proposals" },
+                    ].map((entity) => (
+                      <div key={entity.name} className="p-3 border rounded-lg">
+                        <Badge variant="outline" className="font-mono mb-1">{entity.name}</Badge>
+                        <p className="text-sm text-muted-foreground">{entity.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold mb-3">Key Relationships</h3>
+                  <ul className="text-sm text-muted-foreground space-y-2">
+                    <li>• <strong>Organization → Users</strong> - One org has many users</li>
+                    <li>• <strong>Client → Projects → Briefs</strong> - Hierarchical work structure</li>
+                    <li>• <strong>User → TimeEntries</strong> - Users log time against briefs</li>
+                    <li>• <strong>User → LeaveRequests</strong> - Users request time off</li>
+                    <li>• <strong>Brief → TimeEntries</strong> - Track hours per brief</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold mb-3">Enums</h3>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    <div className="p-3 bg-muted rounded-lg">
+                      <h4 className="font-medium mb-1 text-sm">BriefStatus</h4>
+                      <p className="text-xs text-muted-foreground font-mono">
+                        DRAFT, SUBMITTED, APPROVED, IN_PROGRESS, IN_REVIEW, COMPLETED, CANCELLED
+                      </p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-lg">
+                      <h4 className="font-medium mb-1 text-sm">BriefType</h4>
+                      <p className="text-xs text-muted-foreground font-mono">
+                        VIDEO_SHOOT, VIDEO_EDIT, DESIGN, COPYWRITING_EN, COPYWRITING_AR, PAID_MEDIA, RFP
+                      </p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-lg">
+                      <h4 className="font-medium mb-1 text-sm">PermissionLevel</h4>
+                      <p className="text-xs text-muted-foreground font-mono">
+                        ADMIN, LEADERSHIP, TEAM_LEAD, STAFF, FREELANCER, CLIENT
+                      </p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-lg">
+                      <h4 className="font-medium mb-1 text-sm">LeaveType</h4>
+                      <p className="text-xs text-muted-foreground font-mono">
+                        ANNUAL, SICK, UNPAID, MATERNITY, PATERNITY, COMPASSIONATE, STUDY
+                      </p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </ExpandedSection>
+          )}
         </TabsContent>
 
-        {/* ========== RFP ========== */}
-        <TabsContent value="rfp" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-rose-500" />
-                RFP Management Module
-              </CardTitle>
-              <CardDescription>Track and manage request for proposals</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <section>
-                <h3 className="font-semibold text-lg mb-3">Product Specification</h3>
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    Track RFPs from receipt through submission and outcome. Manage sub-tasks,
-                    deadlines, and team assignments. Leadership-only module for new business pipeline.
-                  </p>
-                </div>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">RFP Status Flow</h3>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {["VETTING", "ACTIVE", "AWAITING_REVIEW", "SUBMITTED", "CLOSED"].map((s) => (
-                    <Badge key={s} variant="secondary">{s}</Badge>
-                  ))}
-                </div>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Outcomes</h3>
-                <div className="flex flex-wrap gap-2">
-                  <Badge className="bg-green-500">WON</Badge>
-                  <Badge className="bg-red-500">LOST</Badge>
-                  <Badge variant="outline">WITHDRAWN</Badge>
-                  <Badge variant="outline">CANCELLED</Badge>
-                </div>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Sub-Items</h3>
-                <p className="text-sm text-muted-foreground">
-                  Break RFP prep into tasks with assignees and due dates. Track completion %.
-                </p>
-              </section>
-
-              <section className="bg-amber-500/10 border border-amber-500/50 p-4 rounded-lg">
-                <p className="text-sm flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-amber-500" />
-                  <strong>Leadership+ only</strong> - RFPs are restricted to leadership team
-                </p>
-              </section>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* ========== DEALS ========== */}
-        <TabsContent value="deals" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-emerald-500" />
-                Deals Pipeline Module
-              </CardTitle>
-              <CardDescription>Sales pipeline and opportunity tracking</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <section>
-                <h3 className="font-semibold text-lg mb-3">Product Specification</h3>
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    Track sales opportunities from lead through close. Monitor pipeline value,
-                    weighted projections, and win rates. Convert won deals to clients automatically.
-                  </p>
-                </div>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Deal Stages</h3>
-                <div className="flex flex-wrap gap-2">
-                  {["LEAD", "PITCH", "NEGOTIATION", "WON", "LOST"].map((s) => (
-                    <Badge key={s} variant="secondary">{s}</Badge>
-                  ))}
-                </div>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Pipeline Metrics</h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• <strong>Total Value</strong> - Sum of all open deals</li>
-                  <li>• <strong>Weighted Value</strong> - Value × probability %</li>
-                  <li>• <strong>By Stage</strong> - Count and value per stage</li>
-                </ul>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Deal Conversion</h3>
-                <p className="text-sm text-muted-foreground">
-                  Won deals can be converted to clients with one click. Contact info
-                  and owner carry over to the new client record.
-                </p>
-              </section>
-
-              <section className="bg-amber-500/10 border border-amber-500/50 p-4 rounded-lg">
-                <p className="text-sm flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-amber-500" />
-                  <strong>Leadership+ only</strong> - Deals are restricted to leadership team
-                </p>
-              </section>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* ========== RESOURCES ========== */}
+        {/* ========== ADDITIONAL RESOURCES ========== */}
         <TabsContent value="resources" className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Github className="h-5 w-5" />
+                  GitHub Repository
+                </CardTitle>
+                <CardDescription>View source code and contribute</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Access the SpokeStack source code, report issues, and contribute to development.
+                </p>
+                <Button variant="outline" asChild>
+                  <a href="https://github.com/willhutson/erp_staging_lmtd" target="_blank" rel="noopener noreferrer">
+                    Open GitHub <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5" />
+                  Contact Support
+                </CardTitle>
+                <CardDescription>Get help from our team</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Having issues or questions? Reach out to our support team for assistance.
+                </p>
+                <Button variant="outline" asChild>
+                  <a href="mailto:support@spokestack.io">
+                    support@spokestack.io <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-orange-500" />
-                Resources Module
-              </CardTitle>
-              <CardDescription>Team capacity and utilization planning</CardDescription>
+              <CardTitle>Quick Links</CardTitle>
+              <CardDescription>Frequently accessed pages</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <section>
-                <h3 className="font-semibold text-lg mb-3">Product Specification</h3>
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    Monitor team capacity, track utilization, and identify availability.
-                    Helps with resource allocation and workload balancing. Factors in
-                    approved leave for accurate availability.
-                  </p>
-                </div>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Capacity Metrics</h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• <strong>Weekly Capacity</strong> - Hours per person (default 40)</li>
-                  <li>• <strong>Adjusted Capacity</strong> - Minus approved leave</li>
-                  <li>• <strong>Hours Logged</strong> - Time entries for period</li>
-                  <li>• <strong>Utilization %</strong> - Logged ÷ Capacity</li>
-                </ul>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Utilization Status</h3>
-                <div className="grid gap-2 md:grid-cols-2">
-                  {[
-                    { status: "Overallocated", range: "≥100%", color: "text-red-500", bg: "bg-red-500/10" },
-                    { status: "High", range: "80-99%", color: "text-amber-500", bg: "bg-amber-500/10" },
-                    { status: "Good", range: "50-79%", color: "text-green-500", bg: "bg-green-500/10" },
-                    { status: "Available", range: "<50%", color: "text-blue-500", bg: "bg-blue-500/10" },
-                  ].map((item) => (
-                    <div key={item.status} className={`flex items-center gap-3 p-3 rounded-lg ${item.bg}`}>
-                      <span className={`font-medium ${item.color}`}>{item.status}</span>
-                      <span className="text-sm text-muted-foreground">{item.range}</span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Views</h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• <strong>Team View</strong> - All members with utilization</li>
-                  <li>• <strong>Department View</strong> - Aggregated by department</li>
-                  <li>• <strong>Individual View</strong> - Detailed breakdown per person</li>
-                </ul>
-              </section>
-
-              <section>
-                <h3 className="font-semibold mb-3">Permissions</h3>
-                <div className="text-sm text-muted-foreground space-y-1">
-                  <p>• <strong>Team Leads+</strong> can view all resource data</p>
-                  <p>• <strong>Staff</strong> can view own utilization only</p>
-                </div>
-              </section>
+            <CardContent>
+              <div className="grid gap-2 md:grid-cols-3">
+                {[
+                  { label: "My Briefs", href: "/briefs/my" },
+                  { label: "Time Tracking", href: "/time" },
+                  { label: "Request Leave", href: "/leave/request" },
+                  { label: "Team Directory", href: "/team" },
+                  { label: "My Profile", href: "/admin/settings/profile" },
+                  { label: "API Reference", href: "/admin/settings/api" },
+                ].map((link) => (
+                  <Button key={link.href} variant="ghost" className="justify-start" asChild>
+                    <Link href={link.href}>
+                      <ChevronRight className="mr-2 h-4 w-4" />
+                      {link.label}
+                    </Link>
+                  </Button>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -844,19 +983,108 @@ export default function DocsPage() {
   );
 }
 
-function CollapsibleSection({ title, children }: { title: string; children: React.ReactNode }) {
-  const [isOpen, setIsOpen] = useState(false);
+// Reusable Components
+
+function DocCard({
+  icon: Icon,
+  iconColor,
+  title,
+  description,
+  href,
+  isActive,
+  onClick,
+}: {
+  icon: typeof BookOpen;
+  iconColor: string;
+  title: string;
+  description: string;
+  href?: string;
+  isActive?: boolean;
+  onClick?: () => void;
+}) {
+  const content = (
+    <Card className={`cursor-pointer hover:shadow-md transition-all ${isActive ? "ring-2 ring-primary" : ""}`}>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Icon className={`h-5 w-5 ${iconColor}`} />
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className="text-sm text-primary mt-2 flex items-center gap-1">
+          {href ? "View docs" : isActive ? "Hide" : "Read guide"}
+          <ChevronRight className={`h-4 w-4 transition-transform ${isActive ? "rotate-90" : ""}`} />
+        </p>
+      </CardContent>
+    </Card>
+  );
+
+  if (href) {
+    return <Link href={href}>{content}</Link>;
+  }
+
+  return <div onClick={onClick}>{content}</div>;
+}
+
+function ExpandedSection({
+  title,
+  icon: Icon,
+  iconColor,
+  children,
+}: {
+  title: string;
+  icon: typeof BookOpen;
+  iconColor: string;
+  children: React.ReactNode;
+}) {
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="flex items-center justify-between w-full p-3 border rounded-lg hover:bg-muted/50">
-        <span className="font-medium text-sm">{title}</span>
-        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <div className="p-3 pt-2">
-          {children}
-        </div>
-      </CollapsibleContent>
-    </Collapsible>
+    <Card className="animate-in slide-in-from-top-2 duration-200">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Icon className={`h-5 w-5 ${iconColor}`} />
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  );
+}
+
+function ModuleCard({
+  icon: Icon,
+  title,
+  description,
+  href,
+  features,
+}: {
+  icon: typeof BookOpen;
+  title: string;
+  description: string;
+  href: string;
+  features: string[];
+}) {
+  return (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Icon className="h-4 w-4 text-primary" />
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-sm text-muted-foreground">{description}</p>
+        <ul className="text-xs text-muted-foreground space-y-1">
+          {features.map((f) => (
+            <li key={f}>• {f}</li>
+          ))}
+        </ul>
+        <Button variant="outline" size="sm" className="w-full" asChild>
+          <Link href={href}>
+            Go to {title} <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
