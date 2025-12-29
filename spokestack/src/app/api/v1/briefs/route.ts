@@ -4,6 +4,7 @@
  */
 
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import {
   getAuthContext,
@@ -186,7 +187,7 @@ export async function POST(request: Request) {
         status: "DRAFT",
         assignedById: data.assigneeId ? context.user.id : null,
         assignedAt: data.assigneeId ? new Date() : null,
-        formData: (data.formData || {}) as unknown,
+        formData: (data.formData || {}) as Prisma.InputJsonValue,
       },
       select: {
         id: true,
