@@ -3,6 +3,7 @@
  */
 
 import { headers } from "next/headers";
+import { createHash } from "crypto";
 import { createClient } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import { ApiError } from "./errors";
@@ -192,10 +193,11 @@ export async function getApiKeyContext(): Promise<{
   }
 
   const keyValue = authHeader.replace("Bearer ", "");
+  const keyHash = createHash("sha256").update(keyValue).digest("hex");
 
   const apiKey = await prisma.apiKey.findFirst({
     where: {
-      key: keyValue,
+      keyHash,
       isActive: true,
       OR: [
         { expiresAt: null },
@@ -205,7 +207,7 @@ export async function getApiKeyContext(): Promise<{
     select: {
       id: true,
       organizationId: true,
-      permissions: true,
+      scopes: true,
     },
   });
 
