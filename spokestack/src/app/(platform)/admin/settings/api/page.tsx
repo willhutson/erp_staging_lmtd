@@ -95,10 +95,8 @@ const API_CATEGORIES: ApiCategory[] = [
     description: "Multi-tenant organization management",
     icon: Building2,
     endpoints: [
-      { method: "GET", path: "/api/v1/organizations", description: "List all organizations", auth: "SUPERADMIN" },
-      { method: "POST", path: "/api/v1/organizations", description: "Create new organization", auth: "SUPERADMIN" },
-      { method: "GET", path: "/api/v1/organizations/:id", description: "Get organization details", auth: "ADMIN" },
-      { method: "PATCH", path: "/api/v1/organizations/:id", description: "Update organization", auth: "ADMIN" },
+      { method: "GET", path: "/api/v1/organizations", description: "Get current organization settings", auth: "ADMIN" },
+      { method: "PATCH", path: "/api/v1/organizations", description: "Update organization settings", auth: "ADMIN" },
     ],
   },
   {
@@ -108,11 +106,14 @@ const API_CATEGORIES: ApiCategory[] = [
     endpoints: [
       { method: "GET", path: "/api/v1/clients", description: "List clients with filtering" },
       { method: "POST", path: "/api/v1/clients", description: "Create a new client", auth: "LEADERSHIP+" },
-      { method: "GET", path: "/api/v1/clients/:id", description: "Get client details" },
+      { method: "GET", path: "/api/v1/clients/:id", description: "Get client details with stats" },
       { method: "PATCH", path: "/api/v1/clients/:id", description: "Update client", auth: "LEADERSHIP+" },
       { method: "DELETE", path: "/api/v1/clients/:id", description: "Archive client", auth: "ADMIN" },
       { method: "GET", path: "/api/v1/clients/:id/contacts", description: "List client contacts" },
       { method: "POST", path: "/api/v1/clients/:id/contacts", description: "Add client contact" },
+      { method: "GET", path: "/api/v1/clients/:id/projects", description: "List projects for client" },
+      { method: "GET", path: "/api/v1/clients/:id/activities", description: "List client activity log" },
+      { method: "POST", path: "/api/v1/clients/:id/activities", description: "Log a client activity" },
     ],
   },
   {
@@ -132,9 +133,13 @@ const API_CATEGORIES: ApiCategory[] = [
         description: "Create a new brief",
         requestBody: '{ "title": "...", "type": "VIDEO_SHOOT", "clientId": "...", "deadline": "2025-01-15" }'
       },
-      { method: "GET", path: "/api/v1/briefs/:id", description: "Get brief details" },
+      { method: "GET", path: "/api/v1/briefs/:id", description: "Get brief details with assignees" },
       { method: "PATCH", path: "/api/v1/briefs/:id", description: "Update brief" },
       { method: "DELETE", path: "/api/v1/briefs/:id", description: "Delete brief (draft only)" },
+      { method: "PATCH", path: "/api/v1/briefs/:id/status", description: "Update brief status with notes" },
+      { method: "POST", path: "/api/v1/briefs/:id/assign", description: "Assign brief to user", auth: "TEAM_LEAD+" },
+      { method: "GET", path: "/api/v1/briefs/:id/comments", description: "Get brief comments" },
+      { method: "POST", path: "/api/v1/briefs/:id/comments", description: "Add comment to brief" },
       { method: "GET", path: "/api/v1/briefs/:id/time", description: "Get time entries for brief" },
       { method: "POST", path: "/api/v1/briefs/:id/time", description: "Log time to brief" },
     ],
@@ -145,9 +150,9 @@ const API_CATEGORIES: ApiCategory[] = [
     icon: FolderKanban,
     endpoints: [
       { method: "GET", path: "/api/v1/projects", description: "List projects with filtering" },
-      { method: "POST", path: "/api/v1/projects", description: "Create a new project", auth: "LEADERSHIP+" },
+      { method: "POST", path: "/api/v1/projects", description: "Create a new project", auth: "TEAM_LEAD+" },
       { method: "GET", path: "/api/v1/projects/:id", description: "Get project with budget utilization" },
-      { method: "PATCH", path: "/api/v1/projects/:id", description: "Update project", auth: "LEADERSHIP+" },
+      { method: "PATCH", path: "/api/v1/projects/:id", description: "Update project", auth: "TEAM_LEAD+" },
       { method: "DELETE", path: "/api/v1/projects/:id", description: "Delete project", auth: "ADMIN" },
       { method: "GET", path: "/api/v1/projects/:id/briefs", description: "Get briefs for project" },
       { method: "GET", path: "/api/v1/projects/:id/time", description: "Get time entries for project" },
@@ -155,7 +160,7 @@ const API_CATEGORIES: ApiCategory[] = [
   },
   {
     title: "Time Tracking",
-    description: "Time entries and timesheets",
+    description: "Time entries, timers, and reports",
     icon: Clock,
     endpoints: [
       { method: "GET", path: "/api/v1/time", description: "List time entries with filtering" },
@@ -165,30 +170,35 @@ const API_CATEGORIES: ApiCategory[] = [
         description: "Create time entry",
         requestBody: '{ "date": "2025-01-15", "hours": 2.5, "briefId": "...", "description": "...", "isBillable": true }'
       },
-      { method: "GET", path: "/api/v1/time/:id", description: "Get time entry details" },
       { method: "PATCH", path: "/api/v1/time/:id", description: "Update time entry" },
       { method: "DELETE", path: "/api/v1/time/:id", description: "Delete time entry" },
-      { method: "GET", path: "/api/v1/time/reports", description: "Get time reports by user/client/project" },
+      { method: "GET", path: "/api/v1/time/timer", description: "Get current running timer" },
+      { method: "POST", path: "/api/v1/time/timer/start", description: "Start a new timer", requestBody: '{ "briefId": "...", "projectId": "...", "description": "..." }' },
+      { method: "POST", path: "/api/v1/time/timer/stop", description: "Stop running timer and save entry" },
+      { method: "GET", path: "/api/v1/time/reports", description: "Get time reports by user/client/project", auth: "TEAM_LEAD+" },
     ],
   },
   {
     title: "Leave Management",
-    description: "Leave requests and approvals",
+    description: "Leave requests, balances, and calendar",
     icon: Calendar,
     endpoints: [
-      { method: "GET", path: "/api/v1/leave", description: "List leave requests" },
+      { method: "GET", path: "/api/v1/leave/types", description: "List available leave types" },
+      { method: "GET", path: "/api/v1/leave/balances", description: "Get user leave balances for current year" },
+      { method: "GET", path: "/api/v1/leave/calendar", description: "Get team leave calendar view" },
+      { method: "GET", path: "/api/v1/leave/holidays", description: "Get public holidays for year" },
+      { method: "GET", path: "/api/v1/leave/requests", description: "List leave requests with filtering" },
       {
         method: "POST",
-        path: "/api/v1/leave",
+        path: "/api/v1/leave/requests",
         description: "Submit leave request",
-        requestBody: '{ "type": "ANNUAL", "startDate": "2025-01-20", "endDate": "2025-01-24", "reason": "Vacation" }'
+        requestBody: '{ "leaveTypeId": "...", "startDate": "2025-01-20", "endDate": "2025-01-24", "reason": "Vacation" }'
       },
-      { method: "GET", path: "/api/v1/leave/:id", description: "Get leave request details" },
-      { method: "PATCH", path: "/api/v1/leave/:id", description: "Update leave request" },
-      { method: "DELETE", path: "/api/v1/leave/:id", description: "Cancel leave request" },
-      { method: "POST", path: "/api/v1/leave/:id/approve", description: "Approve leave request", auth: "TEAM_LEAD+" },
-      { method: "POST", path: "/api/v1/leave/:id/reject", description: "Reject leave request", auth: "TEAM_LEAD+" },
-      { method: "GET", path: "/api/v1/leave/balances", description: "Get leave balances" },
+      { method: "GET", path: "/api/v1/leave/requests/:id", description: "Get leave request details" },
+      { method: "PATCH", path: "/api/v1/leave/requests/:id", description: "Update pending leave request" },
+      { method: "DELETE", path: "/api/v1/leave/requests/:id", description: "Cancel leave request" },
+      { method: "POST", path: "/api/v1/leave/requests/:id/approve", description: "Approve leave request", auth: "TEAM_LEAD+" },
+      { method: "POST", path: "/api/v1/leave/requests/:id/reject", description: "Reject leave request", auth: "TEAM_LEAD+" },
     ],
   },
   {
@@ -197,7 +207,8 @@ const API_CATEGORIES: ApiCategory[] = [
     icon: UserCheck,
     endpoints: [
       { method: "GET", path: "/api/v1/team", description: "Get team directory with org chart" },
-      { method: "GET", path: "/api/v1/team/departments", description: "List departments with members" },
+      { method: "GET", path: "/api/v1/team/:id", description: "Get team member profile" },
+      { method: "GET", path: "/api/v1/team/departments", description: "List departments with member counts" },
     ],
   },
   {
@@ -210,10 +221,10 @@ const API_CATEGORIES: ApiCategory[] = [
       { method: "GET", path: "/api/v1/rfp/:id", description: "Get RFP with sub-items", auth: "LEADERSHIP+" },
       { method: "PATCH", path: "/api/v1/rfp/:id", description: "Update RFP", auth: "LEADERSHIP+" },
       { method: "DELETE", path: "/api/v1/rfp/:id", description: "Delete RFP (vetting only)", auth: "LEADERSHIP+" },
-      { method: "GET", path: "/api/v1/rfp/:id/subitems", description: "List RFP sub-items" },
-      { method: "POST", path: "/api/v1/rfp/:id/subitems", description: "Create sub-item" },
-      { method: "PATCH", path: "/api/v1/rfp/:id/subitems/:subitemId", description: "Update sub-item" },
-      { method: "DELETE", path: "/api/v1/rfp/:id/subitems/:subitemId", description: "Delete sub-item" },
+      { method: "GET", path: "/api/v1/rfp/:id/subitems", description: "List RFP sub-items", auth: "LEADERSHIP+" },
+      { method: "POST", path: "/api/v1/rfp/:id/subitems", description: "Create sub-item", auth: "LEADERSHIP+" },
+      { method: "PATCH", path: "/api/v1/rfp/:id/subitems/:subitemId", description: "Update sub-item", auth: "LEADERSHIP+" },
+      { method: "DELETE", path: "/api/v1/rfp/:id/subitems/:subitemId", description: "Delete sub-item", auth: "LEADERSHIP+" },
     ],
   },
   {
@@ -235,8 +246,8 @@ const API_CATEGORIES: ApiCategory[] = [
     icon: Activity,
     endpoints: [
       { method: "GET", path: "/api/v1/resources", description: "Get team capacity overview", auth: "TEAM_LEAD+" },
-      { method: "GET", path: "/api/v1/resources/:userId", description: "Get detailed member workload", auth: "TEAM_LEAD+" },
       { method: "GET", path: "/api/v1/resources/departments", description: "Get department capacity", auth: "TEAM_LEAD+" },
+      { method: "GET", path: "/api/v1/resources/:userId", description: "Get detailed member workload", auth: "TEAM_LEAD+" },
     ],
   },
 ];
