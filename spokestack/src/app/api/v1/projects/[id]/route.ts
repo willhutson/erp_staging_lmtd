@@ -52,7 +52,6 @@ export async function GET(request: Request, { params }: RouteParams) {
         endDate: true,
         budgetAmount: true,
         budgetHours: true,
-        budgetCurrency: true,
         createdAt: true,
         updatedAt: true,
         client: {

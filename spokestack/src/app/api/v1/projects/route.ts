@@ -28,7 +28,6 @@ const CreateProjectSchema = z.object({
   endDate: z.coerce.date().optional().nullable(),
   budgetAmount: z.number().min(0).optional().nullable(),
   budgetHours: z.number().min(0).optional().nullable(),
-  budgetCurrency: z.string().length(3).default("USD"),
 });
 
 export async function GET(request: Request) {
@@ -82,7 +81,6 @@ export async function GET(request: Request) {
           endDate: true,
           budgetAmount: true,
           budgetHours: true,
-          budgetCurrency: true,
           createdAt: true,
           client: {
             select: { id: true, name: true, code: true, logoUrl: true },
