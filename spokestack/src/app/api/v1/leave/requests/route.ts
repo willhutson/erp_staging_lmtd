@@ -170,6 +170,7 @@ export async function POST(request: Request) {
     const leaveRequest = await prisma.leaveRequest.create({
       data: {
         ...data,
+        organizationId: context.organizationId,
         userId: context.user.id,
         totalDays: days,
         status: leaveType.requiresApproval ? "PENDING" : "APPROVED",
