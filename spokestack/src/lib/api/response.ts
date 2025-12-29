@@ -78,13 +78,15 @@ export function paginated<T>(
     page: number;
     limit: number;
     total: number;
-  }
+  },
+  extra?: Record<string, unknown>
 ): NextResponse<ApiSuccessResponse<T[]>> {
   return success(data, {
     page: pagination.page,
     limit: pagination.limit,
     total: pagination.total,
     totalPages: Math.ceil(pagination.total / pagination.limit),
+    ...extra,
   });
 }
 
