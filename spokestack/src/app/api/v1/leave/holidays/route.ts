@@ -34,7 +34,8 @@ export async function GET(request: Request) {
         id: true,
         name: true,
         date: true,
-        isRecurring: true,
+        year: true,
+        isOptional: true,
       },
     });
 
