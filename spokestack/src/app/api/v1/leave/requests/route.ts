@@ -22,7 +22,7 @@ const CreateLeaveRequestSchema = z.object({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
   isHalfDay: z.boolean().default(false),
-  halfDayType: z.enum(["MORNING", "AFTERNOON"]).optional().nullable(),
+  halfDayPeriod: z.enum(["MORNING", "AFTERNOON"]).optional().nullable(),
   reason: z.string().max(1000).optional().nullable(),
 });
 
@@ -76,9 +76,9 @@ export async function GET(request: Request) {
           id: true,
           startDate: true,
           endDate: true,
-          days: true,
+          totalDays: true,
           isHalfDay: true,
-          halfDayType: true,
+          halfDayPeriod: true,
           reason: true,
           status: true,
           createdAt: true,
@@ -171,14 +171,14 @@ export async function POST(request: Request) {
       data: {
         ...data,
         userId: context.user.id,
-        days,
+        totalDays: days,
         status: leaveType.requiresApproval ? "PENDING" : "APPROVED",
       },
       select: {
         id: true,
         startDate: true,
         endDate: true,
-        days: true,
+        totalDays: true,
         isHalfDay: true,
         reason: true,
         status: true,
