@@ -26,16 +26,6 @@ type TeamUser = {
   weeklyCapacity: number | null;
 };
 
-type TimeEntrySummary = {
-  userId: string;
-  _sum: { hours: number | null };
-};
-
-type BriefCountSummary = {
-  assigneeId: string | null;
-  _count: number;
-};
-
 async function getTeamCapacity() {
   try {
     // Get all active team members with their capacity
@@ -84,8 +74,8 @@ async function getTeamCapacity() {
 
     // Merge data
     return users.map((user: TeamUser) => {
-      const timeEntry = timeEntries.find((t: TimeEntrySummary) => t.userId === user.id);
-      const briefCount = briefCounts.find((b: BriefCountSummary) => b.assigneeId === user.id);
+      const timeEntry = timeEntries.find((t) => t.userId === user.id);
+      const briefCount = briefCounts.find((b) => b.assigneeId === user.id);
       const hoursLogged = Number(timeEntry?._sum.hours || 0);
       const capacity = user.weeklyCapacity || 40;
       const utilization = capacity > 0 ? (hoursLogged / capacity) * 100 : 0;
