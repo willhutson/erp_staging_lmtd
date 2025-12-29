@@ -170,7 +170,7 @@ export async function POST(request: Request) {
       data: {
         ...data,
         organizationId: context.organizationId,
-        ownerId: context.userId,
+        ownerId: context.user.id,
         stage: "LEAD",
       },
       select: {
