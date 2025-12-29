@@ -120,10 +120,12 @@ export async function GET(request: Request, { params }: RouteParams) {
       },
       select: {
         id: true,
-        type: true,
         startDate: true,
         endDate: true,
         reason: true,
+        leaveType: {
+          select: { id: true, name: true, color: true },
+        },
       },
       orderBy: { startDate: "asc" },
       take: 5,
