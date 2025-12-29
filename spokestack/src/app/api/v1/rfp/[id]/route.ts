@@ -85,7 +85,7 @@ export async function GET(request: Request, { params }: RouteParams) {
         attachments: {
           select: {
             id: true,
-            filename: true,
+            fileName: true,
             fileUrl: true,
             fileSize: true,
             mimeType: true,
