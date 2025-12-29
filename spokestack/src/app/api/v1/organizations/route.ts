@@ -4,6 +4,7 @@
  */
 
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import {
   getAuthContext,
@@ -90,6 +91,8 @@ export async function PATCH(request: Request) {
       where: { id: context.organizationId },
       data: {
         ...data,
+        settings: data.settings as Prisma.InputJsonValue | undefined,
+        themeSettings: data.themeSettings as Prisma.InputJsonValue | undefined,
         updatedAt: new Date(),
       },
       select: {
