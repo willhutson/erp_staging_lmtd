@@ -88,7 +88,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         accountManagerId: deal.ownerId,
         convertedFromDealId: id,
         convertedAt: new Date(),
-        status: "ACTIVE",
+        // relationshipStatus defaults to ACTIVE
       },
       select: {
         id: true,
@@ -96,7 +96,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         code: true,
         industry: true,
         website: true,
-        status: true,
+        relationshipStatus: true,
         createdAt: true,
         accountManager: {
           select: { id: true, name: true },
