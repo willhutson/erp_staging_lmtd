@@ -182,7 +182,7 @@ export async function getOptionalAuthContext(): Promise<AuthContext | null> {
  * Get API key context (for external integrations)
  */
 export async function getApiKeyContext(): Promise<{
-  apiKey: { id: string; organizationId: string; permissions: string[] };
+  apiKey: { id: string; organizationId: string; scopes: string[] };
   organizationId: string;
 } | null> {
   const headersList = await headers();
