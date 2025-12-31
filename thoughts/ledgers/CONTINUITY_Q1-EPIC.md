@@ -25,7 +25,7 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 | 2 | Builder Infrastructure | 4-5 | COMPLETE | ✅ |
 | 3 | Workflow Builder Engine | 6-8 | COMPLETE | ✅ |
 | 4 | Delegation of Authority | 9-11 | COMPLETE | ✅ |
-| 5 | Integration & Polish | 12-14 | IN_PROGRESS | 80% |
+| 5 | Integration & Polish | 12-14 | IN_PROGRESS | 95% |
 
 ---
 
@@ -223,16 +223,16 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
   - [x] Client Onboarding (triggered by Deal WON)
   - [x] Leave Delegation Handoff (triggered by Leave APPROVED)
 
-- [ ] **5.3** Documentation
-  - [ ] Admin guide: How to use Builder
-  - [ ] User guide: Understanding delegations
-  - [ ] API documentation for workflows
+- [x] **5.3** Documentation ✅
+  - [x] Admin guide: How to use Builder (`/docs/guides/ADMIN_BUILDER_GUIDE.md`)
+  - [x] User guide: Understanding delegations (`/docs/guides/USER_DELEGATION_GUIDE.md`)
+  - [x] API documentation for workflows (`/docs/api/WORKFLOW_API.md`)
 
 - [x] **5.4** Role-Based Hub Views ✅
   - [x] Account Manager view (My Briefed Tasks, My Clients)
   - [x] Designer/Creative view (My Assigned Briefs, Deadlines, Time Logged)
   - [x] Leadership view (Pipeline, NPS)
-  - [ ] Client Portal view (separate /portal route, already exists)
+  - [x] Client Portal view (29 pages at `/portal` - auth, dashboard, NPS, approvals, deliverables)
 
 - [ ] **5.5** Demo to Albert
   - Show NPS portal
@@ -264,6 +264,9 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 ### Documentation
 - `/docs/EPIC_SPOKESTACK_Q1_2025.md` - Master epic document
 - `/docs/SPOKESTACK_PLATFORM_STRATEGY.md` - AI-first vision
+- `/docs/guides/ADMIN_BUILDER_GUIDE.md` - Admin guide for Builder
+- `/docs/guides/USER_DELEGATION_GUIDE.md` - User guide for delegations
+- `/docs/api/WORKFLOW_API.md` - Workflow API documentation
 - `/thoughts/DECISIONS.md` - Architectural decisions log
 
 ### Schema
@@ -347,17 +350,17 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 | 008 | 2025-12-31 | Deployment wiring | Connected notifications, added cron jobs, email delivery via Resend |
 | 009 | 2025-12-31 | Phase 5 | Added Client Onboarding + Leave Delegation workflows, finalized Hub views |
 | 010 | 2025-12-31 | Type fixes | Fixed TypeScript errors: added 'contains' operator, converted workflow configs to WorkflowDefinition format |
+| 011 | 2025-12-31 | Documentation | Created all Phase 5.3 docs (admin guide, user guide, API docs), verified client portal |
 
 ---
 
 ## Next Actions
 
-1. **Phase 5.1**: End-to-end testing of full RFP workflow
-2. **Phase 5.2**: End-to-end testing of DOA flow (leave → delegation → handoff)
-3. **Phase 5.3**: End-to-end testing of Builder template workflow
-4. **Phase 5.4**: Finalize role-based Hub views
-5. **Phase 5.5**: Documentation and admin guides
-6. Run `pnpm db:push` to apply schema changes (Delegation models)
+1. **Phase 5.1**: End-to-end testing (requires deployed environment)
+2. **Phase 5.5**: Demo to Albert (human task)
+3. Run `pnpm db:push` to apply schema changes (Delegation models)
+
+**Phase 5 Status: 95% Complete** - Only manual testing and demo remain.
 
 ## Deployment Checklist
 
