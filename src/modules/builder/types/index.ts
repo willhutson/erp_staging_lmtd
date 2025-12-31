@@ -85,7 +85,7 @@ export interface WorkflowTrigger {
 
 export interface TriggerCondition {
   field: string;
-  operator: "equals" | "not_equals" | "in" | "not_in" | "gt" | "lt";
+  operator: "equals" | "not_equals" | "in" | "not_in" | "gt" | "lt" | "contains";
   value: unknown;
 }
 

@@ -235,3 +235,83 @@ export const ASSIGNEE_ROLES = {
 } as const;
 
 export type AssigneeRole = keyof typeof ASSIGNEE_ROLES;
+
+// ============================================
+// WORKFLOW TEMPLATE CONFIG (for config files)
+// ============================================
+
+/**
+ * Template task with relative timing and stage info
+ */
+export interface WorkflowTemplateTask {
+  id: string;
+  name: string;
+  description: string;
+  assigneeRole: string;
+  dependsOn?: string[];
+  relativeDueDays: number; // Days relative to workflow deadline (negative = before)
+  estimatedHours: number;
+  stage: string;
+  isStageGate: boolean;
+  aiSkillHook?: string;
+  requiredOutputs?: string[];
+  isRecurring?: boolean;
+  createsBrief?: boolean;
+}
+
+/**
+ * Stage definition for workflow templates
+ */
+export interface WorkflowTemplateStage {
+  id: string;
+  name: string;
+  order: number;
+}
+
+/**
+ * Nudge rule for workflow template config
+ */
+export interface WorkflowTemplateNudgeRule {
+  id: string;
+  trigger: {
+    type: "before_due" | "on_due" | "after_due";
+    offset?: number;
+    unit?: "hours" | "days";
+  };
+  recipients: string[];
+  channel: "SLACK" | "EMAIL" | "IN_APP";
+  messageTemplate: string;
+  taskIds?: string[];
+}
+
+/**
+ * Complete workflow template configuration
+ * Used in /config/workflows/*.workflow.ts files
+ */
+export interface WorkflowTemplateConfig {
+  name: string;
+  description: string;
+  category: string;
+  version: string;
+
+  trigger: {
+    type: string; // e.g., "entity_status_change"
+    entityType: string; // e.g., "Deal", "LeaveRequest"
+    conditions: Record<string, unknown>;
+  };
+
+  defaultDeadlineDays: number;
+
+  tasks: WorkflowTemplateTask[];
+  stages: WorkflowTemplateStage[];
+  nudgeRules: WorkflowTemplateNudgeRule[];
+
+  metadata: {
+    estimatedDuration: string;
+    targetAudience: string;
+    createdBy: string;
+    lastModified: string;
+    tags: string[];
+    notes?: string;
+  };
+}
