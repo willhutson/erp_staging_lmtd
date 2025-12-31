@@ -10,3 +10,5 @@ export { StudioCalendar } from "./StudioCalendar";
 export { CalendarEntryCard } from "./CalendarEntryCard";
 export { CreateCalendarEntryModal } from "./CreateCalendarEntryModal";
 export type { CreateEntryFormData } from "./CreateCalendarEntryModal";
+export { CalendarEntryPanel } from "./CalendarEntryPanel";
+export { CalendarFilters } from "./CalendarFilters";
