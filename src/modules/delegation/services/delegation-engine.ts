@@ -16,6 +16,10 @@ import { getDelegationProfile } from "./profile-service";
 import { resolveDelegation } from "./chain-resolver";
 import { scheduleReturnReminders } from "./handoff-service";
 import { logDelegationActivity } from "./handoff-service";
+import {
+  notifyDelegationActivated,
+  notifyTaskDelegated,
+} from "./notification-service";
 
 /**
  * Start a new active delegation (typically triggered by leave approval)
@@ -75,6 +79,18 @@ export async function activatePendingDelegations(): Promise<number> {
   let activated = 0;
 
   for (const delegation of pendingDelegations) {
+    // Get user names for notifications
+    const [delegator, delegate] = await Promise.all([
+      db.user.findUnique({
+        where: { id: delegation.delegatorId },
+        select: { name: true },
+      }),
+      db.user.findUnique({
+        where: { id: delegation.delegateId },
+        select: { name: true },
+      }),
+    ]);
+
     await db.activeDelegation.update({
       where: { id: delegation.id },
       data: {
@@ -85,6 +101,20 @@ export async function activatePendingDelegations(): Promise<number> {
 
     // Reassign tasks from delegator to delegate
     await reassignTasksForDelegation(delegation.id);
+
+    // Send activation notifications
+    if (delegator && delegate) {
+      await notifyDelegationActivated({
+        delegationId: delegation.id,
+        delegatorId: delegation.delegatorId,
+        delegatorName: delegator.name,
+        delegateId: delegation.delegateId,
+        delegateName: delegate.name,
+        startDate: delegation.startDate,
+        endDate: delegation.endDate,
+        organizationId: delegation.organizationId,
+      });
+    }
 
     activated++;
   }
@@ -142,6 +172,16 @@ async function reassignTasksForDelegation(delegationId: string): Promise<void> {
       description: `Brief "${brief.title}" assigned to ${delegation.delegate.name} (covering for ${delegation.delegator.name})`,
       performedById: delegation.delegateId,
       metadata: { briefTitle: brief.title, clientId: brief.clientId },
+    });
+
+    // Notify delegate about the task
+    await notifyTaskDelegated({
+      delegateId: delegation.delegateId,
+      delegatorName: delegation.delegator.name,
+      taskType: "brief",
+      taskId: brief.id,
+      taskTitle: brief.title,
+      delegationId: delegation.id,
     });
   }
 }

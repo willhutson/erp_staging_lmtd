@@ -280,10 +280,25 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
   - `services/conflict-detector.ts` - Leave conflict detection
   - `services/handoff-service.ts` - Return handoff automation
   - `services/delegation-engine.ts` - Core delegation engine
+  - `services/notification-service.ts` - DOA event notifications
   - `actions/index.ts` - Server actions
   - `types/index.ts` - TypeScript definitions
 - `/src/app/(dashboard)/settings/delegation/` - Delegation settings UI
 - `/src/modules/leave/actions/leave-actions.ts` - Leave integration
+
+### Notifications & Cron (Deployment Wiring)
+- `/src/lib/notifications/notification-service.ts` - Core notification system
+  - Supports: in_app, email (Resend), slack channels
+  - User preference-aware delivery
+  - Workflow and DOA notification types
+- `/src/app/api/cron/delegations/route.ts` - Daily DOA cron
+  - Activates pending delegations
+  - Starts handoffs for returning users
+  - Sends return reminders
+- `/src/app/api/cron/nudges/route.ts` - Workflow nudge cron (15 min)
+  - Processes scheduled nudges
+  - Routes through notification service
+- `/vercel.json` - Cron schedules configured
 
 ---
 
@@ -298,6 +313,7 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 | 005 | 2025-12-31 | Phase 1 & 2 | Completed all Phase 1 & 2 items - Navigation, Hub, Projects, Builder |
 | 006 | 2025-12-31 | Phase 3 | Completed full Workflow Engine - schema, services, UI, 3 templates |
 | 007 | 2025-12-31 | Phase 4 | Completed DOA system - schema, services, UI, leave integration |
+| 008 | 2025-12-31 | Deployment wiring | Connected notifications, added cron jobs, email delivery via Resend |
 
 ---
 
@@ -309,6 +325,19 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 4. **Phase 5.4**: Finalize role-based Hub views
 5. **Phase 5.5**: Documentation and admin guides
 6. Run `pnpm db:push` to apply schema changes (Delegation models)
+
+## Deployment Checklist
+
+Environment variables needed for production:
+
+| Variable | Purpose | Required |
+|----------|---------|----------|
+| `CRON_SECRET` | Authorization for cron endpoints | Yes (prod) |
+| `RESEND_API_KEY` | Email delivery via Resend | Optional* |
+| `EMAIL_FROM` | Sender email address | Optional |
+| `NEXT_PUBLIC_APP_URL` | App URL for email links | Recommended |
+
+*Email will be skipped if not configured - system degrades gracefully to in_app + Slack only.
 
 ---
 

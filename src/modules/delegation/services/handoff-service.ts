@@ -7,6 +7,7 @@
 
 import { db } from "@/lib/db";
 import type { HandoffBriefing, LogDelegationActivityOptions } from "../types";
+import { notifyHandoffReady, notifyReturnReminder } from "./notification-service";
 
 /**
  * Generate a handoff briefing for someone returning from leave
@@ -153,6 +154,10 @@ export async function generateHandoffBriefing(
 export async function startHandoff(activeDelegationId: string): Promise<void> {
   const delegation = await db.activeDelegation.findUnique({
     where: { id: activeDelegationId },
+    include: {
+      delegator: { select: { id: true, name: true } },
+      delegate: { select: { id: true, name: true } },
+    },
   });
 
   if (!delegation) {
@@ -179,6 +184,18 @@ export async function startHandoff(activeDelegationId: string): Promise<void> {
     description: "Handoff process initiated",
     performedById: delegation.delegatorId,
     metadata: { briefingGenerated: true },
+  });
+
+  // Notify both parties that handoff is ready
+  await notifyHandoffReady({
+    delegationId: delegation.id,
+    delegatorId: delegation.delegatorId,
+    delegatorName: delegation.delegator.name,
+    delegateId: delegation.delegateId,
+    delegateName: delegation.delegate.name,
+    startDate: delegation.startDate,
+    endDate: delegation.endDate,
+    organizationId: delegation.organizationId,
   });
 }
 

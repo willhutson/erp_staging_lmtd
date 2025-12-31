@@ -51,3 +51,13 @@ export {
   getDelegationSummary,
   getUserDelegations,
 } from "./services/delegation-engine";
+
+// Notifications
+export {
+  notifyDelegationActivated,
+  notifyTaskDelegated,
+  notifyReturnReminder,
+  notifyHandoffReady,
+  notifyDelegationConflict,
+  processReturnReminders,
+} from "./services/notification-service";

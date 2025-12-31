@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import type { NudgeChannel, WorkflowTask, WorkflowNudge } from "@prisma/client";
 import type { NudgeRule } from "../types";
 import { logWorkflowActivity } from "./activity-logger";
+import { notificationService } from "@/lib/notifications/notification-service";
 
 /**
  * Schedule nudges for a task based on rules
@@ -141,48 +142,88 @@ async function sendNudge(
 }
 
 /**
- * Send Slack nudge
+ * Send Slack nudge via notification service
  */
 async function sendSlackNudge(
   nudge: WorkflowNudge & { task: WorkflowTask; instance: { template: { name: string } } },
   recipient: { email: string; name: string }
 ): Promise<void> {
-  // TODO: Implement Slack integration
-  // This would use the Slack API to send a message to the user
+  // Determine notification type based on nudge timing
+  const isOverdue = nudge.task.dueDate < new Date();
+  const notificationType = isOverdue ? 'workflow.task_overdue' : 'workflow.task_due_soon';
 
-  console.log(`[Slack Nudge] To: ${recipient.email}
-Workflow: ${nudge.instance.template.name}
-Task: ${nudge.task.name}
-Message: ${nudge.message}`);
+  await notificationService.send({
+    type: notificationType,
+    recipientId: nudge.recipientId,
+    title: `${nudge.instance.template.name}: ${nudge.task.name}`,
+    body: nudge.message,
+    actionUrl: `/workflows/${nudge.instanceId}`,
+    actionLabel: 'View Task',
+    entityType: 'workflow_task',
+    entityId: nudge.taskId,
+    channels: ['slack'],
+    metadata: {
+      workflowName: nudge.instance.template.name,
+      taskName: nudge.task.name,
+      dueDate: nudge.task.dueDate.toISOString(),
+    },
+  });
 }
 
 /**
- * Send email nudge
+ * Send email nudge via notification service
  */
 async function sendEmailNudge(
   nudge: WorkflowNudge & { task: WorkflowTask; instance: { template: { name: string } } },
   recipient: { email: string; name: string }
 ): Promise<void> {
-  // TODO: Implement email sending
-  // This would use the email service to send a reminder
+  const isOverdue = nudge.task.dueDate < new Date();
+  const notificationType = isOverdue ? 'workflow.task_overdue' : 'workflow.task_due_soon';
 
-  console.log(`[Email Nudge] To: ${recipient.email}
-Subject: Reminder: ${nudge.task.name}
-Body: ${nudge.message}`);
+  await notificationService.send({
+    type: notificationType,
+    recipientId: nudge.recipientId,
+    title: `Reminder: ${nudge.task.name}`,
+    body: nudge.message,
+    actionUrl: `/workflows/${nudge.instanceId}`,
+    actionLabel: 'View Task',
+    entityType: 'workflow_task',
+    entityId: nudge.taskId,
+    channels: ['email'],
+    metadata: {
+      workflowName: nudge.instance.template.name,
+      taskName: nudge.task.name,
+      dueDate: nudge.task.dueDate.toISOString(),
+    },
+  });
 }
 
 /**
- * Send in-app notification
+ * Send in-app notification via notification service
  */
 async function sendInAppNudge(
   nudge: WorkflowNudge & { task: WorkflowTask; instance: { template: { name: string } } },
   recipient: { email: string; name: string }
 ): Promise<void> {
-  // Create an in-app notification
-  // TODO: Connect to notification system
+  const isOverdue = nudge.task.dueDate < new Date();
+  const notificationType = isOverdue ? 'workflow.task_overdue' : 'workflow.task_due_soon';
 
-  console.log(`[In-App Nudge] To: ${recipient.email}
-Message: ${nudge.message}`);
+  await notificationService.send({
+    type: notificationType,
+    recipientId: nudge.recipientId,
+    title: `${nudge.instance.template.name}: ${nudge.task.name}`,
+    body: nudge.message,
+    actionUrl: `/workflows/${nudge.instanceId}`,
+    actionLabel: 'View Task',
+    entityType: 'workflow_task',
+    entityId: nudge.taskId,
+    channels: ['in_app'],
+    metadata: {
+      workflowName: nudge.instance.template.name,
+      taskName: nudge.task.name,
+      dueDate: nudge.task.dueDate.toISOString(),
+    },
+  });
 }
 
 /**
