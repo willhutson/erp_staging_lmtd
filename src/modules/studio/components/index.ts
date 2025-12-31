@@ -22,3 +22,6 @@ export { DeckList } from "./DeckList";
 
 // Video Components
 export { VideoProjectList } from "./VideoProjectList";
+
+// Moodboard Components
+export { MoodboardList } from "./MoodboardList";
