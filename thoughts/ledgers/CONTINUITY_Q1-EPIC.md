@@ -346,6 +346,7 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 | 007 | 2025-12-31 | Phase 4 | Completed DOA system - schema, services, UI, leave integration |
 | 008 | 2025-12-31 | Deployment wiring | Connected notifications, added cron jobs, email delivery via Resend |
 | 009 | 2025-12-31 | Phase 5 | Added Client Onboarding + Leave Delegation workflows, finalized Hub views |
+| 010 | 2025-12-31 | Type fixes | Fixed TypeScript errors: added 'contains' operator, converted workflow configs to WorkflowDefinition format |
 
 ---
 
