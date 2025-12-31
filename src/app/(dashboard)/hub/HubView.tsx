@@ -41,7 +41,7 @@ export function HubView({ user }: HubViewProps) {
 
       {/* Focus Today - Everyone gets this */}
       <Suspense fallback={<WidgetSkeleton title="Your Focus Today" height="h-48" />}>
-        <FocusTodayWidget />
+        <FocusTodayWidget userId={user.id} />
       </Suspense>
 
       {/* Main Grid */}
@@ -84,7 +84,7 @@ export function HubView({ user }: HubViewProps) {
               </div>
               <div className="p-4">
                 <Suspense fallback={<WidgetSkeleton height="h-48" />}>
-                  <MyClientsWidget />
+                  <MyClientsWidget userId={user.id} />
                 </Suspense>
               </div>
             </div>
