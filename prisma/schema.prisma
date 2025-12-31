@@ -5723,10 +5723,13 @@ enum AuditAction {
 }
 
 enum SyncStatus {
-  PENDING     // Awaiting backup sync
-  SYNCED      // Successfully backed up
+  PENDING     // Awaiting sync
+  SYNCED      // Successfully synced
+  SYNCING     // Currently syncing
   FAILED      // Sync failed (will retry)
+  ERROR       // Sync error
   SKIPPED     // Not eligible for sync
+  DISABLED    // Sync disabled
 }
 
 // AuditLogBackup stores backed up audit logs for long-term retention
@@ -6277,14 +6280,6 @@ enum StudioDocStatus {
   APPROVED
   PUBLISHED
   ARCHIVED
-}
-
-enum SyncStatus {
-  PENDING
-  SYNCED
-  SYNCING
-  ERROR
-  DISABLED
 }
 
 // StudioCalendarEntry - Social content calendar
