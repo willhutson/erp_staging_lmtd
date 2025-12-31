@@ -16,3 +16,6 @@ export { BriefDeadlineMarkerCard, BriefDeadlineList } from "./BriefDeadlineMarke
 
 // Document Components
 export { DocumentList } from "./DocumentList";
+
+// Deck Components
+export { DeckList } from "./DeckList";
