@@ -18,22 +18,28 @@ import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CalendarEntryWithRelations } from "../types";
 import { CalendarEntryCard } from "./CalendarEntryCard";
+import { BriefDeadlineList } from "./BriefDeadlineMarker";
+import type { BriefDeadlineMarker } from "../actions/brief-deadline-actions";
 
 interface StudioCalendarProps {
   entries: CalendarEntryWithRelations[];
+  briefDeadlines?: BriefDeadlineMarker[];
   onDateClick?: (date: Date) => void;
   onEntryClick?: (entry: CalendarEntryWithRelations) => void;
   onEntryDrop?: (entryId: string, newDate: Date) => void;
   onCreateClick?: (date: Date) => void;
+  onDeadlineClick?: (deadline: BriefDeadlineMarker) => void;
   className?: string;
 }
 
 export function StudioCalendar({
   entries,
+  briefDeadlines = [],
   onDateClick,
   onEntryClick,
   onEntryDrop,
   onCreateClick,
+  onDeadlineClick,
   className,
 }: StudioCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -59,6 +65,17 @@ export function StudioCalendar({
     });
     return grouped;
   }, [entries]);
+
+  // Group deadlines by date
+  const deadlinesByDate = useMemo(() => {
+    const grouped: Record<string, BriefDeadlineMarker[]> = {};
+    briefDeadlines.forEach((deadline) => {
+      const dateKey = format(new Date(deadline.deadline), "yyyy-MM-dd");
+      if (!grouped[dateKey]) grouped[dateKey] = [];
+      grouped[dateKey].push(deadline);
+    });
+    return grouped;
+  }, [briefDeadlines]);
 
   const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
@@ -134,8 +151,10 @@ export function StudioCalendar({
         {calendarDays.map((day) => {
           const dateKey = format(day, "yyyy-MM-dd");
           const dayEntries = entriesByDate[dateKey] || [];
+          const dayDeadlines = deadlinesByDate[dateKey] || [];
           const isCurrentMonth = isSameMonth(day, currentDate);
           const isDayToday = isToday(day);
+          const hasDeadlines = dayDeadlines.length > 0;
 
           return (
             <div
@@ -176,9 +195,20 @@ export function StudioCalendar({
                 )}
               </div>
 
+              {/* Brief Deadline Markers */}
+              {hasDeadlines && (
+                <div className="mb-1">
+                  <BriefDeadlineList
+                    deadlines={dayDeadlines}
+                    onDeadlineClick={onDeadlineClick}
+                    maxDisplay={2}
+                  />
+                </div>
+              )}
+
               {/* Entries */}
               <div className="space-y-0.5 overflow-hidden">
-                {dayEntries.slice(0, 3).map((entry) => (
+                {dayEntries.slice(0, hasDeadlines ? 2 : 3).map((entry) => (
                   <CalendarEntryCard
                     key={entry.id}
                     entry={entry}
@@ -189,7 +219,7 @@ export function StudioCalendar({
                     onClick={() => onEntryClick?.(entry)}
                   />
                 ))}
-                {dayEntries.length > 3 && (
+                {dayEntries.length > (hasDeadlines ? 2 : 3) && (
                   <button
                     className="w-full text-xs text-ltd-text-3 hover:text-ltd-primary text-left px-1"
                     onClick={(e) => {
@@ -197,7 +227,7 @@ export function StudioCalendar({
                       onDateClick?.(day);
                     }}
                   >
-                    +{dayEntries.length - 3} more
+                    +{dayEntries.length - (hasDeadlines ? 2 : 3)} more
                   </button>
                 )}
               </div>

@@ -10,6 +10,7 @@ import {
   type CreateEntryFormData,
 } from "@/modules/studio/components";
 import type { CalendarEntryWithRelations, SocialContentType, CalendarEntryStatus } from "@/modules/studio/types";
+import type { BriefDeadlineMarker } from "@/modules/studio/actions/brief-deadline-actions";
 import {
   createCalendarEntry,
   rescheduleEntry,
@@ -19,10 +20,11 @@ import { cn } from "@/lib/utils";
 
 interface CalendarClientProps {
   initialEntries: CalendarEntryWithRelations[];
-  clients: { id: string; name: string }[];
+  clients: { id: string; name: string; code?: string }[];
+  briefDeadlines?: BriefDeadlineMarker[];
 }
 
-export function CalendarClient({ initialEntries, clients }: CalendarClientProps) {
+export function CalendarClient({ initialEntries, clients, briefDeadlines = [] }: CalendarClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [entries, setEntries] = useState(initialEntries);
@@ -158,6 +160,11 @@ export function CalendarClient({ initialEntries, clients }: CalendarClientProps)
     console.log("Delete entry:", entryId);
   };
 
+  const handleDeadlineClick = (deadline: BriefDeadlineMarker) => {
+    // Navigate to the brief detail page
+    window.location.href = `/briefs/${deadline.id}`;
+  };
+
   return (
     <div className="p-6 lg:p-8 h-full flex flex-col">
       {/* Header */}
@@ -227,9 +234,11 @@ export function CalendarClient({ initialEntries, clients }: CalendarClientProps)
       <div className="flex-1 rounded-[var(--ltd-radius-lg)] border border-ltd-border-1 bg-ltd-surface-2 overflow-hidden">
         <StudioCalendar
           entries={filteredEntries}
+          briefDeadlines={briefDeadlines}
           onCreateClick={handleCreateClick}
           onEntryClick={handleEntryClick}
           onEntryDrop={handleEntryDrop}
+          onDeadlineClick={handleDeadlineClick}
         />
       </div>
 
