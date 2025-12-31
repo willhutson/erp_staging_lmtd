@@ -3,7 +3,7 @@
 
 **Ledger ID:** Q2-SPOKESTUDIO-001
 **Created:** 2025-12-31
-**Last Updated:** 2025-12-31 (Session 001)
+**Last Updated:** 2025-12-31 (Session 002)
 **Status:** ACTIVE
 
 ---
@@ -20,7 +20,7 @@ Build SpokeStudio - the AI-assisted creative workspace within SpokeStack. Bridge
 
 | Phase | Name | Weeks | Status | Progress |
 |-------|------|-------|--------|----------|
-| S1 | Foundation | 1-2 | NOT_STARTED | - |
+| S1 | Foundation | 1-2 | IN_PROGRESS | 95% |
 | S2 | Google Docs Sync | 2-3 | NOT_STARTED | - |
 | S3 | Social Calendar | 3-4 | NOT_STARTED | - |
 | S4 | Pitch Deck Builder | 4-5 | NOT_STARTED | - |
@@ -32,43 +32,46 @@ Build SpokeStudio - the AI-assisted creative workspace within SpokeStack. Bridge
 
 ## Phase S1 Checklist: Foundation
 
-- [ ] **S1.1** Create (studio) route group and layout
-  - `/src/app/(studio)/layout.tsx` - Studio shell with sidebar
+- [x] **S1.1** Create (studio) route group and layout ✅
+  - `/src/app/(studio)/layout.tsx` - Studio layout with auth
   - `/src/app/(studio)/page.tsx` - Studio dashboard
+  - `/src/components/layout/StudioShell.tsx` - Studio shell with sidebar
 
-- [ ] **S1.2** Add Studio to main navigation
-  - Update Sidebar.tsx with Studio section
-  - Add route: `/studio`
+- [x] **S1.2** Add Studio to main navigation ✅
+  - Updated DashboardShell.tsx with Studio section
+  - Added Sparkles icon and SpokeStudio link
 
-- [ ] **S1.3** Create Prisma schema for all Studio models
+- [x] **S1.3** Create Prisma schema for all Studio models ✅
   - StudioDocument, StudioDocVersion
   - StudioCalendarEntry
   - VideoProject, VideoScript, Storyboard, StoryboardFrame, ShotListItem
   - PitchDeck, DeckSlide, DeckTemplate
   - Moodboard, MoodboardItem, MoodboardConversation, MoodboardOutput
-  - All enums
+  - All enums (15 total)
+  - Added relations to Organization, User, Client, Project, Brief, Deal
 
-- [ ] **S1.4** Run migrations
-  - `pnpm db:push`
+- [ ] **S1.4** Run migrations 🚫
+  - Blocked by Prisma binary fetch (403 Forbidden - network issue)
+  - Schema is valid, needs `pnpm db:push` when network resolves
 
-- [ ] **S1.5** Create basic page shells
-  - `/studio/docs` - Documents list
-  - `/studio/decks` - Pitch decks list
-  - `/studio/video` - Video projects list
-  - `/studio/moodboard` - Moodboards list
-  - `/studio/calendar` - Social calendar
-  - `/studio/skills` - AI skills config
+- [x] **S1.5** Create basic page shells ✅
+  - `/studio/docs` - Documents list with empty state
+  - `/studio/decks` - Pitch decks list with empty state
+  - `/studio/video` - Video projects list with empty state
+  - `/studio/moodboard` - Moodboards list with featured highlight
+  - `/studio/calendar` - Social calendar with month view placeholder
+  - `/studio/skills` - AI skills config with skill cards
 
-- [ ] **S1.6** Set up module folder structure
-  - `/src/modules/studio/actions/`
-  - `/src/modules/studio/components/`
-  - `/src/modules/studio/hooks/`
-  - `/src/modules/studio/lib/`
-  - `/src/modules/studio/types/`
+- [x] **S1.6** Set up module folder structure ✅
+  - `/src/modules/studio/actions/` - 5 action files
+  - `/src/modules/studio/components/` - 5 shared components
+  - `/src/modules/studio/hooks/` - Ready for hooks
+  - `/src/modules/studio/lib/` - Ready for utilities
+  - `/src/modules/studio/types/` - Full TypeScript types
 
-- [ ] **S1.7** Create shared Studio components
+- [x] **S1.7** Create shared Studio components ✅
   - StudioCard, StudioHeader, StudioFilters
-  - StatusBadge variants for Studio
+  - StudioStatusBadge, StudioEmptyState
 
 ---
 
@@ -158,7 +161,7 @@ Build SpokeStudio - the AI-assisted creative workspace within SpokeStack. Bridge
 
 | Component | Code | Tests | Deployed | Verified |
 |-----------|------|-------|----------|----------|
-| Foundation | ❌ | ❌ | ❌ | ❌ |
+| Foundation | ⏳ | ❌ | ❌ | ❌ |
 | Google Docs Sync | ❌ | ❌ | ❌ | ❌ |
 | Social Calendar | ❌ | ❌ | ❌ | ❌ |
 | Pitch Deck Builder | ❌ | ❌ | ❌ | ❌ |
@@ -177,6 +180,7 @@ Legend: ✅ Done | ⏳ In Progress | ❌ Not Started
 | D001 | Use ledger system from Q1 | Proven effective across 11 sessions | 2025-12-31 |
 | D002 | Moodboard Lab is the differentiator | NotebookLM for creative - unique value prop | 2025-12-31 |
 | D003 | Google Workspace is priority integration | Clients live in Google, essential for adoption | 2025-12-31 |
+| D004 | StudioShell separate from DashboardShell | Clean separation, focused navigation | 2025-12-31 |
 
 ---
 
@@ -184,7 +188,7 @@ Legend: ✅ Done | ⏳ In Progress | ❌ Not Started
 
 | Item | Blocker | Owner | Since |
 |------|---------|-------|-------|
-| - | - | - | - |
+| S1.4 Migrations | Prisma binary fetch 403 | Infrastructure | 2025-12-31 |
 
 ---
 
@@ -193,15 +197,28 @@ Legend: ✅ Done | ⏳ In Progress | ❌ Not Started
 ### Documentation
 - `/docs/EPIC_SPOKESTUDIO_Q2_2025.md` - Master spec document
 - `/thoughts/DECISIONS.md` - Architectural decisions log
+- `/src/modules/studio/CLAUDE.md` - Module documentation
 
-### Schema (to be created)
-- `/prisma/schema.prisma` - Will add Studio models
+### Schema
+- `/prisma/schema.prisma` - Lines 6188-6885: Studio models
 
-### Routes (to be created)
-- `/src/app/(studio)/` - Studio route group
+### Routes
+- `/src/app/(studio)/layout.tsx` - Studio layout
+- `/src/app/(studio)/page.tsx` - Dashboard
+- `/src/app/(studio)/docs/page.tsx` - Documents
+- `/src/app/(studio)/decks/page.tsx` - Pitch decks
+- `/src/app/(studio)/video/page.tsx` - Video projects
+- `/src/app/(studio)/moodboard/page.tsx` - Moodboards
+- `/src/app/(studio)/calendar/page.tsx` - Calendar
+- `/src/app/(studio)/skills/page.tsx` - AI skills
 
-### Module (to be created)
-- `/src/modules/studio/` - Studio module
+### Components
+- `/src/components/layout/StudioShell.tsx` - Studio shell
+- `/src/modules/studio/components/` - Shared components
+
+### Module
+- `/src/modules/studio/actions/` - Server actions
+- `/src/modules/studio/types/index.ts` - TypeScript types
 
 ---
 
@@ -210,14 +227,15 @@ Legend: ✅ Done | ⏳ In Progress | ❌ Not Started
 | Session | Date | Focus | Outcome |
 |---------|------|-------|---------|
 | 001 | 2025-12-31 | Epic setup | Created spec, ledger, branch |
+| 002 | 2025-12-31 | Phase S1 | Foundation 95% complete (migrations blocked) |
 
 ---
 
 ## Next Actions
 
-1. **Phase S1.1**: Create (studio) route group and layout
-2. **Phase S1.2**: Add Studio to main navigation
-3. **Phase S1.3**: Create Prisma schema for all Studio models
+1. **Phase S1.4**: Run migrations when Prisma network issue resolves
+2. **Phase S2.1**: Set up Google OAuth for Docs/Drive scopes
+3. **Phase S2.2**: Create Google API service layer
 
 ---
 
@@ -228,7 +246,10 @@ When resuming this work:
 2. Check `/docs/EPIC_SPOKESTUDIO_Q2_2025.md` for full spec
 3. Check `/thoughts/DECISIONS.md` for architectural choices
 4. Look at Phase Status table for current progress
+5. Try `pnpm db:push` to complete S1.4
 
 **Key Insight:** Moodboard Lab is the "killer feature" - it's NotebookLM for creative work. Build the simpler features first (S1-S5) to establish patterns, then tackle S6 with full context.
 
 **Dependency Note:** Q1 Epic provides foundation (Workflow Engine, Builder, Notifications). Q2 builds on top.
+
+**Session 002 Note:** All S1 code is complete. Only blocker is Prisma migration which requires network access to fetch binaries.

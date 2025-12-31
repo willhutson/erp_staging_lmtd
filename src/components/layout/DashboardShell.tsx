@@ -49,6 +49,7 @@ import {
   AlertCircle,
   ImageIcon,
   Search,
+  Sparkles,
 } from "lucide-react";
 
 // Slack icon component
@@ -184,6 +185,17 @@ const navSections: NavSection[] = [
         title: "Files",
         href: "/files",
         icon: <FolderOpen className="w-5 h-5" />,
+      },
+    ],
+  },
+  {
+    title: "Studio",
+    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
+    items: [
+      {
+        title: "SpokeStudio",
+        href: "/studio",
+        icon: <Sparkles className="w-5 h-5" />,
       },
     ],
   },
