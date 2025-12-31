@@ -3,6 +3,11 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import {
+  checkLeaveConflicts,
+  startDelegation,
+  getDelegationProfile,
+} from "@/modules/delegation";
 
 // UAE Labor Law default leave types
 const DEFAULT_LEAVE_TYPES = [
@@ -145,7 +150,7 @@ export async function reviewLeaveRequest(
     },
   });
 
-  // If approved, update leave balance
+  // If approved, update leave balance and create delegation
   if (status === "APPROVED") {
     const year = new Date(request.startDate).getFullYear();
     await db.leaveBalance.upsert({
@@ -167,6 +172,19 @@ export async function reviewLeaveRequest(
         used: { increment: Number(request.totalDays) },
       },
     });
+
+    // Create active delegation if user has a delegate configured
+    const delegationProfile = await getDelegationProfile(request.userId);
+    if (delegationProfile?.primaryDelegateId) {
+      await startDelegation({
+        organizationId: request.organizationId,
+        delegatorId: request.userId,
+        delegateId: delegationProfile.primaryDelegateId,
+        leaveRequestId: request.id,
+        startDate: request.startDate,
+        endDate: request.endDate,
+      });
+    }
   }
 
   revalidatePath("/leave");
@@ -260,4 +278,42 @@ function calculateWorkingDays(startDate: Date, endDate: Date, isHalfDay?: boolea
   }
 
   return count;
+}
+
+/**
+ * Check for delegation conflicts before submitting a leave request
+ */
+export async function checkLeaveConflictsAction(startDate: Date, endDate: Date) {
+  const session = await auth();
+  if (!session?.user) throw new Error("Unauthorized");
+
+  return checkLeaveConflicts(
+    session.user.organizationId,
+    session.user.id,
+    startDate,
+    endDate
+  );
+}
+
+/**
+ * Get delegation profile for current user (for leave request form)
+ */
+export async function getMyDelegateInfo() {
+  const session = await auth();
+  if (!session?.user) return null;
+
+  const profile = await getDelegationProfile(session.user.id);
+  if (!profile?.primaryDelegateId) {
+    return { hasDelegate: false, delegateName: null };
+  }
+
+  const delegate = await db.user.findUnique({
+    where: { id: profile.primaryDelegateId },
+    select: { name: true },
+  });
+
+  return {
+    hasDelegate: true,
+    delegateName: delegate?.name || null,
+  };
 }

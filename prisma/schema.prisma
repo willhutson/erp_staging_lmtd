@@ -216,6 +216,13 @@ model User {
   // Notification Rules
   notificationRulesCreated NotificationRule[] @relation("NotificationRulesCreated")
 
+  // Delegation of Authority (DOA)
+  delegationProfile         DelegationProfile?   @relation("DelegationProfileOwner")
+  delegatingFor             DelegationProfile[]  @relation("PrimaryDelegate")
+  delegationsAsOwner        ActiveDelegation[]   @relation("Delegator")
+  delegationsAsDelegate     ActiveDelegation[]   @relation("Delegate")
+  delegationActivitiesPerformed DelegationActivity[]
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([organizationId, email])
@@ -956,6 +963,9 @@ model LeaveRequest {
   reviewedBy User?     @relation("LeaveReviewer", fields: [reviewedById], references: [id])
   leaveType  LeaveType @relation(fields: [leaveTypeId], references: [id])
 
+  // Delegation of Authority
+  activeDelegations ActiveDelegation[]
+
   @@index([organizationId])
   @@index([userId])
   @@index([status])
@@ -1007,6 +1017,145 @@ model PublicHoliday {
   @@unique([organizationId, date])
   @@index([organizationId, year])
   @@map("public_holidays")
+}
+
+// ============================================
+// DELEGATION OF AUTHORITY (DOA)
+// ============================================
+
+// User's default delegation configuration
+model DelegationProfile {
+  id                  String   @id @default(cuid())
+  organizationId      String
+  userId              String   @unique
+
+  // Primary delegate - who covers when this user is away
+  primaryDelegateId   String?
+
+  // Delegation scope configuration
+  scope               Json     // DelegationScope: clients, briefTypes, valueThreshold, authority
+
+  // Escalation rules
+  escalationRules     Json     // EscalationRules: escalateIf[], escalateTo
+
+  // Whether this profile is active
+  isActive            Boolean  @default(true)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user                User     @relation("DelegationProfileOwner", fields: [userId], references: [id])
+  primaryDelegate     User?    @relation("PrimaryDelegate", fields: [primaryDelegateId], references: [id])
+
+  @@index([organizationId])
+  @@index([primaryDelegateId])
+  @@map("delegation_profiles")
+}
+
+// An active delegation period (tied to leave or manual)
+model ActiveDelegation {
+  id                  String   @id @default(cuid())
+  organizationId      String
+
+  // Who is delegating and to whom
+  delegatorId         String
+  delegateId          String
+
+  // Optional link to leave request
+  leaveRequestId      String?
+
+  // Period
+  startDate           DateTime @db.Date
+  endDate             DateTime @db.Date
+
+  // Snapshot of scope at time of delegation
+  scopeSnapshot       Json     // DelegationScope frozen at activation
+
+  // Status tracking
+  status              DelegationStatus @default(PENDING)
+  activatedAt         DateTime?
+  completedAt         DateTime?
+  cancelledAt         DateTime?
+
+  // Handoff tracking
+  handoffScheduled    Boolean  @default(false)
+  handoffCompletedAt  DateTime?
+  handoffNotes        String?  @db.Text
+  handoffBriefing     Json?    // AI-generated handoff summary
+
+  // Chain delegation - if delegate is also unavailable
+  chainedFromId       String?  // If this was created due to chain delegation
+  chainDelegateId     String?  // Who to chain to if this delegate is unavailable
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  delegator           User     @relation("Delegator", fields: [delegatorId], references: [id])
+  delegate            User     @relation("Delegate", fields: [delegateId], references: [id])
+  leaveRequest        LeaveRequest? @relation(fields: [leaveRequestId], references: [id])
+  chainedFrom         ActiveDelegation? @relation("DelegationChain", fields: [chainedFromId], references: [id])
+  chainedDelegations  ActiveDelegation[] @relation("DelegationChain")
+
+  activities          DelegationActivity[]
+
+  @@index([organizationId, status])
+  @@index([delegatorId, status])
+  @@index([delegateId, status])
+  @@index([startDate, endDate])
+  @@index([leaveRequestId])
+  @@map("active_delegations")
+}
+
+// Log of actions taken during a delegation period
+model DelegationActivity {
+  id                  String   @id @default(cuid())
+
+  activeDelegationId  String
+  activeDelegation    ActiveDelegation @relation(fields: [activeDelegationId], references: [id], onDelete: Cascade)
+
+  // What happened
+  activityType        DelegationActivityType
+
+  // What entity was affected
+  entityType          String   // "brief", "task", "approval", "client_communication"
+  entityId            String
+
+  // Description and details
+  description         String
+  metadata            Json?    // Additional context
+
+  // Who performed the action
+  performedById       String
+
+  createdAt           DateTime @default(now())
+
+  performedBy         User     @relation(fields: [performedById], references: [id])
+
+  @@index([activeDelegationId])
+  @@index([entityType, entityId])
+  @@index([performedById])
+  @@map("delegation_activities")
+}
+
+enum DelegationStatus {
+  PENDING     // Awaiting start date
+  ACTIVE      // Currently in effect
+  COMPLETED   // Ended normally
+  CANCELLED   // Cancelled before completion
+}
+
+enum DelegationActivityType {
+  TASK_ASSIGNED           // Task was assigned to delegate
+  TASK_COMPLETED          // Task was completed by delegate
+  TASK_ESCALATED          // Task was escalated to manager
+  TASK_REASSIGNED         // Task was passed to another delegate
+  APPROVAL_GIVEN          // Delegate gave an approval
+  DECISION_MADE           // Delegate made a decision
+  CLIENT_COMMUNICATION    // Delegate communicated with client
+  BRIEF_CREATED           // Delegate created a brief
+  BRIEF_UPDATED           // Delegate updated a brief
+  HANDOFF_STARTED         // Handoff process began
+  HANDOFF_COMPLETED       // Handoff completed
 }
 
 // ============================================
