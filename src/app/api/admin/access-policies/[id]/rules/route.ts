@@ -61,7 +61,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         action: data.action,
         effect: data.effect,
         conditionType: data.conditionType,
-        conditionParams: data.conditionParams as Prisma.InputJsonValue,
+        conditionParams: data.conditionParams as unknown as Prisma.InputJsonValue,
         allowedFields: data.allowedFields,
         deniedFields: data.deniedFields,
         isActive: data.isActive,
