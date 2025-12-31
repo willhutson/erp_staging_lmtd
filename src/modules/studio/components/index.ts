@@ -19,3 +19,6 @@ export { DocumentList } from "./DocumentList";
 
 // Deck Components
 export { DeckList } from "./DeckList";
+
+// Video Components
+export { VideoProjectList } from "./VideoProjectList";
