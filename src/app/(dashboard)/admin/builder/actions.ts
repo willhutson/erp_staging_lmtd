@@ -110,7 +110,12 @@ export async function updateTemplate(input: UpdateTemplateInput) {
 
   const template = await db.builderTemplate.update({
     where: { id },
-    data: updates,
+    data: {
+      ...updates,
+      definition: updates.definition
+        ? (updates.definition as unknown as Prisma.InputJsonValue)
+        : undefined,
+    },
   });
 
   // Create audit log
