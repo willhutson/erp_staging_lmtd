@@ -9,7 +9,7 @@ import {
   syncToGoogle,
   deleteStudioDocument,
 } from "@/modules/studio/actions/docs-actions";
-import type { DocumentWithRelations, StudioDocumentType } from "@/modules/studio/types";
+import type { DocumentWithRelations, StudioDocType } from "@/modules/studio/types";
 import { cn } from "@/lib/utils";
 
 interface DocsClientProps {
@@ -17,7 +17,7 @@ interface DocsClientProps {
   clients: { id: string; name: string }[];
 }
 
-const documentTypes: { value: StudioDocumentType; label: string }[] = [
+const documentTypes: { value: StudioDocType; label: string }[] = [
   { value: "COPY", label: "Copy" },
   { value: "SCRIPT", label: "Script" },
   { value: "BRIEF", label: "Brief" },
@@ -35,7 +35,7 @@ export function DocsClient({ initialDocuments, clients }: DocsClientProps) {
 
   // Create modal state
   const [newDocTitle, setNewDocTitle] = useState("");
-  const [newDocType, setNewDocType] = useState<StudioDocumentType>("COPY");
+  const [newDocType, setNewDocType] = useState<StudioDocType>("COPY");
   const [newDocClientId, setNewDocClientId] = useState("");
   const [syncToGoogleOnCreate, setSyncToGoogleOnCreate] = useState(false);
 

@@ -16,8 +16,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { DeckWithRelations, DeckSlide } from "@/modules/studio/types";
-import type { SlideLayoutType } from "@prisma/client";
+import type { DeckWithRelations, DeckSlide, SlideLayoutType } from "@/modules/studio/types";
 import {
   addSlide,
   updateSlide,
