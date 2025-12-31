@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import type { BuilderTemplateType, TemplateStatus } from "@prisma/client";
+import type { BuilderTemplateType, TemplateStatus, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 interface CreateTemplateInput {
@@ -49,7 +49,7 @@ export async function createTemplate(input: CreateTemplateInput) {
       name,
       description,
       module,
-      definition,
+      definition: definition as unknown as Prisma.InputJsonValue,
       status: "DRAFT",
       createdById: session.user.id,
     },
