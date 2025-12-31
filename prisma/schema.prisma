@@ -5621,3 +5621,123 @@ enum DocTemplateCategory {
   INVOICE
   OTHER
 }
+
+// ============================================
+// BUILDER INFRASTRUCTURE (Phase 2 - Q1 Epic)
+// ============================================
+
+// BuilderTemplate stores all configurable platform templates
+model BuilderTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Template identity
+  templateType    BuilderTemplateType
+  name            String
+  description     String?
+  module          String   // "agency", "crm", "content", "team"
+
+  // The actual template definition (JSON schema)
+  definition      Json
+
+  // Approval workflow
+  status          TemplateStatus @default(DRAFT)
+  submittedAt     DateTime?
+  submittedById   String?
+  approvedAt      DateTime?
+  approvedById    String?
+  rejectionReason String?
+  publishedAt     DateTime?
+
+  // Versioning
+  version         Int      @default(1)
+  previousVersionId String?
+  isLatest        Boolean  @default(true)
+
+  // Ownership
+  createdById     String
+  departmentId    String?  // For department-scoped templates
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, templateType, name, version])
+  @@index([organizationId, templateType])
+  @@index([organizationId, status])
+  @@index([module])
+  @@map("builder_templates")
+}
+
+enum BuilderTemplateType {
+  BRIEF_TEMPLATE
+  WORKFLOW
+  DASHBOARD_WIDGET
+  REPORT_TEMPLATE
+  AI_SKILL_CONFIG
+  FORM_TEMPLATE
+  NOTIFICATION_TEMPLATE
+}
+
+enum TemplateStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  PUBLISHED
+  DEPRECATED
+}
+
+// BuilderPermission controls who can use the Builder
+model BuilderPermission {
+  id              String   @id @default(cuid())
+  organizationId  String
+  userId          String
+
+  level           BuilderPermissionLevel
+  departmentId    String?  // For DEPARTMENT_BUILDER level
+  templateTypes   BuilderTemplateType[]
+  canApprove      Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, organizationId])
+  @@index([organizationId, level])
+  @@map("builder_permissions")
+}
+
+enum BuilderPermissionLevel {
+  ADMIN
+  TEMPLATE_EDITOR
+  DEPARTMENT_BUILDER
+  READ_ONLY
+}
+
+// BuilderAuditLog tracks all Builder changes
+model BuilderAuditLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  templateId      String
+  action          BuilderAuditAction
+  previousValue   Json?
+  newValue        Json?
+  notes           String?
+
+  performedById   String
+  performedAt     DateTime @default(now())
+
+  @@index([organizationId, templateId])
+  @@index([performedAt])
+  @@map("builder_audit_logs")
+}
+
+enum BuilderAuditAction {
+  CREATED
+  UPDATED
+  SUBMITTED
+  APPROVED
+  REJECTED
+  PUBLISHED
+  DEPRECATED
+  RESTORED
+}

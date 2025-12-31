@@ -3,7 +3,7 @@
 
 **Ledger ID:** Q1-EPIC-001
 **Created:** 2025-12-31
-**Last Updated:** 2025-12-31 (Session 002)
+**Last Updated:** 2025-12-31 (Session 005)
 **Status:** ACTIVE
 
 ---
@@ -21,8 +21,8 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 | Phase | Name | Weeks | Status | Progress |
 |-------|------|-------|--------|----------|
 | 0 | Quick Wins & Bug Fixes | 1-2 | COMPLETE | 6/6 items ✅ |
-| 1 | Navigation Restructure | 2-3 | NOT_STARTED | 0% |
-| 2 | Builder Infrastructure | 4-5 | NOT_STARTED | 0% |
+| 1 | Navigation Restructure | 2-3 | COMPLETE | ✅ |
+| 2 | Builder Infrastructure | 4-5 | COMPLETE | ✅ |
 | 3 | Workflow Builder Engine | 6-8 | NOT_STARTED | 0% |
 | 4 | Delegation of Authority | 9-11 | NOT_STARTED | 0% |
 | 5 | Integration & Polish | 12-14 | NOT_STARTED | 0% |
@@ -68,6 +68,50 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 
 ---
 
+## Phase 1 Checklist
+
+- [x] **1.1** Restructure Sidebar navigation ✅
+  - Reorganized into sections: Hub, Agency, Time & Resources, CRM, Messaging, Content, Insights, Admin
+  - Added section headers with permission-based visibility
+  - Added Builder link under Admin section
+  - Changed logo link from /dashboard to /hub
+  - Updated version to v0.2.0, renamed "SpokeStack ERP"
+
+- [x] **1.2** Create /hub with role-based views ✅
+  - Created `/src/app/(dashboard)/hub/page.tsx`
+  - Role-based widgets: AM view (briefed tasks, clients), Leadership (pipeline, NPS)
+  - Created FocusTodayWidget showing overdue/due today items
+  - Created HubGreeting with time-of-day greeting
+
+- [x] **1.3** Create /projects page ✅
+  - Created `/src/app/(dashboard)/projects/` with list view
+  - Created project detail page at `/projects/[id]`
+  - New project dialog with client selector
+  - Server action for project creation
+
+---
+
+## Phase 2 Checklist
+
+- [x] **2.1** Add Builder schema ✅
+  - Added `BuilderTemplate` model with versioning support
+  - Added `BuilderPermission` model for access control
+  - Added `BuilderAuditLog` for change tracking
+  - Added enums: BuilderTemplateType, TemplateStatus, BuilderPermissionLevel, BuilderAuditAction
+
+- [x] **2.2** Create /admin/builder pages ✅
+  - Created Builder dashboard at `/admin/builder`
+  - Created new template wizard at `/admin/builder/new`
+  - Created template editor at `/admin/builder/[id]`
+  - Implemented approval workflow actions
+
+- [x] **2.3** Create /modules/builder module ✅
+  - Created type definitions for all template types
+  - Created template-service.ts with CRUD operations
+  - Created module documentation (CLAUDE.md)
+
+---
+
 ## Decisions Made
 
 | ID | Decision | Rationale | Date |
@@ -105,6 +149,17 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 ### Resources (Phase 0)
 - `/src/modules/resources/components/KanbanBoard.tsx` - Board with filter bug
 
+### Hub (Phase 1)
+- `/src/app/(dashboard)/hub/` - Hub page with role-based views
+- `/src/app/(dashboard)/hub/components/` - Hub widgets
+
+### Projects (Phase 1)
+- `/src/app/(dashboard)/projects/` - Projects management
+
+### Builder (Phase 2)
+- `/src/app/(dashboard)/admin/builder/` - Builder pages
+- `/src/modules/builder/` - Builder module (types, services)
+
 ---
 
 ## Session History
@@ -115,15 +170,17 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 | 002 | 2025-12-31 | Phase 0 execution | Completed 0.1 (FilterBar) and 0.2 (Briefed By visibility) |
 | 003 | 2025-12-31 | Phase 0 execution | Completed 0.3 (Project selector in brief form) |
 | 004 | 2025-12-31 | Phase 0 completion | Completed 0.4, 0.5, 0.6 - Phase 0 COMPLETE |
+| 005 | 2025-12-31 | Phase 1 & 2 | Completed all Phase 1 & 2 items - Navigation, Hub, Projects, Builder |
 
 ---
 
 ## Next Actions
 
-1. **Phase 1.1**: Navigation restructure (Hub, Agency, Builder, Admin)
-2. **Phase 1.2**: Create Hub global view component
-3. **Phase 1.3**: Move existing pages under new structure
-4. Run `pnpm db:push` to apply schema changes (backupAssigneeId)
+1. **Phase 3.1**: Create WorkflowTemplate schema
+2. **Phase 3.2**: Build workflow trigger system
+3. **Phase 3.3**: Implement cascading deadline calculator
+4. **Phase 3.4**: Create RFP workflow as first template
+5. Run `pnpm db:push` to apply schema changes (Builder models)
 
 ---
 
