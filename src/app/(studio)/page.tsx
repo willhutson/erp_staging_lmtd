@@ -17,51 +17,51 @@ const studioModules = [
   {
     title: "Documents",
     description: "Create and sync documents with Google Docs. Collaborate in real-time with version history.",
-    href: "/studio/docs",
+    href: "/docs",
     icon: FileText,
     color: "from-blue-500 to-blue-600",
-    status: "coming-soon" as const,
+    status: "active" as const,
   },
   {
     title: "Pitch Decks",
     description: "Build beautiful presentations with AI-powered content generation and Google Slides export.",
-    href: "/studio/decks",
+    href: "/decks",
     icon: Presentation,
     color: "from-orange-500 to-red-500",
-    status: "coming-soon" as const,
+    status: "active" as const,
   },
   {
     title: "Video Studio",
     description: "Script writing, storyboarding, and shot list management for video productions.",
-    href: "/studio/video",
+    href: "/video",
     icon: Video,
     color: "from-purple-500 to-pink-500",
-    status: "coming-soon" as const,
+    status: "active" as const,
   },
   {
     title: "Moodboard Lab",
     description: "Upload references, images, and links. AI indexes everything for grounded creative generation.",
-    href: "/studio/moodboard",
+    href: "/moodboard",
     icon: ImageIcon,
     color: "from-ltd-primary to-[#7B61FF]",
-    status: "coming-soon" as const,
+    status: "active" as const,
     featured: true,
   },
   {
     title: "Social Calendar",
     description: "Plan and schedule social content across platforms with drag-and-drop scheduling.",
-    href: "/studio/calendar",
+    href: "/calendar",
     icon: Calendar,
     color: "from-green-500 to-emerald-600",
-    status: "coming-soon" as const,
+    status: "active" as const,
   },
   {
     title: "AI Skills",
     description: "Configure and customize AI assistants for your creative workflows.",
-    href: "/studio/skills",
+    href: "/skills",
     icon: Sparkles,
     color: "from-yellow-500 to-orange-500",
-    status: "coming-soon" as const,
+    status: "active" as const,
   },
 ];
 
@@ -138,11 +138,6 @@ export default async function StudioDashboard() {
                       <h3 className="font-semibold text-ltd-text-1 group-hover:text-ltd-primary transition-colors">
                         {module.title}
                       </h3>
-                      {module.status === "coming-soon" && (
-                        <span className="px-1.5 py-0.5 bg-ltd-surface-3 text-ltd-text-3 text-[10px] font-medium rounded">
-                          Soon
-                        </span>
-                      )}
                     </div>
                     <p className="text-sm text-ltd-text-2 line-clamp-2">
                       {module.description}
