@@ -3,7 +3,7 @@
 
 **Ledger ID:** Q1-EPIC-001
 **Created:** 2025-12-31
-**Last Updated:** 2025-12-31 (Session 005)
+**Last Updated:** 2025-12-31 (Session 006)
 **Status:** ACTIVE
 
 ---
@@ -23,7 +23,7 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 | 0 | Quick Wins & Bug Fixes | 1-2 | COMPLETE | 6/6 items ✅ |
 | 1 | Navigation Restructure | 2-3 | COMPLETE | ✅ |
 | 2 | Builder Infrastructure | 4-5 | COMPLETE | ✅ |
-| 3 | Workflow Builder Engine | 6-8 | NOT_STARTED | 0% |
+| 3 | Workflow Builder Engine | 6-8 | COMPLETE | ✅ |
 | 4 | Delegation of Authority | 9-11 | NOT_STARTED | 0% |
 | 5 | Integration & Polish | 12-14 | NOT_STARTED | 0% |
 
@@ -112,6 +112,59 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 
 ---
 
+## Phase 3 Checklist
+
+- [x] **3.1** Add Workflow schema models ✅
+  - Added `WorkflowTemplate` model with trigger config, task templates, nudge rules
+  - Added `WorkflowInstance` model for running workflows
+  - Added `WorkflowTask` model for individual tasks with dependencies
+  - Added `WorkflowNudge` model for reminder scheduling
+  - Added `WorkflowActivity` model for audit logging
+  - Added enums: WorkflowStatus, WorkflowInstanceStatus, WorkflowTaskStatus, NudgeChannel, WorkflowActivityType
+
+- [x] **3.2** Create workflow execution engine ✅
+  - Created `/src/modules/workflows/services/workflow-engine.ts`
+  - Functions: startWorkflow, completeTask, startTask, blockTask, reassignTask, cancelWorkflow
+  - Handles trigger condition checking and entity snapshot
+
+- [x] **3.3** Build /workflows pages ✅
+  - Updated `/src/app/(dashboard)/workflows/page.tsx` to use real data
+  - Created `WorkflowsView.tsx` with status filters and workflow cards
+  - Created workflow detail page with task list, owner info, activity log
+  - Shows progress, overdue/blocked indicators, next task info
+
+- [x] **3.4** Implement cascading deadline calculator ✅
+  - Created `/src/modules/workflows/services/deadline-calculator.ts`
+  - Functions: calculateTaskDates, recalculateDatesForDelay, calculateCriticalPath, calculateBufferDays
+  - Works backwards from final deadline respecting dependencies
+  - Uses topological sort for correct ordering
+
+- [x] **3.5** Create nudge rule dispatcher ✅
+  - Created `/src/modules/workflows/services/nudge-dispatcher.ts`
+  - Functions: scheduleTaskNudges, processDueNudges, acknowledgeNudge, getPendingNudgesForUser
+  - Supports Slack, Email, In-App channels
+  - Template variable interpolation for messages
+
+- [x] **3.6** RFP Submission workflow template ✅
+  - Created `/config/workflows/rfp-submission.workflow.ts`
+  - 10 tasks: research → analysis → strategy → team selection → budget → concepts → review → deck → rehearsal → submission
+  - Nudge rules: 7-day, 3-day, 1-day warnings + overdue escalation
+  - AI skill hooks for competitive analysis and proposal outline
+
+- [x] **3.7** Monthly Content Calendar workflow ✅
+  - Created `/config/workflows/monthly-content-calendar.workflow.ts`
+  - 13 tasks: performance review → planning → calendar draft → approvals → copy → creative → assembly → scheduling
+  - Creates briefs for copy and design work
+  - Client approval gates for calendar and final content
+
+- [x] **3.8** Content Series workflow ✅
+  - Created `/config/workflows/content-series.workflow.ts`
+  - 18 tasks across 4 phases: pre-production, production (4 episodes), post-production, delivery
+  - Creates briefs for each episode (shoot and edit)
+  - Stage gates for concept approval, budget, and final sign-off
+
+---
+
 ## Decisions Made
 
 | ID | Decision | Rationale | Date |
@@ -160,6 +213,20 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 - `/src/app/(dashboard)/admin/builder/` - Builder pages
 - `/src/modules/builder/` - Builder module (types, services)
 
+### Workflows (Phase 3)
+- `/src/modules/workflows/` - Workflow engine module
+  - `services/workflow-engine.ts` - Core execution engine
+  - `services/deadline-calculator.ts` - Cascading date calculation
+  - `services/auto-assigner.ts` - Role-based task assignment
+  - `services/nudge-dispatcher.ts` - Reminder/notification system
+  - `services/activity-logger.ts` - Audit trail
+  - `actions/` - Server actions for CRUD
+- `/src/app/(dashboard)/workflows/` - Workflow UI pages
+- `/config/workflows/` - Default workflow templates
+  - `rfp-submission.workflow.ts` - RFP response workflow
+  - `monthly-content-calendar.workflow.ts` - Content calendar workflow
+  - `content-series.workflow.ts` - Video/content series workflow
+
 ---
 
 ## Session History
@@ -171,16 +238,17 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 | 003 | 2025-12-31 | Phase 0 execution | Completed 0.3 (Project selector in brief form) |
 | 004 | 2025-12-31 | Phase 0 completion | Completed 0.4, 0.5, 0.6 - Phase 0 COMPLETE |
 | 005 | 2025-12-31 | Phase 1 & 2 | Completed all Phase 1 & 2 items - Navigation, Hub, Projects, Builder |
+| 006 | 2025-12-31 | Phase 3 | Completed full Workflow Engine - schema, services, UI, 3 templates |
 
 ---
 
 ## Next Actions
 
-1. **Phase 3.1**: Create WorkflowTemplate schema
-2. **Phase 3.2**: Build workflow trigger system
-3. **Phase 3.3**: Implement cascading deadline calculator
-4. **Phase 3.4**: Create RFP workflow as first template
-5. Run `pnpm db:push` to apply schema changes (Builder models)
+1. **Phase 4.1**: Design DOA (Delegation of Authority) schema
+2. **Phase 4.2**: Build availability/leave integration
+3. **Phase 4.3**: Create delegation rules engine
+4. **Phase 4.4**: Build delegation UI components
+5. Run `pnpm db:push` to apply schema changes (Workflow models)
 
 ---
 

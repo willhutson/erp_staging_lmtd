@@ -5741,3 +5741,253 @@ enum BuilderAuditAction {
   DEPRECATED
   RESTORED
 }
+
+// ============================================
+// WORKFLOW ENGINE (Phase 3 - Q1 Epic)
+// ============================================
+
+// WorkflowTemplate defines reusable workflow automations
+model WorkflowTemplate {
+  id                String   @id @default(cuid())
+  organizationId    String
+
+  // Identity
+  name              String
+  description       String?
+  module            String   // "agency", "crm", "content"
+
+  // Trigger configuration
+  triggerType       String   // "rfp.created", "brief.created", "deal.won", "schedule"
+  triggerConditions Json?    // Array of conditions to match
+
+  // Task definitions
+  taskTemplates     Json     // Array of TaskTemplate objects
+
+  // Automation rules
+  nudgeRules        Json     @default("[]")  // Array of NudgeRule
+  stageGates        Json     @default("[]")  // Array of StageGate
+  aiSkills          Json     @default("[]")  // Array of {event, skillId}
+
+  // Status & versioning
+  status            WorkflowStatus @default(DRAFT)
+  publishedAt       DateTime?
+  version           Int      @default(1)
+  isLatest          Boolean  @default(true)
+  previousVersionId String?
+
+  // Ownership
+  createdById       String
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  instances         WorkflowInstance[]
+
+  @@unique([organizationId, name, version])
+  @@index([organizationId, status])
+  @@index([triggerType])
+  @@map("workflow_templates")
+}
+
+enum WorkflowStatus {
+  DRAFT
+  PUBLISHED
+  DEPRECATED
+}
+
+// WorkflowInstance is a running instance of a workflow
+model WorkflowInstance {
+  id                String   @id @default(cuid())
+  organizationId    String
+
+  templateId        String
+  template          WorkflowTemplate @relation(fields: [templateId], references: [id])
+
+  // What triggered this workflow
+  triggerEntityType String   // "RFP", "Brief", "Deal", "ContentPlan"
+  triggerEntityId   String
+  triggerData       Json?    // Snapshot of trigger entity at creation
+
+  // Timeline
+  deadline          DateTime?  // Final deadline (for cascading calculations)
+  startedAt         DateTime   @default(now())
+  completedAt       DateTime?
+  cancelledAt       DateTime?
+
+  // Status
+  status            WorkflowInstanceStatus @default(ACTIVE)
+  progress          Int      @default(0)  // Percentage 0-100
+
+  // Ownership
+  ownerId           String   // Who owns this workflow instance
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tasks             WorkflowTask[]
+  nudges            WorkflowNudge[]
+  activityLog       WorkflowActivity[]
+
+  @@index([organizationId, status])
+  @@index([templateId])
+  @@index([triggerEntityType, triggerEntityId])
+  @@map("workflow_instances")
+}
+
+enum WorkflowInstanceStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+  BLOCKED
+}
+
+// WorkflowTask is an individual task within a workflow instance
+model WorkflowTask {
+  id              String   @id @default(cuid())
+
+  instanceId      String
+  instance        WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  // Template reference
+  templateTaskId  String   // ID from the taskTemplates array
+
+  // Task details
+  name            String
+  description     String?
+
+  // Assignment
+  assigneeId      String?
+  assigneeRole    String   // Role for auto-assignment
+
+  // Timing
+  dueDate         DateTime
+  startedAt       DateTime?
+  completedAt     DateTime?
+  estimatedHours  Float?
+
+  // Status
+  status          WorkflowTaskStatus @default(PENDING)
+  blockedReason   String?
+
+  // Dependencies
+  dependsOnIds    String[] @default([])
+
+  // Linked entities
+  linkedBriefId   String?  // If this task created a Brief
+  linkedEntityType String? // Other linked entity type
+  linkedEntityId  String?  // Other linked entity ID
+
+  // Notes & context
+  notes           String?
+  metadata        Json?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  nudges          WorkflowNudge[]
+
+  @@index([instanceId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("workflow_tasks")
+}
+
+enum WorkflowTaskStatus {
+  PENDING       // Waiting for dependencies
+  READY         // Dependencies met, can start
+  IN_PROGRESS   // Started
+  BLOCKED       // Blocked by external factor
+  COMPLETED     // Done
+  SKIPPED       // Skipped (not needed)
+  CANCELLED     // Cancelled
+}
+
+// WorkflowNudge tracks reminders sent for tasks
+model WorkflowNudge {
+  id              String   @id @default(cuid())
+
+  instanceId      String
+  instance        WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  taskId          String
+  task            WorkflowTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  // Rule that triggered this nudge
+  ruleId          String
+
+  // Delivery
+  recipientId     String
+  channel         NudgeChannel
+  message         String
+
+  // Status
+  scheduledAt     DateTime
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  acknowledgedAt  DateTime?
+  failed          Boolean  @default(false)
+  failureReason   String?
+
+  createdAt       DateTime @default(now())
+
+  @@index([instanceId])
+  @@index([taskId])
+  @@index([scheduledAt])
+  @@map("workflow_nudges")
+}
+
+enum NudgeChannel {
+  SLACK
+  EMAIL
+  IN_APP
+  SMS
+}
+
+// WorkflowActivity logs all workflow events for audit
+model WorkflowActivity {
+  id              String   @id @default(cuid())
+
+  instanceId      String
+  instance        WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  // What happened
+  activityType    WorkflowActivityType
+  taskId          String?
+  description     String
+
+  // Who did it
+  performedById   String?  // null for system actions
+
+  // Additional data
+  metadata        Json?
+
+  createdAt       DateTime @default(now())
+
+  @@index([instanceId])
+  @@index([createdAt])
+  @@map("workflow_activities")
+}
+
+enum WorkflowActivityType {
+  WORKFLOW_STARTED
+  WORKFLOW_COMPLETED
+  WORKFLOW_CANCELLED
+  WORKFLOW_PAUSED
+  WORKFLOW_RESUMED
+  TASK_CREATED
+  TASK_ASSIGNED
+  TASK_STARTED
+  TASK_COMPLETED
+  TASK_BLOCKED
+  TASK_UNBLOCKED
+  TASK_REASSIGNED
+  NUDGE_SENT
+  NUDGE_ACKNOWLEDGED
+  STAGE_GATE_PASSED
+  STAGE_GATE_BLOCKED
+  BRIEF_CREATED
+  DEADLINE_CHANGED
+  AI_SKILL_INVOKED
+}
