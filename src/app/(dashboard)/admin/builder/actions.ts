@@ -124,8 +124,8 @@ export async function updateTemplate(input: UpdateTemplateInput) {
       organizationId: session.user.organizationId,
       templateId: template.id,
       action: "UPDATED",
-      previousValue,
-      newValue: updates,
+      previousValue: previousValue as unknown as Prisma.InputJsonValue,
+      newValue: updates as unknown as Prisma.InputJsonValue,
       performedById: session.user.id,
     },
   });
