@@ -3,7 +3,7 @@
 
 **Ledger ID:** Q1-EPIC-001
 **Created:** 2025-12-31
-**Last Updated:** 2025-12-31
+**Last Updated:** 2025-12-31 (Session 002)
 **Status:** ACTIVE
 
 ---
@@ -20,7 +20,7 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 
 | Phase | Name | Weeks | Status | Progress |
 |-------|------|-------|--------|----------|
-| 0 | Quick Wins & Bug Fixes | 1-2 | NOT_STARTED | 0/6 items |
+| 0 | Quick Wins & Bug Fixes | 1-2 | IN_PROGRESS | 2/6 items |
 | 1 | Navigation Restructure | 2-3 | NOT_STARTED | 0% |
 | 2 | Builder Infrastructure | 4-5 | NOT_STARTED | 0% |
 | 3 | Workflow Builder Engine | 6-8 | NOT_STARTED | 0% |
@@ -31,13 +31,16 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 
 ## Phase 0 Checklist
 
-- [ ] **0.1** Fix board filter bug (P0)
-  - File: `/src/modules/resources/components/KanbanBoard.tsx`
-  - Issue: Filter click does nothing on design board
+- [x] **0.1** Fix board filter bug (P0) ✅
+  - Created `/src/modules/resources/components/FilterBar.tsx`
+  - Filters: assignee, client, brief type, briefed by
+  - Integrated into ResourcesView with useMemo filtering
+  - Shows "X of Y briefs" count
 
-- [ ] **0.2** Add "Briefed By" visibility (P1)
-  - Files: `BriefCard.tsx`, `FilterBar.tsx`
-  - Use existing `createdById` as briefer
+- [x] **0.2** Add "Briefed By" visibility (P1) ✅
+  - Added `createdBy` include to brief query
+  - KanbanCard shows briefer (Send icon, teal color)
+  - FilterBar includes "Briefed By" filter
 
 - [ ] **0.3** Project selector in brief form (P1)
   - File: `/src/modules/briefs/components/BriefForm.tsx`
@@ -98,14 +101,16 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 | Session | Date | Focus | Outcome |
 |---------|------|-------|---------|
 | 001 | 2025-12-31 | Epic creation | Created unified Q1 Epic from Will/Albert feedback |
+| 002 | 2025-12-31 | Phase 0 execution | Completed 0.1 (FilterBar) and 0.2 (Briefed By visibility) |
 
 ---
 
 ## Next Actions
 
-1. Begin Phase 0.1: Debug board filter bug
-2. Review `/src/modules/resources/components/` for filter implementation
-3. Test filter on design board to reproduce issue
+1. Continue Phase 0.3: Add project selector to brief form
+2. Phase 0.4: Resources data cleanup
+3. Phase 0.5: "My Briefed Tasks" widget
+4. Phase 0.6: Co-Assigner field (schema change)
 
 ---
 

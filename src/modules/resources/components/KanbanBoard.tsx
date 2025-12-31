@@ -18,7 +18,11 @@ import { KanbanColumn } from "./KanbanColumn";
 import { KanbanCard } from "./KanbanCard";
 import { updateBriefStatus } from "../actions/update-brief-status";
 
-type BriefWithRelations = Brief & { client: Client; assignee: User | null };
+type BriefWithRelations = Brief & {
+  client: Client;
+  assignee: User | null;
+  createdBy: User;
+};
 
 interface KanbanBoardProps {
   briefs: BriefWithRelations[];

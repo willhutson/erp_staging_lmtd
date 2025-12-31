@@ -3,11 +3,11 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Brief, Client, User } from "@prisma/client";
-import { Calendar, User as UserIcon } from "lucide-react";
+import { Calendar, User as UserIcon, Send } from "lucide-react";
 import { briefTypeLabels } from "@/../config/forms";
 
 interface KanbanCardProps {
-  brief: Brief & { client: Client; assignee: User | null };
+  brief: Brief & { client: Client; assignee: User | null; createdBy: User };
 }
 
 export function KanbanCard({ brief }: KanbanCardProps) {
@@ -47,24 +47,34 @@ export function KanbanCard({ brief }: KanbanCardProps) {
           </p>
         </div>
 
+        {/* Assignee and Briefer row */}
         <div className="flex items-center justify-between text-xs text-gray-500">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1" title="Assigned to">
             <UserIcon className="w-3 h-3" />
             <span>{brief.assignee?.name?.split(" ")[0] || "Unassigned"}</span>
           </div>
 
-          {deadline && (
-            <div className="flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
-              <span>
-                {new Date(deadline).toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "short",
-                })}
-              </span>
-            </div>
-          )}
+          <div
+            className="flex items-center gap-1 text-[#1BA098]"
+            title={`Briefed by ${brief.createdBy.name}`}
+          >
+            <Send className="w-3 h-3" />
+            <span>{brief.createdBy.name?.split(" ")[0]}</span>
+          </div>
         </div>
+
+        {/* Deadline row */}
+        {deadline && (
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <Calendar className="w-3 h-3" />
+            <span>
+              {new Date(deadline).toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "short",
+              })}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
