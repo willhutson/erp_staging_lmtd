@@ -101,7 +101,7 @@ export function HubView({ user }: HubViewProps) {
               </div>
               <div className="p-4">
                 <Suspense fallback={<WidgetSkeleton height="h-64" />}>
-                  <MyTasksWidget userId={user.id} />
+                  <MyTasksWidget />
                 </Suspense>
               </div>
             </div>
@@ -115,7 +115,7 @@ export function HubView({ user }: HubViewProps) {
               </div>
               <div className="p-4">
                 <Suspense fallback={<WidgetSkeleton height="h-48" />}>
-                  <UpcomingDeadlinesWidget userId={user.id} />
+                  <UpcomingDeadlinesWidget />
                 </Suspense>
               </div>
             </div>
