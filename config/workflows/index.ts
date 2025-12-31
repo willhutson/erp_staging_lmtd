@@ -8,10 +8,14 @@
 export { rfpSubmissionWorkflow } from "./rfp-submission.workflow";
 export { monthlyContentCalendarWorkflow } from "./monthly-content-calendar.workflow";
 export { contentSeriesWorkflow } from "./content-series.workflow";
+export { clientOnboardingWorkflow } from "./client-onboarding.workflow";
+export { leaveDelegationWorkflow } from "./leave-delegation.workflow";
 
 import { rfpSubmissionWorkflow } from "./rfp-submission.workflow";
 import { monthlyContentCalendarWorkflow } from "./monthly-content-calendar.workflow";
 import { contentSeriesWorkflow } from "./content-series.workflow";
+import { clientOnboardingWorkflow } from "./client-onboarding.workflow";
+import { leaveDelegationWorkflow } from "./leave-delegation.workflow";
 import type { WorkflowDefinition } from "@/modules/builder/types";
 
 export interface WorkflowTemplateConfig {
@@ -46,5 +50,21 @@ export const defaultWorkflowTemplates: WorkflowTemplateConfig[] = [
       "End-to-end workflow for producing multi-episode content series (video, podcast, blog). Includes pre-production, production, post-production, and delivery.",
     module: "agency",
     definition: contentSeriesWorkflow,
+  },
+  {
+    id: "client-onboarding",
+    name: "Client Onboarding",
+    description:
+      "Complete onboarding workflow for new clients after deal is won. Covers contracts, account setup, team introductions, and kickoff.",
+    module: "crm",
+    definition: clientOnboardingWorkflow,
+  },
+  {
+    id: "leave-delegation",
+    name: "Leave Delegation Handoff",
+    description:
+      "Automated workflow for managing delegation during approved leave. Ensures smooth handoff before departure and structured return process.",
+    module: "agency",
+    definition: leaveDelegationWorkflow,
   },
 ];

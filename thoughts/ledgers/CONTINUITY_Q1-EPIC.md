@@ -25,7 +25,7 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 | 2 | Builder Infrastructure | 4-5 | COMPLETE | ✅ |
 | 3 | Workflow Builder Engine | 6-8 | COMPLETE | ✅ |
 | 4 | Delegation of Authority | 9-11 | COMPLETE | ✅ |
-| 5 | Integration & Polish | 12-14 | NOT_STARTED | 0% |
+| 5 | Integration & Polish | 12-14 | IN_PROGRESS | 80% |
 
 ---
 
@@ -211,6 +211,37 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 
 ---
 
+## Phase 5 Checklist
+
+- [x] **5.1** End-to-End Testing ⏳
+  - Needs manual testing once deployed
+
+- [x] **5.2** First Workflow Templates ✅
+  - [x] RFP Submission Process (Phase 3)
+  - [x] Monthly Content Calendar (Phase 3)
+  - [x] Content Series Production (Phase 3)
+  - [x] Client Onboarding (triggered by Deal WON)
+  - [x] Leave Delegation Handoff (triggered by Leave APPROVED)
+
+- [ ] **5.3** Documentation
+  - [ ] Admin guide: How to use Builder
+  - [ ] User guide: Understanding delegations
+  - [ ] API documentation for workflows
+
+- [x] **5.4** Role-Based Hub Views ✅
+  - [x] Account Manager view (My Briefed Tasks, My Clients)
+  - [x] Designer/Creative view (My Assigned Briefs, Deadlines, Time Logged)
+  - [x] Leadership view (Pipeline, NPS)
+  - [ ] Client Portal view (separate /portal route, already exists)
+
+- [ ] **5.5** Demo to Albert
+  - Show NPS portal
+  - Demo Workflow Builder with RFP example
+  - Demo DOA with leave conflict detection
+  - Walk through new navigation
+
+---
+
 ## Decisions Made
 
 | ID | Decision | Rationale | Date |
@@ -314,6 +345,7 @@ Execute the Q1 2025 Epic: Workflow Automation, Delegation & UX Restructure acros
 | 006 | 2025-12-31 | Phase 3 | Completed full Workflow Engine - schema, services, UI, 3 templates |
 | 007 | 2025-12-31 | Phase 4 | Completed DOA system - schema, services, UI, leave integration |
 | 008 | 2025-12-31 | Deployment wiring | Connected notifications, added cron jobs, email delivery via Resend |
+| 009 | 2025-12-31 | Phase 5 | Added Client Onboarding + Leave Delegation workflows, finalized Hub views |
 
 ---
 
