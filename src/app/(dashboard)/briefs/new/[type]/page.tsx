@@ -42,8 +42,8 @@ export default async function NewBriefTypePage({ params }: PageProps) {
 
   const formConfig = getFormConfig(briefType);
 
-  // Fetch users and clients for the form
-  const [users, clients] = await Promise.all([
+  // Fetch users, clients, and projects for the form
+  const [users, clients, projects] = await Promise.all([
     db.user.findMany({
       where: { organizationId: session.user.organizationId, isActive: true },
       select: { id: true, name: true, role: true, department: true },
@@ -52,6 +52,11 @@ export default async function NewBriefTypePage({ params }: PageProps) {
     db.client.findMany({
       where: { organizationId: session.user.organizationId, isActive: true },
       select: { id: true, name: true, code: true },
+      orderBy: { name: "asc" },
+    }),
+    db.project.findMany({
+      where: { organizationId: session.user.organizationId, status: "ACTIVE" },
+      select: { id: true, name: true, code: true, clientId: true },
       orderBy: { name: "asc" },
     }),
   ]);
@@ -77,6 +82,7 @@ export default async function NewBriefTypePage({ params }: PageProps) {
         config={formConfig}
         users={users}
         clients={clients}
+        projects={projects}
         briefType={briefType}
       />
     </div>

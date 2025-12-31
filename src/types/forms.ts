@@ -18,6 +18,7 @@ export type FieldType =
   | "date-range"
   | "user-select"
   | "client-select"
+  | "project-select"
   | "file-upload"
   | "url"
   | "number";

@@ -21,8 +21,58 @@ export const formConfigs: Record<BriefType, FormConfig> = {
   REPORT: reportForm,
 };
 
+// Project field to inject into all form configs
+const projectField = {
+  id: "projectId",
+  label: "Project",
+  type: "project-select" as const,
+  required: false,
+  helpText: "Optional: Link this brief to a project for better organization",
+};
+
+// Backup Assignee field to inject after assigneeId
+const backupAssigneeField = {
+  id: "backupAssigneeId",
+  label: "Backup Assignee",
+  type: "user-select" as const,
+  required: false,
+  helpText: "Optional: Backup will be notified if primary is unavailable",
+  placeholder: "Select backup assignee",
+};
+
 export function getFormConfig(type: BriefType): FormConfig {
-  return formConfigs[type];
+  const config = formConfigs[type];
+
+  // Inject project field and backup assignee field into the first section
+  const enhancedSections = config.sections.map((section, sectionIndex) => {
+    if (sectionIndex !== 0) return section;
+
+    let enhancedFields = [...section.fields];
+
+    // Insert projectId field after clientId
+    const clientIdIndex = enhancedFields.findIndex((f) => f.id === "clientId");
+    if (clientIdIndex !== -1) {
+      enhancedFields = [
+        ...enhancedFields.slice(0, clientIdIndex + 1),
+        projectField,
+        ...enhancedFields.slice(clientIdIndex + 1),
+      ];
+    }
+
+    // Insert backupAssigneeId field after assigneeId
+    const assigneeIdIndex = enhancedFields.findIndex((f) => f.id === "assigneeId");
+    if (assigneeIdIndex !== -1) {
+      enhancedFields = [
+        ...enhancedFields.slice(0, assigneeIdIndex + 1),
+        backupAssigneeField,
+        ...enhancedFields.slice(assigneeIdIndex + 1),
+      ];
+    }
+
+    return { ...section, fields: enhancedFields };
+  });
+
+  return { ...config, sections: enhancedSections };
 }
 
 export function getAllFormConfigs(): FormConfig[] {

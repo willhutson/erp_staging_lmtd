@@ -12,6 +12,7 @@ import {
   DateRangeField,
   UserSelectField,
   ClientSelectField,
+  ProjectSelectField,
   FileUploadField,
 } from "./fields";
 
@@ -28,10 +29,18 @@ interface Client {
   code: string;
 }
 
+interface Project {
+  id: string;
+  name: string;
+  code: string | null;
+  clientId: string;
+}
+
 interface DynamicFormProps {
   config: FormConfig;
   users: User[];
   clients: Client[];
+  projects?: Project[];
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
   initialData?: Record<string, unknown>;
   isSubmitting?: boolean;
@@ -41,6 +50,7 @@ export function DynamicForm({
   config,
   users,
   clients,
+  projects = [],
   onSubmit,
   initialData = {},
   isSubmitting = false,
@@ -214,6 +224,19 @@ export function DynamicForm({
             onChange={(v) => updateField(field.id, v)}
             error={error}
             clients={clients}
+          />
+        );
+
+      case "project-select":
+        return (
+          <ProjectSelectField
+            key={field.id}
+            field={field}
+            value={value as string}
+            onChange={(v) => updateField(field.id, v)}
+            error={error}
+            projects={projects}
+            selectedClientId={formData.clientId as string | undefined}
           />
         );
 

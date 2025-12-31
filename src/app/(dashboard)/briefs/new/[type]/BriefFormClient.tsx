@@ -19,14 +19,22 @@ interface Client {
   code: string;
 }
 
+interface Project {
+  id: string;
+  name: string;
+  code: string | null;
+  clientId: string;
+}
+
 interface BriefFormClientProps {
   config: FormConfig;
   users: User[];
   clients: Client[];
+  projects: Project[];
   briefType: BriefType;
 }
 
-export function BriefFormClient({ config, users, clients, briefType }: BriefFormClientProps) {
+export function BriefFormClient({ config, users, clients, projects, briefType }: BriefFormClientProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +49,8 @@ export function BriefFormClient({ config, users, clients, briefType }: BriefForm
         clientId: formData.clientId as string,
         topic: formData.topic as string,
         assigneeId: formData.assigneeId as string | undefined,
+        backupAssigneeId: formData.backupAssigneeId as string | undefined,
+        projectId: formData.projectId as string | undefined,
         formData,
       });
 
@@ -62,6 +72,7 @@ export function BriefFormClient({ config, users, clients, briefType }: BriefForm
         config={config}
         users={users}
         clients={clients}
+        projects={projects}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
       />

@@ -122,9 +122,10 @@ model User {
   organization   Organization @relation(fields: [organizationId], references: [id])
   teamLead       User?        @relation("TeamMembers", fields: [teamLeadId], references: [id])
   teamMembers    User[]       @relation("TeamMembers")
-  briefsCreated    Brief[]      @relation("BriefCreator")
-  briefsAssigned   Brief[]      @relation("BriefAssignee")
-  briefsAssignedBy Brief[]      @relation("BriefAssigner")
+  briefsCreated        Brief[]      @relation("BriefCreator")
+  briefsAssigned       Brief[]      @relation("BriefAssignee")
+  backupBriefsAssigned Brief[]      @relation("BackupBriefAssignee")
+  briefsAssignedBy     Brief[]      @relation("BriefAssigner")
   timeEntries      TimeEntry[]
   comments       Comment[]
   documents      EmployeeDocument[]
@@ -520,10 +521,11 @@ model Brief {
   title          String
   status         BriefStatus @default(DRAFT)
   priority       Priority    @default(MEDIUM)
-  createdById    String
-  assigneeId     String?
-  assignedById   String?
-  assignedAt     DateTime?
+  createdById       String
+  assigneeId        String?
+  backupAssigneeId  String?
+  assignedById      String?
+  assignedAt        DateTime?
   deadline       DateTime?
   startDate      DateTime?
   endDate        DateTime?
@@ -541,9 +543,10 @@ model Brief {
   organization  Organization         @relation(fields: [organizationId], references: [id])
   client        Client               @relation(fields: [clientId], references: [id])
   project       Project?             @relation(fields: [projectId], references: [id])
-  createdBy     User                 @relation("BriefCreator", fields: [createdById], references: [id])
-  assignee      User?                @relation("BriefAssignee", fields: [assigneeId], references: [id])
-  assignedBy    User?                @relation("BriefAssigner", fields: [assignedById], references: [id])
+  createdBy       User                 @relation("BriefCreator", fields: [createdById], references: [id])
+  assignee        User?                @relation("BriefAssignee", fields: [assigneeId], references: [id])
+  backupAssignee  User?                @relation("BackupBriefAssignee", fields: [backupAssigneeId], references: [id])
+  assignedBy      User?                @relation("BriefAssigner", fields: [assignedById], references: [id])
   timeEntries      TimeEntry[]
   comments         Comment[]
   attachments      Attachment[]
