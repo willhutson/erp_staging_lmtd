@@ -180,10 +180,23 @@ This project uses a ledger-based context preservation system for long-running wo
   /ledgers/           # Session state (survives context clears)
     CONTINUITY_Q1-EPIC.md   # Current epic tracking
   /shared/            # Plans, templates (preserved between sessions)
+    LEDGER_TEMPLATE.md      # Template for new epics (START HERE)
     HANDOFF_TEMPLATE.md     # Template for session handoffs
   /handoffs/          # Completed session handoffs
   DECISIONS.md        # Architectural decisions log
 ```
+
+### Creating a New Epic Ledger
+
+```bash
+cp /thoughts/shared/LEDGER_TEMPLATE.md /thoughts/ledgers/CONTINUITY_[EPIC-NAME].md
+```
+
+See `/thoughts/shared/LEDGER_TEMPLATE.md` for full documentation on:
+- Ledger structure and best practices
+- Phase tracking and checklists
+- Deployment readiness tracking
+- Session history logging
 
 ### When Starting a Session
 
