@@ -18,11 +18,14 @@ interface DocsClientProps {
 }
 
 const documentTypes: { value: StudioDocType; label: string }[] = [
-  { value: "COPY", label: "Copy" },
+  { value: "DOCUMENT", label: "Document" },
   { value: "SCRIPT", label: "Script" },
-  { value: "BRIEF", label: "Brief" },
-  { value: "NOTES", label: "Notes" },
-  { value: "OUTLINE", label: "Outline" },
+  { value: "SOCIAL_COPY", label: "Social Copy" },
+  { value: "AD_COPY", label: "Ad Copy" },
+  { value: "BLOG_POST", label: "Blog Post" },
+  { value: "EMAIL", label: "Email" },
+  { value: "PROPOSAL", label: "Proposal" },
+  { value: "SOW", label: "Scope of Work" },
 ];
 
 export function DocsClient({ initialDocuments, clients }: DocsClientProps) {
@@ -35,7 +38,7 @@ export function DocsClient({ initialDocuments, clients }: DocsClientProps) {
 
   // Create modal state
   const [newDocTitle, setNewDocTitle] = useState("");
-  const [newDocType, setNewDocType] = useState<StudioDocType>("COPY");
+  const [newDocType, setNewDocType] = useState<StudioDocType>("DOCUMENT");
   const [newDocClientId, setNewDocClientId] = useState("");
   const [syncToGoogleOnCreate, setSyncToGoogleOnCreate] = useState(false);
 
