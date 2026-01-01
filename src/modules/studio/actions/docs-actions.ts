@@ -253,7 +253,10 @@ export async function syncToGoogle(
 
   // Push content to Google Doc
   if (googleDocId && (document.content || document.contentHtml)) {
-    const content = document.content || stripHtml(document.contentHtml || "");
+    // Use contentHtml if available, otherwise stringify the JSON content
+    const content = document.contentHtml
+      ? stripHtml(document.contentHtml)
+      : (typeof document.content === 'string' ? document.content : JSON.stringify(document.content));
     await pushContentToGoogleDoc(googleDocId, content, accessToken);
   }
 
