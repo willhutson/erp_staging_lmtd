@@ -46,6 +46,9 @@ import {
   Home,
   FolderKanban,
   Hammer,
+  Sparkles,
+  Presentation,
+  Video,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -218,6 +221,27 @@ const navSections: NavSection[] = [
         title: "Files",
         href: "/files",
         icon: <FolderOpen className="w-5 h-5" />,
+      },
+    ],
+  },
+
+  // STUDIO Section
+  {
+    title: "Studio",
+    requiredLevels: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
+    items: [
+      {
+        title: "SpokeStudio",
+        href: "/studio",
+        icon: <Sparkles className="w-5 h-5" />,
+        children: [
+          { title: "Dashboard", href: "/studio", icon: <Sparkles className="w-4 h-4" /> },
+          { title: "Documents", href: "/studio/docs", icon: <FileText className="w-4 h-4" /> },
+          { title: "Pitch Decks", href: "/studio/decks", icon: <Presentation className="w-4 h-4" /> },
+          { title: "Video Studio", href: "/studio/video", icon: <Video className="w-4 h-4" /> },
+          { title: "Moodboards", href: "/studio/moodboard", icon: <ImageIcon className="w-4 h-4" /> },
+          { title: "Calendar", href: "/studio/calendar", icon: <Calendar className="w-4 h-4" /> },
+        ],
       },
     ],
   },

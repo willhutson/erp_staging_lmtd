@@ -191,14 +191,14 @@ export function StudioShell({ children }: StudioShellProps) {
         {/* Footer - Back to Dashboard */}
         <div className="p-3 border-t border-ltd-border-1 space-y-2">
           <Link
-            href="/dashboard"
+            href="/hub"
             className={cn(
               "flex items-center gap-2 px-3 py-2 rounded-[var(--ltd-radius-md)] text-sm font-medium text-ltd-text-2 hover:bg-ltd-surface-3 hover:text-ltd-text-1 transition-colors",
               collapsed && "justify-center"
             )}
           >
             <ArrowLeft className="h-4 w-4" />
-            {!collapsed && <span>Back to Dashboard</span>}
+            {!collapsed && <span>Back to Hub</span>}
           </Link>
 
           <button
