@@ -1,7 +1,6 @@
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   FileText,
   Presentation,
@@ -21,7 +20,7 @@ const studioModules = [
     href: "/studio/docs",
     icon: FileText,
     color: "from-blue-500 to-blue-600",
-    bgColor: "bg-blue-500",
+    status: "active" as const,
   },
   {
     title: "Pitch Decks",
@@ -29,7 +28,7 @@ const studioModules = [
     href: "/studio/decks",
     icon: Presentation,
     color: "from-orange-500 to-red-500",
-    bgColor: "bg-orange-500",
+    status: "active" as const,
   },
   {
     title: "Video Studio",
@@ -37,15 +36,15 @@ const studioModules = [
     href: "/studio/video",
     icon: Video,
     color: "from-purple-500 to-pink-500",
-    bgColor: "bg-purple-500",
+    status: "active" as const,
   },
   {
     title: "Moodboard Lab",
     description: "Upload references, images, and links. AI indexes everything for grounded creative generation.",
     href: "/studio/moodboard",
     icon: ImageIcon,
-    color: "from-violet-500 to-purple-600",
-    bgColor: "bg-violet-500",
+    color: "from-ltd-primary to-[#7B61FF]",
+    status: "active" as const,
     featured: true,
   },
   {
@@ -54,7 +53,7 @@ const studioModules = [
     href: "/studio/calendar",
     icon: Calendar,
     color: "from-green-500 to-emerald-600",
-    bgColor: "bg-green-500",
+    status: "active" as const,
   },
   {
     title: "AI Skills",
@@ -62,98 +61,95 @@ const studioModules = [
     href: "/studio/skills",
     icon: Sparkles,
     color: "from-yellow-500 to-orange-500",
-    bgColor: "bg-yellow-500",
+    status: "active" as const,
   },
 ];
 
-export default function StudioDashboard() {
+export default async function StudioDashboard() {
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect("/login");
+  }
+
   return (
-    <div className="space-y-8">
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600">
-            <Sparkles className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">SpokeStudio</h1>
-            <p className="text-sm text-muted-foreground">AI-powered creative workspace</p>
-          </div>
-        </div>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-ltd-text-1 mb-2">
+          Welcome to SpokeStudio
+        </h1>
+        <p className="text-ltd-text-2">
+          Your AI-powered creative workspace. Create content, build presentations, and manage creative assets.
+        </p>
       </div>
 
       {/* Quick Actions */}
-      <div>
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+      <div className="mb-8">
+        <h2 className="text-sm font-semibold text-ltd-text-3 uppercase tracking-wider mb-4">
           Quick Actions
         </h2>
         <div className="flex flex-wrap gap-3">
-          <Button asChild>
-            <Link href="/studio/docs">
-              <Plus className="w-4 h-4 mr-2" />
-              New Document
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/studio/moodboard">
-              <Plus className="w-4 h-4 mr-2" />
-              New Moodboard
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/studio/video">
-              <Plus className="w-4 h-4 mr-2" />
-              New Video Project
-            </Link>
-          </Button>
+          <button className="inline-flex items-center gap-2 px-4 py-2 bg-ltd-primary text-ltd-primary-text rounded-[var(--ltd-radius-md)] font-medium text-sm hover:bg-ltd-primary-dark transition-colors">
+            <Plus className="w-4 h-4" />
+            New Document
+          </button>
+          <button className="inline-flex items-center gap-2 px-4 py-2 bg-ltd-surface-3 text-ltd-text-1 rounded-[var(--ltd-radius-md)] font-medium text-sm hover:bg-ltd-surface-4 transition-colors">
+            <Plus className="w-4 h-4" />
+            New Moodboard
+          </button>
+          <button className="inline-flex items-center gap-2 px-4 py-2 bg-ltd-surface-3 text-ltd-text-1 rounded-[var(--ltd-radius-md)] font-medium text-sm hover:bg-ltd-surface-4 transition-colors">
+            <Plus className="w-4 h-4" />
+            New Video Project
+          </button>
         </div>
       </div>
 
       {/* Module Grid */}
-      <div>
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+      <div className="mb-8">
+        <h2 className="text-sm font-semibold text-ltd-text-3 uppercase tracking-wider mb-4">
           Studio Modules
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {studioModules.map((module) => {
             const Icon = module.icon;
             return (
-              <Card
+              <Link
                 key={module.href}
-                className={`group relative overflow-hidden hover:shadow-lg transition-all ${
-                  module.featured ? "ring-2 ring-violet-500/20" : ""
+                href={module.href}
+                className={`group relative p-5 rounded-[var(--ltd-radius-lg)] border transition-all hover:shadow-lg ${
+                  module.featured
+                    ? "border-ltd-primary/30 bg-gradient-to-br from-ltd-primary/5 to-[#7B61FF]/5"
+                    : "border-ltd-border-1 bg-ltd-surface-2 hover:border-ltd-primary/50"
                 }`}
               >
                 {module.featured && (
-                  <Badge className="absolute -top-0 -right-0 rounded-none rounded-bl-lg bg-gradient-to-r from-violet-500 to-purple-600">
+                  <div className="absolute -top-2 -right-2 px-2 py-0.5 bg-gradient-to-r from-ltd-primary to-[#7B61FF] text-white text-[10px] font-bold uppercase tracking-wider rounded-full">
                     Featured
-                  </Badge>
-                )}
-                <div className={`h-1.5 bg-gradient-to-r ${module.color}`} />
-                <CardHeader className="pb-2">
-                  <div className="flex items-start gap-4">
-                    <div className={`p-3 rounded-xl bg-gradient-to-br ${module.color}`}>
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                        {module.title}
-                      </CardTitle>
-                    </div>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="mb-4">
-                    {module.description}
-                  </CardDescription>
-                  <Button variant="ghost" size="sm" className="w-full" asChild>
-                    <Link href={module.href}>
-                      Open module
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
+                )}
+
+                <div className="flex items-start gap-4">
+                  <div className={`p-3 rounded-[var(--ltd-radius-md)] bg-gradient-to-br ${module.color}`}>
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-ltd-text-1 group-hover:text-ltd-primary transition-colors">
+                        {module.title}
+                      </h3>
+                    </div>
+                    <p className="text-sm text-ltd-text-2 line-clamp-2">
+                      {module.description}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center text-sm text-ltd-text-3 group-hover:text-ltd-primary transition-colors">
+                  <span>Open module</span>
+                  <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </Link>
             );
           })}
         </div>
@@ -161,20 +157,18 @@ export default function StudioDashboard() {
 
       {/* Recent Activity Placeholder */}
       <div>
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+        <h2 className="text-sm font-semibold text-ltd-text-3 uppercase tracking-wider mb-4">
           Recent Activity
         </h2>
-        <Card className="border-dashed">
-          <CardContent className="py-12">
-            <div className="flex flex-col items-center justify-center text-center">
-              <Clock className="w-10 h-10 text-muted-foreground mb-3" />
-              <h3 className="font-medium mb-1">No recent activity</h3>
-              <p className="text-sm text-muted-foreground max-w-md">
-                Your recent documents, moodboards, and projects will appear here once you start creating.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="p-8 rounded-[var(--ltd-radius-lg)] border border-dashed border-ltd-border-2 bg-ltd-surface-2">
+          <div className="flex flex-col items-center justify-center text-center">
+            <Clock className="w-10 h-10 text-ltd-text-3 mb-3" />
+            <h3 className="font-medium text-ltd-text-1 mb-1">No recent activity</h3>
+            <p className="text-sm text-ltd-text-2 max-w-md">
+              Your recent documents, moodboards, and projects will appear here once you start creating.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
