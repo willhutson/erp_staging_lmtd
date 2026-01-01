@@ -219,7 +219,7 @@ export async function syncToGoogle(
   if (!accessToken) throw new Error("Google not connected");
 
   let googleDocId = document.googleDocId;
-  let googleUrl = document.googleDocUrl || "";
+  let googleUrl = googleDocId ? `https://docs.google.com/document/d/${googleDocId}/edit` : "";
 
   // Create Google Doc if doesn't exist
   if (!googleDocId) {
