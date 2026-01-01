@@ -3,6 +3,9 @@ import { getMoodboard } from "@/modules/studio/actions/moodboard-actions";
 import { MoodboardEditorClient } from "./moodboard-editor-client";
 import { AlertTriangle } from "lucide-react";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 interface MoodboardEditorPageProps {
   params: Promise<{ id: string }>;
 }

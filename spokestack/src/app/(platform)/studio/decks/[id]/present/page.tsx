@@ -3,6 +3,9 @@ import { getPitchDeck } from "@/modules/studio/actions/deck-actions";
 import { PresentationClient } from "./presentation-client";
 import { AlertTriangle } from "lucide-react";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 interface PresentPageProps {
   params: Promise<{ id: string }>;
 }

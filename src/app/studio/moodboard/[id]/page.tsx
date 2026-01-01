@@ -4,6 +4,9 @@ import { getMoodboard } from "@/modules/studio/actions/moodboard-actions";
 import { MoodboardEditorClient } from "./moodboard-editor-client";
 import { StudioSetupRequired } from "@/modules/studio/components/StudioSetupRequired";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 interface MoodboardEditorPageProps {
   params: Promise<{ id: string }>;
 }

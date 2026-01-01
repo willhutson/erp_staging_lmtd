@@ -3,6 +3,9 @@ import { getPitchDeck } from "@/modules/studio/actions/deck-actions";
 import { DeckEditorClient } from "./deck-editor-client";
 import { AlertTriangle } from "lucide-react";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 interface DeckEditorPageProps {
   params: Promise<{ id: string }>;
 }

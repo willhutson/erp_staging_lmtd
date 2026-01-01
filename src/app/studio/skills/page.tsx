@@ -4,6 +4,9 @@ import { SkillsClient } from "./skills-client";
 import { getAvailableSkills } from "@/modules/studio/actions/skill-actions";
 import { StudioSetupRequired } from "@/modules/studio/components/StudioSetupRequired";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function SkillsPage() {
   const session = await auth();
 

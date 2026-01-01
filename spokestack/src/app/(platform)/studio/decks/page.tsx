@@ -3,6 +3,9 @@ import { db } from "@/lib/db";
 import { DecksClient } from "./decks-client";
 import { AlertTriangle } from "lucide-react";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 function DecksError({ message }: { message: string }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] p-8">
