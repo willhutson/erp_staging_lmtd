@@ -4,6 +4,9 @@ import { getVideoProject } from "@/modules/studio/actions/video-actions";
 import { VideoEditorClient } from "./video-editor-client";
 import { StudioSetupRequired } from "@/modules/studio/components/StudioSetupRequired";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 interface VideoEditorPageProps {
   params: Promise<{ id: string }>;
 }

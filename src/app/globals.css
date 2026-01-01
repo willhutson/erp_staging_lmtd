@@ -4,6 +4,8 @@
 
 @layer base {
   :root {
+    /* Font variables are injected by next/font/local in layout.tsx */
+
     /* shadcn defaults */
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;

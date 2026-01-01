@@ -5,6 +5,9 @@ import { CalendarClient } from "./calendar-client";
 import { StudioSetupRequired } from "@/modules/studio/components/StudioSetupRequired";
 import { startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function CalendarPage() {
   const session = await auth();
 

@@ -4,6 +4,9 @@ import { db } from "@/lib/db";
 import { DocsClient } from "./docs-client";
 import { StudioSetupRequired } from "@/modules/studio/components/StudioSetupRequired";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function DocsPage() {
   const session = await auth();
 

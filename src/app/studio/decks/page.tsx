@@ -4,6 +4,9 @@ import { db } from "@/lib/db";
 import { DecksClient } from "./decks-client";
 import { StudioSetupRequired } from "@/modules/studio/components/StudioSetupRequired";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function DecksPage() {
   const session = await auth();
 

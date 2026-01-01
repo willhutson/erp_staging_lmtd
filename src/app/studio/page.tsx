@@ -1,6 +1,10 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 import {
   FileText,
   Presentation,

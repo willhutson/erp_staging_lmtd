@@ -1,13 +1,30 @@
 import type React from "react"
 import type { Metadata } from "next"
+import localFont from "next/font/local"
 
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
-import { DM_Sans, JetBrains_Mono } from 'next/font/google'
+// Local fonts - no network dependency during build
+const dmSans = localFont({
+  src: [
+    { path: "../fonts/DMSans-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/DMSans-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/DMSans-SemiBold.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/DMSans-Bold.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-sans",
+  display: "swap",
+})
 
-const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-sans" })
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" })
+const jetbrainsMono = localFont({
+  src: [
+    { path: "../fonts/JetBrainsMono-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/JetBrainsMono-Medium.woff2", weight: "500", style: "normal" },
+  ],
+  variable: "--font-mono",
+  display: "swap",
+})
 
 export const metadata: Metadata = {
   title: "LMTD OS - Operating System for Agency Workflows",
