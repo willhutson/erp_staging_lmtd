@@ -149,8 +149,8 @@ export function errorResponse(error: ApiError | Error) {
 // Route Handler Wrapper
 // ============================================
 
-export async function handleRoute<T>(
-  handler: () => Promise<NextResponse<T>>
+export async function handleRoute(
+  handler: () => Promise<NextResponse>
 ): Promise<NextResponse> {
   try {
     return await handler();
