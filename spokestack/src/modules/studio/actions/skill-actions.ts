@@ -19,8 +19,8 @@ export interface StudioSkill {
   }[];
 }
 
-// Available studio skills
-export const studioSkills: StudioSkill[] = [
+// Available studio skills (internal, not exported directly)
+const studioSkills: StudioSkill[] = [
   {
     id: "social-copy-writer",
     name: "Social Copy Writer",

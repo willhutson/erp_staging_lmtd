@@ -46,7 +46,7 @@ export function CalendarClient({ initialEntries, clients, briefDeadlines = [] }:
   const filteredEntries = useMemo(() => {
     return entries.filter((entry) => {
       // Client filter
-      if (selectedClientId && entry.clientId !== selectedClientId) {
+      if (selectedClientId && entry.client?.id !== selectedClientId) {
         return false;
       }
 

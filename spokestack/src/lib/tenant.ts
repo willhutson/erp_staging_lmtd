@@ -158,9 +158,6 @@ async function resolveByCustomDomain(domain: string): Promise<TenantConfig | nul
       customDomainVerified: true,
       isActive: true,
     },
-    include: {
-      defaultDashboard: true,
-    },
   });
 
   if (clientInstance) {
