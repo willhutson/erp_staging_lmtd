@@ -5700,6 +5700,7 @@ model ClientInstance {
   defaultDashboardId String?
 
   settings        Json     @default("{}")
+  themeConfig     Json     @default("{}")
 
   users           ClientInstanceUser[]
 
