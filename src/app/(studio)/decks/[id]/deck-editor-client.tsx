@@ -30,7 +30,8 @@ interface DeckEditorClientProps {
 
 const layoutOptions: { value: SlideLayoutType; label: string; description: string }[] = [
   { value: "TITLE", label: "Title", description: "Main title slide" },
-  { value: "TITLE_CONTENT", label: "Title + Content", description: "Heading with text" },
+  { value: "CONTENT", label: "Content", description: "Standard content slide" },
+  { value: "SECTION", label: "Section", description: "Section divider" },
   { value: "TWO_COLUMN", label: "Two Columns", description: "Side by side content" },
   { value: "IMAGE_LEFT", label: "Image Left", description: "Image with text" },
   { value: "IMAGE_RIGHT", label: "Image Right", description: "Text with image" },
@@ -40,7 +41,9 @@ const layoutOptions: { value: SlideLayoutType; label: string; description: strin
   { value: "TEAM", label: "Team", description: "Team members" },
   { value: "TIMELINE", label: "Timeline", description: "Process steps" },
   { value: "COMPARISON", label: "Comparison", description: "Before/after" },
-  { value: "BLANK", label: "Blank", description: "Empty canvas" },
+  { value: "PRICING", label: "Pricing", description: "Pricing table" },
+  { value: "CTA", label: "Call to Action", description: "Action prompt" },
+  { value: "THANK_YOU", label: "Thank You", description: "Closing slide" },
 ];
 
 const statusConfig = {
