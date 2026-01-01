@@ -3,7 +3,7 @@
 
 **Ledger ID:** Q2-SPOKESTUDIO-001
 **Created:** 2025-12-31
-**Last Updated:** 2025-12-31 (Session 002)
+**Last Updated:** 2026-01-01 (Session 003)
 **Status:** ACTIVE
 
 ---
@@ -72,6 +72,12 @@ Build SpokeStudio - the AI-assisted creative workspace within SpokeStack. Bridge
 - [x] **S1.7** Create shared Studio components ✅
   - StudioCard, StudioHeader, StudioFilters
   - StudioStatusBadge, StudioEmptyState
+  - StudioSetupRequired (graceful database error handling)
+
+- [x] **S1.8** Add graceful error handling to all pages ✅
+  - All pages wrapped in try-catch
+  - Shows StudioSetupRequired when tables don't exist
+  - Prevents crashes during development/setup
 
 ---
 
@@ -203,14 +209,14 @@ Legend: ✅ Done | ⏳ In Progress | ❌ Not Started
 - `/prisma/schema.prisma` - Lines 6188-6885: Studio models
 
 ### Routes
-- `/src/app/(studio)/layout.tsx` - Studio layout
-- `/src/app/(studio)/page.tsx` - Dashboard
-- `/src/app/(studio)/docs/page.tsx` - Documents
-- `/src/app/(studio)/decks/page.tsx` - Pitch decks
-- `/src/app/(studio)/video/page.tsx` - Video projects
-- `/src/app/(studio)/moodboard/page.tsx` - Moodboards
-- `/src/app/(studio)/calendar/page.tsx` - Calendar
-- `/src/app/(studio)/skills/page.tsx` - AI skills
+- `/src/app/studio/layout.tsx` - Studio layout (standalone, not in route group)
+- `/src/app/studio/page.tsx` - Dashboard
+- `/src/app/studio/docs/page.tsx` - Documents
+- `/src/app/studio/decks/page.tsx` - Pitch decks
+- `/src/app/studio/video/page.tsx` - Video projects
+- `/src/app/studio/moodboard/page.tsx` - Moodboards
+- `/src/app/studio/calendar/page.tsx` - Calendar
+- `/src/app/studio/skills/page.tsx` - AI skills
 
 ### Components
 - `/src/components/layout/StudioShell.tsx` - Studio shell
@@ -228,6 +234,7 @@ Legend: ✅ Done | ⏳ In Progress | ❌ Not Started
 |---------|------|-------|---------|
 | 001 | 2025-12-31 | Epic setup | Created spec, ledger, branch |
 | 002 | 2025-12-31 | Phase S1 | Foundation 95% complete (migrations blocked) |
+| 003 | 2026-01-01 | Debug & Error Handling | Added StudioSetupRequired component, graceful error handling on all pages |
 
 ---
 
@@ -253,3 +260,5 @@ When resuming this work:
 **Dependency Note:** Q1 Epic provides foundation (Workflow Engine, Builder, Notifications). Q2 builds on top.
 
 **Session 002 Note:** All S1 code is complete. Only blocker is Prisma migration which requires network access to fetch binaries.
+
+**Session 003 Note:** Debugging session. Found that `binaries.prisma.sh` is blocked in this environment (403 "host_not_allowed"). Added graceful error handling to all Studio pages - they now show a helpful "Setup Required" message instead of crashing when database tables don't exist. This makes the module resilient during development and setup phases. Routes are at `/studio/*` (not in a route group). When deployed with proper network access, run `pnpm prisma generate && pnpm db:push` to complete S1.4.
