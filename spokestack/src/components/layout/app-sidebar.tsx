@@ -122,17 +122,6 @@ const moduleBundles = [
     bgColor: "bg-indigo-500",
     modules: [
       {
-        id: "briefs",
-        label: "Briefs",
-        icon: FileText,
-        href: "/briefs",
-        items: [
-          { label: "All Briefs", href: "/briefs" },
-          { label: "My Briefs", href: "/briefs/my" },
-          { label: "Pending Review", href: "/briefs/pending" },
-        ],
-      },
-      {
         id: "time",
         label: "Time",
         icon: Clock,
@@ -176,6 +165,17 @@ const moduleBundles = [
     color: "text-emerald-500",
     bgColor: "bg-emerald-500",
     modules: [
+      {
+        id: "briefs",
+        label: "Briefs",
+        icon: FileText,
+        href: "/briefs",
+        items: [
+          { label: "All Briefs", href: "/briefs" },
+          { label: "My Briefs", href: "/briefs/my" },
+          { label: "Pending Review", href: "/briefs/pending" },
+        ],
+      },
       { id: "clients", label: "Clients", icon: Building2, href: "/clients" },
       { id: "retainers", label: "Retainers", icon: Repeat, href: "/retainers" },
       { id: "projects", label: "Projects", icon: FolderKanban, href: "/projects" },
