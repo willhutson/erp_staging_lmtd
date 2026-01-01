@@ -7,6 +7,7 @@
  */
 
 import { db } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import type {
   StartDelegationContext,
   DelegationScope,
@@ -50,7 +51,7 @@ export async function startDelegation(
       leaveRequestId: context.leaveRequestId,
       startDate: context.startDate,
       endDate: context.endDate,
-      scopeSnapshot: scope,
+      scopeSnapshot: scope as unknown as Prisma.InputJsonValue,
       status: context.startDate <= new Date() ? "ACTIVE" : "PENDING",
       activatedAt: context.startDate <= new Date() ? new Date() : null,
     },
