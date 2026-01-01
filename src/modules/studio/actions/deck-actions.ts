@@ -6,7 +6,7 @@ import type {
   CreateDeckInput,
   DeckWithRelations,
 } from "../types";
-import type { DeckStatus, SlideLayoutType } from "@prisma/client";
+import type { DeckStatus, SlideLayoutType, Prisma } from "@prisma/client";
 
 /**
  * Create a new pitch deck
@@ -235,7 +235,7 @@ export async function updateSlide(
     data: {
       title: updates.title,
       subtitle: updates.subtitle,
-      content: updates.content as object,
+      content: updates.content as Prisma.InputJsonValue | undefined,
       speakerNotes: updates.speakerNotes,
       backgroundUrl: updates.backgroundUrl,
       backgroundColor: updates.backgroundColor,

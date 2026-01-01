@@ -163,7 +163,7 @@ async function escalateToManager(
   });
 
   // Try escalation rules first
-  const escalationRules = user?.delegationProfile?.escalationRules as {
+  const escalationRules = user?.delegationProfile?.escalationRules as unknown as {
     escalateTo?: string;
   } | null;
 

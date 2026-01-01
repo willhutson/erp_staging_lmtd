@@ -272,7 +272,7 @@ export async function getEntityEvents(
     organizationId: e.organizationId,
     userId: e.userId,
     timestamp: e.createdAt,
-    metadata: e.metadata as EntityEvent["metadata"],
+    metadata: e.metadata as unknown as EntityEvent["metadata"],
   }));
 }
 
@@ -310,7 +310,7 @@ export async function getActivityFeed(options?: {
     organizationId: e.organizationId,
     userId: e.userId,
     timestamp: e.createdAt,
-    metadata: e.metadata as EntityEvent["metadata"],
+    metadata: e.metadata as unknown as EntityEvent["metadata"],
   }));
 }
 
