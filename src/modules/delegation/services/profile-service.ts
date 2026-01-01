@@ -109,7 +109,7 @@ export async function getUsersDelegatingTo(delegateId: string): Promise<
   return profiles.map((p) => ({
     userId: p.userId,
     userName: p.user.name,
-    scope: p.scope as DelegationScope,
+    scope: p.scope as unknown as DelegationScope,
   }));
 }
 
