@@ -22,10 +22,22 @@ import {
   Key,
   ArrowRight,
   ArrowUp,
+  Sparkles,
+  Video,
+  Presentation,
+  ImageIcon,
+  Palette,
 } from "lucide-react";
 
 const NAV_ITEMS = [
   { id: "getting-started", label: "Getting Started", icon: Rocket },
+  { id: "studio", label: "SpokeStudio", icon: Sparkles },
+  { id: "studio-docs", label: "Documents", icon: FileText },
+  { id: "studio-video", label: "Video Studio", icon: Video },
+  { id: "studio-decks", label: "Pitch Decks", icon: Presentation },
+  { id: "studio-moodboard", label: "Moodboards", icon: ImageIcon },
+  { id: "studio-calendar", label: "Content Calendar", icon: Calendar },
+  { id: "studio-skills", label: "AI Skills", icon: Palette },
   { id: "briefs", label: "Briefs", icon: FileText },
   { id: "time-tracking", label: "Time Tracking", icon: Clock },
   { id: "leave", label: "Leave Management", icon: Calendar },
@@ -106,6 +118,217 @@ export default function DocsPage() {
                 Click the clock icon to start a timer, or go to Time to log hours manually.
               </p>
             </li>
+            <li>
+              <strong>Explore SpokeStudio</strong>
+              <p className="text-sm text-muted-foreground ml-5">
+                Go to Studio to access AI-powered creative tools: Documents, Video Projects, Pitch Decks, and Moodboards.
+              </p>
+            </li>
+          </ol>
+        </Section>
+
+        {/* SpokeStudio Overview */}
+        <Section id="studio" icon={Sparkles} title="SpokeStudio">
+          <p className="text-muted-foreground mb-4">
+            SpokeStudio is your AI-powered creative workspace. Build content, presentations, and manage creative assets with intelligent assistance.
+          </p>
+
+          <h4 className="font-semibold mb-2">Available Modules</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+            {[
+              { name: "Documents", desc: "Rich text docs with Google Docs sync", href: "/studio/docs" },
+              { name: "Video Studio", desc: "Scripts, storyboards, shot lists", href: "/studio/video" },
+              { name: "Pitch Decks", desc: "AI-assisted presentations", href: "/studio/decks" },
+              { name: "Moodboard Lab", desc: "Visual inspiration with AI indexing", href: "/studio/moodboard" },
+              { name: "Content Calendar", desc: "Social media scheduling", href: "/studio/calendar" },
+              { name: "AI Skills", desc: "Customizable AI assistants", href: "/studio/skills" },
+            ].map((mod) => (
+              <Link key={mod.href} href={mod.href} className="p-3 border rounded-lg hover:border-primary transition-colors">
+                <p className="font-medium">{mod.name}</p>
+                <p className="text-sm text-muted-foreground">{mod.desc}</p>
+              </Link>
+            ))}
+          </div>
+
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/studio">
+              Open SpokeStudio <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </Section>
+
+        {/* Studio Documents */}
+        <Section id="studio-docs" icon={FileText} title="Studio Documents">
+          <p className="text-muted-foreground mb-4">
+            Create and collaborate on rich text documents with version history and Google Docs integration.
+          </p>
+
+          <h4 className="font-semibold mb-2">Document Types</h4>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
+            {["SCRIPT", "ARTICLE", "SOCIAL_COPY", "AD_COPY", "BLOG", "EMAIL", "PRESS_RELEASE", "PROPOSAL", "OTHER"].map((type) => (
+              <Badge key={type} variant="outline" className="justify-center py-1">{type}</Badge>
+            ))}
+          </div>
+
+          <h4 className="font-semibold mb-2">Features</h4>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• <strong>Version History:</strong> Automatic versioning on every save</li>
+            <li>• <strong>Google Sync:</strong> Push/pull from Google Docs</li>
+            <li>• <strong>AI Assistance:</strong> Generate content with AI skills</li>
+            <li>• <strong>Link to Briefs:</strong> Connect documents to briefs and projects</li>
+          </ul>
+        </Section>
+
+        {/* Video Studio */}
+        <Section id="studio-video" icon={Video} title="Video Studio">
+          <p className="text-muted-foreground mb-4">
+            Manage video productions from concept to completion with scripts, storyboards, and shot lists.
+          </p>
+
+          <h4 className="font-semibold mb-2">Project Types</h4>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {["SHORT_FORM", "LONG_FORM", "AD", "DOCUMENTARY", "EXPLAINER", "TESTIMONIAL", "OTHER"].map((type) => (
+              <Badge key={type} variant="outline">{type}</Badge>
+            ))}
+          </div>
+
+          <h4 className="font-semibold mb-2">Production Workflow</h4>
+          <div className="flex flex-wrap gap-1 mb-4">
+            {["CONCEPT", "SCRIPTING", "PRE_PRODUCTION", "PRODUCTION", "POST_PRODUCTION", "REVIEW", "COMPLETE"].map((status, i) => (
+              <span key={status} className="flex items-center gap-1 text-sm">
+                <Badge variant="secondary">{status}</Badge>
+                {i < 6 && <ArrowRight className="h-3 w-3 text-muted-foreground" />}
+              </span>
+            ))}
+          </div>
+
+          <h4 className="font-semibold mb-2">Features</h4>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• <strong>Scripts:</strong> Write and version video scripts</li>
+            <li>• <strong>Storyboards:</strong> Visual frame-by-frame planning</li>
+            <li>• <strong>Shot Lists:</strong> Track shots with status and notes</li>
+            <li>• <strong>AI Script Writing:</strong> Generate scripts from briefs</li>
+          </ul>
+        </Section>
+
+        {/* Pitch Decks */}
+        <Section id="studio-decks" icon={Presentation} title="Pitch Decks">
+          <p className="text-muted-foreground mb-4">
+            Build professional presentations with AI-powered content generation and slide templates.
+          </p>
+
+          <h4 className="font-semibold mb-2">Deck Types</h4>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {["PITCH", "PROPOSAL", "REPORT", "CREDENTIALS", "CASE_STUDY", "STRATEGY", "OTHER"].map((type) => (
+              <Badge key={type} variant="outline">{type}</Badge>
+            ))}
+          </div>
+
+          <h4 className="font-semibold mb-2">Slide Layouts</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+            {["Title", "Content", "Two Column", "Image", "Quote", "Stats", "Timeline", "Team"].map((layout) => (
+              <Badge key={layout} variant="secondary" className="justify-center">{layout}</Badge>
+            ))}
+          </div>
+
+          <h4 className="font-semibold mb-2">Features</h4>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• <strong>AI Content:</strong> Generate slide content from prompts</li>
+            <li>• <strong>Templates:</strong> Pre-built deck templates</li>
+            <li>• <strong>Drag & Drop:</strong> Reorder slides easily</li>
+            <li>• <strong>Export:</strong> Download as PDF or link to clients</li>
+          </ul>
+        </Section>
+
+        {/* Moodboards */}
+        <Section id="studio-moodboard" icon={ImageIcon} title="Moodboard Lab">
+          <p className="text-muted-foreground mb-4">
+            Collect and organize visual inspiration. AI indexes your references for grounded creative generation.
+          </p>
+
+          <h4 className="font-semibold mb-2">Moodboard Types</h4>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {["BRAND", "CAMPAIGN", "VISUAL", "REFERENCE", "COMPETITOR", "INSPIRATION", "OTHER"].map((type) => (
+              <Badge key={type} variant="outline">{type}</Badge>
+            ))}
+          </div>
+
+          <h4 className="font-semibold mb-2">Item Types</h4>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• <strong>Images:</strong> Upload reference images and screenshots</li>
+            <li>• <strong>Links:</strong> Save URLs with auto-preview</li>
+            <li>• <strong>Text:</strong> Add notes and annotations</li>
+            <li>• <strong>Colors:</strong> Build color palettes</li>
+          </ul>
+
+          <h4 className="font-semibold mt-4 mb-2">AI Features</h4>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• <strong>Auto-Index:</strong> AI analyzes and indexes all content</li>
+            <li>• <strong>Grounded Generation:</strong> Create content based on your references</li>
+            <li>• <strong>Conversations:</strong> Chat with AI about your moodboard</li>
+          </ul>
+        </Section>
+
+        {/* Content Calendar */}
+        <Section id="studio-calendar" icon={Calendar} title="Content Calendar">
+          <p className="text-muted-foreground mb-4">
+            Plan and schedule social content across platforms with visual calendar management.
+          </p>
+
+          <h4 className="font-semibold mb-2">Supported Platforms</h4>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {["Instagram", "TikTok", "LinkedIn", "X/Twitter", "Facebook", "YouTube"].map((platform) => (
+              <Badge key={platform} variant="outline">{platform}</Badge>
+            ))}
+          </div>
+
+          <h4 className="font-semibold mb-2">Content Types</h4>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
+            {["Post", "Reel", "Story", "Carousel", "Video", "Article"].map((type) => (
+              <Badge key={type} variant="secondary" className="justify-center">{type}</Badge>
+            ))}
+          </div>
+
+          <h4 className="font-semibold mb-2">Features</h4>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• <strong>Drag & Drop:</strong> Move content between dates</li>
+            <li>• <strong>Color Coding:</strong> Visual status at a glance</li>
+            <li>• <strong>Assignments:</strong> Assign entries to team members</li>
+            <li>• <strong>Link to Docs:</strong> Connect calendar entries to documents</li>
+          </ul>
+        </Section>
+
+        {/* AI Skills */}
+        <Section id="studio-skills" icon={Palette} title="AI Skills">
+          <p className="text-muted-foreground mb-4">
+            Pre-built AI assistants for common creative tasks. Configure prompts and enable skills for your team.
+          </p>
+
+          <h4 className="font-semibold mb-2">Available Skills</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+            {[
+              { name: "Social Copy Writer", category: "Copy" },
+              { name: "Ad Copy Generator", category: "Copy" },
+              { name: "Video Script Writer", category: "Video" },
+              { name: "Storyboard Generator", category: "Video" },
+              { name: "Design Brief Writer", category: "Design" },
+              { name: "Strategy Document", category: "Strategy" },
+              { name: "Pitch Deck Builder", category: "Presentation" },
+              { name: "Client Report", category: "Reports" },
+            ].map((skill) => (
+              <div key={skill.name} className="flex items-center justify-between p-2 border rounded">
+                <span className="text-sm font-medium">{skill.name}</span>
+                <Badge variant="outline" className="text-xs">{skill.category}</Badge>
+              </div>
+            ))}
+          </div>
+
+          <h4 className="font-semibold mb-2">How It Works</h4>
+          <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+            <li>Select a skill from the library</li>
+            <li>Fill in the required inputs (client, brief, tone, etc.)</li>
+            <li>AI generates content based on the skill's system prompt</li>
+            <li>Review, edit, and save to your documents</li>
           </ol>
         </Section>
 
