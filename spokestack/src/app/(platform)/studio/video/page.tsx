@@ -1,19 +1,14 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { getStudioUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { VideoClient } from "./video-client";
 
 export default async function VideoPage() {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect("/login");
-  }
+  const user = await getStudioUser();
 
   // Fetch video projects for the organization
   const projects = await db.videoProject.findMany({
     where: {
-      organizationId: session.user.organizationId,
+      organizationId: user.organizationId,
     },
     include: {
       createdBy: { select: { id: true, name: true, avatarUrl: true } },
@@ -29,7 +24,7 @@ export default async function VideoPage() {
   // Fetch clients for the create modal
   const clients = await db.client.findMany({
     where: {
-      organizationId: session.user.organizationId,
+      organizationId: user.organizationId,
       isActive: true,
     },
     select: { id: true, name: true },
@@ -39,7 +34,7 @@ export default async function VideoPage() {
   // Fetch potential directors (active users with leadership roles)
   const directors = await db.user.findMany({
     where: {
-      organizationId: session.user.organizationId,
+      organizationId: user.organizationId,
       isActive: true,
       permissionLevel: { in: ["ADMIN", "LEADERSHIP", "TEAM_LEAD", "STAFF"] },
     },

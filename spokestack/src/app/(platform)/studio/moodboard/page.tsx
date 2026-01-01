@@ -1,19 +1,14 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { getStudioUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { MoodboardClient } from "./moodboard-client";
 
 export default async function MoodboardPage() {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect("/login");
-  }
+  const user = await getStudioUser();
 
   // Fetch moodboards for the organization
   const moodboards = await db.moodboard.findMany({
     where: {
-      organizationId: session.user.organizationId,
+      organizationId: user.organizationId,
     },
     include: {
       createdBy: { select: { id: true, name: true, avatarUrl: true } },
@@ -33,7 +28,7 @@ export default async function MoodboardPage() {
   // Fetch clients for the create modal
   const clients = await db.client.findMany({
     where: {
-      organizationId: session.user.organizationId,
+      organizationId: user.organizationId,
       isActive: true,
     },
     select: { id: true, name: true },

@@ -1,19 +1,14 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { getStudioUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { DocsClient } from "./docs-client";
 
 export default async function DocsPage() {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect("/login");
-  }
+  const user = await getStudioUser();
 
   // Fetch documents for the organization
   const documents = await db.studioDocument.findMany({
     where: {
-      organizationId: session.user.organizationId,
+      organizationId: user.organizationId,
     },
     include: {
       createdBy: { select: { id: true, name: true, avatarUrl: true } },
@@ -28,7 +23,7 @@ export default async function DocsPage() {
   // Fetch clients for the create modal
   const clients = await db.client.findMany({
     where: {
-      organizationId: session.user.organizationId,
+      organizationId: user.organizationId,
       isActive: true,
     },
     select: { id: true, name: true },
