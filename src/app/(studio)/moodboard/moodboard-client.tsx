@@ -22,12 +22,13 @@ interface MoodboardClientProps {
 }
 
 const moodboardTypes: { value: MoodboardType; label: string; description: string }[] = [
-  { value: "CAMPAIGN", label: "Campaign", description: "For a specific campaign" },
-  { value: "BRAND", label: "Brand", description: "Brand identity references" },
-  { value: "PRODUCT", label: "Product", description: "Product photography" },
-  { value: "EVENT", label: "Event", description: "Event visuals" },
-  { value: "CONTENT", label: "Content", description: "Content inspiration" },
   { value: "GENERAL", label: "General", description: "Mixed references" },
+  { value: "BRAND", label: "Brand", description: "Brand identity references" },
+  { value: "CAMPAIGN", label: "Campaign", description: "For a specific campaign" },
+  { value: "VIDEO", label: "Video", description: "Video production references" },
+  { value: "PHOTO", label: "Photo", description: "Photography references" },
+  { value: "DESIGN", label: "Design", description: "Design inspiration" },
+  { value: "PITCH", label: "Pitch", description: "Pitch deck references" },
 ];
 
 export function MoodboardClient({ initialMoodboards, clients }: MoodboardClientProps) {
