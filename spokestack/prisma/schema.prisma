@@ -5687,6 +5687,10 @@ model ClientInstance {
   secondaryColor  String?
   favicon         String?
 
+  // Custom domain settings
+  customDomain          String?  @unique
+  customDomainVerified  Boolean  @default(false)
+
   enabledModules  String[]
 
   defaultDashboardId String?
