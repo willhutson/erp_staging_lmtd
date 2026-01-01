@@ -71,9 +71,19 @@ export default async function StudioLayout({
           });
         }
       }
-    } catch (dbError) {
-      console.error("Studio: Database query failed:", dbError);
-      redirect("/hub?error=db_error");
+    } catch (dbError: unknown) {
+      // Log detailed DB error
+      const dbErrorInfo = {
+        name: dbError instanceof Error ? dbError.name : "Unknown",
+        message: dbError instanceof Error ? dbError.message : String(dbError),
+        code: (dbError as { code?: string })?.code,
+        hasDbUrl: !!process.env.DATABASE_URL,
+      };
+      console.error("Studio: Database query failed:", JSON.stringify(dbErrorInfo, null, 2));
+
+      // Include error details in redirect
+      const errMsg = dbError instanceof Error ? dbError.message.slice(0, 50) : "unknown";
+      redirect(`/hub?error=db_error&msg=${encodeURIComponent(errMsg)}`);
     }
 
     // If user not in DB, redirect to hub instead of login loop

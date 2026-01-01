@@ -1,0 +1,173 @@
+import type { FormConfig } from "@/types/forms";
+
+export const videoShootForm: FormConfig = {
+  id: "VIDEO_SHOOT",
+  name: "Video Shoot Request",
+  description: "Request a video shoot for your project",
+  namingConvention: "Shoot: [Client] – [Topic]",
+  namingPrefix: "Shoot",
+  example: "Shoot: CCAD – Talking Heads",
+
+  sections: [
+    {
+      id: "basic",
+      title: "Basic Information",
+      fields: [
+        {
+          id: "topic",
+          label: "Topic / Campaign Name",
+          type: "text",
+          required: true,
+          maxLength: 100,
+          placeholder: "e.g., Talking Heads, Product Launch",
+          helpText: "Brief description of what the shoot is for",
+        },
+        {
+          id: "clientId",
+          label: "Client",
+          type: "client-select",
+          required: true,
+        },
+        {
+          id: "assigneeId",
+          label: "Assigned Videographer",
+          type: "user-select",
+          required: true,
+          filter: { departments: ["Video Production"] },
+          placeholder: "Select videographer",
+        },
+      ],
+    },
+    {
+      id: "shoot-details",
+      title: "Shoot Details",
+      fields: [
+        {
+          id: "location",
+          label: "Location",
+          type: "textarea",
+          required: true,
+          maxLength: 500,
+          placeholder: "Please specify the city and address for the shoot",
+          helpText: "Include full address and any access instructions",
+        },
+        {
+          id: "shootDate",
+          label: "Shoot Date(s)",
+          type: "date-range",
+          required: true,
+          helpText: "Select the same date for both if it's a single day shoot",
+        },
+        {
+          id: "timing",
+          label: "Timing",
+          type: "text",
+          required: true,
+          placeholder: "e.g., 10am - 2pm",
+          helpText: "Specify the time window for the shoot",
+        },
+        {
+          id: "transportNeeded",
+          label: "Transport Needed?",
+          type: "select",
+          required: true,
+          options: [
+            { value: "yes", label: "Yes" },
+            { value: "no", label: "No" },
+            { value: "not_sure", label: "Not Sure Yet" },
+          ],
+        },
+        {
+          id: "shootingMethod",
+          label: "Preferred Shooting Method",
+          type: "select",
+          required: true,
+          options: [
+            { value: "studio", label: "Studio" },
+            { value: "on_location", label: "On Location" },
+            { value: "hybrid", label: "Hybrid" },
+            { value: "other", label: "Other" },
+          ],
+        },
+        {
+          id: "deliverables",
+          label: "Expected Deliverables",
+          type: "multi-select",
+          required: true,
+          options: [
+            { value: "raw_footage", label: "Raw Footage" },
+            { value: "edited_video", label: "Edited Video" },
+            { value: "photos", label: "Photos" },
+            { value: "bts", label: "Behind the Scenes" },
+            { value: "interview", label: "Interview Footage" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "creative",
+      title: "Creative Direction",
+      fields: [
+        {
+          id: "objective",
+          label: "Campaign / Context / Objective",
+          type: "textarea",
+          required: true,
+          maxLength: 2000,
+          placeholder: "Describe the campaign context and objectives",
+          helpText: "What is the purpose of this video? What message should it convey?",
+        },
+        {
+          id: "talentVO",
+          label: "Talent / Voice-over Needed?",
+          type: "textarea",
+          required: true,
+          maxLength: 500,
+          placeholder: "Specify if talent or voice-over is needed",
+        },
+        {
+          id: "additionalNotes",
+          label: "Additional Notes",
+          type: "textarea",
+          required: false,
+          maxLength: 2000,
+          placeholder: "Any special requests (e.g., drone needed, specific equipment)",
+        },
+      ],
+    },
+    {
+      id: "references",
+      title: "Reference Materials",
+      fields: [
+        {
+          id: "referenceLink",
+          label: "Reference Link",
+          type: "url",
+          required: false,
+          placeholder: "https://...",
+          helpText: "Link to moodboards, previous videos, or online references",
+        },
+        {
+          id: "attachments",
+          label: "Attachments",
+          type: "file-upload",
+          required: false,
+          multiple: true,
+          accept: ["image/*", "video/*", "application/pdf", ".doc", ".docx"],
+          helpText: "Upload reference materials, interviewee photos, location photos, etc.",
+        },
+      ],
+    },
+  ],
+
+  qualityRules: [
+    { field: "location", weight: 15, check: "minLength", value: 20 },
+    { field: "objective", weight: 20, check: "minLength", value: 50 },
+    { field: "timing", weight: 10, check: "notEmpty" },
+    { field: "deliverables", weight: 15, check: "minItems", value: 1 },
+    { field: "referenceLink", weight: 10, check: "notEmpty" },
+    { field: "attachments", weight: 10, check: "hasFiles" },
+    { field: "talentVO", weight: 10, check: "minLength", value: 10 },
+    { field: "additionalNotes", weight: 10, check: "minLength", value: 20 },
+  ],
+};
