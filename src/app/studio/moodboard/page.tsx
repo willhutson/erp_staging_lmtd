@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { MoodboardClient } from "./moodboard-client";
+import { StudioSetupRequired } from "@/modules/studio/components/StudioSetupRequired";
 
 export default async function MoodboardPage() {
   const session = await auth();
@@ -10,35 +11,40 @@ export default async function MoodboardPage() {
     redirect("/login");
   }
 
-  // Fetch moodboards for the organization
-  const moodboards = await db.moodboard.findMany({
-    where: {
-      organizationId: session.user.organizationId,
-    },
-    include: {
-      createdBy: { select: { id: true, name: true, avatarUrl: true } },
-      client: { select: { id: true, name: true } },
-      items: { take: 4, orderBy: { createdAt: "desc" } },
-      _count: {
-        select: {
-          items: true,
-          conversations: true,
-          outputs: true,
+  try {
+    // Fetch moodboards for the organization
+    const moodboards = await db.moodboard.findMany({
+      where: {
+        organizationId: session.user.organizationId,
+      },
+      include: {
+        createdBy: { select: { id: true, name: true, avatarUrl: true } },
+        client: { select: { id: true, name: true } },
+        items: { take: 4, orderBy: { createdAt: "desc" } },
+        _count: {
+          select: {
+            items: true,
+            conversations: true,
+            outputs: true,
+          },
         },
       },
-    },
-    orderBy: { updatedAt: "desc" },
-  });
+      orderBy: { updatedAt: "desc" },
+    });
 
-  // Fetch clients for the create modal
-  const clients = await db.client.findMany({
-    where: {
-      organizationId: session.user.organizationId,
-      isActive: true,
-    },
-    select: { id: true, name: true },
-    orderBy: { name: "asc" },
-  });
+    // Fetch clients for the create modal
+    const clients = await db.client.findMany({
+      where: {
+        organizationId: session.user.organizationId,
+        isActive: true,
+      },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    });
 
-  return <MoodboardClient initialMoodboards={moodboards} clients={clients} />;
+    return <MoodboardClient initialMoodboards={moodboards} clients={clients} />;
+  } catch (error) {
+    console.error("Studio moodboard page error:", error);
+    return <StudioSetupRequired module="Moodboard Lab" />;
+  }
 }
