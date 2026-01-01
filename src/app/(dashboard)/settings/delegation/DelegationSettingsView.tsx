@@ -21,6 +21,7 @@ import type {
   DelegationProfileConfig,
   DelegationScope,
   EscalationRules,
+  EscalationTrigger,
 } from "@/modules/delegation/types";
 import { updateMyDelegationProfile } from "@/modules/delegation/actions";
 import { formatDate } from "@/lib/format/date";
@@ -304,7 +305,7 @@ export function DelegationSettingsView({
                       "high_priority"
                     )}
                     onCheckedChange={(checked) => {
-                      const newRules = checked
+                      const newRules: EscalationTrigger[] = checked
                         ? [...escalationRules.escalateIf, "high_priority"]
                         : escalationRules.escalateIf.filter(
                             (r) => r !== "high_priority"
@@ -322,7 +323,7 @@ export function DelegationSettingsView({
                   <Switch
                     checked={escalationRules.escalateIf.includes("new_client")}
                     onCheckedChange={(checked) => {
-                      const newRules = checked
+                      const newRules: EscalationTrigger[] = checked
                         ? [...escalationRules.escalateIf, "new_client"]
                         : escalationRules.escalateIf.filter(
                             (r) => r !== "new_client"
@@ -342,7 +343,7 @@ export function DelegationSettingsView({
                       "budget_impact"
                     )}
                     onCheckedChange={(checked) => {
-                      const newRules = checked
+                      const newRules: EscalationTrigger[] = checked
                         ? [...escalationRules.escalateIf, "budget_impact"]
                         : escalationRules.escalateIf.filter(
                             (r) => r !== "budget_impact"
