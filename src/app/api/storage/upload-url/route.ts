@@ -49,6 +49,9 @@ function formatBytes(bytes: number): string {
  * - expiresAt: string - ISO timestamp when URL expires
  * - maxFileSize: number - Maximum allowed file size in bytes
  */
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   try {
     // Check authentication

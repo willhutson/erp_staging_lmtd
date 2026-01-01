@@ -14,6 +14,9 @@ import {
   ApiError,
 } from "@/lib/api";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 const CreateCommentSchema = z.object({
   content: z.string().min(1).max(5000),
 });

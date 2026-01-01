@@ -11,6 +11,9 @@ interface RouteContext {
 }
 
 // POST /api/admin/doc-templates/[id]/generate - Generate a document
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest, context: RouteContext) {
   return withSessionAuth(request, { minLevel: "TEAM_LEAD" }, async (ctx) => {
     const { id } = await context.params;

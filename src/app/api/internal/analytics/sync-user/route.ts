@@ -17,6 +17,9 @@ interface SyncUserPayload {
 }
 
 // POST /api/internal/analytics/sync-user - Sync a user to analytics engine
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   // Verify internal API key
   const apiKey = request.headers.get("x-api-key");

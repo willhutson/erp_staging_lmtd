@@ -9,6 +9,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updatePresence } from "@/modules/chat/actions/presence-actions";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();

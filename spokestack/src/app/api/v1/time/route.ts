@@ -28,6 +28,9 @@ const CreateTimeEntrySchema = z.object({
   isBillable: z.boolean().default(true),
 });
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   return handleRoute(async () => {
     const context = await getAuthContext();

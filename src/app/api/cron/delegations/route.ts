@@ -36,6 +36,9 @@ function verifyCronSecret(request: Request): boolean {
  * 2. Start handoff for ending delegations
  * 3. Send return reminders
  */
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   if (!verifyCronSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

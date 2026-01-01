@@ -156,6 +156,9 @@ function errorResponse(
 // GET /api/content - List posts
 // ============================================
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
     const auth = await authenticateRequest(req);

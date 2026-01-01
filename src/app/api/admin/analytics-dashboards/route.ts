@@ -12,6 +12,9 @@ import { z } from "zod";
 import { Prisma, AnalyticsDashboardType } from "@prisma/client";
 
 // GET /api/admin/analytics-dashboards - List dashboards
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   return withSessionAuth(request, { minLevel: "TEAM_LEAD" }, async (ctx) => {
     const { searchParams } = request.nextUrl;

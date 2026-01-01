@@ -44,6 +44,9 @@ const CreateDealSchema = z.object({
   notes: z.string().max(5000).optional().nullable(),
 });
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   return handleRoute(async () => {
     const context = await getAuthContext();

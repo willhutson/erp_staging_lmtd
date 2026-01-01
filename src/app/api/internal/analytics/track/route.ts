@@ -26,6 +26,9 @@ interface TrackEvent {
 }
 
 // POST /api/internal/analytics/track - Track an event
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   // Verify internal API key
   const apiKey = request.headers.get("x-api-key");

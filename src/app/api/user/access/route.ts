@@ -29,6 +29,9 @@ interface PolicyAssignmentData {
  * GET /api/user/access
  * Get the current user's access policies and permissions
  */
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();

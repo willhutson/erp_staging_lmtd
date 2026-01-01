@@ -12,6 +12,9 @@ const LOCAL_STORAGE_PATH = process.env.LOCAL_STORAGE_PATH || "/tmp/uploads";
  * Handle file upload
  * POST /api/files/upload
  */
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();

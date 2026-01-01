@@ -18,6 +18,9 @@ const ANALYTICS_ENGINE_URL = process.env.ANALYTICS_ENGINE_URL;
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || "dev-internal-key";
 
 // GET /api/admin/analytics/stats - Get analytics overview
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   return withSessionAuth(request, { minLevel: "TEAM_LEAD" }, async (ctx) => {
     // Try to fetch from analytics engine if configured

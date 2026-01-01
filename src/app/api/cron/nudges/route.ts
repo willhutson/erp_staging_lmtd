@@ -28,6 +28,9 @@ function verifyCronSecret(request: Request): boolean {
  * 1. Process scheduled nudges that are due
  * 2. Send reminders via configured channels
  */
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   if (!verifyCronSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -13,6 +13,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { processAllOrganizationReminders } from "@/modules/chat/services/holiday-reminders";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   // Verify cron secret for security
   const authHeader = request.headers.get("authorization");

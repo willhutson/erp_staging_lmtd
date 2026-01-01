@@ -18,6 +18,9 @@ import {
  * - signedUrl: string - Signed URL for downloading
  * - expiresAt: string - ISO timestamp when URL expires
  */
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   try {
     // Check authentication

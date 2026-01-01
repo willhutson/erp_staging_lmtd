@@ -9,6 +9,9 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 
 // GET /api/admin/notification-rules - List notification rules
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   return withSessionAuth(request, { minLevel: "LEADERSHIP" }, async (ctx) => {
     const { searchParams } = new URL(request.url);

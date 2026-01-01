@@ -20,6 +20,9 @@ const UpdateProfileSchema = z.object({
   skills: z.array(z.string()).optional(),
 });
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   return handleRoute(async () => {
     const { user, organizationId } = await getAuthContext();

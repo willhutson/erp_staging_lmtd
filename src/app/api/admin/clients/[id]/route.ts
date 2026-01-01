@@ -13,6 +13,9 @@ interface RouteContext {
 }
 
 // GET /api/admin/clients/[id] - Get single client
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest, context: RouteContext) {
   return withSessionAuth(request, { minLevel: "STAFF" }, async (ctx) => {
     const { id } = await context.params;

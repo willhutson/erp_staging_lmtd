@@ -23,6 +23,9 @@ const assignPolicySchema = z.object({
   notifyTeamLead: z.boolean().optional().default(true), // Notify user's team lead
 });
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest, context: RouteContext) {
   return withSessionAuth(request, { minLevel: "ADMIN" }, async (ctx) => {
     const { id: policyId } = await context.params;

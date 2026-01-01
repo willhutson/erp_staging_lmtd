@@ -4,6 +4,9 @@ import {
   saveGoogleCredentials,
 } from "@/modules/integrations/google/actions/google-auth";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get("code");
