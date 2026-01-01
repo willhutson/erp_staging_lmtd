@@ -5692,6 +5692,9 @@ model ClientInstance {
   customDomain          String?  @unique
   customDomainVerified  Boolean  @default(false)
 
+  // Subscription tier
+  tier            String   @default("FREE")
+
   enabledModules  String[]
 
   defaultDashboardId String?
