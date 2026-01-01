@@ -69,6 +69,9 @@ import {
   MessageSquare,
   Eye,
   FileCheck,
+  Presentation,
+  Video,
+  ImageIcon,
 } from "lucide-react";
 import type { TenantConfig } from "@/lib/tenant";
 
@@ -234,6 +237,23 @@ const moduleBundles = [
           { label: "Templates", href: "/builder/templates" },
         ],
       },
+    ],
+  },
+  {
+    id: "studio",
+    label: "Studio",
+    tagline: "Creative Workspace",
+    icon: Sparkles,
+    color: "text-violet-500",
+    bgColor: "bg-violet-500",
+    modules: [
+      { id: "studio-dashboard", label: "Dashboard", icon: Sparkles, href: "/studio" },
+      { id: "studio-docs", label: "Documents", icon: FileText, href: "/studio/docs" },
+      { id: "studio-decks", label: "Pitch Decks", icon: Presentation, href: "/studio/decks" },
+      { id: "studio-video", label: "Video Studio", icon: Video, href: "/studio/video" },
+      { id: "studio-moodboard", label: "Moodboard", icon: ImageIcon, href: "/studio/moodboard" },
+      { id: "studio-calendar", label: "Calendar", icon: Calendar, href: "/studio/calendar" },
+      { id: "studio-skills", label: "AI Skills", icon: Sparkles, href: "/studio/skills" },
     ],
   },
   {
