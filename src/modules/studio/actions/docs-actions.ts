@@ -252,7 +252,7 @@ export async function syncToGoogle(
   }
 
   // Push content to Google Doc
-  if (document.content || document.contentHtml) {
+  if (googleDocId && (document.content || document.contentHtml)) {
     const content = document.content || stripHtml(document.contentHtml || "");
     await pushContentToGoogleDoc(googleDocId, content, accessToken);
   }
@@ -262,7 +262,6 @@ export async function syncToGoogle(
     where: { id: documentId },
     data: {
       googleDocId,
-      googleDocUrl: googleUrl,
       syncStatus: "SYNCED",
       lastSyncedAt: new Date(),
     },
@@ -271,7 +270,7 @@ export async function syncToGoogle(
   revalidatePath("/studio/docs");
   revalidatePath(`/studio/docs/${documentId}`);
 
-  return { googleDocId, googleUrl };
+  return { googleDocId: googleDocId || "", googleUrl };
 }
 
 /**
