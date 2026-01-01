@@ -1,0 +1,165 @@
+import type { FormConfig } from "@/types/forms";
+
+export const paidMediaForm: FormConfig = {
+  id: "PAID_MEDIA",
+  name: "Paid Media Request",
+  description: "Request paid media campaign setup or management",
+  namingConvention: "Paid Media: [Client] – [Topic]",
+  namingPrefix: "Paid Media",
+  example: "Paid Media: DET – Ramadan Campaign",
+
+  sections: [
+    {
+      id: "basic",
+      title: "Basic Information",
+      fields: [
+        {
+          id: "topic",
+          label: "Campaign Name",
+          type: "text",
+          required: true,
+          maxLength: 100,
+          placeholder: "e.g., Ramadan Campaign, Product Launch",
+        },
+        {
+          id: "clientId",
+          label: "Client",
+          type: "client-select",
+          required: true,
+        },
+        {
+          id: "assigneeId",
+          label: "Assigned Media Manager",
+          type: "user-select",
+          required: true,
+          filter: { departments: ["Paid Media"] },
+          placeholder: "Select media manager",
+        },
+      ],
+    },
+    {
+      id: "campaign-details",
+      title: "Campaign Details",
+      fields: [
+        {
+          id: "platforms",
+          label: "Platforms",
+          type: "multi-select",
+          required: true,
+          options: [
+            { value: "meta", label: "Meta (Facebook/Instagram)" },
+            { value: "google", label: "Google Ads" },
+            { value: "youtube", label: "YouTube" },
+            { value: "tiktok", label: "TikTok" },
+            { value: "linkedin", label: "LinkedIn" },
+            { value: "snapchat", label: "Snapchat" },
+            { value: "twitter", label: "X (Twitter)" },
+            { value: "programmatic", label: "Programmatic/Display" },
+          ],
+        },
+        {
+          id: "campaignType",
+          label: "Campaign Type",
+          type: "select",
+          required: true,
+          options: [
+            { value: "awareness", label: "Brand Awareness" },
+            { value: "traffic", label: "Traffic" },
+            { value: "engagement", label: "Engagement" },
+            { value: "leads", label: "Lead Generation" },
+            { value: "conversions", label: "Conversions" },
+            { value: "app_install", label: "App Install" },
+            { value: "video_views", label: "Video Views" },
+          ],
+        },
+        {
+          id: "budget",
+          label: "Budget (AED)",
+          type: "text",
+          required: true,
+          placeholder: "e.g., 50,000 AED",
+        },
+        {
+          id: "campaignDates",
+          label: "Campaign Dates",
+          type: "date-range",
+          required: true,
+        },
+        {
+          id: "deadline",
+          label: "Setup Deadline",
+          type: "date",
+          required: true,
+          helpText: "When do you need the campaign ready to launch?",
+        },
+      ],
+    },
+    {
+      id: "targeting",
+      title: "Targeting & Objectives",
+      fields: [
+        {
+          id: "objective",
+          label: "Campaign Objective",
+          type: "textarea",
+          required: true,
+          maxLength: 2000,
+          placeholder: "What is the goal of this campaign? What KPIs are we targeting?",
+        },
+        {
+          id: "targetAudience",
+          label: "Target Audience",
+          type: "textarea",
+          required: true,
+          maxLength: 2000,
+          placeholder: "Describe the target audience (demographics, interests, behaviors)",
+        },
+        {
+          id: "geoTargeting",
+          label: "Geographic Targeting",
+          type: "textarea",
+          required: true,
+          maxLength: 500,
+          placeholder: "e.g., UAE, GCC, specific cities",
+        },
+        {
+          id: "additionalNotes",
+          label: "Additional Notes",
+          type: "textarea",
+          required: false,
+          maxLength: 2000,
+        },
+      ],
+    },
+    {
+      id: "assets",
+      title: "Creative Assets",
+      fields: [
+        {
+          id: "assetsLink",
+          label: "Assets Link",
+          type: "url",
+          required: false,
+          placeholder: "Link to creative assets (Google Drive, etc.)",
+        },
+        {
+          id: "attachments",
+          label: "Upload Assets",
+          type: "file-upload",
+          required: false,
+          multiple: true,
+          accept: ["image/*", "video/*", "application/pdf"],
+        },
+      ],
+    },
+  ],
+
+  qualityRules: [
+    { field: "objective", weight: 25, check: "minLength", value: 50 },
+    { field: "targetAudience", weight: 20, check: "minLength", value: 30 },
+    { field: "budget", weight: 15, check: "notEmpty" },
+    { field: "platforms", weight: 15, check: "minItems", value: 1 },
+    { field: "geoTargeting", weight: 15, check: "notEmpty" },
+    { field: "assetsLink", weight: 10, check: "notEmpty" },
+  ],
+};
