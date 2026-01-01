@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { getSession, getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
 import { can } from "@/lib/permissions";
@@ -28,13 +28,32 @@ export const dynamic = "force-dynamic";
 
 export default async function NewBriefTypePage({ params }: PageProps) {
   const { type: typeSlug } = await params;
-  const session = await auth();
 
-  if (!session?.user) {
+  const session = await getSession();
+  if (!session) {
     redirect("/login");
   }
 
-  if (!can(session.user as Parameters<typeof can>[0], "brief:create")) {
+  const supabaseUser = await getUser();
+  if (!supabaseUser) {
+    redirect("/login");
+  }
+
+  // Find user in database
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { supabaseId: supabaseUser.id },
+        { email: supabaseUser.email }
+      ]
+    }
+  });
+
+  if (!user) {
+    redirect("/hub?error=user_not_found");
+  }
+
+  if (!can(user as Parameters<typeof can>[0], "brief:create")) {
     redirect("/briefs");
   }
 
@@ -48,17 +67,17 @@ export default async function NewBriefTypePage({ params }: PageProps) {
   // Fetch users, clients, and projects for the form
   const [users, clients, projects] = await Promise.all([
     prisma.user.findMany({
-      where: { organizationId: session.user.organizationId, isActive: true },
+      where: { organizationId: user.organizationId, isActive: true },
       select: { id: true, name: true, role: true, department: true },
       orderBy: { name: "asc" },
     }),
     prisma.client.findMany({
-      where: { organizationId: session.user.organizationId, isActive: true },
+      where: { organizationId: user.organizationId, isActive: true },
       select: { id: true, name: true, code: true },
       orderBy: { name: "asc" },
     }),
     prisma.project.findMany({
-      where: { organizationId: session.user.organizationId, status: "ACTIVE" },
+      where: { organizationId: user.organizationId, status: "ACTIVE" },
       select: { id: true, name: true, code: true, clientId: true },
       orderBy: { name: "asc" },
     }),
