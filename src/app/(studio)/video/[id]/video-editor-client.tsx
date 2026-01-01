@@ -464,10 +464,11 @@ NARRATOR (V.O.): In a world of endless possibilities...
                             <span className={cn(
                               "px-2 py-0.5 text-xs font-medium rounded",
                               shot.status === "SHOT" ? "bg-green-100 text-green-700" :
-                              shot.status === "SETUP" ? "bg-yellow-100 text-yellow-700" :
+                              shot.status === "READY" ? "bg-yellow-100 text-yellow-700" :
+                              shot.status === "UNUSABLE" ? "bg-red-100 text-red-700" :
                               "bg-gray-100 text-gray-700"
                             )}>
-                              {shot.status || "PENDING"}
+                              {shot.status || "PLANNED"}
                             </span>
                           </td>
                         </tr>

@@ -15,14 +15,14 @@ interface VideoClientProps {
 }
 
 const projectTypes: { value: VideoProjectType; label: string; description: string }[] = [
-  { value: "SOCIAL_SHORT", label: "Social Short", description: "< 60 seconds" },
-  { value: "SOCIAL_LONG", label: "Social Long", description: "1-3 minutes" },
+  { value: "SOCIAL_CONTENT", label: "Social Content", description: "Short-form social" },
+  { value: "BRAND_VIDEO", label: "Brand Video", description: "Corporate/brand video" },
   { value: "COMMERCIAL", label: "Commercial", description: "Brand advertisement" },
   { value: "DOCUMENTARY", label: "Documentary", description: "Long-form story" },
-  { value: "INTERVIEW", label: "Interview", description: "Talking heads" },
+  { value: "TESTIMONIAL", label: "Testimonial", description: "Customer story" },
   { value: "EVENT", label: "Event", description: "Coverage video" },
   { value: "EXPLAINER", label: "Explainer", description: "How-to content" },
-  { value: "TESTIMONIAL", label: "Testimonial", description: "Customer story" },
+  { value: "ANIMATION", label: "Animation", description: "Motion graphics" },
 ];
 
 const aspectRatios = [
@@ -43,7 +43,7 @@ export function VideoClient({ initialProjects, clients, directors }: VideoClient
   // Create modal state
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
-  const [newType, setNewType] = useState<VideoProjectType>("SOCIAL_SHORT");
+  const [newType, setNewType] = useState<VideoProjectType>("SOCIAL_CONTENT");
   const [newClientId, setNewClientId] = useState("");
   const [newDirectorId, setNewDirectorId] = useState("");
   const [newAspectRatio, setNewAspectRatio] = useState("16:9");
@@ -107,7 +107,7 @@ export function VideoClient({ initialProjects, clients, directors }: VideoClient
   const resetCreateForm = () => {
     setNewTitle("");
     setNewDescription("");
-    setNewType("SOCIAL_SHORT");
+    setNewType("SOCIAL_CONTENT");
     setNewClientId("");
     setNewDirectorId("");
     setNewAspectRatio("16:9");
