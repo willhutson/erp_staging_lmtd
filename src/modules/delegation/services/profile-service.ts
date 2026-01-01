@@ -6,6 +6,7 @@
  */
 
 import { db } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import type {
   DelegationScope,
   EscalationRules,
@@ -55,13 +56,13 @@ export async function upsertDelegationProfile(
       organizationId,
       userId,
       primaryDelegateId: config.primaryDelegateId,
-      scope: config.scope,
-      escalationRules: config.escalationRules,
+      scope: config.scope as unknown as Prisma.InputJsonValue,
+      escalationRules: config.escalationRules as unknown as Prisma.InputJsonValue,
     },
     update: {
       primaryDelegateId: config.primaryDelegateId,
-      scope: config.scope,
-      escalationRules: config.escalationRules,
+      scope: config.scope as unknown as Prisma.InputJsonValue,
+      escalationRules: config.escalationRules as unknown as Prisma.InputJsonValue,
       updatedAt: new Date(),
     },
   });
