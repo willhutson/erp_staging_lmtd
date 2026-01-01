@@ -32,7 +32,7 @@ export async function getTemplatesByType<T extends BuilderTemplateType>(
   return templates.map((t) => ({
     id: t.id,
     name: t.name,
-    definition: t.definition as TemplateDefinitionMap[T],
+    definition: t.definition as unknown as TemplateDefinitionMap[T],
   }));
 }
 
@@ -69,7 +69,7 @@ export async function getTemplateById<T extends BuilderTemplateType>(
     id: template.id,
     name: template.name,
     templateType: template.templateType as T,
-    definition: template.definition as TemplateDefinitionMap[T],
+    definition: template.definition as unknown as TemplateDefinitionMap[T],
   };
 }
 
@@ -101,7 +101,7 @@ export async function getTemplateByName<T extends BuilderTemplateType>(
   return {
     id: template.id,
     name: template.name,
-    definition: template.definition as TemplateDefinitionMap[T],
+    definition: template.definition as unknown as TemplateDefinitionMap[T],
   };
 }
 
