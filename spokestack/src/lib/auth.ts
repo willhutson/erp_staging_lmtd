@@ -19,47 +19,58 @@ interface Session {
 }
 
 export async function auth(): Promise<Session | null> {
-  const session = await getSession();
+  try {
+    const session = await getSession();
 
-  if (!session) {
-    return null;
-  }
-
-  const supabaseUser = await getUser();
-  if (!supabaseUser) {
-    return null;
-  }
-
-  const tenant = await getTenant();
-
-  // Find user in database
-  const whereClause: Record<string, unknown> = {
-    OR: [
-      { supabaseId: supabaseUser.id },
-      { email: supabaseUser.email ?? undefined }
-    ]
-  };
-
-  if (tenant.organizationId) {
-    whereClause.organizationId = tenant.organizationId;
-  }
-
-  const user = await prisma.user.findFirst({
-    where: whereClause
-  });
-
-  if (!user) {
-    return null;
-  }
-
-  return {
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      avatarUrl: user.avatarUrl,
-      organizationId: user.organizationId,
-      permissionLevel: user.permissionLevel,
+    if (!session) {
+      return null;
     }
-  };
+
+    const supabaseUser = await getUser();
+    if (!supabaseUser) {
+      return null;
+    }
+
+    let tenantOrgId = "";
+    try {
+      const tenant = await getTenant();
+      tenantOrgId = tenant.organizationId || "";
+    } catch (error) {
+      console.error("Error getting tenant in auth:", error);
+    }
+
+    // Build OR conditions properly - don't include undefined values
+    const orConditions: Array<{ supabaseId: string } | { email: string }> = [
+      { supabaseId: supabaseUser.id }
+    ];
+    if (supabaseUser.email) {
+      orConditions.push({ email: supabaseUser.email });
+    }
+
+    // Find user in database
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: orConditions,
+        ...(tenantOrgId ? { organizationId: tenantOrgId } : {})
+      }
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+        organizationId: user.organizationId,
+        permissionLevel: user.permissionLevel,
+      }
+    };
+  } catch (error) {
+    console.error("Auth error:", error);
+    return null;
+  }
 }
