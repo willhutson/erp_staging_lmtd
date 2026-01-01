@@ -9,6 +9,9 @@ import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 
 // GET /api/admin/audit-logs - List audit logs
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   return withSessionAuth(request, { minLevel: "LEADERSHIP" }, async (ctx) => {
     const { searchParams } = request.nextUrl;

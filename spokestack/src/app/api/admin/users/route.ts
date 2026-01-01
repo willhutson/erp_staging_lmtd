@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 // GET - List all users
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const users = await prisma.user.findMany({

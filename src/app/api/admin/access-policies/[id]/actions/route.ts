@@ -24,6 +24,9 @@ const actionSchema = z.object({
   reason: z.string().optional(), // Required for reject
 });
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest, context: RouteContext) {
   return withSessionAuth(request, { minLevel: "LEADERSHIP" }, async (ctx) => {
     const { id } = await context.params;

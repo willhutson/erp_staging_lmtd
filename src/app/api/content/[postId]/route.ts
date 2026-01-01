@@ -126,6 +126,9 @@ function errorResponse(
 // GET /api/content/[postId]
 // ============================================
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ postId: string }> }

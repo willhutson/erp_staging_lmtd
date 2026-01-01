@@ -9,6 +9,9 @@ interface RouteParams {
 }
 
 // GET /api/v1/briefs/:id
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
 

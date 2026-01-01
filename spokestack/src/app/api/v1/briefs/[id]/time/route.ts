@@ -14,6 +14,9 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request, { params }: RouteParams) {
   return handleRoute(async () => {
     const { id: briefId } = await params;

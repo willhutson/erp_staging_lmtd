@@ -10,6 +10,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { sendTypingIndicator } from "@/modules/chat/actions/message-actions";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   const session = await auth();
 

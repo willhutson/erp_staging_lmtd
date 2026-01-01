@@ -12,6 +12,9 @@ import { z } from "zod";
 import { Prisma, DocTemplateCategory } from "@prisma/client";
 
 // GET /api/admin/doc-templates - List templates
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   return withSessionAuth(request, { minLevel: "TEAM_LEAD" }, async (ctx) => {
     const { searchParams } = request.nextUrl;

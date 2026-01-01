@@ -10,6 +10,9 @@ const LOCAL_STORAGE_PATH = process.env.LOCAL_STORAGE_PATH || "/tmp/uploads";
  * Serve files from local storage
  * GET /api/files/serve/[...path]
  */
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }

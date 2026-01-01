@@ -31,6 +31,9 @@ const CreateRFPSchema = z.object({
   winProbability: z.enum(["LOW", "MEDIUM", "HIGH"]).optional().nullable(),
 });
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   return handleRoute(async () => {
     const context = await getAuthContext();

@@ -13,6 +13,9 @@ interface RouteContext {
 }
 
 // GET /api/admin/analytics-widgets/[id] - Get single widget
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest, context: RouteContext) {
   return withSessionAuth(request, { minLevel: "TEAM_LEAD" }, async (ctx) => {
     const { id } = await context.params;

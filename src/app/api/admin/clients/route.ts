@@ -12,6 +12,9 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 
 // GET /api/admin/clients - List clients
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   return withSessionAuth(request, { minLevel: "STAFF" }, async (ctx) => {
     const { searchParams } = request.nextUrl;

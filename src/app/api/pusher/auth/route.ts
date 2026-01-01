@@ -10,6 +10,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { pusherServer } from "@/lib/pusher";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   const session = await auth();
 

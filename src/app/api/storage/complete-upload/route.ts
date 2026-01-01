@@ -26,6 +26,9 @@ import type { FileCategory } from "@prisma/client";
  * Returns:
  * - file: { id, name, path, mimeType, size, ... }
  */
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   try {
     // Check authentication

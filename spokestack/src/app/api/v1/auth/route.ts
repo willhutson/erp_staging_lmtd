@@ -11,6 +11,9 @@
 
 import { NextResponse } from "next/server";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   return NextResponse.json({
     success: true,
