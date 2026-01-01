@@ -204,11 +204,11 @@ export async function executeSkill(input: {
   if (input.clientId) {
     const client = await db.client.findUnique({
       where: { id: input.clientId },
-      select: { name: true, description: true, industry: true },
+      select: { name: true, notes: true, industry: true },
     });
     if (client) {
       context += `\nClient: ${client.name}\nIndustry: ${client.industry || "Not specified"}\n`;
-      if (client.description) context += `About: ${client.description}\n`;
+      if (client.notes) context += `About: ${client.notes}\n`;
     }
   }
 
