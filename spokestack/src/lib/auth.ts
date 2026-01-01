@@ -3,7 +3,6 @@
 
 import { getSession, getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
-import { getTenant } from "@/lib/get-tenant";
 
 interface SessionUser {
   id: string;
@@ -31,40 +30,27 @@ export async function auth(): Promise<Session | null> {
       return null;
     }
 
-    let tenantOrgId = "";
-    try {
-      const tenant = await getTenant();
-      tenantOrgId = tenant.organizationId || "";
-    } catch (error) {
-      console.error("Error getting tenant in auth:", error);
-    }
-
-    // Build OR conditions properly - don't include undefined values
-    const orConditions: Array<{ supabaseId: string } | { email: string }> = [
-      { supabaseId: supabaseUser.id }
-    ];
-    if (supabaseUser.email) {
-      orConditions.push({ email: supabaseUser.email });
-    }
-
-    // Find user in database - first try with org filter, then without
-    let user = await prisma.user.findFirst({
+    // Find user in database by supabaseId or email (no org filter - let page handle that)
+    const user = await prisma.user.findFirst({
       where: {
-        OR: orConditions,
-        ...(tenantOrgId ? { organizationId: tenantOrgId } : {})
+        OR: [
+          { supabaseId: supabaseUser.id },
+          ...(supabaseUser.email ? [{ email: supabaseUser.email }] : [])
+        ]
       }
     });
 
-    // If not found with org filter, try without (for default tenant)
-    if (!user && tenantOrgId) {
-      user = await prisma.user.findFirst({
-        where: { OR: orConditions }
-      });
+    if (!user) {
+      console.error("User not found in database for:", supabaseUser.email, supabaseUser.id);
+      return null;
     }
 
-    if (!user) {
-      console.error("User not found in database for:", supabaseUser.email);
-      return null;
+    // Link supabaseId if not already linked
+    if (!user.supabaseId) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { supabaseId: supabaseUser.id }
+      });
     }
 
     return {
