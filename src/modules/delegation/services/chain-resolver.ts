@@ -327,7 +327,7 @@ export async function getActiveDelegationsForDelegate(
     delegatorName: d.delegator.name,
     startDate: d.startDate,
     endDate: d.endDate,
-    scope: d.scopeSnapshot as DelegationScope,
+    scope: d.scopeSnapshot as unknown as DelegationScope,
   }));
 }
 
