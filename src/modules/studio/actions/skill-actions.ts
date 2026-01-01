@@ -215,12 +215,10 @@ export async function executeSkill(input: {
   if (input.briefId) {
     const brief = await db.brief.findUnique({
       where: { id: input.briefId },
-      select: { title: true, description: true, objectives: true },
+      select: { title: true, type: true, formData: true },
     });
     if (brief) {
-      context += `\nBrief: ${brief.title}\n`;
-      if (brief.description) context += `Description: ${brief.description}\n`;
-      if (brief.objectives) context += `Objectives: ${brief.objectives}\n`;
+      context += `\nBrief: ${brief.title}\nType: ${brief.type}\n`;
     }
   }
 
