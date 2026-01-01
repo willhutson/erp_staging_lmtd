@@ -5691,6 +5691,7 @@ model ClientInstance {
   // Custom domain settings
   customDomain          String?  @unique
   customDomainVerified  Boolean  @default(false)
+  customDomainVerifiedAt DateTime?
 
   // Subscription tier
   tier            String   @default("FREE")
