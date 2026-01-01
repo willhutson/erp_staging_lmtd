@@ -36,15 +36,12 @@ export default async function VideoPage() {
     orderBy: { name: "asc" },
   });
 
-  // Fetch potential directors (users in video department or with video skills)
+  // Fetch potential directors (active users with leadership roles)
   const directors = await db.user.findMany({
     where: {
       organizationId: session.user.organizationId,
       isActive: true,
-      OR: [
-        { NOT: { department: null } },
-        { permissionLevel: { in: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"] } },
-      ],
+      permissionLevel: { in: ["ADMIN", "LEADERSHIP", "TEAM_LEAD", "STAFF"] },
     },
     select: { id: true, name: true },
     orderBy: { name: "asc" },
