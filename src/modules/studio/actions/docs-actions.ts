@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getValidAccessToken } from "@/modules/integrations/google/actions/google-auth";
+import type { Prisma } from "@prisma/client";
 import type {
   CreateDocumentInput,
   UpdateDocumentInput,
@@ -161,7 +162,11 @@ export async function updateStudioDocument(
   const document = await db.studioDocument.update({
     where: { id: documentId },
     data: {
-      ...input,
+      title: input.title,
+      type: input.type,
+      status: input.status,
+      content: input.content as Prisma.InputJsonValue | undefined,
+      contentHtml: input.contentHtml,
       wordCount,
       lastEditedById: session.user.id,
     },
