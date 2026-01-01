@@ -93,7 +93,7 @@ export async function generateHandoffBriefing(
       entityType: "brief",
       entityId: brief.id,
       title: brief.title,
-      progress: brief.status === "REVIEW" ? "In review" : "In progress",
+      progress: ["IN_REVIEW", "INTERNAL_REVIEW", "CLIENT_REVIEW"].includes(brief.status) ? "In review" : "In progress",
     });
   }
 
