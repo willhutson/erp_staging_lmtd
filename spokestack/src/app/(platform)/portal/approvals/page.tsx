@@ -130,6 +130,9 @@ function getTypeColor(type: string) {
   }
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function ApprovalsPage() {
   const [selectedItem, setSelectedItem] = useState<typeof APPROVAL_ITEMS[0] | null>(null);
   const [feedbackDialog, setFeedbackDialog] = useState(false);

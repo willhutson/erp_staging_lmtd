@@ -49,6 +49,9 @@ const initialFeedback: FeedbackMessage[] = [
   },
 ]
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function CreativeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const creative = mockCreatives.find((c) => c.id === id)

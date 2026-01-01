@@ -64,6 +64,9 @@ interface UserAccess {
   assignments: Assignment[];
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function AccessSettingsPage() {
   const { data: session } = useSession();
   const [access, setAccess] = useState<UserAccess | null>(null);

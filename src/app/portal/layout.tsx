@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   description: "View and approve your project deliverables",
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function PortalLayout({
   children,
 }: {

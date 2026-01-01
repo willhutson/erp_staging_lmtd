@@ -9,6 +9,9 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function DesignModesDemo() {
   const [density, setDensityState] = useState<DensityMode>("standard")
   const [surface, setSurfaceState] = useState<SurfaceMode>("internal")

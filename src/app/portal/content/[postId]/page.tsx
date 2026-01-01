@@ -13,6 +13,9 @@ import { db } from "@/lib/db";
 import { ArrowLeft } from "lucide-react";
 import { ContentReviewClient } from "./ContentReviewClient";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function PortalContentReviewPage({
   params,
 }: {

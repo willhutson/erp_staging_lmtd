@@ -6,6 +6,9 @@ import { FormTemplateActions } from "@/modules/forms/components/FormTemplateActi
 // Type for form template from the action
 type FormTemplateRecord = Awaited<ReturnType<typeof getFormTemplates>>[number];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function FormsSettingsPage() {
   const templates = await getFormTemplates();
 

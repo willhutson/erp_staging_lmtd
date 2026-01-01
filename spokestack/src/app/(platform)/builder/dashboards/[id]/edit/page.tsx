@@ -150,6 +150,9 @@ const mockPlacedWidgets = [
   },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function DashboardEditorPage() {
   const [dashboardName, setDashboardName] = useState("Executive Overview");
   const [placedWidgets, setPlacedWidgets] = useState(mockPlacedWidgets);

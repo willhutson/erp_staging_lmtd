@@ -71,6 +71,9 @@ const DEMO_SKILLS: Skill[] = [
 
 type ViewMode = "list" | "playground" | "capture" | "wizard";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function SandboxPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);

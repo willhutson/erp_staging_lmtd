@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { BarChart3, Megaphone, Sparkles, Globe, Download, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function AnalyticsPage() {
   return (
     <div className="space-y-6">

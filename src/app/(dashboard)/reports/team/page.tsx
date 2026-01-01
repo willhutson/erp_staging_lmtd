@@ -16,6 +16,9 @@ export const metadata = {
   description: "Team utilization and productivity metrics",
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function TeamReportsPage() {
   const session = await auth();
 

@@ -179,6 +179,9 @@ const sentimentIcons = {
   negative: <ThumbsDown className="h-3 w-3" />,
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function TrackerDashboardPage() {
   const [timeRange, setTimeRange] = useState("7d");
   const [platformFilter, setPlatformFilter] = useState("all");

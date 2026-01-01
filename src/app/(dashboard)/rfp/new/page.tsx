@@ -5,6 +5,9 @@ import { RFPForm } from "@/modules/rfp/components/RFPForm";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function NewRFPPage() {
   const session = await auth();
 

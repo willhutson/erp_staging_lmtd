@@ -16,6 +16,9 @@ import {
 import { listSubscriptions, listHandlers } from "@/modules/content-engine/services";
 import { SubscriptionActions } from "./SubscriptionActions";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function EventSubscriptionsPage() {
   const session = await auth();
 

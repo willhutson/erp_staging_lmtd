@@ -17,6 +17,9 @@ export const metadata = {
   description: "Team communication hub",
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function ChatPage() {
   const session = await auth();
 

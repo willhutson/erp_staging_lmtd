@@ -21,6 +21,9 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.R
   CANCELLED: { label: "Cancelled", color: "bg-gray-100 text-gray-500", icon: <XCircle className="w-4 h-4" /> },
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function SubmissionDetailPage({ params }: PageProps) {
   const { id } = await params;
   const session = await auth();

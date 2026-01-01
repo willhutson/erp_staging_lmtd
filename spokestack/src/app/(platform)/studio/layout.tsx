@@ -13,6 +13,9 @@ export interface StudioUser {
 
 // Studio layout handles authentication for all studio routes
 // Child pages can rely on being authenticated without calling auth() again
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function StudioLayout({
   children,
 }: {

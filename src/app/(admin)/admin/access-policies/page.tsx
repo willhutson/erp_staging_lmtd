@@ -71,6 +71,9 @@ const statusColors: Record<string, string> = {
   ARCHIVED: "bg-gray-200 text-gray-600",
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function AccessPoliciesListPage() {
   const searchParams = useSearchParams();
   const { data: session } = useSession();

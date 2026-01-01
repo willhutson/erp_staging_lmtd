@@ -487,6 +487,9 @@ function ApiCategorySection({ category }: { category: ApiCategory }) {
   );
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function ApiSettingsPage() {
   const totalEndpoints = API_CATEGORIES.reduce((sum, cat) => sum + cat.endpoints.length, 0);
 

@@ -42,6 +42,9 @@ const USAGE_CONTEXT: Record<string, string[]> = {
   KNOWLEDGE: ["Document Retrieval", "Context Building"],
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function SkillsListPage() {
   const session = await auth();
 

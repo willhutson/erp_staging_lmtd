@@ -54,6 +54,9 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
   OTHER: <File className="h-5 w-5" />,
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function DeliverablesPage() {
   const session = await auth();
 

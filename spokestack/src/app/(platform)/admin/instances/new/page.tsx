@@ -29,6 +29,9 @@ const AVAILABLE_MODULES = [
   { id: "time", label: "Time Tracking", description: "Time logs and timesheets" },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function NewOrgInstancePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);

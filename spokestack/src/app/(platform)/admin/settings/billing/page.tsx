@@ -54,6 +54,9 @@ const PLAN_TIERS = [
   { name: "Enterprise", price: "Custom", users: "Unlimited", features: "Custom + Support" },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function BillingSettingsPage() {
   return (
     <div className="space-y-6">

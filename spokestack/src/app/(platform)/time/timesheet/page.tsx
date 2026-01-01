@@ -10,6 +10,9 @@ const projects = [
   { id: "3", name: "ADEK - Video", client: "ADEK", color: "bg-purple-500" },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function TimesheetPage() {
   return (
     <div className="space-y-6">

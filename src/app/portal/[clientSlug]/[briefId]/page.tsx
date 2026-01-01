@@ -9,6 +9,9 @@ interface PageProps {
   params: Promise<{ clientSlug: string; briefId: string }>;
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function PortalBriefDetailPage({ params }: PageProps) {
   const { clientSlug, briefId } = await params;
 

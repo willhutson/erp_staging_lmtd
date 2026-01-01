@@ -50,6 +50,9 @@ import {
 // Simple ID generator using crypto API
 const generateId = () => crypto.randomUUID();
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function DashboardBuilderPage() {
   const [dashboardId, setDashboardId] = useState<string | null>(null);
   const [dashboardName, setDashboardName] = useState("Untitled Dashboard");

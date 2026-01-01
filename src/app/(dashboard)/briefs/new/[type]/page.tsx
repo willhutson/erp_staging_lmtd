@@ -23,6 +23,9 @@ interface PageProps {
   params: Promise<{ type: string }>;
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function NewBriefTypePage({ params }: PageProps) {
   const { type: typeSlug } = await params;
   const session = await auth();

@@ -131,6 +131,9 @@ const stages = [
   { id: "CLOSED", name: "Closed", color: "bg-green-500" },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function DealsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState("all");

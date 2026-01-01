@@ -5,6 +5,9 @@ import { ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db";
 import { NewPostForm } from "./NewPostForm";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function NewPostPage() {
   const session = await auth();
 

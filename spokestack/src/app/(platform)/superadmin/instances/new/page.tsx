@@ -146,6 +146,9 @@ interface Organization {
   slug: string;
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function NewInstancePage() {
   const router = useRouter();
 

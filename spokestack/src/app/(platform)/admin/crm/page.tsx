@@ -37,6 +37,9 @@ const CRM_MODULES = [
   },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function CRMPage() {
   return (
     <div className="space-y-6">

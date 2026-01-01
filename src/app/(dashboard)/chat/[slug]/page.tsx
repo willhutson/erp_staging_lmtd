@@ -25,6 +25,9 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
   return {

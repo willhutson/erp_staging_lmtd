@@ -243,6 +243,9 @@ function OrgTree({ node, expandedNodes, toggleNode }: { node: OrgNode; expandedN
   );
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function OrgChartPage() {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(
     new Set(["will", "cj", "ted", "salma", "afaq"]) // Expand top levels by default

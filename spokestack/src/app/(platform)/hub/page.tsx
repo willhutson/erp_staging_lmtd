@@ -144,6 +144,9 @@ const MODULE_BUNDLES = [
   },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function HubPage() {
   return (
     <div className="min-h-[calc(100vh-120px)] flex flex-col">

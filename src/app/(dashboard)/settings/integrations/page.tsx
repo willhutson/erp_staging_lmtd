@@ -5,6 +5,9 @@ import { SlackIntegrationCard } from "@/modules/integrations/slack/components/Sl
 import { getSlackChannels } from "@/modules/integrations/slack/actions";
 import { FileSpreadsheet, BarChart3, Receipt } from "lucide-react";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function IntegrationsSettingsPage() {
   const session = await auth();
 

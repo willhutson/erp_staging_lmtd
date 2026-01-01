@@ -187,6 +187,9 @@ function LoginFormFallback() {
   );
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ltd-surface-1 via-ltd-surface-2 to-ltd-primary/5 p-4">

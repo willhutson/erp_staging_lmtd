@@ -89,6 +89,9 @@ const columns: ColumnDef<Campaign>[] = [
   },
 ]
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function CampaignsPage() {
   const totalBudget = mockCampaigns.reduce((acc, c) => acc + c.budget, 0)
   const totalSpend = mockCampaigns.reduce((acc, c) => acc + c.spend, 0)

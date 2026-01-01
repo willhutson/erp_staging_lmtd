@@ -97,6 +97,9 @@ function getStatusColor(status: string) {
   }
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function ChatPage() {
   const [selectedChannel, setSelectedChannel] = useState("general");
   const [messageInput, setMessageInput] = useState("");

@@ -115,6 +115,9 @@ const creatorMetrics = {
   ],
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function CreatorAnalyticsPage() {
   const [dateRange, setDateRange] = useState("30d");
 

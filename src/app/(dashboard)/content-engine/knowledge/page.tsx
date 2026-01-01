@@ -40,6 +40,9 @@ interface PageProps {
   searchParams: Promise<SearchParams>;
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function KnowledgePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const session = await auth();

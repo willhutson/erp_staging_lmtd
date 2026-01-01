@@ -37,6 +37,9 @@ const mockActivity: ActivityItem[] = [
   },
 ]
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function CampaignDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const campaign = mockCampaigns.find((c) => c.id === id)

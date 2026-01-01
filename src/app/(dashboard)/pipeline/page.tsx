@@ -9,6 +9,9 @@ type DealWithRelations = Awaited<ReturnType<typeof db.deal.findMany<{
   include: { client: true; owner: true; convertedToClient: true }
 }>>>[number];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function PipelinePage() {
   const session = await auth();
 

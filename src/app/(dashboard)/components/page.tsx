@@ -74,6 +74,9 @@ const tabs = [
 type Density = "compact" | "standard" | "comfortable"
 type Theme = "light" | "dark"
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function ComponentsShowcase() {
   const [mounted, setMounted] = useState(false)
   const [currentRole, setCurrentRole] = useState<UserRole>("admin")

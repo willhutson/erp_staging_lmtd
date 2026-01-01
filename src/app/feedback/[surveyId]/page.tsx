@@ -6,6 +6,9 @@ interface PageProps {
   params: Promise<{ surveyId: string }>;
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function FeedbackPage({ params }: PageProps) {
   const { surveyId } = await params;
 

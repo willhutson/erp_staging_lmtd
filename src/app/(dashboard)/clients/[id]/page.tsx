@@ -57,6 +57,9 @@ function calculateMomentum(clientId: string): { level: MomentumLevel; daysInStat
   return mockMomentum[clientId] || { level: "steady", daysInStatus: 7 }
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const client = mockClients.find((c) => c.id === id)

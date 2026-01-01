@@ -63,6 +63,9 @@ const studioModules = [
   },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function StudioDashboard() {
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto">
