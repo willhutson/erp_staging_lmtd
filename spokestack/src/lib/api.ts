@@ -233,6 +233,30 @@ export function requireTeamLead(context: AuthContext) {
   requirePermission(context, "TEAM_LEAD+");
 }
 
+export function canAccessResource(
+  context: AuthContext,
+  resourceOwnerId: string,
+  resourceOrgId: string
+): boolean {
+  // Must be same organization
+  if (resourceOrgId !== context.organizationId) {
+    return false;
+  }
+
+  // Admins and leadership can access anything in their org
+  if (["ADMIN", "LEADERSHIP"].includes(context.user.permissionLevel)) {
+    return true;
+  }
+
+  // Team leads can access their team's resources
+  if (context.user.permissionLevel === "TEAM_LEAD") {
+    return true;
+  }
+
+  // Staff and freelancers can only access their own resources
+  return resourceOwnerId === context.user.id;
+}
+
 // ============================================
 // Request Parsing
 // ============================================
