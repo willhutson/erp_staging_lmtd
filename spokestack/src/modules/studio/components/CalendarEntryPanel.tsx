@@ -30,9 +30,12 @@ const contentTypeConfig: Record<SocialContentType, { label: string; description:
   REEL: { label: "Reel", description: "Short-form vertical video" },
   STORY: { label: "Story", description: "24-hour ephemeral content" },
   LIVE: { label: "Live", description: "Real-time broadcast" },
+  VIDEO: { label: "Video", description: "Standard video content" },
   ARTICLE: { label: "Article", description: "Long-form written content" },
+  TWEET: { label: "Tweet", description: "Short text post" },
   THREAD: { label: "Thread", description: "Multi-part text series" },
   AD: { label: "Ad", description: "Paid promotional content" },
+  OTHER: { label: "Other", description: "Custom content type" },
 };
 
 // Status config
@@ -41,6 +44,7 @@ const statusConfig: Record<CalendarEntryStatus, { label: string; color: string; 
   PLANNED: { label: "Planned", color: "text-yellow-600", bgColor: "bg-yellow-100" },
   IN_PROGRESS: { label: "In Progress", color: "text-blue-600", bgColor: "bg-blue-100" },
   READY: { label: "Ready", color: "text-green-600", bgColor: "bg-green-100" },
+  DRAFT: { label: "Draft", color: "text-slate-600", bgColor: "bg-slate-100" },
   SCHEDULED: { label: "Scheduled", color: "text-purple-600", bgColor: "bg-purple-100" },
   PUBLISHED: { label: "Published", color: "text-green-700", bgColor: "bg-green-200" },
   CANCELLED: { label: "Cancelled", color: "text-red-600", bgColor: "bg-red-100" },

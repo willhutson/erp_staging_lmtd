@@ -7,7 +7,7 @@ import type {
   VideoProjectWithRelations,
   VideoProjectFilters,
 } from "../types";
-import type { ScriptStatus } from "@prisma/client";
+import type { ScriptStatus } from "@/lib/prisma-enums";
 
 /**
  * Create a new video project

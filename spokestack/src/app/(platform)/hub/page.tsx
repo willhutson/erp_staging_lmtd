@@ -32,6 +32,12 @@ import {
   MessageSquare,
   FileCheck,
   Eye,
+  GitBranch,
+  Kanban,
+  LayoutTemplate,
+  Video,
+  Presentation,
+  ImageIcon,
 } from "lucide-react";
 
 // Admin sections (left side)
@@ -140,6 +146,39 @@ const MODULE_BUNDLES = [
       { label: "Approvals", href: "/portal/approvals", icon: FileCheck, description: "Review deliverables" },
       { label: "Deliverables", href: "/portal/deliverables", icon: FolderKanban, description: "All project assets" },
       { label: "Reports", href: "/portal/reports", icon: BarChart3, description: "Campaign analytics" },
+    ],
+  },
+  {
+    id: "studio",
+    label: "Studio",
+    tagline: "AI Creative",
+    description: "AI-powered creative workspace with docs, decks, video, and moodboards",
+    icon: Sparkles,
+    href: "/studio",
+    color: "from-violet-500 to-violet-600",
+    bgColor: "bg-violet-500",
+    modules: [
+      { label: "Documents", href: "/studio/docs", icon: FileText, description: "Rich text with AI" },
+      { label: "Pitch Decks", href: "/studio/decks", icon: Presentation, description: "AI presentations" },
+      { label: "Video Studio", href: "/studio/video", icon: Video, description: "Scripts & storyboards" },
+      { label: "Moodboards", href: "/studio/moodboard", icon: ImageIcon, description: "Visual inspiration" },
+      { label: "Calendar", href: "/studio/calendar", icon: Calendar, description: "Content scheduling" },
+      { label: "AI Skills", href: "/studio/skills", icon: Palette, description: "Custom AI assistants" },
+    ],
+  },
+  {
+    id: "workflows",
+    label: "Workflows",
+    tagline: "Process Automation",
+    description: "Monday.com-style boards for team processes and automation",
+    icon: GitBranch,
+    href: "/workflows",
+    color: "from-orange-500 to-orange-600",
+    bgColor: "bg-orange-500",
+    modules: [
+      { label: "Boards", href: "/workflows", icon: Kanban, description: "Workflow boards" },
+      { label: "My Workflows", href: "/workflows/my", icon: FolderKanban, description: "Your assigned tasks" },
+      { label: "Templates", href: "/workflows/templates", icon: LayoutTemplate, description: "Pre-built processes" },
     ],
   },
 ];

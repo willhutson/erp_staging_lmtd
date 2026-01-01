@@ -97,8 +97,8 @@ export function VideoEditorClient({ project: initialProject }: VideoEditorClient
   const [newShotEquipment, setNewShotEquipment] = useState("");
 
   const status = statusConfig[project.status] || statusConfig.CONCEPT;
-  const frames = project.storyboard?.frames || [];
-  const shots = project.shotList || [];
+  const frames: StoryboardFrame[] = project.storyboard?.frames || [];
+  const shots: ShotListItem[] = project.shotList || [];
 
   const handleSaveScript = async () => {
     setIsSaving(true);

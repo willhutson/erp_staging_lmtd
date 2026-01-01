@@ -70,7 +70,18 @@ export async function getBriefDeadlinesForCalendar(
     orderBy: { deadline: "asc" },
   });
 
-  return briefs.map((brief) => ({
+  type BriefQueryResult = {
+    id: string;
+    briefNumber: string;
+    title: string;
+    type: string;
+    status: string;
+    deadline: Date | null;
+    client: { id: string; name: string; code: string };
+    assignee: { id: string; name: string } | null;
+  };
+
+  return (briefs as BriefQueryResult[]).map((brief) => ({
     id: brief.id,
     briefNumber: brief.briefNumber,
     title: brief.title,
@@ -139,7 +150,18 @@ export async function getOverdueBriefDeadlines(): Promise<BriefDeadlineMarker[]>
     orderBy: { deadline: "asc" },
   });
 
-  return briefs.map((brief) => ({
+  type OverdueBriefResult = {
+    id: string;
+    briefNumber: string;
+    title: string;
+    type: string;
+    status: string;
+    deadline: Date | null;
+    client: { id: string; name: string; code: string };
+    assignee: { id: string; name: string } | null;
+  };
+
+  return (briefs as OverdueBriefResult[]).map((brief) => ({
     id: brief.id,
     briefNumber: brief.briefNumber,
     title: brief.title,

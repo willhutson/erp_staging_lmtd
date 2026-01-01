@@ -42,6 +42,15 @@ import {
   Palette,
   FileCheck,
   TrendingUp,
+  Sparkles,
+  GitBranch,
+  FileText,
+  Video,
+  Presentation,
+  ImageIcon,
+  Calendar,
+  Kanban,
+  LayoutTemplate,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -84,6 +93,24 @@ const MODULE_BUNDLES = [
     modules: ["portal-dashboard", "portal-approvals", "portal-deliverables", "portal-reports"],
     color: "bg-cyan-500",
     icon: Eye,
+  },
+  {
+    id: "studio",
+    label: "Studio",
+    tagline: "Creative Workspace",
+    description: "AI-powered creative tools: documents, pitch decks, video studio, moodboards, calendar, and AI skills",
+    modules: ["studio-docs", "studio-decks", "studio-video", "studio-moodboard", "studio-calendar", "studio-skills"],
+    color: "bg-violet-500",
+    icon: Sparkles,
+  },
+  {
+    id: "workflows",
+    label: "Workflows",
+    tagline: "Process Automation",
+    description: "Monday.com-style workflow boards, templates, and process automation",
+    modules: ["workflows-boards", "workflows-my", "workflows-templates"],
+    color: "bg-orange-500",
+    icon: GitBranch,
   },
 ];
 
@@ -133,6 +160,25 @@ const MODULE_CATEGORIES = [
       { id: "portal-approvals", label: "Approvals", description: "Deliverable review and approval workflow", icon: FileCheck },
       { id: "portal-deliverables", label: "Deliverables", description: "Asset library with downloads", icon: FolderKanban },
       { id: "portal-reports", label: "Reports", description: "Performance reports and analytics", icon: BarChart3 },
+    ],
+  },
+  {
+    category: "Studio",
+    modules: [
+      { id: "studio-docs", label: "Documents", description: "Rich text documents with AI assistance and Google Sync", icon: FileText },
+      { id: "studio-decks", label: "Pitch Decks", description: "AI-powered presentation builder with templates", icon: Presentation },
+      { id: "studio-video", label: "Video Studio", description: "Scripts, storyboards, and shot lists", icon: Video },
+      { id: "studio-moodboard", label: "Moodboard Lab", description: "Visual inspiration with AI indexing", icon: ImageIcon },
+      { id: "studio-calendar", label: "Content Calendar", description: "Social media scheduling and planning", icon: Calendar },
+      { id: "studio-skills", label: "AI Skills", description: "Custom AI assistants for creative tasks", icon: Palette },
+    ],
+  },
+  {
+    category: "Workflows",
+    modules: [
+      { id: "workflows-boards", label: "Boards", description: "Monday.com-style workflow boards", icon: Kanban },
+      { id: "workflows-my", label: "My Workflows", description: "Personal workflow assignments and tasks", icon: FolderKanban },
+      { id: "workflows-templates", label: "Templates", description: "Pre-built workflow templates for common processes", icon: LayoutTemplate },
     ],
   },
 ];
