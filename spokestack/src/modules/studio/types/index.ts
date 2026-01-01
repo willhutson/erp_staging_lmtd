@@ -125,6 +125,7 @@ export interface CreateCalendarEntryInput {
 }
 
 export interface CalendarEntryWithRelations extends StudioCalendarEntry {
+  platforms: string[];
   createdBy: { id: string; name: string; avatarUrl?: string | null };
   assignee?: { id: string; name: string; avatarUrl?: string | null } | null;
   client?: { id: string; name: string } | null;
