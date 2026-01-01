@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { auth } from "@/lib/auth";
+import { getSession, getUser } from "@/lib/supabase/server";
+import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { can } from "@/lib/permissions";
 import { getAllFormConfigs, briefTypeIcons } from "@/../config/forms";
@@ -28,14 +29,32 @@ const iconMap: Record<string, React.ReactNode> = {
 export const dynamic = "force-dynamic";
 
 export default async function NewBriefPage() {
-  const session = await auth();
-
-  if (!session?.user) {
+  const session = await getSession();
+  if (!session) {
     redirect("/login");
   }
 
+  const supabaseUser = await getUser();
+  if (!supabaseUser) {
+    redirect("/login");
+  }
+
+  // Find user in database
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { supabaseId: supabaseUser.id },
+        { email: supabaseUser.email }
+      ]
+    }
+  });
+
+  if (!user) {
+    redirect("/hub?error=user_not_found");
+  }
+
   // Check permission
-  if (!can(session.user as Parameters<typeof can>[0], "brief:create")) {
+  if (!can(user as Parameters<typeof can>[0], "brief:create")) {
     redirect("/briefs");
   }
 
