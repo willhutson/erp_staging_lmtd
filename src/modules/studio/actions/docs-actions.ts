@@ -436,7 +436,7 @@ export async function restoreVersion(documentId: string, version: number): Promi
       content: versionData.content as Prisma.InputJsonValue | undefined,
       contentHtml: versionData.contentHtml,
       wordCount: versionData.wordCount,
-      syncStatus: versionData.document.googleDocId ? "PENDING_SYNC" : "LOCAL_ONLY",
+      syncStatus: versionData.document.googleDocId ? "PENDING" : "SKIPPED",
       lastEditedById: session.user.id,
     },
     include: {

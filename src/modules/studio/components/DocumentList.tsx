@@ -23,10 +23,13 @@ interface DocumentListProps {
 }
 
 const syncStatusConfig = {
-  LOCAL_ONLY: { icon: CloudOff, label: "Local only", color: "text-gray-500" },
+  PENDING: { icon: RefreshCw, label: "Pending sync", color: "text-yellow-600" },
   SYNCED: { icon: Cloud, label: "Synced", color: "text-green-600" },
-  PENDING_SYNC: { icon: RefreshCw, label: "Pending sync", color: "text-yellow-600" },
-  CONFLICT: { icon: RefreshCw, label: "Conflict", color: "text-red-600" },
+  SYNCING: { icon: RefreshCw, label: "Syncing", color: "text-blue-600" },
+  FAILED: { icon: RefreshCw, label: "Sync failed", color: "text-red-600" },
+  ERROR: { icon: RefreshCw, label: "Error", color: "text-red-600" },
+  SKIPPED: { icon: CloudOff, label: "Local only", color: "text-gray-500" },
+  DISABLED: { icon: CloudOff, label: "Sync disabled", color: "text-gray-400" },
 };
 
 export function DocumentList({
@@ -44,7 +47,7 @@ export function DocumentList({
   return (
     <div className="space-y-2">
       {documents.map((doc) => {
-        const syncStatus = syncStatusConfig[doc.syncStatus || "LOCAL_ONLY"];
+        const syncStatus = syncStatusConfig[doc.syncStatus || "SKIPPED"];
         const SyncIcon = syncStatus.icon;
 
         return (
