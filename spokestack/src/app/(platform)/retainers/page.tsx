@@ -68,11 +68,12 @@ async function getRetainerStats() {
       where: { year: currentYear, month: currentMonth },
     });
 
-    const totalBudgetHours = periods.reduce((sum, p) => sum + Number(p.budgetHours || 0), 0);
-    const totalActualHours = periods.reduce((sum, p) => sum + Number(p.actualHours || 0), 0);
-    const totalContractValue = periods.reduce((sum, p) => sum + Number(p.contractValue || 0), 0);
+    type Period = (typeof periods)[number];
+    const totalBudgetHours = periods.reduce((sum: number, p: Period) => sum + Number(p.budgetHours || 0), 0);
+    const totalActualHours = periods.reduce((sum: number, p: Period) => sum + Number(p.actualHours || 0), 0);
+    const totalContractValue = periods.reduce((sum: number, p: Period) => sum + Number(p.contractValue || 0), 0);
     const avgBurnRate = periods.length > 0
-      ? periods.reduce((sum, p) => sum + Number(p.burnRate || 0), 0) / periods.length
+      ? periods.reduce((sum: number, p: Period) => sum + Number(p.burnRate || 0), 0) / periods.length
       : 0;
 
     return {

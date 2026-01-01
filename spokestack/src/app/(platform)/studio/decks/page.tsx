@@ -1,19 +1,14 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { getStudioUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { DecksClient } from "./decks-client";
 
 export default async function DecksPage() {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect("/login");
-  }
+  const user = await getStudioUser();
 
   // Fetch pitch decks for the organization
   const decks = await db.pitchDeck.findMany({
     where: {
-      organizationId: session.user.organizationId,
+      organizationId: user.organizationId,
     },
     include: {
       createdBy: { select: { id: true, name: true, avatarUrl: true } },
@@ -27,7 +22,7 @@ export default async function DecksPage() {
   // Fetch clients for the create modal
   const clients = await db.client.findMany({
     where: {
-      organizationId: session.user.organizationId,
+      organizationId: user.organizationId,
       isActive: true,
     },
     select: { id: true, name: true },
@@ -37,7 +32,7 @@ export default async function DecksPage() {
   // Fetch deck templates
   const templates = await db.deckTemplate.findMany({
     where: {
-      organizationId: session.user.organizationId,
+      organizationId: user.organizationId,
       isActive: true,
     },
     select: { id: true, name: true },

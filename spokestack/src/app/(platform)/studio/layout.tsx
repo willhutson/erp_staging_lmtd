@@ -1,0 +1,60 @@
+import { redirect } from "next/navigation";
+import { getSession, getUser } from "@/lib/supabase/server";
+import prisma from "@/lib/prisma";
+
+export interface StudioUser {
+  id: string;
+  email: string;
+  name: string | null;
+  avatarUrl: string | null;
+  organizationId: string;
+  permissionLevel: string;
+}
+
+// Studio layout handles authentication for all studio routes
+// Child pages can rely on being authenticated without calling auth() again
+export default async function StudioLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const supabaseUser = await getUser();
+  if (!supabaseUser) {
+    redirect("/login");
+  }
+
+  // Find user in database - try supabaseId first, then email
+  let user = await prisma.user.findFirst({
+    where: { supabaseId: supabaseUser.id }
+  });
+
+  // If not found by supabaseId, try email
+  if (!user && supabaseUser.email) {
+    user = await prisma.user.findFirst({
+      where: { email: supabaseUser.email }
+    });
+
+    // Link supabaseId for future lookups
+    if (user) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { supabaseId: supabaseUser.id }
+      });
+    }
+  }
+
+  // If user not in DB, redirect to setup page instead of login loop
+  if (!user) {
+    console.error("Studio: User not found in database for:", supabaseUser.email);
+    // Redirect to hub with error rather than login to prevent loop
+    redirect("/hub?error=user_not_found");
+  }
+
+  return <>{children}</>;
+}

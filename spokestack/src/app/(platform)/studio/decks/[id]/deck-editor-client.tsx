@@ -69,7 +69,8 @@ export function DeckEditorClient({ deck: initialDeck }: DeckEditorClientProps) {
 
   const slides = deck.slides || [];
   const selectedSlide = slides[selectedSlideIndex];
-  const status = statusConfig[deck.status] || statusConfig.DRAFT;
+  const deckStatus = (deck as unknown as { status?: string }).status || "DRAFT";
+  const status = statusConfig[deckStatus] || statusConfig.DRAFT;
 
   const handleAddSlide = async (layoutType: SlideLayoutType) => {
     setIsAddingSlide(true);

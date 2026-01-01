@@ -1,15 +1,10 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { getStudioUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { CalendarClient } from "./calendar-client";
 import { startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
 
 export default async function CalendarPage() {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect("/login");
-  }
+  const user = await getStudioUser();
 
   // Calculate date range for fetching (3 months window)
   const now = new Date();
@@ -19,7 +14,7 @@ export default async function CalendarPage() {
   // Fetch calendar entries for the organization
   const entries = await db.studioCalendarEntry.findMany({
     where: {
-      organizationId: session.user.organizationId,
+      organizationId: user.organizationId,
     },
     include: {
       createdBy: { select: { id: true, name: true, avatarUrl: true } },
@@ -33,7 +28,7 @@ export default async function CalendarPage() {
   // Fetch clients for the create modal
   const clients = await db.client.findMany({
     where: {
-      organizationId: session.user.organizationId,
+      organizationId: user.organizationId,
       isActive: true,
     },
     select: { id: true, name: true, code: true },
@@ -43,7 +38,7 @@ export default async function CalendarPage() {
   // Fetch brief deadlines for the calendar
   const briefDeadlines = await db.brief.findMany({
     where: {
-      organizationId: session.user.organizationId,
+      organizationId: user.organizationId,
       deadline: {
         gte: rangeStart,
         lte: rangeEnd,
@@ -77,7 +72,8 @@ export default async function CalendarPage() {
   });
 
   // Transform deadlines to match the expected type
-  const formattedDeadlines = briefDeadlines.map((brief) => ({
+  type BriefDeadline = (typeof briefDeadlines)[number];
+  const formattedDeadlines = briefDeadlines.map((brief: BriefDeadline) => ({
     id: brief.id,
     briefNumber: brief.briefNumber,
     title: brief.title,
