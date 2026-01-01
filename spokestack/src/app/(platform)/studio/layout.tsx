@@ -23,35 +23,57 @@ export default async function StudioLayout({
   children: React.ReactNode;
 }) {
   try {
-    const session = await getSession();
+    // Step 1: Get Supabase session
+    let session;
+    try {
+      session = await getSession();
+    } catch (sessionError) {
+      console.error("Studio: Failed to get session:", sessionError);
+      redirect("/hub?error=session_failed");
+    }
 
     if (!session) {
       redirect("/login");
     }
 
-    const supabaseUser = await getUser();
+    // Step 2: Get Supabase user
+    let supabaseUser;
+    try {
+      supabaseUser = await getUser();
+    } catch (userError) {
+      console.error("Studio: Failed to get user:", userError);
+      redirect("/hub?error=user_fetch_failed");
+    }
+
     if (!supabaseUser) {
       redirect("/login");
     }
 
-    // Find user in database - try supabaseId first, then email
-    let user = await prisma.user.findFirst({
-      where: { supabaseId: supabaseUser.id }
-    });
-
-    // If not found by supabaseId, try email
-    if (!user && supabaseUser.email) {
+    // Step 3: Find user in database
+    let user;
+    try {
+      // Try supabaseId first
       user = await prisma.user.findFirst({
-        where: { email: supabaseUser.email }
+        where: { supabaseId: supabaseUser.id }
       });
 
-      // Link supabaseId for future lookups
-      if (user) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { supabaseId: supabaseUser.id }
+      // If not found by supabaseId, try email
+      if (!user && supabaseUser.email) {
+        user = await prisma.user.findFirst({
+          where: { email: supabaseUser.email }
         });
+
+        // Link supabaseId for future lookups
+        if (user) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { supabaseId: supabaseUser.id }
+          });
+        }
       }
+    } catch (dbError) {
+      console.error("Studio: Database query failed:", dbError);
+      redirect("/hub?error=db_error");
     }
 
     // If user not in DB, redirect to hub instead of login loop
@@ -66,8 +88,7 @@ export default async function StudioLayout({
     if (isRedirectError(error)) {
       throw error;
     }
-    console.error("Studio layout error:", error);
-    // Redirect to hub on error
+    console.error("Studio layout unexpected error:", error);
     redirect("/hub?error=studio_error");
   }
 }
