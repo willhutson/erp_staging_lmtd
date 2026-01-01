@@ -75,6 +75,10 @@ model Organization {
   // Studio module
   studioDocuments       StudioDocument[]
   studioCalendarEntries StudioCalendarEntry[]
+  videoProjects         VideoProject[]
+  pitchDecks            PitchDeck[]
+  deckTemplates         DeckTemplate[]
+  moodboards            Moodboard[]
 
   @@map("organizations")
 }
@@ -232,6 +236,12 @@ model User {
   studioDocVersionsCreated      StudioDocVersion[]
   studioCalendarEntriesCreated  StudioCalendarEntry[]    @relation("EntryCreator")
   studioCalendarEntriesAssigned StudioCalendarEntry[]    @relation("EntryAssignee")
+  videoProjectsCreated          VideoProject[]           @relation("VideoCreator")
+  videoProjectsDirected         VideoProject[]           @relation("VideoDirector")
+  pitchDecksCreated             PitchDeck[]
+  moodboardsCreated             Moodboard[]
+  moodboardConversations        MoodboardConversation[]
+  moodboardOutputs              MoodboardOutput[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -341,6 +351,9 @@ model Client {
   // Studio module
   studioDocuments       StudioDocument[]
   studioCalendarEntries StudioCalendarEntry[]
+  videoProjects         VideoProject[]
+  pitchDecks            PitchDeck[]
+  moodboards            Moodboard[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
@@ -470,6 +483,9 @@ model Deal {
   owner             User         @relation("DealOwner", fields: [ownerId], references: [id])
   convertedToClient Client?      @relation("DealToClient") // Reverse relation
 
+  // Studio module
+  pitchDecks        PitchDeck[]
+
   @@index([organizationId])
   @@index([clientId])
   @@index([stage])
@@ -511,6 +527,9 @@ model Project {
   // Studio module
   studioDocuments       StudioDocument[]
   studioCalendarEntries StudioCalendarEntry[]
+  videoProjects         VideoProject[]
+  pitchDecks            PitchDeck[]
+  moodboards            Moodboard[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -590,6 +609,8 @@ model Brief {
   // Studio module
   studioDocuments       StudioDocument[]
   studioCalendarEntries StudioCalendarEntry[]
+  videoProjects         VideoProject[]
+  moodboards            Moodboard[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -5883,4 +5904,527 @@ enum CalendarEntryStatus {
   SCHEDULED       // Scheduled in Marketing module
   PUBLISHED       // Live
   CANCELLED       // Cancelled
+}
+
+// VideoProject - Video pre-production
+model VideoProject {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Project info
+  title           String
+  description     String?  @db.Text
+  type            VideoProjectType
+  status          VideoProjectStatus @default(CONCEPT)
+
+  // Specs
+  duration        Int?     // Target duration in seconds
+  aspectRatio     String?  // "16:9", "9:16", "1:1"
+  platform        String?  // Primary platform target
+
+  // Relations
+  clientId        String?
+  projectId       String?
+  briefId         String?
+
+  // Ownership
+  createdById     String
+  directorId      String?  // Assigned director/editor
+
+  // Dates
+  shootDate       DateTime?
+  dueDate         DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  client          Client?      @relation(fields: [clientId], references: [id])
+  project         Project?     @relation(fields: [projectId], references: [id])
+  brief           Brief?       @relation(fields: [briefId], references: [id])
+  createdBy       User         @relation("VideoCreator", fields: [createdById], references: [id])
+  director        User?        @relation("VideoDirector", fields: [directorId], references: [id])
+
+  script          VideoScript?
+  storyboard      Storyboard?
+  shotList        ShotListItem[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@map("video_projects")
+}
+
+model VideoScript {
+  id              String   @id @default(cuid())
+  videoProjectId  String   @unique
+
+  // Script content
+  content         Json     // Structured script format
+  contentText     String?  @db.Text  // Plain text version
+
+  // Metadata
+  version         Int      @default(1)
+  wordCount       Int      @default(0)
+  estimatedDuration Int?   // Estimated seconds based on word count
+
+  // Status
+  status          ScriptStatus @default(DRAFT)
+
+  // AI assistance
+  aiGenerated     Boolean  @default(false)
+  aiPrompt        String?  @db.Text  // Prompt used to generate
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  videoProject    VideoProject @relation(fields: [videoProjectId], references: [id], onDelete: Cascade)
+
+  @@map("video_scripts")
+}
+
+model Storyboard {
+  id              String   @id @default(cuid())
+  videoProjectId  String   @unique
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  videoProject    VideoProject   @relation(fields: [videoProjectId], references: [id], onDelete: Cascade)
+  frames          StoryboardFrame[]
+
+  @@map("storyboards")
+}
+
+model StoryboardFrame {
+  id              String   @id @default(cuid())
+  storyboardId    String
+
+  // Frame info
+  orderIndex      Int
+  imageUrl        String?  // Generated or uploaded image
+  description     String?  @db.Text  // Scene description
+  dialogue        String?  @db.Text  // Character dialogue
+  action          String?  @db.Text  // Action notes
+  duration        Int?     // Frame duration in seconds
+
+  // Camera/technical
+  shotType        String?  // "wide", "medium", "close-up", etc.
+  cameraMovement  String?  // "static", "pan", "dolly", etc.
+  notes           String?  @db.Text  // Director notes
+
+  // AI generation
+  aiGenerated     Boolean  @default(false)
+  aiPrompt        String?  @db.Text
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  storyboard      Storyboard @relation(fields: [storyboardId], references: [id], onDelete: Cascade)
+
+  @@index([storyboardId, orderIndex])
+  @@map("storyboard_frames")
+}
+
+model ShotListItem {
+  id              String   @id @default(cuid())
+  videoProjectId  String
+
+  // Shot info
+  orderIndex      Int
+  shotNumber      String   // "1A", "1B", "2", etc.
+  description     String   @db.Text
+  shotType        String?
+  location        String?
+  talent          String?  // Who's in the shot
+  equipment       String?  // Special equipment needed
+  duration        Int?     // Estimated seconds
+  notes           String?  @db.Text
+
+  // Status
+  status          ShotStatus @default(PLANNED)
+
+  createdAt       DateTime @default(now())
+
+  videoProject    VideoProject @relation(fields: [videoProjectId], references: [id], onDelete: Cascade)
+
+  @@index([videoProjectId, orderIndex])
+  @@map("shot_list_items")
+}
+
+enum VideoProjectType {
+  BRAND_VIDEO     // Brand/corporate video
+  SOCIAL_CONTENT  // Short-form social
+  COMMERCIAL      // Advertisement
+  TESTIMONIAL     // Client testimonial
+  EXPLAINER       // Explainer/how-to
+  EVENT           // Event coverage
+  DOCUMENTARY     // Mini-doc
+  ANIMATION       // Motion graphics
+}
+
+enum VideoProjectStatus {
+  CONCEPT         // Initial concept
+  SCRIPTING       // Writing script
+  PRE_PRODUCTION  // Storyboard, planning
+  PRODUCTION      // Filming
+  POST_PRODUCTION // Editing
+  REVIEW          // Client review
+  COMPLETE        // Delivered
+  CANCELLED
+}
+
+enum ScriptStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  REVISION_REQUESTED
+}
+
+enum ShotStatus {
+  PLANNED
+  READY
+  SHOT
+  UNUSABLE
+}
+
+// PitchDeck - Presentation builder
+model PitchDeck {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Deck info
+  title           String
+  description     String?  @db.Text
+  type            DeckType @default(PITCH)
+  status          DeckStatus @default(DRAFT)
+
+  // Template
+  templateId      String?
+
+  // Google Slides sync
+  googleSlidesId  String?  @unique
+  googleDriveId   String?
+  lastSyncedAt    DateTime?
+
+  // Relations
+  clientId        String?
+  dealId          String?
+  projectId       String?
+
+  // Ownership
+  createdById     String
+
+  // Presentation date
+  presentationDate DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization  @relation(fields: [organizationId], references: [id])
+  template        DeckTemplate? @relation(fields: [templateId], references: [id])
+  client          Client?       @relation(fields: [clientId], references: [id])
+  deal            Deal?         @relation(fields: [dealId], references: [id])
+  project         Project?      @relation(fields: [projectId], references: [id])
+  createdBy       User          @relation(fields: [createdById], references: [id])
+
+  slides          DeckSlide[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@map("pitch_decks")
+}
+
+model DeckSlide {
+  id              String   @id @default(cuid())
+  deckId          String
+
+  // Slide info
+  orderIndex      Int
+  layoutType      SlideLayoutType
+  title           String?
+  subtitle        String?
+  content         Json     // Structured slide content
+
+  // Visual
+  backgroundUrl   String?
+  backgroundColor String?
+
+  // Notes
+  speakerNotes    String?  @db.Text
+
+  // AI
+  aiGenerated     Boolean  @default(false)
+  aiPrompt        String?  @db.Text
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  deck            PitchDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  @@index([deckId, orderIndex])
+  @@map("deck_slides")
+}
+
+model DeckTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String
+  description     String?  @db.Text
+  type            DeckType
+
+  // Template structure
+  slideTemplates  Json     // Default slides for this template type
+
+  // Styling
+  colorScheme     Json?
+  fonts           Json?
+  logoUrl         String?
+
+  // Google Slides master
+  googleTemplateId String?
+
+  isDefault       Boolean  @default(false)
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  decks           PitchDeck[]
+
+  @@index([organizationId])
+  @@map("deck_templates")
+}
+
+enum DeckType {
+  PITCH           // New client pitch
+  PROPOSAL        // Project proposal
+  REPORT          // Monthly/quarterly report
+  CASE_STUDY      // Case study presentation
+  CREDENTIALS     // Agency credentials
+  WORKSHOP        // Workshop/training
+  INTERNAL        // Internal presentation
+}
+
+enum DeckStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  PRESENTED
+  WON
+  LOST
+  ARCHIVED
+}
+
+enum SlideLayoutType {
+  TITLE           // Title slide
+  SECTION         // Section divider
+  CONTENT         // Standard content
+  TWO_COLUMN      // Two columns
+  IMAGE_FULL      // Full-bleed image
+  IMAGE_LEFT      // Image left, text right
+  IMAGE_RIGHT     // Image right, text left
+  STATS           // Statistics/numbers
+  QUOTE           // Quote slide
+  TEAM            // Team members
+  TIMELINE        // Timeline/process
+  COMPARISON      // Before/after, vs
+  PRICING         // Pricing table
+  CTA             // Call to action
+  THANK_YOU       // Closing slide
+}
+
+// Moodboard - Creative inspiration lab
+model Moodboard {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Board info
+  title           String
+  description     String?  @db.Text
+  type            MoodboardType @default(GENERAL)
+  status          MoodboardStatus @default(ACTIVE)
+
+  // Visual settings
+  backgroundColor String?
+  gridLayout      String   @default("masonry")
+
+  // Relations
+  clientId        String?
+  projectId       String?
+  briefId         String?
+
+  // AI Context
+  contextSummary  String?  @db.Text
+  contextEmbedding Json?
+  lastIndexedAt   DateTime?
+  indexStatus     IndexStatus @default(PENDING)
+
+  // Ownership
+  createdById     String
+
+  // Sharing
+  isPublic        Boolean  @default(false)
+  shareToken      String?  @unique
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  client          Client?      @relation(fields: [clientId], references: [id])
+  project         Project?     @relation(fields: [projectId], references: [id])
+  brief           Brief?       @relation(fields: [briefId], references: [id])
+  createdBy       User         @relation(fields: [createdById], references: [id])
+
+  items           MoodboardItem[]
+  conversations   MoodboardConversation[]
+  outputs         MoodboardOutput[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@map("moodboards")
+}
+
+model MoodboardItem {
+  id              String   @id @default(cuid())
+  moodboardId     String
+
+  type            MoodboardItemType
+
+  // Position
+  positionX       Float?
+  positionY       Float?
+  width           Float?
+  height          Float?
+  rotation        Float?   @default(0)
+  zIndex          Int      @default(0)
+
+  // Content
+  fileUrl         String?
+  thumbnailUrl    String?
+  sourceUrl       String?
+  title           String?
+  description     String?  @db.Text
+  color           String?
+  text            String?  @db.Text
+
+  // Extracted content
+  extractedText   String?  @db.Text
+  extractedColors String[] @default([])
+  aiDescription   String?  @db.Text
+  embedding       Json?
+
+  // Processing
+  processingStatus ProcessingStatus @default(PENDING)
+  processingError String?
+
+  // Metadata
+  tags            String[] @default([])
+  mimeType        String?
+  fileSize        Int?
+  duration        Int?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  moodboard       Moodboard @relation(fields: [moodboardId], references: [id], onDelete: Cascade)
+
+  @@index([moodboardId])
+  @@map("moodboard_items")
+}
+
+model MoodboardConversation {
+  id              String   @id @default(cuid())
+  moodboardId     String
+
+  messages        Json
+  contextSnapshot Json?
+
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  moodboard       Moodboard @relation(fields: [moodboardId], references: [id], onDelete: Cascade)
+  createdBy       User      @relation(fields: [createdById], references: [id])
+
+  @@index([moodboardId])
+  @@map("moodboard_conversations")
+}
+
+model MoodboardOutput {
+  id              String   @id @default(cuid())
+  moodboardId     String
+
+  type            MoodboardOutputType
+  title           String
+  content         Json
+  contentText     String?  @db.Text
+
+  prompt          String   @db.Text
+
+  exportedToDoc   String?
+  exportedToDeck  String?
+  exportedToVideo String?
+
+  createdById     String
+  createdAt       DateTime @default(now())
+
+  moodboard       Moodboard @relation(fields: [moodboardId], references: [id], onDelete: Cascade)
+  createdBy       User      @relation(fields: [createdById], references: [id])
+
+  @@index([moodboardId])
+  @@map("moodboard_outputs")
+}
+
+enum MoodboardType {
+  GENERAL
+  BRAND
+  CAMPAIGN
+  VIDEO
+  PHOTO
+  DESIGN
+  PITCH
+}
+
+enum MoodboardStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum MoodboardItemType {
+  IMAGE
+  PDF
+  VIDEO
+  AUDIO
+  COLOR
+  TEXT
+  LINK
+  FILE
+}
+
+enum MoodboardOutputType {
+  CAMPAIGN_CONCEPTS
+  COPY
+  VISUAL_DIRECTION
+  SCRIPT
+  DECK_OUTLINE
+  COLOR_PALETTE
+  TAGLINES
+  IMAGE
+  CUSTOM
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum IndexStatus {
+  PENDING
+  INDEXING
+  INDEXED
+  FAILED
 }
