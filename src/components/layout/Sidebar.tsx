@@ -277,11 +277,20 @@ const navSections: NavSection[] = [
   },
 ];
 
-interface SidebarProps {
-  permissionLevel: PermissionLevel;
+interface DynamicMenuItem {
+  id: string;
+  type: string;
+  name: string;
+  icon: string | null;
+  menuOrder: number;
 }
 
-export function Sidebar({ permissionLevel }: SidebarProps) {
+interface SidebarProps {
+  permissionLevel: PermissionLevel;
+  dynamicMenuItems?: DynamicMenuItem[];
+}
+
+export function Sidebar({ permissionLevel, dynamicMenuItems }: SidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
