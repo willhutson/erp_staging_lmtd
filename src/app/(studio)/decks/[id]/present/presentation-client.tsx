@@ -284,9 +284,9 @@ function SlideView({ slide }: { slide: DeckSlide }) {
             {slide.title && (
               <h2 className="text-4xl font-bold text-gray-900 mb-8">{slide.title}</h2>
             )}
-            {content.body && (
+            {typeof content.body === "string" && content.body && (
               <p className="text-xl text-gray-700 whitespace-pre-wrap flex-1">
-                {content.body as string}
+                {content.body}
               </p>
             )}
           </div>
