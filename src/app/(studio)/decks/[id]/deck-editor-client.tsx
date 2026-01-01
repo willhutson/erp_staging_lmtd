@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DeckWithRelations, DeckSlide, SlideLayoutType } from "@/modules/studio/types";
+import type { JsonValue } from "@prisma/client/runtime/library";
 import {
   addSlide,
   updateSlide,
@@ -123,7 +124,7 @@ export function DeckEditorClient({ deck: initialDeck }: DeckEditorClientProps) {
 
   const handleUpdateSlide = async (
     slideId: string,
-    updates: { title?: string; subtitle?: string; content?: unknown; speakerNotes?: string }
+    updates: { title?: string; subtitle?: string; content?: JsonValue; speakerNotes?: string }
   ) => {
     setIsSaving(true);
     try {
