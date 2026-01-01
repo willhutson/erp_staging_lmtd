@@ -124,9 +124,9 @@ export function DeckList({
 
                 {openMenuId === deck.id && (
                   <div className="absolute left-0 top-full mt-1 w-48 bg-ltd-surface-2 border border-ltd-border-1 rounded-[var(--ltd-radius-md)] shadow-lg z-10">
-                    {deck.googleSlidesUrl && (
+                    {deck.googleSlidesId && (
                       <a
-                        href={deck.googleSlidesUrl}
+                        href={`https://docs.google.com/presentation/d/${deck.googleSlidesId}/edit`}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
