@@ -1,5 +1,4 @@
 import { getStudioUser } from "@/lib/auth";
-import { db } from "@/lib/db";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,39 +33,15 @@ export default async function MyWorkflowsPage() {
   try {
     const user = await getStudioUser();
 
-    // Try to fetch user's workflows - gracefully handle if table doesn't exist
-    let myWorkflows: Array<{
+    // Workflows will be fetched once the WorkflowInstance model is created
+    // For now, show empty state
+    const myWorkflows: Array<{
       id: string;
       name: string;
       status: string;
       dueDate: Date | null;
       priority: string;
     }> = [];
-
-    try {
-      // In a real implementation, this would fetch from a WorkflowInstance table
-      // For now, we show an empty state
-      const templates = await db.builderTemplate.findMany({
-        where: {
-          organizationId: user.organizationId,
-          templateType: "WORKFLOW",
-          createdById: user.id,
-        },
-        take: 20,
-        orderBy: { updatedAt: "desc" },
-      });
-
-      myWorkflows = templates.map((t) => ({
-        id: t.id,
-        name: t.name,
-        status: t.status,
-        dueDate: null,
-        priority: "NORMAL",
-      }));
-    } catch {
-      // Table doesn't exist yet
-      myWorkflows = [];
-    }
 
     const inProgress = myWorkflows.filter((w) => w.status === "PUBLISHED" || w.status === "APPROVED");
     const pending = myWorkflows.filter((w) => w.status === "PENDING_APPROVAL");
