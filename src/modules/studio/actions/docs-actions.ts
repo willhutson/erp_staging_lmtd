@@ -433,7 +433,7 @@ export async function restoreVersion(documentId: string, version: number): Promi
   const updated = await db.studioDocument.update({
     where: { id: documentId },
     data: {
-      content: versionData.content,
+      content: versionData.content as Prisma.InputJsonValue | undefined,
       contentHtml: versionData.contentHtml,
       wordCount: versionData.wordCount,
       syncStatus: versionData.document.googleDocId ? "PENDING_SYNC" : "LOCAL_ONLY",
