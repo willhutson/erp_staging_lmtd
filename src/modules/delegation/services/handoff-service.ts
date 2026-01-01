@@ -6,6 +6,7 @@
  */
 
 import { db } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import type { HandoffBriefing, LogDelegationActivityOptions } from "../types";
 import { notifyHandoffReady, notifyReturnReminder } from "./notification-service";
 
@@ -284,7 +285,7 @@ export async function logDelegationActivity(
       entityId: options.entityId,
       description: options.description,
       performedById: options.performedById,
-      metadata: options.metadata,
+      metadata: options.metadata as Prisma.InputJsonValue | undefined,
     },
   });
 }
