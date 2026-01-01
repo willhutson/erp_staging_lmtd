@@ -79,7 +79,7 @@ export async function generateHandoffBriefing(
   const pendingBriefs = await db.brief.findMany({
     where: {
       assigneeId: delegation.delegatorId,
-      status: { in: ["IN_PROGRESS", "REVIEW"] },
+      status: { in: ["IN_PROGRESS", "IN_REVIEW", "INTERNAL_REVIEW", "CLIENT_REVIEW"] },
     },
     select: {
       id: true,
