@@ -32,8 +32,8 @@ export async function getDelegationProfile(
   return {
     userId: profile.userId,
     primaryDelegateId: profile.primaryDelegateId,
-    scope: profile.scope as DelegationScope,
-    escalationRules: profile.escalationRules as EscalationRules,
+    scope: profile.scope as unknown as DelegationScope,
+    escalationRules: profile.escalationRules as unknown as EscalationRules,
   };
 }
 
