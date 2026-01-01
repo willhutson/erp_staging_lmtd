@@ -100,7 +100,8 @@ export function noContent() {
 
 export function paginated<T>(
   data: T[],
-  pagination: { page: number; limit: number; total: number }
+  pagination: { page: number; limit: number; total: number },
+  extra?: Record<string, unknown>
 ) {
   const totalPages = Math.ceil(pagination.total / pagination.limit);
   return NextResponse.json({
@@ -112,6 +113,7 @@ export function paginated<T>(
       total: pagination.total,
       totalPages,
     },
+    ...extra,
   });
 }
 
