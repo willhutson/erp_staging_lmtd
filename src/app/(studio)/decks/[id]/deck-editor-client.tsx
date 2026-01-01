@@ -370,7 +370,7 @@ function SlideCanvas({
   onUpdate,
 }: {
   slide: DeckSlide;
-  onUpdate: (updates: { title?: string; subtitle?: string; content?: unknown }) => void;
+  onUpdate: (updates: { title?: string; subtitle?: string; content?: JsonValue }) => void;
 }) {
   const content = (slide.content || {}) as Record<string, unknown>;
 
