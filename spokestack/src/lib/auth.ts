@@ -47,15 +47,23 @@ export async function auth(): Promise<Session | null> {
       orConditions.push({ email: supabaseUser.email });
     }
 
-    // Find user in database
-    const user = await prisma.user.findFirst({
+    // Find user in database - first try with org filter, then without
+    let user = await prisma.user.findFirst({
       where: {
         OR: orConditions,
         ...(tenantOrgId ? { organizationId: tenantOrgId } : {})
       }
     });
 
+    // If not found with org filter, try without (for default tenant)
+    if (!user && tenantOrgId) {
+      user = await prisma.user.findFirst({
+        where: { OR: orConditions }
+      });
+    }
+
     if (!user) {
+      console.error("User not found in database for:", supabaseUser.email);
       return null;
     }
 
