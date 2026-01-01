@@ -107,7 +107,7 @@ export function DocsClient({ initialDocuments, clients }: DocsClientProps) {
 
   const resetCreateForm = () => {
     setNewDocTitle("");
-    setNewDocType("COPY");
+    setNewDocType("DOCUMENT");
     setNewDocClientId("");
     setSyncToGoogleOnCreate(false);
   };
