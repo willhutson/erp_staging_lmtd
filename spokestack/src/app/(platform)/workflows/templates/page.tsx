@@ -13,6 +13,7 @@ import {
   Calendar,
   Building2,
   AlertTriangle,
+  Plus,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -110,19 +111,25 @@ export default async function WorkflowTemplatesPage() {
     return (
       <div className="p-6 lg:p-8 space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <Link
-            href="/workflows"
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-500" />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">Workflow Templates</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Start with pre-built templates for common agency processes
-            </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/workflows"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-500" />
+            </Link>
+            <div>
+              <h1 className="text-2xl font-bold">Workflow Templates</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Start with pre-built templates for common agency processes
+              </p>
+            </div>
           </div>
+          <Button disabled className="opacity-60">
+            <Plus className="mr-2 h-4 w-4" />
+            New Workflow
+          </Button>
         </div>
 
         {/* Category Filter */}
@@ -185,7 +192,9 @@ export default async function WorkflowTemplatesPage() {
                 </p>
               </div>
             </div>
-            <Button variant="outline">Create Custom Workflow</Button>
+            <Button variant="outline" disabled className="opacity-60">
+              Coming Soon
+            </Button>
           </CardContent>
         </Card>
       </div>
