@@ -49,7 +49,6 @@ export function BriefFormClient({ config, users, clients, projects, briefType }:
         clientId: formData.clientId as string,
         topic: formData.topic as string,
         assigneeId: formData.assigneeId as string | undefined,
-        backupAssigneeId: formData.backupAssigneeId as string | undefined,
         projectId: formData.projectId as string | undefined,
         formData,
       });
