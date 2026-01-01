@@ -31,14 +31,15 @@ interface VideoEditorClientProps {
 
 type TabType = "script" | "storyboard" | "shotlist";
 
-const statusConfig = {
-  PLANNING: { label: "Planning", color: "bg-gray-100 text-gray-700" },
+const statusConfig: Record<string, { label: string; color: string }> = {
+  CONCEPT: { label: "Concept", color: "bg-gray-100 text-gray-700" },
   SCRIPTING: { label: "Scripting", color: "bg-blue-100 text-blue-700" },
   PRE_PRODUCTION: { label: "Pre-Production", color: "bg-yellow-100 text-yellow-700" },
-  SHOOTING: { label: "Shooting", color: "bg-orange-100 text-orange-700" },
+  PRODUCTION: { label: "Production", color: "bg-orange-100 text-orange-700" },
   POST_PRODUCTION: { label: "Post-Production", color: "bg-purple-100 text-purple-700" },
   REVIEW: { label: "Review", color: "bg-pink-100 text-pink-700" },
   COMPLETE: { label: "Complete", color: "bg-green-100 text-green-700" },
+  CANCELLED: { label: "Cancelled", color: "bg-red-100 text-red-700" },
 };
 
 const shotTypes = [
@@ -95,7 +96,7 @@ export function VideoEditorClient({ project: initialProject }: VideoEditorClient
   const [newShotTalent, setNewShotTalent] = useState("");
   const [newShotEquipment, setNewShotEquipment] = useState("");
 
-  const status = statusConfig[project.status] || statusConfig.PLANNING;
+  const status = statusConfig[project.status] || statusConfig.CONCEPT;
   const frames = project.storyboard?.frames || [];
   const shots = project.shotList || [];
 
