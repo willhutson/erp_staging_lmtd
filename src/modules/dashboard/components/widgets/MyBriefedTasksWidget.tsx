@@ -4,11 +4,12 @@ import Link from "next/link";
 import { StatusBadge } from "@/modules/briefs/components/StatusBadge";
 import { AlertCircle, Clock, CheckCircle2, Send, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { BriefStatus } from "@prisma/client";
 
 interface BriefWithRelations {
   id: string;
   title: string;
-  status: string;
+  status: BriefStatus;
   deadline: Date | null;
   client: { name: string };
   assignee: { name: string } | null;
