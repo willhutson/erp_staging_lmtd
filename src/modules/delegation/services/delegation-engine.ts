@@ -137,7 +137,7 @@ async function reassignTasksForDelegation(delegationId: string): Promise<void> {
 
   if (!delegation || delegation.status !== "ACTIVE") return;
 
-  const scope = delegation.scopeSnapshot as DelegationScope;
+  const scope = delegation.scopeSnapshot as unknown as DelegationScope;
 
   // Find active briefs assigned to delegator
   const briefsToReassign = await db.brief.findMany({
