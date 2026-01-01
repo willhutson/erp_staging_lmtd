@@ -60,9 +60,12 @@ export default async function StudioLayout({
     }
 
     return <>{children}</>;
-  } catch (error) {
-    // Check if it's a redirect (Next.js throws for redirects)
-    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+  } catch (error: unknown) {
+    // Re-throw redirect errors (Next.js uses these internally)
+    // Check for NEXT_REDIRECT in different ways to handle various Next.js versions
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorDigest = (error as { digest?: string })?.digest;
+    if (errorMessage.includes("NEXT_REDIRECT") || errorDigest?.includes("NEXT_REDIRECT")) {
       throw error;
     }
     console.error("Studio layout error:", error);
