@@ -42,7 +42,7 @@ export default async function VideoPage() {
       organizationId: session.user.organizationId,
       isActive: true,
       OR: [
-        { department: { not: null } },
+        { NOT: { department: null } },
         { permissionLevel: { in: ["ADMIN", "LEADERSHIP", "TEAM_LEAD"] } },
       ],
     },
