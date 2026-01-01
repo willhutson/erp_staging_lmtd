@@ -1349,13 +1349,6 @@ enum StudioDocStatus {
   ARCHIVED
 }
 
-enum SyncStatus {
-  PENDING
-  SYNCING
-  SYNCED
-  ERROR
-}
-
 model StudioCalendarEntry {
   id              String   @id @default(cuid())
   organizationId  String
