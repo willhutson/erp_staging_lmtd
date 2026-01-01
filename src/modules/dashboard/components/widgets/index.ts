@@ -1,4 +1,5 @@
 export { MyTasksWidget } from "./MyTasksWidget";
+export { MyBriefedTasksWidget } from "./MyBriefedTasksWidget";
 export { UpcomingDeadlinesWidget } from "./UpcomingDeadlinesWidget";
 export { RecentBriefsWidget } from "./RecentBriefsWidget";
 export { TimeLoggedWidget } from "./TimeLoggedWidget";

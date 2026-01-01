@@ -31,6 +31,21 @@ export const NOTIFICATION_TYPES = {
   'rfp.won': { channels: ['in_app', 'email', 'slack'], title: 'RFP Won!' },
   'rfp.lost': { channels: ['in_app', 'email'], title: 'RFP outcome received' },
 
+  // Workflow events
+  'workflow.task_due_soon': { channels: ['in_app', 'slack'], title: 'Task due soon' },
+  'workflow.task_overdue': { channels: ['in_app', 'email', 'slack'], title: 'Task is overdue' },
+  'workflow.task_assigned': { channels: ['in_app', 'email'], title: 'Workflow task assigned' },
+  'workflow.task_blocked': { channels: ['in_app', 'slack'], title: 'Task is blocked' },
+  'workflow.stage_complete': { channels: ['in_app'], title: 'Workflow stage completed' },
+  'workflow.instance_complete': { channels: ['in_app', 'email', 'slack'], title: 'Workflow completed' },
+
+  // Delegation of Authority events
+  'delegation.activated': { channels: ['in_app', 'email', 'slack'], title: 'Delegation activated' },
+  'delegation.task_assigned': { channels: ['in_app', 'slack'], title: 'Task delegated to you' },
+  'delegation.return_reminder': { channels: ['in_app', 'email'], title: 'Team member returning soon' },
+  'delegation.handoff_ready': { channels: ['in_app', 'email', 'slack'], title: 'Handoff briefing ready' },
+  'delegation.conflict_detected': { channels: ['in_app', 'email'], title: 'Leave delegation conflict' },
+
   // System events
   'system.announcement': { channels: ['in_app', 'email', 'slack'], title: 'Announcement' },
   'system.mention': { channels: ['in_app', 'email', 'slack'], title: 'You were mentioned' },
@@ -290,10 +305,73 @@ class NotificationService {
   }
 
   private async deliverEmail(notification: Notification, user: User): Promise<void> {
-    // Placeholder for email delivery
-    // Will be implemented with Resend or similar service
-    console.log(`[Email] Would send to ${user.email}: ${notification.title}`);
-    await this.updateDeliveryStatus(notification.id, 'email', 'sent');
+    // Email delivery via Resend
+    // Requires RESEND_API_KEY environment variable
+    const resendKey = process.env.RESEND_API_KEY;
+
+    if (!resendKey) {
+      console.log(`[Email] RESEND_API_KEY not configured. Would send to ${user.email}: ${notification.title}`);
+      await this.updateDeliveryStatus(notification.id, 'email', 'skipped', 'Email not configured');
+      return;
+    }
+
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: process.env.EMAIL_FROM || 'TeamLMTD <notifications@teamlmtd.com>',
+          to: user.email,
+          subject: notification.title,
+          html: this.buildEmailHtml(notification),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Resend API error: ${response.status}`);
+      }
+
+      await this.updateDeliveryStatus(notification.id, 'email', 'sent');
+    } catch (error) {
+      console.error(`[Email] Failed to send to ${user.email}:`, error);
+      throw error;
+    }
+  }
+
+  private buildEmailHtml(notification: Notification): string {
+    const actionButton = notification.actionUrl
+      ? `<p style="margin-top: 20px;">
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://app.teamlmtd.com'}${notification.actionUrl}"
+             style="background-color: #52EDC7; color: #000; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+            ${notification.actionLabel || 'View Details'}
+          </a>
+        </p>`
+      : '';
+
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #fff; border-radius: 8px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <h1 style="color: #1a1a1a; font-size: 20px; margin: 0 0 16px 0;">${notification.title}</h1>
+            ${notification.body ? `<p style="color: #666; line-height: 1.6; margin: 0;">${notification.body}</p>` : ''}
+            ${actionButton}
+            <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0 16px 0;">
+            <p style="color: #999; font-size: 12px; margin: 0;">
+              This notification was sent from TeamLMTD ERP.
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://app.teamlmtd.com'}/settings/notifications" style="color: #52EDC7;">Manage your notification preferences</a>
+            </p>
+          </div>
+        </body>
+      </html>
+    `;
   }
 
   private async deliverSlack(notification: Notification, user: User): Promise<void> {

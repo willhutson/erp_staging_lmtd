@@ -69,6 +69,14 @@ model Organization {
   // Notification Rules
   notificationRules NotificationRule[]
 
+  // SpokeStudio (Q2 2025)
+  studioDocuments       StudioDocument[]
+  studioCalendarEntries StudioCalendarEntry[]
+  videoProjects         VideoProject[]
+  pitchDecks            PitchDeck[]
+  deckTemplates         DeckTemplate[]
+  moodboards            Moodboard[]
+
   @@map("organizations")
 }
 
@@ -122,9 +130,10 @@ model User {
   organization   Organization @relation(fields: [organizationId], references: [id])
   teamLead       User?        @relation("TeamMembers", fields: [teamLeadId], references: [id])
   teamMembers    User[]       @relation("TeamMembers")
-  briefsCreated    Brief[]      @relation("BriefCreator")
-  briefsAssigned   Brief[]      @relation("BriefAssignee")
-  briefsAssignedBy Brief[]      @relation("BriefAssigner")
+  briefsCreated        Brief[]      @relation("BriefCreator")
+  briefsAssigned       Brief[]      @relation("BriefAssignee")
+  backupBriefsAssigned Brief[]      @relation("BackupBriefAssignee")
+  briefsAssignedBy     Brief[]      @relation("BriefAssigner")
   timeEntries      TimeEntry[]
   comments       Comment[]
   documents      EmployeeDocument[]
@@ -214,6 +223,26 @@ model User {
 
   // Notification Rules
   notificationRulesCreated NotificationRule[] @relation("NotificationRulesCreated")
+
+  // Delegation of Authority (DOA)
+  delegationProfile         DelegationProfile?   @relation("DelegationProfileOwner")
+  delegatingFor             DelegationProfile[]  @relation("PrimaryDelegate")
+  delegationsAsOwner        ActiveDelegation[]   @relation("Delegator")
+  delegationsAsDelegate     ActiveDelegation[]   @relation("Delegate")
+  delegationActivitiesPerformed DelegationActivity[]
+
+  // SpokeStudio (Q2 2025)
+  studioDocsCreated             StudioDocument[]         @relation("DocCreator")
+  studioDocsEdited              StudioDocument[]         @relation("DocEditor")
+  studioDocVersionsCreated      StudioDocVersion[]
+  studioCalendarEntriesCreated  StudioCalendarEntry[]    @relation("EntryCreator")
+  studioCalendarEntriesAssigned StudioCalendarEntry[]    @relation("EntryAssignee")
+  videoProjectsCreated          VideoProject[]           @relation("VideoCreator")
+  videoProjectsDirected         VideoProject[]           @relation("VideoDirector")
+  pitchDecksCreated             PitchDeck[]
+  moodboardsCreated             Moodboard[]
+  moodboardConversations        MoodboardConversation[]
+  moodboardOutputsCreated       MoodboardOutput[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -319,6 +348,13 @@ model Client {
   crmContacts      Contact[]      @relation("ContactCompany")
   crmDeals         CRMDeal[]      @relation("CRMDealClient")
   crmCampaigns     CRMCampaign[]  @relation("CRMCampaignClient")
+
+  // SpokeStudio (Q2 2025)
+  studioDocuments       StudioDocument[]
+  studioCalendarEntries StudioCalendarEntry[]
+  videoProjects         VideoProject[]
+  pitchDecks            PitchDeck[]
+  moodboards            Moodboard[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
@@ -448,6 +484,9 @@ model Deal {
   owner             User         @relation("DealOwner", fields: [ownerId], references: [id])
   convertedToClient Client?      @relation("DealToClient") // Reverse relation
 
+  // SpokeStudio (Q2 2025)
+  pitchDecks        PitchDeck[]
+
   @@index([organizationId])
   @@index([clientId])
   @@index([stage])
@@ -486,6 +525,13 @@ model Project {
   googleDocuments  GoogleDocument[]
   projectFiles     ProjectFile[]
 
+  // SpokeStudio (Q2 2025)
+  studioDocuments       StudioDocument[]
+  studioCalendarEntries StudioCalendarEntry[]
+  videoProjects         VideoProject[]
+  pitchDecks            PitchDeck[]
+  moodboards            Moodboard[]
+
   @@index([organizationId])
   @@index([clientId])
   @@map("projects")
@@ -520,10 +566,11 @@ model Brief {
   title          String
   status         BriefStatus @default(DRAFT)
   priority       Priority    @default(MEDIUM)
-  createdById    String
-  assigneeId     String?
-  assignedById   String?
-  assignedAt     DateTime?
+  createdById       String
+  assigneeId        String?
+  backupAssigneeId  String?
+  assignedById      String?
+  assignedAt        DateTime?
   deadline       DateTime?
   startDate      DateTime?
   endDate        DateTime?
@@ -541,9 +588,10 @@ model Brief {
   organization  Organization         @relation(fields: [organizationId], references: [id])
   client        Client               @relation(fields: [clientId], references: [id])
   project       Project?             @relation(fields: [projectId], references: [id])
-  createdBy     User                 @relation("BriefCreator", fields: [createdById], references: [id])
-  assignee      User?                @relation("BriefAssignee", fields: [assigneeId], references: [id])
-  assignedBy    User?                @relation("BriefAssigner", fields: [assignedById], references: [id])
+  createdBy       User                 @relation("BriefCreator", fields: [createdById], references: [id])
+  assignee        User?                @relation("BriefAssignee", fields: [assigneeId], references: [id])
+  backupAssignee  User?                @relation("BackupBriefAssignee", fields: [backupAssigneeId], references: [id])
+  assignedBy      User?                @relation("BriefAssigner", fields: [assignedById], references: [id])
   timeEntries      TimeEntry[]
   comments         Comment[]
   attachments      Attachment[]
@@ -560,6 +608,12 @@ model Brief {
 
   // Content CMS (Phase 16)
   contentPosts     ContentPost[]
+
+  // SpokeStudio (Q2 2025)
+  studioDocuments       StudioDocument[]
+  studioCalendarEntries StudioCalendarEntry[]
+  videoProjects         VideoProject[]
+  moodboards            Moodboard[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -953,6 +1007,9 @@ model LeaveRequest {
   reviewedBy User?     @relation("LeaveReviewer", fields: [reviewedById], references: [id])
   leaveType  LeaveType @relation(fields: [leaveTypeId], references: [id])
 
+  // Delegation of Authority
+  activeDelegations ActiveDelegation[]
+
   @@index([organizationId])
   @@index([userId])
   @@index([status])
@@ -1004,6 +1061,145 @@ model PublicHoliday {
   @@unique([organizationId, date])
   @@index([organizationId, year])
   @@map("public_holidays")
+}
+
+// ============================================
+// DELEGATION OF AUTHORITY (DOA)
+// ============================================
+
+// User's default delegation configuration
+model DelegationProfile {
+  id                  String   @id @default(cuid())
+  organizationId      String
+  userId              String   @unique
+
+  // Primary delegate - who covers when this user is away
+  primaryDelegateId   String?
+
+  // Delegation scope configuration
+  scope               Json     // DelegationScope: clients, briefTypes, valueThreshold, authority
+
+  // Escalation rules
+  escalationRules     Json     // EscalationRules: escalateIf[], escalateTo
+
+  // Whether this profile is active
+  isActive            Boolean  @default(true)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user                User     @relation("DelegationProfileOwner", fields: [userId], references: [id])
+  primaryDelegate     User?    @relation("PrimaryDelegate", fields: [primaryDelegateId], references: [id])
+
+  @@index([organizationId])
+  @@index([primaryDelegateId])
+  @@map("delegation_profiles")
+}
+
+// An active delegation period (tied to leave or manual)
+model ActiveDelegation {
+  id                  String   @id @default(cuid())
+  organizationId      String
+
+  // Who is delegating and to whom
+  delegatorId         String
+  delegateId          String
+
+  // Optional link to leave request
+  leaveRequestId      String?
+
+  // Period
+  startDate           DateTime @db.Date
+  endDate             DateTime @db.Date
+
+  // Snapshot of scope at time of delegation
+  scopeSnapshot       Json     // DelegationScope frozen at activation
+
+  // Status tracking
+  status              DelegationStatus @default(PENDING)
+  activatedAt         DateTime?
+  completedAt         DateTime?
+  cancelledAt         DateTime?
+
+  // Handoff tracking
+  handoffScheduled    Boolean  @default(false)
+  handoffCompletedAt  DateTime?
+  handoffNotes        String?  @db.Text
+  handoffBriefing     Json?    // AI-generated handoff summary
+
+  // Chain delegation - if delegate is also unavailable
+  chainedFromId       String?  // If this was created due to chain delegation
+  chainDelegateId     String?  // Who to chain to if this delegate is unavailable
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  delegator           User     @relation("Delegator", fields: [delegatorId], references: [id])
+  delegate            User     @relation("Delegate", fields: [delegateId], references: [id])
+  leaveRequest        LeaveRequest? @relation(fields: [leaveRequestId], references: [id])
+  chainedFrom         ActiveDelegation? @relation("DelegationChain", fields: [chainedFromId], references: [id])
+  chainedDelegations  ActiveDelegation[] @relation("DelegationChain")
+
+  activities          DelegationActivity[]
+
+  @@index([organizationId, status])
+  @@index([delegatorId, status])
+  @@index([delegateId, status])
+  @@index([startDate, endDate])
+  @@index([leaveRequestId])
+  @@map("active_delegations")
+}
+
+// Log of actions taken during a delegation period
+model DelegationActivity {
+  id                  String   @id @default(cuid())
+
+  activeDelegationId  String
+  activeDelegation    ActiveDelegation @relation(fields: [activeDelegationId], references: [id], onDelete: Cascade)
+
+  // What happened
+  activityType        DelegationActivityType
+
+  // What entity was affected
+  entityType          String   // "brief", "task", "approval", "client_communication"
+  entityId            String
+
+  // Description and details
+  description         String
+  metadata            Json?    // Additional context
+
+  // Who performed the action
+  performedById       String
+
+  createdAt           DateTime @default(now())
+
+  performedBy         User     @relation(fields: [performedById], references: [id])
+
+  @@index([activeDelegationId])
+  @@index([entityType, entityId])
+  @@index([performedById])
+  @@map("delegation_activities")
+}
+
+enum DelegationStatus {
+  PENDING     // Awaiting start date
+  ACTIVE      // Currently in effect
+  COMPLETED   // Ended normally
+  CANCELLED   // Cancelled before completion
+}
+
+enum DelegationActivityType {
+  TASK_ASSIGNED           // Task was assigned to delegate
+  TASK_COMPLETED          // Task was completed by delegate
+  TASK_ESCALATED          // Task was escalated to manager
+  TASK_REASSIGNED         // Task was passed to another delegate
+  APPROVAL_GIVEN          // Delegate gave an approval
+  DECISION_MADE           // Delegate made a decision
+  CLIENT_COMMUNICATION    // Delegate communicated with client
+  BRIEF_CREATED           // Delegate created a brief
+  BRIEF_UPDATED           // Delegate updated a brief
+  HANDOFF_STARTED         // Handoff process began
+  HANDOFF_COMPLETED       // Handoff completed
 }
 
 // ============================================
@@ -5527,10 +5723,13 @@ enum AuditAction {
 }
 
 enum SyncStatus {
-  PENDING     // Awaiting backup sync
-  SYNCED      // Successfully backed up
+  PENDING     // Awaiting sync
+  SYNCED      // Successfully synced
+  SYNCING     // Currently syncing
   FAILED      // Sync failed (will retry)
+  ERROR       // Sync error
   SKIPPED     // Not eligible for sync
+  DISABLED    // Sync disabled
 }
 
 // AuditLogBackup stores backed up audit logs for long-term retention
@@ -5617,4 +5816,1065 @@ enum DocTemplateCategory {
   CONTRACT
   INVOICE
   OTHER
+}
+
+// ============================================
+// BUILDER INFRASTRUCTURE (Phase 2 - Q1 Epic)
+// ============================================
+
+// BuilderTemplate stores all configurable platform templates
+model BuilderTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Template identity
+  templateType    BuilderTemplateType
+  name            String
+  description     String?
+  module          String   // "agency", "crm", "content", "team"
+
+  // The actual template definition (JSON schema)
+  definition      Json
+
+  // Approval workflow
+  status          TemplateStatus @default(DRAFT)
+  submittedAt     DateTime?
+  submittedById   String?
+  approvedAt      DateTime?
+  approvedById    String?
+  rejectionReason String?
+  publishedAt     DateTime?
+
+  // Versioning
+  version         Int      @default(1)
+  previousVersionId String?
+  isLatest        Boolean  @default(true)
+
+  // Ownership
+  createdById     String
+  departmentId    String?  // For department-scoped templates
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([organizationId, templateType, name, version])
+  @@index([organizationId, templateType])
+  @@index([organizationId, status])
+  @@index([module])
+  @@map("builder_templates")
+}
+
+enum BuilderTemplateType {
+  BRIEF_TEMPLATE
+  WORKFLOW
+  DASHBOARD_WIDGET
+  REPORT_TEMPLATE
+  AI_SKILL_CONFIG
+  FORM_TEMPLATE
+  NOTIFICATION_TEMPLATE
+}
+
+enum TemplateStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  PUBLISHED
+  DEPRECATED
+}
+
+// BuilderPermission controls who can use the Builder
+model BuilderPermission {
+  id              String   @id @default(cuid())
+  organizationId  String
+  userId          String
+
+  level           BuilderPermissionLevel
+  departmentId    String?  // For DEPARTMENT_BUILDER level
+  templateTypes   BuilderTemplateType[]
+  canApprove      Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, organizationId])
+  @@index([organizationId, level])
+  @@map("builder_permissions")
+}
+
+enum BuilderPermissionLevel {
+  ADMIN
+  TEMPLATE_EDITOR
+  DEPARTMENT_BUILDER
+  READ_ONLY
+}
+
+// BuilderAuditLog tracks all Builder changes
+model BuilderAuditLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  templateId      String
+  action          BuilderAuditAction
+  previousValue   Json?
+  newValue        Json?
+  notes           String?
+
+  performedById   String
+  performedAt     DateTime @default(now())
+
+  @@index([organizationId, templateId])
+  @@index([performedAt])
+  @@map("builder_audit_logs")
+}
+
+enum BuilderAuditAction {
+  CREATED
+  UPDATED
+  SUBMITTED
+  APPROVED
+  REJECTED
+  PUBLISHED
+  DEPRECATED
+  RESTORED
+}
+
+// ============================================
+// WORKFLOW ENGINE (Phase 3 - Q1 Epic)
+// ============================================
+
+// WorkflowTemplate defines reusable workflow automations
+model WorkflowTemplate {
+  id                String   @id @default(cuid())
+  organizationId    String
+
+  // Identity
+  name              String
+  description       String?
+  module            String   // "agency", "crm", "content"
+
+  // Trigger configuration
+  triggerType       String   // "rfp.created", "brief.created", "deal.won", "schedule"
+  triggerConditions Json?    // Array of conditions to match
+
+  // Task definitions
+  taskTemplates     Json     // Array of TaskTemplate objects
+
+  // Automation rules
+  nudgeRules        Json     @default("[]")  // Array of NudgeRule
+  stageGates        Json     @default("[]")  // Array of StageGate
+  aiSkills          Json     @default("[]")  // Array of {event, skillId}
+
+  // Status & versioning
+  status            WorkflowStatus @default(DRAFT)
+  publishedAt       DateTime?
+  version           Int      @default(1)
+  isLatest          Boolean  @default(true)
+  previousVersionId String?
+
+  // Ownership
+  createdById       String
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  instances         WorkflowInstance[]
+
+  @@unique([organizationId, name, version])
+  @@index([organizationId, status])
+  @@index([triggerType])
+  @@map("workflow_templates")
+}
+
+enum WorkflowStatus {
+  DRAFT
+  PUBLISHED
+  DEPRECATED
+}
+
+// WorkflowInstance is a running instance of a workflow
+model WorkflowInstance {
+  id                String   @id @default(cuid())
+  organizationId    String
+
+  templateId        String
+  template          WorkflowTemplate @relation(fields: [templateId], references: [id])
+
+  // What triggered this workflow
+  triggerEntityType String   // "RFP", "Brief", "Deal", "ContentPlan"
+  triggerEntityId   String
+  triggerData       Json?    // Snapshot of trigger entity at creation
+
+  // Timeline
+  deadline          DateTime?  // Final deadline (for cascading calculations)
+  startedAt         DateTime   @default(now())
+  completedAt       DateTime?
+  cancelledAt       DateTime?
+
+  // Status
+  status            WorkflowInstanceStatus @default(ACTIVE)
+  progress          Int      @default(0)  // Percentage 0-100
+
+  // Ownership
+  ownerId           String   // Who owns this workflow instance
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tasks             WorkflowTask[]
+  nudges            WorkflowNudge[]
+  activityLog       WorkflowActivity[]
+
+  @@index([organizationId, status])
+  @@index([templateId])
+  @@index([triggerEntityType, triggerEntityId])
+  @@map("workflow_instances")
+}
+
+enum WorkflowInstanceStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+  BLOCKED
+}
+
+// WorkflowTask is an individual task within a workflow instance
+model WorkflowTask {
+  id              String   @id @default(cuid())
+
+  instanceId      String
+  instance        WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  // Template reference
+  templateTaskId  String   // ID from the taskTemplates array
+
+  // Task details
+  name            String
+  description     String?
+
+  // Assignment
+  assigneeId      String?
+  assigneeRole    String   // Role for auto-assignment
+
+  // Timing
+  dueDate         DateTime
+  startedAt       DateTime?
+  completedAt     DateTime?
+  estimatedHours  Float?
+
+  // Status
+  status          WorkflowTaskStatus @default(PENDING)
+  blockedReason   String?
+
+  // Dependencies
+  dependsOnIds    String[] @default([])
+
+  // Linked entities
+  linkedBriefId   String?  // If this task created a Brief
+  linkedEntityType String? // Other linked entity type
+  linkedEntityId  String?  // Other linked entity ID
+
+  // Notes & context
+  notes           String?
+  metadata        Json?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  nudges          WorkflowNudge[]
+
+  @@index([instanceId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("workflow_tasks")
+}
+
+enum WorkflowTaskStatus {
+  PENDING       // Waiting for dependencies
+  READY         // Dependencies met, can start
+  IN_PROGRESS   // Started
+  BLOCKED       // Blocked by external factor
+  COMPLETED     // Done
+  SKIPPED       // Skipped (not needed)
+  CANCELLED     // Cancelled
+}
+
+// WorkflowNudge tracks reminders sent for tasks
+model WorkflowNudge {
+  id              String   @id @default(cuid())
+
+  instanceId      String
+  instance        WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  taskId          String
+  task            WorkflowTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  // Rule that triggered this nudge
+  ruleId          String
+
+  // Delivery
+  recipientId     String
+  channel         NudgeChannel
+  message         String
+
+  // Status
+  scheduledAt     DateTime
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  acknowledgedAt  DateTime?
+  failed          Boolean  @default(false)
+  failureReason   String?
+
+  createdAt       DateTime @default(now())
+
+  @@index([instanceId])
+  @@index([taskId])
+  @@index([scheduledAt])
+  @@map("workflow_nudges")
+}
+
+enum NudgeChannel {
+  SLACK
+  EMAIL
+  IN_APP
+  SMS
+}
+
+// WorkflowActivity logs all workflow events for audit
+model WorkflowActivity {
+  id              String   @id @default(cuid())
+
+  instanceId      String
+  instance        WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  // What happened
+  activityType    WorkflowActivityType
+  taskId          String?
+  description     String
+
+  // Who did it
+  performedById   String?  // null for system actions
+
+  // Additional data
+  metadata        Json?
+
+  createdAt       DateTime @default(now())
+
+  @@index([instanceId])
+  @@index([createdAt])
+  @@map("workflow_activities")
+}
+
+enum WorkflowActivityType {
+  WORKFLOW_STARTED
+  WORKFLOW_COMPLETED
+  WORKFLOW_CANCELLED
+  WORKFLOW_PAUSED
+  WORKFLOW_RESUMED
+  TASK_CREATED
+  TASK_ASSIGNED
+  TASK_STARTED
+  TASK_COMPLETED
+  TASK_BLOCKED
+  TASK_UNBLOCKED
+  TASK_REASSIGNED
+  NUDGE_SENT
+  NUDGE_ACKNOWLEDGED
+  STAGE_GATE_PASSED
+  STAGE_GATE_BLOCKED
+  BRIEF_CREATED
+  DEADLINE_CHANGED
+  AI_SKILL_INVOKED
+}
+
+// ============================================
+// SPOKESTUDIO (Q2 2025)
+// ============================================
+
+// StudioDocument - Google Docs sync
+model StudioDocument {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Document info
+  title           String
+  type            StudioDocType @default(DOCUMENT)
+  status          StudioDocStatus @default(DRAFT)
+
+  // Google sync
+  googleDocId     String?  @unique
+  googleDriveId   String?
+  lastSyncedAt    DateTime?
+  syncStatus      SyncStatus @default(PENDING)
+  syncError       String?
+
+  // Content (local cache)
+  content         Json?    // Portable format for offline/preview
+  contentHtml     String?  @db.Text
+  wordCount       Int      @default(0)
+
+  // Relations
+  projectId       String?
+  briefId         String?
+  clientId        String?
+
+  // Ownership
+  createdById     String
+  lastEditedById  String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  project         Project?     @relation(fields: [projectId], references: [id])
+  brief           Brief?       @relation(fields: [briefId], references: [id])
+  client          Client?      @relation(fields: [clientId], references: [id])
+  createdBy       User         @relation("DocCreator", fields: [createdById], references: [id])
+  lastEditedBy    User?        @relation("DocEditor", fields: [lastEditedById], references: [id])
+
+  versions        StudioDocVersion[]
+  calendarEntries StudioCalendarEntry[]
+
+  @@index([organizationId])
+  @@index([googleDocId])
+  @@index([clientId])
+  @@index([briefId])
+  @@map("studio_documents")
+}
+
+model StudioDocVersion {
+  id              String   @id @default(cuid())
+  documentId      String
+  version         Int
+  content         Json
+  contentHtml     String?  @db.Text
+  wordCount       Int
+  changeNote      String?
+  createdById     String
+  createdAt       DateTime @default(now())
+
+  document        StudioDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  createdBy       User           @relation(fields: [createdById], references: [id])
+
+  @@unique([documentId, version])
+  @@map("studio_doc_versions")
+}
+
+enum StudioDocType {
+  DOCUMENT        // General doc
+  SCRIPT          // Video script
+  SOCIAL_COPY     // Social media copy
+  AD_COPY         // Advertising copy
+  BLOG_POST       // Blog article
+  EMAIL           // Email template
+  PROPOSAL        // Client proposal
+  SOW             // Scope of work
+}
+
+enum StudioDocStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+// StudioCalendarEntry - Social content calendar
+model StudioCalendarEntry {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Content
+  title           String
+  description     String?  @db.Text
+  contentType     SocialContentType
+
+  // Scheduling
+  scheduledDate   DateTime
+  scheduledTime   String?  // "14:30" - time of day
+  timezone        String   @default("Asia/Dubai")
+
+  // Platform targeting
+  platforms       String[] // ["instagram", "linkedin", "tiktok"]
+
+  // Status
+  status          CalendarEntryStatus @default(PLANNED)
+
+  // Relations
+  clientId        String?
+  projectId       String?
+  briefId         String?
+  documentId      String?  // Link to StudioDocument
+
+  // Publishing (links to Marketing module)
+  publishedPostId String?  // Reference to Marketing module's post
+
+  // Visual
+  color           String?  // Hex color for calendar display
+
+  // Ownership
+  createdById     String
+  assigneeId      String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+  client          Client?         @relation(fields: [clientId], references: [id])
+  project         Project?        @relation(fields: [projectId], references: [id])
+  brief           Brief?          @relation(fields: [briefId], references: [id])
+  document        StudioDocument? @relation(fields: [documentId], references: [id])
+  createdBy       User            @relation("EntryCreator", fields: [createdById], references: [id])
+  assignee        User?           @relation("EntryAssignee", fields: [assigneeId], references: [id])
+
+  @@index([organizationId, scheduledDate])
+  @@index([clientId])
+  @@map("studio_calendar_entries")
+}
+
+enum SocialContentType {
+  POST            // Static image/text post
+  CAROUSEL        // Multi-image carousel
+  REEL            // Short-form video
+  STORY           // Ephemeral story
+  LIVE            // Live stream
+  ARTICLE         // LinkedIn article / blog
+  THREAD          // Twitter/X thread
+  AD              // Paid advertisement
+}
+
+enum CalendarEntryStatus {
+  IDEA            // Just an idea, not committed
+  PLANNED         // Scheduled but not created
+  IN_PROGRESS     // Being created
+  READY           // Content ready, awaiting publish
+  SCHEDULED       // Scheduled in Marketing module
+  PUBLISHED       // Live
+  CANCELLED       // Cancelled
+}
+
+// VideoProject - Video pre-production
+model VideoProject {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Project info
+  title           String
+  description     String?  @db.Text
+  type            VideoProjectType
+  status          VideoProjectStatus @default(CONCEPT)
+
+  // Specs
+  duration        Int?     // Target duration in seconds
+  aspectRatio     String?  // "16:9", "9:16", "1:1"
+  platform        String?  // Primary platform target
+
+  // Relations
+  clientId        String?
+  projectId       String?
+  briefId         String?
+
+  // Ownership
+  createdById     String
+  directorId      String?  // Assigned director/editor
+
+  // Dates
+  shootDate       DateTime?
+  dueDate         DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  client          Client?      @relation(fields: [clientId], references: [id])
+  project         Project?     @relation(fields: [projectId], references: [id])
+  brief           Brief?       @relation(fields: [briefId], references: [id])
+  createdBy       User         @relation("VideoCreator", fields: [createdById], references: [id])
+  director        User?        @relation("VideoDirector", fields: [directorId], references: [id])
+
+  script          VideoScript?
+  storyboard      Storyboard?
+  shotList        ShotListItem[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@map("video_projects")
+}
+
+model VideoScript {
+  id              String   @id @default(cuid())
+  videoProjectId  String   @unique
+
+  // Script content
+  content         Json     // Structured script format
+  contentText     String?  @db.Text  // Plain text version
+
+  // Metadata
+  version         Int      @default(1)
+  wordCount       Int      @default(0)
+  estimatedDuration Int?   // Estimated seconds based on word count
+
+  // Status
+  status          ScriptStatus @default(DRAFT)
+
+  // AI assistance
+  aiGenerated     Boolean  @default(false)
+  aiPrompt        String?  @db.Text  // Prompt used to generate
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  videoProject    VideoProject @relation(fields: [videoProjectId], references: [id], onDelete: Cascade)
+
+  @@map("video_scripts")
+}
+
+model Storyboard {
+  id              String   @id @default(cuid())
+  videoProjectId  String   @unique
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  videoProject    VideoProject   @relation(fields: [videoProjectId], references: [id], onDelete: Cascade)
+  frames          StoryboardFrame[]
+
+  @@map("storyboards")
+}
+
+model StoryboardFrame {
+  id              String   @id @default(cuid())
+  storyboardId    String
+
+  // Frame info
+  orderIndex      Int
+  imageUrl        String?  // Generated or uploaded image
+  description     String?  @db.Text  // Scene description
+  dialogue        String?  @db.Text  // Character dialogue
+  action          String?  @db.Text  // Action notes
+  duration        Int?     // Frame duration in seconds
+
+  // Camera/technical
+  shotType        String?  // "wide", "medium", "close-up", etc.
+  cameraMovement  String?  // "static", "pan", "dolly", etc.
+  notes           String?  @db.Text  // Director notes
+
+  // AI generation
+  aiGenerated     Boolean  @default(false)
+  aiPrompt        String?  @db.Text
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  storyboard      Storyboard @relation(fields: [storyboardId], references: [id], onDelete: Cascade)
+
+  @@index([storyboardId, orderIndex])
+  @@map("storyboard_frames")
+}
+
+model ShotListItem {
+  id              String   @id @default(cuid())
+  videoProjectId  String
+
+  // Shot info
+  orderIndex      Int
+  shotNumber      String   // "1A", "1B", "2", etc.
+  description     String   @db.Text
+  shotType        String?
+  location        String?
+  talent          String?  // Who's in the shot
+  equipment       String?  // Special equipment needed
+  duration        Int?     // Estimated seconds
+  notes           String?  @db.Text
+
+  // Status
+  status          ShotStatus @default(PLANNED)
+
+  createdAt       DateTime @default(now())
+
+  videoProject    VideoProject @relation(fields: [videoProjectId], references: [id], onDelete: Cascade)
+
+  @@index([videoProjectId, orderIndex])
+  @@map("shot_list_items")
+}
+
+enum VideoProjectType {
+  BRAND_VIDEO     // Brand/corporate video
+  SOCIAL_CONTENT  // Short-form social
+  COMMERCIAL      // Advertisement
+  TESTIMONIAL     // Client testimonial
+  EXPLAINER       // Explainer/how-to
+  EVENT           // Event coverage
+  DOCUMENTARY     // Mini-doc
+  ANIMATION       // Motion graphics
+}
+
+enum VideoProjectStatus {
+  CONCEPT         // Initial concept
+  SCRIPTING       // Writing script
+  PRE_PRODUCTION  // Storyboard, planning
+  PRODUCTION      // Filming
+  POST_PRODUCTION // Editing
+  REVIEW          // Client review
+  COMPLETE        // Delivered
+  CANCELLED
+}
+
+enum ScriptStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  REVISION_REQUESTED
+}
+
+enum ShotStatus {
+  PLANNED
+  READY
+  SHOT
+  UNUSABLE
+}
+
+// PitchDeck - Presentation builder
+model PitchDeck {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Deck info
+  title           String
+  description     String?  @db.Text
+  type            DeckType @default(PITCH)
+  status          DeckStatus @default(DRAFT)
+
+  // Template
+  templateId      String?
+
+  // Google Slides sync
+  googleSlidesId  String?  @unique
+  googleDriveId   String?
+  lastSyncedAt    DateTime?
+
+  // Relations
+  clientId        String?
+  dealId          String?
+  projectId       String?
+
+  // Ownership
+  createdById     String
+
+  // Presentation date
+  presentationDate DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization  @relation(fields: [organizationId], references: [id])
+  template        DeckTemplate? @relation(fields: [templateId], references: [id])
+  client          Client?       @relation(fields: [clientId], references: [id])
+  deal            Deal?         @relation(fields: [dealId], references: [id])
+  project         Project?      @relation(fields: [projectId], references: [id])
+  createdBy       User          @relation(fields: [createdById], references: [id])
+
+  slides          DeckSlide[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@map("pitch_decks")
+}
+
+model DeckSlide {
+  id              String   @id @default(cuid())
+  deckId          String
+
+  // Slide info
+  orderIndex      Int
+  layoutType      SlideLayoutType
+  title           String?
+  subtitle        String?
+  content         Json     // Structured slide content
+
+  // Visual
+  backgroundUrl   String?
+  backgroundColor String?
+
+  // Notes
+  speakerNotes    String?  @db.Text
+
+  // AI
+  aiGenerated     Boolean  @default(false)
+  aiPrompt        String?  @db.Text
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  deck            PitchDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  @@index([deckId, orderIndex])
+  @@map("deck_slides")
+}
+
+model DeckTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String
+  description     String?  @db.Text
+  type            DeckType
+
+  // Template structure
+  slideTemplates  Json     // Default slides for this template type
+
+  // Styling
+  colorScheme     Json?
+  fonts           Json?
+  logoUrl         String?
+
+  // Google Slides master
+  googleTemplateId String?
+
+  isDefault       Boolean  @default(false)
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  decks           PitchDeck[]
+
+  @@index([organizationId])
+  @@map("deck_templates")
+}
+
+enum DeckType {
+  PITCH           // New client pitch
+  PROPOSAL        // Project proposal
+  REPORT          // Monthly/quarterly report
+  CASE_STUDY      // Case study presentation
+  CREDENTIALS     // Agency credentials
+  WORKSHOP        // Workshop/training
+  INTERNAL        // Internal presentation
+}
+
+enum DeckStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  PRESENTED
+  WON
+  LOST
+  ARCHIVED
+}
+
+enum SlideLayoutType {
+  TITLE           // Title slide
+  SECTION         // Section divider
+  CONTENT         // Standard content
+  TWO_COLUMN      // Two columns
+  IMAGE_FULL      // Full-bleed image
+  IMAGE_LEFT      // Image left, text right
+  IMAGE_RIGHT     // Image right, text left
+  STATS           // Statistics/numbers
+  QUOTE           // Quote slide
+  TEAM            // Team members
+  TIMELINE        // Timeline/process
+  COMPARISON      // Before/after, vs
+  PRICING         // Pricing table
+  CTA             // Call to action
+  THANK_YOU       // Closing slide
+}
+
+// Moodboard - Creative inspiration lab
+model Moodboard {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Board info
+  title           String
+  description     String?  @db.Text
+  type            MoodboardType @default(GENERAL)
+  status          MoodboardStatus @default(ACTIVE)
+
+  // Visual settings
+  backgroundColor String?
+  gridLayout      String   @default("masonry")
+
+  // Relations
+  clientId        String?
+  projectId       String?
+  briefId         String?
+
+  // AI Context
+  contextSummary  String?  @db.Text
+  contextEmbedding Json?
+  lastIndexedAt   DateTime?
+  indexStatus     IndexStatus @default(PENDING)
+
+  // Ownership
+  createdById     String
+
+  // Sharing
+  isPublic        Boolean  @default(false)
+  shareToken      String?  @unique
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  client          Client?      @relation(fields: [clientId], references: [id])
+  project         Project?     @relation(fields: [projectId], references: [id])
+  brief           Brief?       @relation(fields: [briefId], references: [id])
+  createdBy       User         @relation(fields: [createdById], references: [id])
+
+  items           MoodboardItem[]
+  conversations   MoodboardConversation[]
+  outputs         MoodboardOutput[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@map("moodboards")
+}
+
+model MoodboardItem {
+  id              String   @id @default(cuid())
+  moodboardId     String
+
+  type            MoodboardItemType
+
+  // Position
+  positionX       Float?
+  positionY       Float?
+  width           Float?
+  height          Float?
+  rotation        Float?   @default(0)
+  zIndex          Int      @default(0)
+
+  // Content
+  fileUrl         String?
+  thumbnailUrl    String?
+  sourceUrl       String?
+  title           String?
+  description     String?  @db.Text
+  color           String?
+  text            String?  @db.Text
+
+  // Extracted content
+  extractedText   String?  @db.Text
+  extractedColors String[] @default([])
+  aiDescription   String?  @db.Text
+  embedding       Json?
+
+  // Processing
+  processingStatus ProcessingStatus @default(PENDING)
+  processingError String?
+
+  // Metadata
+  tags            String[] @default([])
+  mimeType        String?
+  fileSize        Int?
+  duration        Int?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  moodboard       Moodboard @relation(fields: [moodboardId], references: [id], onDelete: Cascade)
+
+  @@index([moodboardId])
+  @@map("moodboard_items")
+}
+
+model MoodboardConversation {
+  id              String   @id @default(cuid())
+  moodboardId     String
+
+  messages        Json
+  contextSnapshot Json?
+
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  moodboard       Moodboard @relation(fields: [moodboardId], references: [id], onDelete: Cascade)
+  createdBy       User      @relation(fields: [createdById], references: [id])
+
+  @@index([moodboardId])
+  @@map("moodboard_conversations")
+}
+
+model MoodboardOutput {
+  id              String   @id @default(cuid())
+  moodboardId     String
+
+  type            MoodboardOutputType
+  title           String
+  content         Json
+  contentText     String?  @db.Text
+
+  prompt          String   @db.Text
+
+  exportedToDoc   String?
+  exportedToDeck  String?
+  exportedToVideo String?
+
+  createdById     String
+  createdAt       DateTime @default(now())
+
+  moodboard       Moodboard @relation(fields: [moodboardId], references: [id], onDelete: Cascade)
+  createdBy       User      @relation(fields: [createdById], references: [id])
+
+  @@index([moodboardId])
+  @@map("moodboard_outputs")
+}
+
+enum MoodboardType {
+  GENERAL
+  BRAND
+  CAMPAIGN
+  VIDEO
+  PHOTO
+  DESIGN
+  PITCH
+}
+
+enum MoodboardStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum MoodboardItemType {
+  IMAGE
+  PDF
+  VIDEO
+  AUDIO
+  COLOR
+  TEXT
+  LINK
+  FILE
+}
+
+enum MoodboardOutputType {
+  CAMPAIGN_CONCEPTS
+  COPY
+  VISUAL_DIRECTION
+  SCRIPT
+  DECK_OUTLINE
+  COLOR_PALETTE
+  TAGLINES
+  IMAGE
+  CUSTOM
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum IndexStatus {
+  PENDING
+  INDEXING
+  INDEXED
+  FAILED
 }

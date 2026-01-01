@@ -9,7 +9,7 @@ export default async function ResourcesPage() {
     return null;
   }
 
-  const [briefs, users] = await Promise.all([
+  const [briefs, users, clients] = await Promise.all([
     db.brief.findMany({
       where: {
         organizationId: session.user.organizationId,
@@ -20,10 +20,18 @@ export default async function ResourcesPage() {
       include: {
         client: true,
         assignee: true,
+        createdBy: true,
       },
       orderBy: { createdAt: "desc" },
     }),
     db.user.findMany({
+      where: {
+        organizationId: session.user.organizationId,
+        isActive: true,
+      },
+      orderBy: { name: "asc" },
+    }),
+    db.client.findMany({
       where: {
         organizationId: session.user.organizationId,
         isActive: true,
@@ -41,7 +49,7 @@ export default async function ResourcesPage() {
         </p>
       </div>
 
-      <ResourcesView briefs={briefs} users={users} />
+      <ResourcesView briefs={briefs} users={users} clients={clients} />
     </div>
   );
 }

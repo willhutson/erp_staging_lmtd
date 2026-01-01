@@ -6,4 +6,5 @@ export { MultiSelectField } from "./MultiSelectField";
 export { DateField, DateRangeField } from "./DateField";
 export { UserSelectField } from "./UserSelectField";
 export { ClientSelectField } from "./ClientSelectField";
+export { ProjectSelectField } from "./ProjectSelectField";
 export { FileUploadField } from "./FileUploadField";

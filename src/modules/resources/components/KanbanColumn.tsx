@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 interface KanbanColumnProps {
   id: BriefStatus;
   title: string;
-  briefs: (Brief & { client: Client; assignee: User | null })[];
+  briefs: (Brief & { client: Client; assignee: User | null; createdBy: User })[];
   color: string;
 }
 

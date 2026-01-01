@@ -24,6 +24,7 @@ export interface LayoutConfig {
 // Available widget types
 export type WidgetType =
   | "my-tasks"
+  | "my-briefed-tasks"
   | "team-capacity"
   | "upcoming-deadlines"
   | "recent-briefs"
@@ -57,6 +58,17 @@ export const widgetRegistry: Record<WidgetType, WidgetDefinition> = {
     defaultSize: "2x1",
     minWidth: 1,
     minHeight: 1,
+    maxWidth: 4,
+    maxHeight: 3,
+  },
+  "my-briefed-tasks": {
+    type: "my-briefed-tasks",
+    name: "My Briefed Tasks",
+    description: "Tasks you created and briefed to the team",
+    icon: "Send",
+    defaultSize: "2x2",
+    minWidth: 2,
+    minHeight: 2,
     maxWidth: 4,
     maxHeight: 3,
   },

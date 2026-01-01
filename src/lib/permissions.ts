@@ -15,6 +15,7 @@ type Permission =
   | "brief:view-all"
   | "brief:view-assigned"
   | "brief:assign"
+  | "project:create"
   | "time:track"
   | "time:approve"
   | "resource:view"
@@ -30,6 +31,7 @@ const PERMISSION_MAP: Record<Permission, PermissionLevel[]> = {
   "brief:view-all": ["ADMIN", "LEADERSHIP"],
   "brief:view-assigned": ["ADMIN", "LEADERSHIP", "TEAM_LEAD", "STAFF", "FREELANCER"],
   "brief:assign": ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
+  "project:create": ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
   "time:track": ["ADMIN", "LEADERSHIP", "TEAM_LEAD", "STAFF", "FREELANCER"],
   "time:approve": ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],
   "resource:view": ["ADMIN", "LEADERSHIP", "TEAM_LEAD"],

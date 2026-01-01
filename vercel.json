@@ -2,5 +2,15 @@
   "framework": "nextjs",
   "buildCommand": "npx prisma generate && pnpm build",
   "installCommand": "pnpm install",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "crons": [
+    {
+      "path": "/api/cron/delegations",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/nudges",
+      "schedule": "*/15 * * * *"
+    }
+  ]
 }

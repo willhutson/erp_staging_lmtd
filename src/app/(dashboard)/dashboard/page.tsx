@@ -4,6 +4,7 @@ import { DashboardGrid } from "@/modules/dashboard/components/DashboardGrid";
 import { WidgetLoader } from "@/modules/dashboard/components/WidgetLoader";
 import {
   MyTasksWidget,
+  MyBriefedTasksWidget,
   UpcomingDeadlinesWidget,
   RecentBriefsWidget,
   TimeLoggedWidget,
@@ -26,6 +27,8 @@ function ServerWidget({ type }: { type: string }) {
     switch (type) {
       case "my-tasks":
         return <MyTasksWidget />;
+      case "my-briefed-tasks":
+        return <MyBriefedTasksWidget />;
       case "upcoming-deadlines":
         return <UpcomingDeadlinesWidget />;
       case "recent-briefs":
