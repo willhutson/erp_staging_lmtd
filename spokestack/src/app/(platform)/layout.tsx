@@ -20,7 +20,30 @@ export default async function PlatformLayout({
   }
 
   // Get tenant configuration for this domain
-  const tenant = await getTenant();
+  let tenant;
+  try {
+    tenant = await getTenant();
+  } catch (error) {
+    console.error("Error getting tenant:", error);
+    // Use default tenant config
+    tenant = {
+      id: "default",
+      slug: "spokestack",
+      name: "SpokeStack",
+      logo: null,
+      logoMark: null,
+      favicon: null,
+      primaryColor: "#52EDC7",
+      secondaryColor: "#1BA098",
+      domain: null,
+      customDomain: null,
+      subdomain: null,
+      enabledModules: [],
+      settings: {},
+      tier: "pro" as const,
+      organizationId: "",
+    };
+  }
 
   // Get user from database (must be pre-created via admin panel)
   const supabaseUser = await getUser();
@@ -28,12 +51,17 @@ export default async function PlatformLayout({
 
   if (supabaseUser) {
     try {
+      // Build OR conditions, filtering out undefined email
+      const orConditions: { supabaseId?: string; email?: string }[] = [
+        { supabaseId: supabaseUser.id }
+      ];
+      if (supabaseUser.email) {
+        orConditions.push({ email: supabaseUser.email });
+      }
+
       // Find user by supabaseId or email, scoped to tenant's organization if available
       const whereClause: Record<string, unknown> = {
-        OR: [
-          { supabaseId: supabaseUser.id },
-          { email: supabaseUser.email ?? undefined }
-        ]
+        OR: orConditions
       };
 
       // If tenant has an organizationId, scope user lookup to that org
