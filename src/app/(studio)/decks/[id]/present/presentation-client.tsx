@@ -278,8 +278,8 @@ function SlideView({ slide }: { slide: DeckSlide }) {
           </div>
         )}
 
-        {/* Title + Content */}
-        {slide.layoutType === "TITLE_CONTENT" && (
+        {/* Content */}
+        {slide.layoutType === "CONTENT" && (
           <div className="flex-1 flex flex-col">
             {slide.title && (
               <h2 className="text-4xl font-bold text-gray-900 mb-8">{slide.title}</h2>
@@ -344,7 +344,7 @@ function SlideView({ slide }: { slide: DeckSlide }) {
         )}
 
         {/* Default/Other Layouts */}
-        {!["TITLE", "TITLE_CONTENT", "TWO_COLUMN", "QUOTE", "STATS"].includes(slide.layoutType) && (
+        {!["TITLE", "CONTENT", "TWO_COLUMN", "QUOTE", "STATS"].includes(slide.layoutType) && (
           <div className="flex-1 flex flex-col">
             {slide.title && (
               <h2 className="text-4xl font-bold text-gray-900 mb-4">{slide.title}</h2>
