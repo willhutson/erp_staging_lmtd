@@ -117,6 +117,13 @@ export function paginated<T>(
   });
 }
 
+export function error(message: string, status = 400) {
+  return NextResponse.json(
+    { success: false, error: { message } },
+    { status }
+  );
+}
+
 export function errorResponse(error: ApiError | Error) {
   if (error instanceof ApiError) {
     return NextResponse.json(
