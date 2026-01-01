@@ -22,14 +22,15 @@ interface VideoProjectListProps {
   onDeleteClick?: (project: VideoProjectWithRelations) => void;
 }
 
-const statusConfig = {
-  PLANNING: { label: "Planning", color: "bg-gray-100 text-gray-700" },
+const statusConfig: Record<string, { label: string; color: string }> = {
+  CONCEPT: { label: "Concept", color: "bg-gray-100 text-gray-700" },
   SCRIPTING: { label: "Scripting", color: "bg-blue-100 text-blue-700" },
   PRE_PRODUCTION: { label: "Pre-Production", color: "bg-yellow-100 text-yellow-700" },
-  SHOOTING: { label: "Shooting", color: "bg-orange-100 text-orange-700" },
+  PRODUCTION: { label: "Production", color: "bg-orange-100 text-orange-700" },
   POST_PRODUCTION: { label: "Post-Production", color: "bg-purple-100 text-purple-700" },
   REVIEW: { label: "Review", color: "bg-pink-100 text-pink-700" },
   COMPLETE: { label: "Complete", color: "bg-green-100 text-green-700" },
+  CANCELLED: { label: "Cancelled", color: "bg-red-100 text-red-700" },
 };
 
 const typeConfig = {
@@ -57,7 +58,7 @@ export function VideoProjectList({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {projects.map((project) => {
-        const status = statusConfig[project.status] || statusConfig.PLANNING;
+        const status = statusConfig[project.status] || statusConfig.CONCEPT;
         const type = typeConfig[project.type as keyof typeof typeConfig] || { label: project.type, icon: "🎬" };
         const hasScript = !!project.script;
         const hasStoryboard = project.storyboard && project.storyboard.frames.length > 0;
