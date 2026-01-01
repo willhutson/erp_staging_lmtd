@@ -2,9 +2,27 @@ import { getStudioUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { CalendarClient } from "./calendar-client";
 import { startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
+import { AlertTriangle } from "lucide-react";
+
+function CalendarError({ message }: { message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[50vh] p-8">
+      <div className="flex flex-col items-center text-center max-w-md">
+        <div className="p-4 rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
+          <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
+        </div>
+        <h2 className="text-xl font-semibold mb-2">Calendar Unavailable</h2>
+        <p className="text-muted-foreground mb-4">
+          {message || "Unable to load calendar. Please try again later."}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default async function CalendarPage() {
-  const user = await getStudioUser();
+  try {
+    const user = await getStudioUser();
 
   // Calculate date range for fetching (3 months window)
   const now = new Date();
@@ -84,11 +102,16 @@ export default async function CalendarPage() {
     assignee: brief.assignee || undefined,
   }));
 
-  return (
-    <CalendarClient
-      initialEntries={entries}
-      clients={clients}
-      briefDeadlines={formattedDeadlines}
-    />
-  );
+    return (
+      <CalendarClient
+        initialEntries={entries}
+        clients={clients}
+        briefDeadlines={formattedDeadlines}
+      />
+    );
+  } catch (error) {
+    console.error("Calendar page error:", error);
+    const message = error instanceof Error ? error.message : "An unexpected error occurred";
+    return <CalendarError message={message} />;
+  }
 }

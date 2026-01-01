@@ -4,10 +4,8 @@ import type { Metadata } from "next"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
-import { DM_Sans, JetBrains_Mono } from 'next/font/google'
-
-const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-sans" })
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" })
+// Use system fonts to avoid network dependency during build
+// CSS variables are defined directly in globals.css for these fonts
 
 export const metadata: Metadata = {
   title: "LMTD OS - Operating System for Agency Workflows",
@@ -71,7 +69,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${dmSans.variable} ${jetbrainsMono.variable} font-sans antialiased`} suppressHydrationWarning>
+      <body className="font-sans antialiased" suppressHydrationWarning>
         {children}
         <Analytics />
       </body>
