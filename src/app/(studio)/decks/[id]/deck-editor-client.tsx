@@ -177,9 +177,9 @@ export function DeckEditorClient({ deck: initialDeck }: DeckEditorClientProps) {
             <Sparkles className="w-4 h-4" />
             AI Assist
           </button>
-          {deck.googleSlidesUrl && (
+          {deck.googleSlidesId && (
             <a
-              href={deck.googleSlidesUrl}
+              href={`https://docs.google.com/presentation/d/${deck.googleSlidesId}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-3 py-1.5 text-sm border border-ltd-border-1 rounded-[var(--ltd-radius-md)] text-ltd-text-2 hover:bg-ltd-surface-3 transition-colors"
