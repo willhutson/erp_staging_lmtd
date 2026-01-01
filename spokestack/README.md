@@ -1,36 +1,134 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SpokeStack
+
+A modern multi-tenant ERP and creative studio platform built for professional services agencies.
+
+## Features
+
+### Core ERP
+- **Briefs Management** - Create and track creative work items (video shoots, edits, design, copywriting, paid media)
+- **Time Tracking** - Timer-based and manual time logging with billable/non-billable tracking
+- **Leave Management** - Leave requests, balances, and team calendar
+- **Team Directory** - Org chart, profiles, and department management
+- **Client Management** - Client accounts, contacts, and activity tracking
+- **Project Management** - Budgets, retainers, and project tracking
+- **RFP Pipeline** - Track RFPs from vetting to outcome
+- **Deal Pipeline** - Sales pipeline with lead to close tracking
+
+### SpokeStudio (AI-Powered Creative Suite)
+- **Documents** - Rich text documents with Google Docs sync
+- **Video Projects** - Scripts, storyboards, shot lists, and production tracking
+- **Pitch Decks** - AI-assisted presentation builder with slide templates
+- **Moodboards** - Visual inspiration boards with AI generation
+- **Content Calendar** - Social media content planning and scheduling
+- **AI Skills** - Pre-built AI assistants for copywriting, video scripts, design briefs, and more
+
+## Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Database**: PostgreSQL + Prisma ORM
+- **Auth**: Supabase Auth
+- **State**: Zustand + React Query
+- **Deployment**: Vercel
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+
+- pnpm (recommended) or npm
+- PostgreSQL database
+- Supabase project (for auth)
+
+### Environment Variables
+
+Create a `.env.local` file:
+
+```env
+# Database
+DATABASE_URL="postgresql://..."
+
+# Supabase Auth
+NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+
+# Optional: Google Integration
+GOOGLE_CLIENT_ID="..."
+GOOGLE_CLIENT_SECRET="..."
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Install dependencies
+pnpm install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Push database schema
+pnpm prisma db push
 
-## Learn More
+# Generate Prisma client
+pnpm prisma generate
 
-To learn more about Next.js, take a look at the following resources:
+# Start development server
+pnpm dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Open [http://localhost:3000](http://localhost:3000) to view the app.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+/prisma
+  schema.prisma         # Database schema
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+/src
+  /app                  # Next.js App Router
+    /(auth)            # Login, signup
+    /(platform)        # Main authenticated app
+      /studio          # SpokeStudio pages
+    /api               # REST API routes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+  /modules             # Feature modules
+    /studio            # SpokeStudio module
+      /actions         # Server actions
+      /components      # React components
+      /types           # TypeScript types
+
+  /components
+    /ui                # shadcn/ui components
+    /layout            # Shell, sidebar, header
+
+  /lib                 # Utilities and config
+```
+
+## API Reference
+
+SpokeStack provides a REST API for integrations:
+
+- **Base URL**: `https://spokestack.vercel.app/api/v1`
+- **Auth**: Session-based (cookie)
+- **70+ endpoints** across Auth, Users, Clients, Briefs, Projects, Time, Leave, Team, RFP, Deals, Resources
+
+See `/docs` or `/admin/settings/api` in the app for full API documentation.
+
+## Available Scripts
+
+```bash
+pnpm dev          # Start dev server
+pnpm build        # Production build (includes db push)
+pnpm start        # Start production server
+pnpm lint         # Run ESLint
+```
+
+## Multi-Tenant Architecture
+
+SpokeStack is built for multi-tenancy:
+- All data is scoped to `organizationId`
+- Custom domains supported via `ClientInstance`
+- Role-based access control (ADMIN, LEADERSHIP, TEAM_LEAD, STAFF, FREELANCER)
+
+## License
+
+Private - All rights reserved.
