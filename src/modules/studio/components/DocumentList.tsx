@@ -67,9 +67,9 @@ export function DocumentList({
                 <h3 className="font-medium text-ltd-text-1 truncate">
                   {doc.title}
                 </h3>
-                {doc.googleDocUrl && (
+                {doc.googleDocId && (
                   <a
-                    href={doc.googleDocUrl}
+                    href={`https://docs.google.com/document/d/${doc.googleDocId}/edit`}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
@@ -132,9 +132,9 @@ export function DocumentList({
                       Sync to Google
                     </button>
                   )}
-                  {doc.googleDocUrl && (
+                  {doc.googleDocId && (
                     <a
-                      href={doc.googleDocUrl}
+                      href={`https://docs.google.com/document/d/${doc.googleDocId}/edit`}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
