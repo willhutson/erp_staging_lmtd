@@ -283,7 +283,7 @@ export async function validateBody<T>(
   const result = schema.safeParse(body);
   if (!result.success) {
     throw ApiError.validation({
-      errors: result.error.errors.map((e) => ({
+      errors: result.error.issues.map((e) => ({
         field: e.path.join("."),
         message: e.message,
       })),
