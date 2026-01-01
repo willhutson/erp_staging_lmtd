@@ -7,7 +7,7 @@
  */
 
 import { db } from "@/lib/db";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, BriefType } from "@prisma/client";
 import type {
   StartDelegationContext,
   DelegationScope,
@@ -145,7 +145,7 @@ async function reassignTasksForDelegation(delegationId: string): Promise<void> {
       assigneeId: delegation.delegatorId,
       status: { notIn: ["COMPLETED", "CANCELLED"] },
       ...(scope.clients !== "all" && { clientId: { in: scope.clients } }),
-      ...(scope.briefTypes !== "all" && { type: { in: scope.briefTypes } }),
+      ...(scope.briefTypes !== "all" && { type: { in: scope.briefTypes as BriefType[] } }),
     },
     select: {
       id: true,
