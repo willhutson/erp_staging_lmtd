@@ -30,27 +30,29 @@ export async function auth(): Promise<Session | null> {
       return null;
     }
 
-    // Find user in database by supabaseId or email (no org filter - let page handle that)
-    const user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { supabaseId: supabaseUser.id },
-          ...(supabaseUser.email ? [{ email: supabaseUser.email }] : [])
-        ]
-      }
+    // Find user in database - try supabaseId first, then email
+    let user = await prisma.user.findFirst({
+      where: { supabaseId: supabaseUser.id }
     });
+
+    // If not found by supabaseId, try email
+    if (!user && supabaseUser.email) {
+      user = await prisma.user.findFirst({
+        where: { email: supabaseUser.email }
+      });
+
+      // Link supabaseId for future lookups
+      if (user) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { supabaseId: supabaseUser.id }
+        });
+      }
+    }
 
     if (!user) {
       console.error("User not found in database for:", supabaseUser.email, supabaseUser.id);
       return null;
-    }
-
-    // Link supabaseId if not already linked
-    if (!user.supabaseId) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { supabaseId: supabaseUser.id }
-      });
     }
 
     return {
