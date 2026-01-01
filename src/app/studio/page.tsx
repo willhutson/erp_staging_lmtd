@@ -17,7 +17,7 @@ const studioModules = [
   {
     title: "Documents",
     description: "Create and sync documents with Google Docs. Collaborate in real-time with version history.",
-    href: "/docs",
+    href: "/studio/docs",
     icon: FileText,
     color: "from-blue-500 to-blue-600",
     status: "active" as const,
@@ -25,7 +25,7 @@ const studioModules = [
   {
     title: "Pitch Decks",
     description: "Build beautiful presentations with AI-powered content generation and Google Slides export.",
-    href: "/decks",
+    href: "/studio/decks",
     icon: Presentation,
     color: "from-orange-500 to-red-500",
     status: "active" as const,
@@ -33,7 +33,7 @@ const studioModules = [
   {
     title: "Video Studio",
     description: "Script writing, storyboarding, and shot list management for video productions.",
-    href: "/video",
+    href: "/studio/video",
     icon: Video,
     color: "from-purple-500 to-pink-500",
     status: "active" as const,
@@ -41,7 +41,7 @@ const studioModules = [
   {
     title: "Moodboard Lab",
     description: "Upload references, images, and links. AI indexes everything for grounded creative generation.",
-    href: "/moodboard",
+    href: "/studio/moodboard",
     icon: ImageIcon,
     color: "from-ltd-primary to-[#7B61FF]",
     status: "active" as const,
@@ -50,7 +50,7 @@ const studioModules = [
   {
     title: "Social Calendar",
     description: "Plan and schedule social content across platforms with drag-and-drop scheduling.",
-    href: "/calendar",
+    href: "/studio/calendar",
     icon: Calendar,
     color: "from-green-500 to-emerald-600",
     status: "active" as const,
@@ -58,7 +58,7 @@ const studioModules = [
   {
     title: "AI Skills",
     description: "Configure and customize AI assistants for your creative workflows.",
-    href: "/skills",
+    href: "/studio/skills",
     icon: Sparkles,
     color: "from-yellow-500 to-orange-500",
     status: "active" as const,
