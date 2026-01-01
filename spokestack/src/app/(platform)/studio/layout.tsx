@@ -83,12 +83,23 @@ export default async function StudioLayout({
     }
 
     return <>{children}</>;
-  } catch (error) {
+  } catch (error: unknown) {
     // Re-throw redirect errors (Next.js uses these internally)
     if (isRedirectError(error)) {
       throw error;
     }
-    console.error("Studio layout unexpected error:", error);
-    redirect("/hub?error=studio_error");
+
+    // Log detailed error info for debugging
+    const errorInfo = {
+      name: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : String(error),
+      digest: (error as { digest?: string })?.digest,
+      stack: error instanceof Error ? error.stack?.split("\n").slice(0, 3).join("\n") : undefined,
+    };
+    console.error("Studio layout unexpected error:", JSON.stringify(errorInfo, null, 2));
+
+    // Include error name in redirect for debugging
+    const errorName = error instanceof Error ? error.name : "unknown";
+    redirect(`/hub?error=studio_error&type=${encodeURIComponent(errorName)}`);
   }
 }
