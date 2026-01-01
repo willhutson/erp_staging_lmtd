@@ -77,12 +77,14 @@ export default async function StudioLayout({
         name: dbError instanceof Error ? dbError.name : "Unknown",
         message: dbError instanceof Error ? dbError.message : String(dbError),
         code: (dbError as { code?: string })?.code,
+        meta: (dbError as { meta?: unknown })?.meta,
         hasDbUrl: !!process.env.DATABASE_URL,
+        dbUrlPrefix: process.env.DATABASE_URL?.slice(0, 30),
       };
       console.error("Studio: Database query failed:", JSON.stringify(dbErrorInfo, null, 2));
 
-      // Include error details in redirect
-      const errMsg = dbError instanceof Error ? dbError.message.slice(0, 50) : "unknown";
+      // Include more error details in redirect (200 chars)
+      const errMsg = dbError instanceof Error ? dbError.message.slice(0, 200) : "unknown";
       redirect(`/hub?error=db_error&msg=${encodeURIComponent(errMsg)}`);
     }
 
