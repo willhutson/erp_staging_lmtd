@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import type { BuilderTemplateType, TemplateStatus } from "@prisma/client";
+import type { BuilderTemplateType, TemplateStatus, Prisma } from "@prisma/client";
 import type { TemplateDefinitionMap } from "../types";
 
 /**
@@ -140,7 +140,7 @@ export async function createTemplateVersion(
       name: updates.name || existing.name,
       description: updates.description ?? existing.description,
       module: existing.module,
-      definition: updates.definition || (existing.definition as Record<string, unknown>),
+      definition: (updates.definition || existing.definition) as unknown as Prisma.InputJsonValue,
       status: "DRAFT",
       version: existing.version + 1,
       previousVersionId: templateId,
