@@ -124,10 +124,26 @@ export interface CreateCalendarEntryInput {
   assigneeId?: string;
 }
 
-export interface CalendarEntryWithRelations extends StudioCalendarEntry {
-  platforms: string[];
+export interface CalendarEntryWithRelations {
+  id: string;
+  organizationId: string;
+  title: string;
+  description?: string | null;
   contentType: SocialContentType;
+  scheduledDate: Date;
+  scheduledTime?: string | null;
+  timezone: string;
+  platforms: string[];
   status: CalendarEntryStatus;
+  clientId?: string | null;
+  projectId?: string | null;
+  briefId?: string | null;
+  documentId?: string | null;
+  color?: string | null;
+  createdById: string;
+  assigneeId?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
   createdBy: { id: string; name: string; avatarUrl?: string | null };
   assignee?: { id: string; name: string; avatarUrl?: string | null } | null;
   client?: { id: string; name: string } | null;
