@@ -18,43 +18,52 @@ export default async function StudioLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
+  try {
+    const session = await getSession();
 
-  if (!session) {
-    redirect("/login");
-  }
+    if (!session) {
+      redirect("/login");
+    }
 
-  const supabaseUser = await getUser();
-  if (!supabaseUser) {
-    redirect("/login");
-  }
+    const supabaseUser = await getUser();
+    if (!supabaseUser) {
+      redirect("/login");
+    }
 
-  // Find user in database - try supabaseId first, then email
-  let user = await prisma.user.findFirst({
-    where: { supabaseId: supabaseUser.id }
-  });
-
-  // If not found by supabaseId, try email
-  if (!user && supabaseUser.email) {
-    user = await prisma.user.findFirst({
-      where: { email: supabaseUser.email }
+    // Find user in database - try supabaseId first, then email
+    let user = await prisma.user.findFirst({
+      where: { supabaseId: supabaseUser.id }
     });
 
-    // Link supabaseId for future lookups
-    if (user) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { supabaseId: supabaseUser.id }
+    // If not found by supabaseId, try email
+    if (!user && supabaseUser.email) {
+      user = await prisma.user.findFirst({
+        where: { email: supabaseUser.email }
       });
+
+      // Link supabaseId for future lookups
+      if (user) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { supabaseId: supabaseUser.id }
+        });
+      }
     }
-  }
 
-  // If user not in DB, redirect to setup page instead of login loop
-  if (!user) {
-    console.error("Studio: User not found in database for:", supabaseUser.email);
-    // Redirect to hub with error rather than login to prevent loop
-    redirect("/hub?error=user_not_found");
-  }
+    // If user not in DB, redirect to hub instead of login loop
+    if (!user) {
+      console.error("Studio: User not found in database for:", supabaseUser.email);
+      redirect("/hub?error=user_not_found");
+    }
 
-  return <>{children}</>;
+    return <>{children}</>;
+  } catch (error) {
+    // Check if it's a redirect (Next.js throws for redirects)
+    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+      throw error;
+    }
+    console.error("Studio layout error:", error);
+    // Redirect to hub on error
+    redirect("/hub?error=studio_error");
+  }
 }
