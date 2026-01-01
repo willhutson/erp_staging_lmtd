@@ -11,7 +11,6 @@ interface CreateBriefInput {
   clientId: string;
   topic: string;
   assigneeId?: string;
-  backupAssigneeId?: string;
   projectId?: string;
   formData: Record<string, unknown>;
 }
@@ -27,7 +26,7 @@ export async function createBrief(input: CreateBriefInput) {
     throw new Error("You don't have permission to create briefs");
   }
 
-  const { type, clientId, topic, assigneeId, backupAssigneeId, projectId, formData } = input;
+  const { type, clientId, topic, assigneeId, projectId, formData } = input;
 
   // Get client for title generation
   const client = await prisma.client.findUnique({
@@ -57,7 +56,6 @@ export async function createBrief(input: CreateBriefInput) {
       priority: "MEDIUM",
       createdById: session.user.id,
       assigneeId: assigneeId || null,
-      backupAssigneeId: backupAssigneeId || null,
       formData: formData as object,
       submittedAt: new Date(),
     },
