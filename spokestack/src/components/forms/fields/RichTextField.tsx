@@ -1,19 +1,25 @@
 "use client";
 
 /**
- * Rich Text Field Component
+ * Rich Text Field Component (Simplified)
  *
- * Form field that uses RichTextEditor for rich text input.
- * Supports @mentions and optional AI features.
+ * Uses a textarea for rich text input until full editor is available.
  *
  * @module components/forms/fields/RichTextField
  */
 
-import { useRef } from "react";
 import { Label } from "@/components/ui/label";
-import { RichTextEditor, type RichTextVariant, type RichTextEditorRef, type MentionUser } from "@/components/editor";
+import { Textarea } from "@/components/ui/textarea";
 import type { FormField } from "@/types/forms";
 import { cn } from "@/lib/utils";
+
+export type RichTextVariant = "standard" | "mentions" | "minimal";
+
+export interface MentionUser {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+}
 
 interface RichTextFieldProps {
   field: FormField;
@@ -30,17 +36,7 @@ export function RichTextField({
   value,
   onChange,
   error,
-  users = [],
-  variant = "standard",
-  enableAI = false,
 }: RichTextFieldProps) {
-  const editorRef = useRef<RichTextEditorRef>(null);
-
-  // Determine variant based on field config
-  const editorVariant: RichTextVariant =
-    field.config?.variant as RichTextVariant ||
-    (field.config?.mentions ? "mentions" : variant);
-
   return (
     <div className="space-y-2">
       <Label htmlFor={field.id}>
@@ -49,24 +45,27 @@ export function RichTextField({
       </Label>
 
       {field.description && (
-        <p className="text-sm text-gray-500">{field.description}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{field.description}</p>
       )}
 
-      <RichTextEditor
-        ref={editorRef}
-        variant={editorVariant}
-        defaultValue={value}
-        onChange={(html) => onChange(html)}
+      <Textarea
+        id={field.id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
         placeholder={field.placeholder}
-        users={users}
-        enableAI={enableAI}
+        rows={6}
         maxLength={field.validation?.maxLength}
-        showCharCount={!!field.validation?.maxLength}
         className={cn(
-          error && "border-red-500",
-          field.config?.minHeight && `min-h-[${field.config.minHeight}]`
+          "min-h-[150px]",
+          error && "border-red-500"
         )}
       />
+
+      {field.validation?.maxLength && (
+        <p className="text-xs text-gray-400 text-right">
+          {value?.length || 0} / {field.validation.maxLength}
+        </p>
+      )}
 
       {error && (
         <p className="text-sm text-red-500">{error}</p>
