@@ -218,6 +218,19 @@ export function requirePermission(
   }
 }
 
+// Convenience permission helpers
+export function requireAdmin(context: AuthContext) {
+  requirePermission(context, "ADMIN");
+}
+
+export function requireLeadership(context: AuthContext) {
+  requirePermission(context, "LEADERSHIP+");
+}
+
+export function requireTeamLead(context: AuthContext) {
+  requirePermission(context, "TEAM_LEAD+");
+}
+
 // ============================================
 // Request Parsing
 // ============================================
