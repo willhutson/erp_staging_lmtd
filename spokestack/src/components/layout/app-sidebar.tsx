@@ -284,7 +284,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ user, tenant }: AppSidebarProps) {
   const pathname = usePathname();
-  const [expandedBundles, setExpandedBundles] = useState<string[]>(["erp", "agency", "marketing", "portal"]);
+  const [expandedBundles, setExpandedBundles] = useState<string[]>(["erp", "agency", "marketing", "studio", "portal"]);
   const [expandedModules, setExpandedModules] = useState<string[]>([]);
 
   // Check if this is the default SpokeStack tenant (super admin access)
