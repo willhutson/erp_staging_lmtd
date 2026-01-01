@@ -72,6 +72,10 @@ model Organization {
   // Spokestack Platform
   clientInstances  ClientInstance[]
 
+  // Studio module
+  studioDocuments       StudioDocument[]
+  studioCalendarEntries StudioCalendarEntry[]
+
   @@map("organizations")
 }
 
@@ -222,6 +226,13 @@ model User {
   // Client Instance Access (spokestack portal)
   clientInstanceAccess ClientInstanceUser[]
 
+  // Studio module
+  studioDocsCreated             StudioDocument[]         @relation("DocCreator")
+  studioDocsEdited              StudioDocument[]         @relation("DocEditor")
+  studioDocVersionsCreated      StudioDocVersion[]
+  studioCalendarEntriesCreated  StudioCalendarEntry[]    @relation("EntryCreator")
+  studioCalendarEntriesAssigned StudioCalendarEntry[]    @relation("EntryAssignee")
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([organizationId, email])
@@ -326,6 +337,10 @@ model Client {
   crmContacts      Contact[]      @relation("ContactCompany")
   crmDeals         CRMDeal[]      @relation("CRMDealClient")
   crmCampaigns     CRMCampaign[]  @relation("CRMCampaignClient")
+
+  // Studio module
+  studioDocuments       StudioDocument[]
+  studioCalendarEntries StudioCalendarEntry[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
@@ -493,6 +508,10 @@ model Project {
   googleDocuments  GoogleDocument[]
   projectFiles     ProjectFile[]
 
+  // Studio module
+  studioDocuments       StudioDocument[]
+  studioCalendarEntries StudioCalendarEntry[]
+
   @@index([organizationId])
   @@index([clientId])
   @@map("projects")
@@ -567,6 +586,10 @@ model Brief {
 
   // Content CMS (Phase 16)
   contentPosts     ContentPost[]
+
+  // Studio module
+  studioDocuments       StudioDocument[]
+  studioCalendarEntries StudioCalendarEntry[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -5692,4 +5715,172 @@ enum ClientInstanceRole {
   MANAGER
   EDITOR
   VIEWER
+}
+
+// ============================================
+// STUDIO MODULE
+// ============================================
+
+// StudioDocument - Google Docs sync
+model StudioDocument {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Document info
+  title           String
+  type            StudioDocType @default(DOCUMENT)
+  status          StudioDocStatus @default(DRAFT)
+
+  // Google sync
+  googleDocId     String?  @unique
+  googleDriveId   String?
+  lastSyncedAt    DateTime?
+  syncStatus      SyncStatus @default(PENDING)
+  syncError       String?
+
+  // Content (local cache)
+  content         Json?    // Portable format for offline/preview
+  contentHtml     String?  @db.Text
+  wordCount       Int      @default(0)
+
+  // Relations
+  projectId       String?
+  briefId         String?
+  clientId        String?
+
+  // Ownership
+  createdById     String
+  lastEditedById  String?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  project         Project?     @relation(fields: [projectId], references: [id])
+  brief           Brief?       @relation(fields: [briefId], references: [id])
+  client          Client?      @relation(fields: [clientId], references: [id])
+  createdBy       User         @relation("DocCreator", fields: [createdById], references: [id])
+  lastEditedBy    User?        @relation("DocEditor", fields: [lastEditedById], references: [id])
+
+  versions        StudioDocVersion[]
+  calendarEntries StudioCalendarEntry[]
+
+  @@index([organizationId])
+  @@index([googleDocId])
+  @@index([clientId])
+  @@index([briefId])
+  @@map("studio_documents")
+}
+
+model StudioDocVersion {
+  id              String   @id @default(cuid())
+  documentId      String
+  version         Int
+  content         Json
+  contentHtml     String?  @db.Text
+  wordCount       Int
+  changeNote      String?
+  createdById     String
+  createdAt       DateTime @default(now())
+
+  document        StudioDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  createdBy       User           @relation(fields: [createdById], references: [id])
+
+  @@unique([documentId, version])
+  @@map("studio_doc_versions")
+}
+
+enum StudioDocType {
+  DOCUMENT        // General doc
+  SCRIPT          // Video script
+  SOCIAL_COPY     // Social media copy
+  AD_COPY         // Advertising copy
+  BLOG_POST       // Blog article
+  EMAIL           // Email template
+  PROPOSAL        // Client proposal
+  SOW             // Scope of work
+}
+
+enum StudioDocStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+// StudioCalendarEntry - Social content calendar
+model StudioCalendarEntry {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  // Content
+  title           String
+  description     String?  @db.Text
+  contentType     SocialContentType
+
+  // Scheduling
+  scheduledDate   DateTime
+  scheduledTime   String?  // "14:30" - time of day
+  timezone        String   @default("Asia/Dubai")
+
+  // Platform targeting
+  platforms       String[] // ["instagram", "linkedin", "tiktok"]
+
+  // Status
+  status          CalendarEntryStatus @default(PLANNED)
+
+  // Relations
+  clientId        String?
+  projectId       String?
+  briefId         String?
+  documentId      String?  // Link to StudioDocument
+
+  // Publishing (links to Marketing module)
+  publishedPostId String?  // Reference to Marketing module's post
+
+  // Visual
+  color           String?  // Hex color for calendar display
+
+  // Ownership
+  createdById     String
+  assigneeId      String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+  client          Client?         @relation(fields: [clientId], references: [id])
+  project         Project?        @relation(fields: [projectId], references: [id])
+  brief           Brief?          @relation(fields: [briefId], references: [id])
+  document        StudioDocument? @relation(fields: [documentId], references: [id])
+  createdBy       User            @relation("EntryCreator", fields: [createdById], references: [id])
+  assignee        User?           @relation("EntryAssignee", fields: [assigneeId], references: [id])
+
+  @@index([organizationId, scheduledDate])
+  @@index([clientId])
+  @@map("studio_calendar_entries")
+}
+
+enum SocialContentType {
+  POST            // Static image/text post
+  CAROUSEL        // Multi-image carousel
+  REEL            // Short-form video
+  STORY           // Ephemeral story
+  LIVE            // Live stream
+  ARTICLE         // LinkedIn article / blog
+  THREAD          // Twitter/X thread
+  AD              // Paid advertisement
+}
+
+enum CalendarEntryStatus {
+  IDEA            // Just an idea, not committed
+  PLANNED         // Scheduled but not created
+  IN_PROGRESS     // Being created
+  READY           // Content ready, awaiting publish
+  SCHEDULED       // Scheduled in Marketing module
+  PUBLISHED       // Live
+  CANCELLED       // Cancelled
 }
