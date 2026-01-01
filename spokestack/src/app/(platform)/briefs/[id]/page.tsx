@@ -117,12 +117,12 @@ export default async function BriefDetailPage({ params }: PageProps) {
 
   // Calculate time stats
   const totalHours = brief.timeEntries.reduce(
-    (sum, e) => sum + Number(e.hours || 0),
+    (sum: number, e: { hours: unknown; isBillable: boolean }) => sum + Number(e.hours || 0),
     0
   );
   const billableHours = brief.timeEntries
-    .filter((e) => e.isBillable)
-    .reduce((sum, e) => sum + Number(e.hours || 0), 0);
+    .filter((e: { hours: unknown; isBillable: boolean }) => e.isBillable)
+    .reduce((sum: number, e: { hours: unknown; isBillable: boolean }) => sum + Number(e.hours || 0), 0);
 
   const formData = (brief.formData || {}) as Record<string, unknown>;
 

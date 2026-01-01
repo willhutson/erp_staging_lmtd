@@ -1,71 +1,98 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Calendar, Plus, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { db } from "@/lib/db";
+import { CalendarClient } from "./calendar-client";
+import { startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
 
-export default function StudioCalendarPage() {
+export default async function CalendarPage() {
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  // Calculate date range for fetching (3 months window)
+  const now = new Date();
+  const rangeStart = startOfMonth(subMonths(now, 1));
+  const rangeEnd = endOfMonth(addMonths(now, 1));
+
+  // Fetch calendar entries for the organization
+  const entries = await db.studioCalendarEntry.findMany({
+    where: {
+      organizationId: session.user.organizationId,
+    },
+    include: {
+      createdBy: { select: { id: true, name: true, avatarUrl: true } },
+      assignee: { select: { id: true, name: true, avatarUrl: true } },
+      client: { select: { id: true, name: true } },
+      document: { select: { id: true, title: true } },
+    },
+    orderBy: { scheduledDate: "asc" },
+  });
+
+  // Fetch clients for the create modal
+  const clients = await db.client.findMany({
+    where: {
+      organizationId: session.user.organizationId,
+      isActive: true,
+    },
+    select: { id: true, name: true, code: true },
+    orderBy: { name: "asc" },
+  });
+
+  // Fetch brief deadlines for the calendar
+  const briefDeadlines = await db.brief.findMany({
+    where: {
+      organizationId: session.user.organizationId,
+      deadline: {
+        gte: rangeStart,
+        lte: rangeEnd,
+      },
+      status: {
+        notIn: ["COMPLETED", "CANCELLED"],
+      },
+    },
+    select: {
+      id: true,
+      briefNumber: true,
+      title: true,
+      type: true,
+      status: true,
+      deadline: true,
+      client: {
+        select: {
+          id: true,
+          name: true,
+          code: true,
+        },
+      },
+      assignee: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+    orderBy: { deadline: "asc" },
+  });
+
+  // Transform deadlines to match the expected type
+  const formattedDeadlines = briefDeadlines.map((brief) => ({
+    id: brief.id,
+    briefNumber: brief.briefNumber,
+    title: brief.title,
+    type: brief.type,
+    status: brief.status,
+    deadline: brief.deadline!,
+    client: brief.client,
+    assignee: brief.assignee || undefined,
+  }));
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600">
-            <Calendar className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">Social Calendar</h1>
-            <p className="text-sm text-muted-foreground">Plan and schedule content</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <Filter className="w-4 h-4 mr-2" />
-            Filter
-          </Button>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            New Entry
-          </Button>
-        </div>
-      </div>
-
-      {/* Calendar Navigation */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <span className="font-semibold text-lg ml-2">January 2025</span>
-        </div>
-        <div className="flex gap-1">
-          <Button variant="outline" size="sm">Month</Button>
-          <Button variant="ghost" size="sm">Week</Button>
-        </div>
-      </div>
-
-      {/* Calendar Grid Placeholder */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="grid grid-cols-7 border-b">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-              <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground border-r last:border-r-0">
-                {day}
-              </div>
-            ))}
-          </div>
-          <div className="grid grid-cols-7">
-            {Array.from({ length: 35 }).map((_, i) => (
-              <div
-                key={i}
-                className="min-h-[100px] p-2 border-r border-b last:border-r-0 text-sm text-muted-foreground hover:bg-muted/50 transition-colors"
-              >
-                {i < 31 ? i + 1 : ""}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <CalendarClient
+      initialEntries={entries}
+      clients={clients}
+      briefDeadlines={formattedDeadlines}
+    />
   );
 }

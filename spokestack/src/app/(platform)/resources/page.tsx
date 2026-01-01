@@ -74,8 +74,8 @@ async function getTeamCapacity() {
 
     // Merge data
     return users.map((user: TeamUser) => {
-      const timeEntry = timeEntries.find((t) => t.userId === user.id);
-      const briefCount = briefCounts.find((b) => b.assigneeId === user.id);
+      const timeEntry = timeEntries.find((t: { userId: string }) => t.userId === user.id);
+      const briefCount = briefCounts.find((b: { assigneeId: string | null }) => b.assigneeId === user.id);
       const hoursLogged = Number(timeEntry?._sum.hours || 0);
       const capacity = user.weeklyCapacity || 40;
       const utilization = capacity > 0 ? (hoursLogged / capacity) * 100 : 0;
