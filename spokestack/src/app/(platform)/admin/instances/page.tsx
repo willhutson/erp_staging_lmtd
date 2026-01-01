@@ -60,7 +60,7 @@ async function getOrgInstances(organizationId?: string): Promise<InstanceWithCou
       // When we have session:
       // where: { organizationId },
     });
-    return instances as InstanceWithCount[];
+    return instances as unknown as InstanceWithCount[];
   } catch (error) {
     console.error("Error fetching instances:", error);
     return [];
