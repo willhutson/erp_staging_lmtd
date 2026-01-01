@@ -22,6 +22,9 @@ const visibilityOptions: { value: LibraryVisibility; label: string; description:
   { value: "PUBLIC", label: "Public", description: "Anyone with the link can access" },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function NewLibraryPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);

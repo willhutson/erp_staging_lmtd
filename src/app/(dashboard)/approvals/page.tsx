@@ -86,6 +86,9 @@ const columns: ColumnDef<Approval>[] = [
   },
 ]
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function ApprovalsPage() {
   return (
     <PageShell breadcrumbs={[{ label: "Approvals" }]} title="Approvals Queue">

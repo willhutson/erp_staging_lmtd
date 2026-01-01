@@ -29,6 +29,9 @@ const LEAVE_TYPES = [
   { id: "parental", label: "Parental Leave", icon: Baby, description: "Maternity or paternity leave" },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function RequestLeavePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);

@@ -66,6 +66,9 @@ const mockWorkItems: WorkItem[] = [
   },
 ]
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function StreamsPage() {
   const router = useRouter()
   const [filterStatus, setFilterStatus] = useState<string>("all")

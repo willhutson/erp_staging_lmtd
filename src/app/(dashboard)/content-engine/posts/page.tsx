@@ -6,6 +6,9 @@ import { getContentPosts } from "@/modules/content/actions/content-actions";
 import { PostsListClient } from "./PostsListClient";
 import { db } from "@/lib/db";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function PostsPage() {
   const session = await auth();
 

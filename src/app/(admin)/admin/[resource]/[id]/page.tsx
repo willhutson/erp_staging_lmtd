@@ -21,6 +21,9 @@ interface ResourceShowPageProps {
   };
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function ResourceShowPage({ params }: ResourceShowPageProps) {
   const { resource, id } = params;
   const config = getResource(resource);

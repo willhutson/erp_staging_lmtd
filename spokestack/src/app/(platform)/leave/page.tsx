@@ -95,6 +95,9 @@ interface LeaveRequest {
   user?: { name: string; avatarUrl: string | null } | null;
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function LeavePage() {
   const router = useRouter();
   const [sickLeaveDialogOpen, setSickLeaveDialogOpen] = useState(false);

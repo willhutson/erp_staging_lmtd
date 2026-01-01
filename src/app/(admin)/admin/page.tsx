@@ -5,6 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Users, Building2, FolderKanban, Shield, FileText, Clock, PenTool } from "lucide-react";
 import Link from "next/link";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function AdminDashboard() {
   const { data: session } = useSession();
 

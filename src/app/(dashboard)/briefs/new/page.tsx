@@ -24,6 +24,9 @@ const iconMap: Record<string, React.ReactNode> = {
   BarChart3: <BarChart3 className="w-8 h-8" />,
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function NewBriefPage() {
   const session = await auth();
 

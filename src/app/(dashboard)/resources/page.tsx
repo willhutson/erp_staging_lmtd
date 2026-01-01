@@ -2,6 +2,9 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { ResourcesView } from "@/modules/resources/components/ResourcesView";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function ResourcesPage() {
   const session = await auth();
 

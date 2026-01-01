@@ -7,6 +7,9 @@ import { ArrowLeft, Search, Sparkles } from "lucide-react";
 import { KnowledgeSearch } from "./KnowledgeSearch";
 import { getEmbeddingStats } from "@/modules/content-engine/services/embedding-service";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function SearchPage() {
   const session = await auth();
 

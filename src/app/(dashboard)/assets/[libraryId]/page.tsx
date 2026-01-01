@@ -209,6 +209,9 @@ async function LibraryContent({ libraryId }: { libraryId: string }) {
   );
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function LibraryPage({ params }: Props) {
   const { libraryId } = await params;
 

@@ -37,6 +37,9 @@ const briefStatusColors: Record<string, string> = {
   CANCELLED: "bg-red-100 text-red-700",
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function ProjectDetailPage({ params }: PageProps) {
   const session = await auth();
   const { id } = await params;

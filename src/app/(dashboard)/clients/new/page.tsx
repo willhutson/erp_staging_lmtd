@@ -33,6 +33,9 @@ const relationshipStatuses = [
   { value: "PAUSED", label: "Paused" },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function NewClientPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);

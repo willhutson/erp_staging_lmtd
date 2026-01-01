@@ -62,6 +62,9 @@ const mockDecisions: Decision[] = [
   },
 ]
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function DecisionsPage() {
   const [filterImpact, setFilterImpact] = useState<string>("all")
   const [filterPerson, setFilterPerson] = useState<string>("all")

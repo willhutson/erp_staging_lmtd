@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Palette, Grid3X3, LayoutDashboard, Plus, Eye, Settings } from "lucide-react";
 import Link from "next/link";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function BuilderPage() {
   return (
     <div className="space-y-6">

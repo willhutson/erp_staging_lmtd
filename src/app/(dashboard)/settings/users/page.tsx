@@ -24,6 +24,9 @@ const permissionColors: Record<string, { bg: string; text: string }> = {
   CLIENT: { bg: "bg-green-100", text: "text-green-700" },
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function UsersSettingsPage() {
   const session = await auth();
 

@@ -32,6 +32,9 @@ const pendingApprovals = [
   },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function TimeApprovalsPage() {
   return (
     <div className="space-y-6">

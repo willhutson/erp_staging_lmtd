@@ -20,6 +20,9 @@ interface ResourceCreatePageProps {
   };
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function ResourceCreatePage({ params }: ResourceCreatePageProps) {
   const { resource } = params;
   const config = getResource(resource);

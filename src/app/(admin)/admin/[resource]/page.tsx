@@ -20,6 +20,9 @@ interface ResourceListPageProps {
   };
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function ResourceListPage({ params }: ResourceListPageProps) {
   const { resource } = params;
   const config = getResource(resource);

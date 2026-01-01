@@ -16,6 +16,9 @@ export const metadata = {
   description: "Retainer usage and burn rate analytics",
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function RetainerReportsPage() {
   const session = await auth();
 

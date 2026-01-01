@@ -8,6 +8,9 @@ import { BlackoutList } from "@/modules/leave/components/BlackoutList";
 import { initializeLeaveTypes } from "@/modules/leave/actions/leave-actions";
 import { PageShell } from "@/components/ltd/patterns/page-shell";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function LeavePage() {
   const session = await auth();
 

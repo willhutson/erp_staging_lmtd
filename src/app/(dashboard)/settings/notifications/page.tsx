@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { NotificationPreferencesForm } from "./NotificationPreferencesForm";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function NotificationSettingsPage() {
   const session = await auth();
 

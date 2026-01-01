@@ -50,6 +50,9 @@ const CLIENTS = [
   { id: "ecd", name: "Economy Dubai" },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function NewTrackerPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);

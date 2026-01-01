@@ -13,6 +13,9 @@ type BlackoutPeriodWithClient = Awaited<
   >
 >[number];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function LeaveSettingsPage() {
   const session = await auth();
 

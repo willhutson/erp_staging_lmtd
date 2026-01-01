@@ -41,6 +41,9 @@ const TIMEZONES = [
   { value: "America/Los_Angeles", label: "Los Angeles (GMT-8)" },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function ProfileSettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState("");

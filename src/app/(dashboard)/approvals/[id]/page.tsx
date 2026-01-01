@@ -24,6 +24,9 @@ const mockApprovals = [
   },
 ]
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function ApprovalDetailPage({ params }: { params: { id: string } }) {
   const approval = mockApprovals.find((a) => a.id === params.id)
 

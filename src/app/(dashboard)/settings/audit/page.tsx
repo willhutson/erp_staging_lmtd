@@ -13,6 +13,9 @@ const actionColors: Record<string, { bg: string; text: string }> = {
   default: { bg: "bg-gray-100", text: "text-gray-700" },
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function AuditSettingsPage() {
   const session = await auth();
 

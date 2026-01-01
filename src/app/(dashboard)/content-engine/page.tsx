@@ -5,6 +5,9 @@ import { ContentCalendarClient } from "./ContentCalendarClient";
 import { getCalendarPosts, getPostStats } from "@/modules/content/actions/content-actions";
 import { getSocialAccounts } from "@/modules/content/actions/social-account-actions";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function ContentEnginePage() {
   const session = await auth();
 

@@ -54,6 +54,9 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function DeliverableDetailPage({ params }: PageProps) {
   const { id } = await params;
   const session = await auth();

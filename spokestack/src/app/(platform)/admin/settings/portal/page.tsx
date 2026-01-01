@@ -25,6 +25,9 @@ import {
   AlertTitle,
 } from "@/components/ui/alert";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function PortalSettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);

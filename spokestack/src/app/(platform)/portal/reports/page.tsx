@@ -139,6 +139,9 @@ const AVAILABLE_REPORTS = [
   },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function ReportsPage() {
   return (
     <div className="space-y-8">

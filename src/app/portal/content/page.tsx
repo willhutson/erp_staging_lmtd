@@ -38,6 +38,9 @@ const platformIcons: Record<string, React.ReactNode> = {
   X_TWEET: <Twitter className="w-4 h-4 text-gray-800" />,
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function PortalContentPage() {
   const session = await auth();
 

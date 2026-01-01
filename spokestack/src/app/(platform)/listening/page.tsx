@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Users, Grid3X3, Megaphone, Plus, Radio, Activity } from "lucide-react";
 import Link from "next/link";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function ListeningPage() {
   return (
     <div className="space-y-6">

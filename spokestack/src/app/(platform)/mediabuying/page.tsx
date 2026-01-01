@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { CreditCard, Globe, Megaphone, TrendingUp, Plus, DollarSign } from "lucide-react";
 import Link from "next/link";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function MediaBuyingPage() {
   return (
     <div className="space-y-6">

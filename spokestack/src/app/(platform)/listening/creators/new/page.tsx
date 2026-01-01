@@ -50,6 +50,9 @@ const categories = [
   "Art & Design",
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function NewCreatorPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);

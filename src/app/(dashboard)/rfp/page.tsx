@@ -13,6 +13,9 @@ type RFPWithRelations = Awaited<ReturnType<typeof db.rFP.findMany<{
   include: { subitems: true; convertedToClient: true }
 }>>>[number];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function RFPPage() {
   const session = await auth();
 

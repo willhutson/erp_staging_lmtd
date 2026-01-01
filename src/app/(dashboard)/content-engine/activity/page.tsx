@@ -52,6 +52,9 @@ const ACTION_ICONS: Record<string, React.ReactNode> = {
   COMPLETED: <CheckCircle className="h-3 w-3" />,
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function ActivityPage() {
   const session = await auth();
 

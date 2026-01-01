@@ -11,6 +11,9 @@ const kpis = [
   { label: "Active Campaigns", value: "28", change: 0, icon: Zap, color: "ltd-brand-accent" },
 ]
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function PerformancePage() {
   return (
     <PageShell breadcrumbs={[{ label: "Performance" }]} title="Performance Dashboard">

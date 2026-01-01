@@ -137,6 +137,9 @@ const platformData = {
   ],
 };
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function PlatformComparisonPage() {
   const [dateRange, setDateRange] = useState("30d");
   const [viewMode, setViewMode] = useState<"paid" | "organic">("paid");

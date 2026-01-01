@@ -17,6 +17,9 @@ import {
 } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

@@ -51,6 +51,9 @@ const NAV_ITEMS = [
   { id: "api", label: "API Reference", icon: Key },
 ];
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default function DocsPage() {
   return (
     <div className="max-w-4xl mx-auto">

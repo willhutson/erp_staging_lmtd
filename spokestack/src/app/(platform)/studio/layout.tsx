@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect";
 import { getSession, getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 
@@ -13,6 +14,9 @@ export interface StudioUser {
 
 // Studio layout handles authentication for all studio routes
 // Child pages can rely on being authenticated without calling auth() again
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = "force-dynamic";
+
 export default async function StudioLayout({
   children,
 }: {
@@ -58,8 +62,8 @@ export default async function StudioLayout({
 
     return <>{children}</>;
   } catch (error) {
-    // Check if it's a redirect (Next.js throws for redirects)
-    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+    // Re-throw redirect errors (Next.js uses these internally)
+    if (isRedirectError(error)) {
       throw error;
     }
     console.error("Studio layout error:", error);
