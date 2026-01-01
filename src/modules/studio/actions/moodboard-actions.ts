@@ -8,7 +8,15 @@ import type {
   MoodboardFilters,
   AddMoodboardItemInput,
 } from "../types";
-import { nanoid } from "nanoid";
+// Generate a random token for sharing
+function generateShareToken(length = 12): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
 /**
  * Create a new moodboard
@@ -29,7 +37,7 @@ export async function createMoodboard(
       projectId: input.projectId,
       briefId: input.briefId,
       createdById: session.user.id,
-      shareToken: nanoid(12), // Generate unique share token
+      shareToken: generateShareToken(12), // Generate unique share token
     },
     include: {
       createdBy: { select: { id: true, name: true, avatarUrl: true } },
