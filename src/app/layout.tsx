@@ -1,11 +1,30 @@
 import type React from "react"
 import type { Metadata } from "next"
+import localFont from "next/font/local"
 
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
-// Use system fonts to avoid network dependency during build
-// CSS variables are defined directly in globals.css for these fonts
+// Local fonts - no network dependency during build
+const dmSans = localFont({
+  src: [
+    { path: "../fonts/DMSans-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/DMSans-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/DMSans-SemiBold.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/DMSans-Bold.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-sans",
+  display: "swap",
+})
+
+const jetbrainsMono = localFont({
+  src: [
+    { path: "../fonts/JetBrainsMono-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/JetBrainsMono-Medium.woff2", weight: "500", style: "normal" },
+  ],
+  variable: "--font-mono",
+  display: "swap",
+})
 
 export const metadata: Metadata = {
   title: "LMTD OS - Operating System for Agency Workflows",
@@ -69,7 +88,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-sans antialiased" suppressHydrationWarning>
+      <body className={`${dmSans.variable} ${jetbrainsMono.variable} font-sans antialiased`} suppressHydrationWarning>
         {children}
         <Analytics />
       </body>

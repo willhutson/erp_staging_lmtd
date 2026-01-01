@@ -4,9 +4,7 @@
 
 @layer base {
   :root {
-    /* System Font Stacks (no network dependency) */
-    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --font-mono: "SF Mono", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    /* Font variables are injected by next/font/local in layout.tsx */
 
     /* shadcn defaults */
     --background: 0 0% 100%;
