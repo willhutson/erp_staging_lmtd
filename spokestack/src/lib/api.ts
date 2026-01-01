@@ -100,7 +100,8 @@ export function noContent() {
 
 export function paginated<T>(
   data: T[],
-  pagination: { page: number; limit: number; total: number }
+  pagination: { page: number; limit: number; total: number },
+  extra?: Record<string, unknown>
 ) {
   const totalPages = Math.ceil(pagination.total / pagination.limit);
   return NextResponse.json({
@@ -112,7 +113,15 @@ export function paginated<T>(
       total: pagination.total,
       totalPages,
     },
+    ...extra,
   });
+}
+
+export function error(message: string, status = 400) {
+  return NextResponse.json(
+    { success: false, error: { message } },
+    { status }
+  );
 }
 
 export function errorResponse(error: ApiError | Error) {
@@ -147,8 +156,8 @@ export function errorResponse(error: ApiError | Error) {
 // Route Handler Wrapper
 // ============================================
 
-export async function handleRoute<T>(
-  handler: () => Promise<NextResponse<T>>
+export async function handleRoute(
+  handler: () => Promise<NextResponse>
 ): Promise<NextResponse> {
   try {
     return await handler();
@@ -218,6 +227,43 @@ export function requirePermission(
   }
 }
 
+// Convenience permission helpers
+export function requireAdmin(context: AuthContext) {
+  requirePermission(context, "ADMIN");
+}
+
+export function requireLeadership(context: AuthContext) {
+  requirePermission(context, "LEADERSHIP+");
+}
+
+export function requireTeamLead(context: AuthContext) {
+  requirePermission(context, "TEAM_LEAD+");
+}
+
+export function canAccessResource(
+  context: AuthContext,
+  resourceOwnerId: string,
+  resourceOrgId: string
+): boolean {
+  // Must be same organization
+  if (resourceOrgId !== context.organizationId) {
+    return false;
+  }
+
+  // Admins and leadership can access anything in their org
+  if (["ADMIN", "LEADERSHIP"].includes(context.user.permissionLevel)) {
+    return true;
+  }
+
+  // Team leads can access their team's resources
+  if (context.user.permissionLevel === "TEAM_LEAD") {
+    return true;
+  }
+
+  // Staff and freelancers can only access their own resources
+  return resourceOwnerId === context.user.id;
+}
+
 // ============================================
 // Request Parsing
 // ============================================
@@ -237,7 +283,7 @@ export async function validateBody<T>(
   const result = schema.safeParse(body);
   if (!result.success) {
     throw ApiError.validation({
-      errors: result.error.errors.map((e) => ({
+      errors: result.error.issues.map((e) => ({
         field: e.path.join("."),
         message: e.message,
       })),
