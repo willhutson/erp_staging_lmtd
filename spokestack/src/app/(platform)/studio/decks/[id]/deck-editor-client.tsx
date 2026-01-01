@@ -154,7 +154,7 @@ export function DeckEditorClient({ deck: initialDeck }: DeckEditorClientProps) {
       <div className="flex items-center justify-between px-4 py-2 border-b border-ltd-border-1 bg-ltd-surface-2">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => router.push("/decks")}
+            onClick={() => router.push("/studio/decks")}
             className="p-2 rounded-[var(--ltd-radius-md)] hover:bg-ltd-surface-3 transition-colors"
           >
             <ChevronLeft className="w-5 h-5 text-ltd-text-1" />

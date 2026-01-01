@@ -1,5 +1,4 @@
 import { getStudioUser } from "@/lib/auth";
-import { db } from "@/lib/db";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,31 +41,9 @@ export default async function WorkflowsPage() {
   try {
     const user = await getStudioUser();
 
-    // Try to fetch workflow boards - gracefully handle if table doesn't exist yet
-    let boards: typeof SAMPLE_BOARDS = [];
-    try {
-      // Check if BuilderTemplate table exists and has workflow templates
-      const templates = await db.builderTemplate.findMany({
-        where: {
-          organizationId: user.organizationId,
-          templateType: "WORKFLOW",
-        },
-        take: 10,
-        orderBy: { updatedAt: "desc" },
-      });
-
-      // Transform templates to board format
-      boards = templates.map((t) => ({
-        id: t.id,
-        name: t.name,
-        status: t.status.toLowerCase(),
-        tasksCount: 0,
-        completedCount: 0,
-      }));
-    } catch {
-      // Table doesn't exist or query failed - use empty state
-      boards = [];
-    }
+    // Workflow boards will be fetched once the WorkflowBoard model is created
+    // For now, show empty state
+    const boards: typeof SAMPLE_BOARDS = [];
 
     return (
       <div className="p-6 lg:p-8 space-y-6">
