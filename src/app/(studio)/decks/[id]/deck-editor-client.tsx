@@ -405,8 +405,8 @@ function SlideCanvas({
           </div>
         )}
 
-        {/* Title + Content Layout */}
-        {slide.layoutType === "TITLE_CONTENT" && (
+        {/* Content Layout */}
+        {slide.layoutType === "CONTENT" && (
           <div className="flex-1 flex flex-col">
             <input
               type="text"
@@ -518,7 +518,7 @@ function SlideCanvas({
         )}
 
         {/* Default/Blank Layout */}
-        {!["TITLE", "TITLE_CONTENT", "TWO_COLUMN", "QUOTE", "STATS"].includes(slide.layoutType) && (
+        {!["TITLE", "CONTENT", "TWO_COLUMN", "QUOTE", "STATS"].includes(slide.layoutType) && (
           <div className="flex-1 flex flex-col">
             <input
               type="text"
@@ -553,7 +553,7 @@ function LayoutPreview({ layout }: { layout: SlideLayoutType }) {
           <div className="w-1/3 h-1 bg-ltd-text-3/50 rounded" />
         </div>
       );
-    case "TITLE_CONTENT":
+    case "CONTENT":
       return (
         <div className={cn(baseClass, "flex flex-col gap-1")}>
           <div className="w-1/2 h-1.5 bg-ltd-text-3 rounded" />
