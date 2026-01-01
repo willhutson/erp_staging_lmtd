@@ -72,6 +72,9 @@ import {
   Presentation,
   Video,
   ImageIcon,
+  GitBranch,
+  LayoutTemplate,
+  Kanban,
 } from "lucide-react";
 import type { TenantConfig } from "@/lib/tenant";
 
@@ -257,6 +260,19 @@ const moduleBundles = [
     ],
   },
   {
+    id: "workflows",
+    label: "Workflows",
+    tagline: "Process Automation",
+    icon: GitBranch,
+    color: "text-orange-500",
+    bgColor: "bg-orange-500",
+    modules: [
+      { id: "workflows-boards", label: "Boards", icon: Kanban, href: "/workflows" },
+      { id: "workflows-my", label: "My Workflows", icon: FolderKanban, href: "/workflows/my" },
+      { id: "workflows-templates", label: "Templates", icon: LayoutTemplate, href: "/workflows/templates" },
+    ],
+  },
+  {
     id: "portal",
     label: "Client",
     tagline: "Clients Only",
@@ -284,7 +300,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ user, tenant }: AppSidebarProps) {
   const pathname = usePathname();
-  const [expandedBundles, setExpandedBundles] = useState<string[]>(["erp", "agency", "marketing", "studio", "portal"]);
+  const [expandedBundles, setExpandedBundles] = useState<string[]>(["erp", "agency", "marketing", "studio", "workflows", "portal"]);
   const [expandedModules, setExpandedModules] = useState<string[]>([]);
 
   // Check if this is the default SpokeStack tenant (super admin access)
