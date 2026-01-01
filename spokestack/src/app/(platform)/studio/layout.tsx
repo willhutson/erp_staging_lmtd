@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect";
 import { getSession, getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 
@@ -61,8 +62,8 @@ export default async function StudioLayout({
 
     return <>{children}</>;
   } catch (error) {
-    // Check if it's a redirect (Next.js throws for redirects)
-    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+    // Re-throw redirect errors (Next.js uses these internally)
+    if (isRedirectError(error)) {
       throw error;
     }
     console.error("Studio layout error:", error);
