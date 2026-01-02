@@ -13,7 +13,7 @@ export const prisma =
         : ["error"],
   });
 
-// Cache the client in both dev and production for serverless connection reuse
+// Cache in both dev and production for serverless connection reuse
 if (!globalForPrisma.prisma) globalForPrisma.prisma = prisma;
 
 export default prisma;

@@ -38,8 +38,10 @@ SpokeStack is a multi-tenant SaaS platform designed for professional services ag
 | Document | Description |
 |----------|-------------|
 | [Architecture Overview](./technical/architecture.md) | System design and tech stack |
+| [Database Setup Guide](./DATABASE_SETUP_GUIDE.md) | Prisma + Supabase + Vercel configuration |
 | [API Reference](./technical/api-reference.md) | API endpoints and integration |
 | [Database Schema](./technical/database-schema.md) | Data models and relationships |
+| [Pre-Deployment Checklist](./technical/pre-deployment-checklist.md) | Steps before going live |
 
 ---
 
