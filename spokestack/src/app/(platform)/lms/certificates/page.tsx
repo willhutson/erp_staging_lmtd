@@ -19,22 +19,88 @@ interface Certificate {
   id: string;
   courseId: string;
   courseTitle: string;
+  courseCategory: string;
+  instructorName: string;
   issuedAt: string;
   expiresAt: string | null;
   credentialId: string;
   verificationUrl: string;
+  score: number | null;
+  hoursCompleted: number;
+  skillsEarned: string[];
 }
 
-// Placeholder data - will be replaced with actual API call
+// Rich mock data for demonstration
 const MOCK_CERTIFICATES: Certificate[] = [
   {
     id: "cert-1",
-    courseId: "course-2",
+    courseId: "course-social-media",
     courseTitle: "Social Media Best Practices",
-    issuedAt: "2024-11-20T14:00:00Z",
+    courseCategory: "Marketing",
+    instructorName: "Marcus Chen",
+    issuedAt: "2024-11-20T16:45:00Z",
     expiresAt: null,
     credentialId: "LMTD-SM-2024-001",
     verificationUrl: "/certificates/verify/LMTD-SM-2024-001",
+    score: 92,
+    hoursCompleted: 1.5,
+    skillsEarned: ["Instagram Marketing", "LinkedIn Strategy", "Content Creation", "Analytics"],
+  },
+  {
+    id: "cert-2",
+    courseId: "course-project-management",
+    courseTitle: "Agency Project Management",
+    courseCategory: "Leadership",
+    instructorName: "Jennifer Walsh",
+    issuedAt: "2024-10-15T11:30:00Z",
+    expiresAt: "2026-10-15T11:30:00Z",
+    credentialId: "LMTD-PM-2024-003",
+    verificationUrl: "/certificates/verify/LMTD-PM-2024-003",
+    score: 88,
+    hoursCompleted: 2,
+    skillsEarned: ["Agile Methodologies", "Resource Planning", "Client Communication", "Timeline Management"],
+  },
+  {
+    id: "cert-3",
+    courseId: "course-copywriting",
+    courseTitle: "Copywriting Masterclass",
+    courseCategory: "Marketing",
+    instructorName: "Emily Carter",
+    issuedAt: "2024-08-28T14:00:00Z",
+    expiresAt: null,
+    credentialId: "LMTD-CW-2024-007",
+    verificationUrl: "/certificates/verify/LMTD-CW-2024-007",
+    score: 95,
+    hoursCompleted: 0.8,
+    skillsEarned: ["Ad Copy", "Email Marketing", "Brand Voice", "SEO Writing"],
+  },
+  {
+    id: "cert-4",
+    courseId: "course-data-privacy",
+    courseTitle: "Data Privacy & GDPR Compliance",
+    courseCategory: "Compliance",
+    instructorName: "Legal Team",
+    issuedAt: "2024-06-15T09:00:00Z",
+    expiresAt: "2025-06-15T09:00:00Z",
+    credentialId: "LMTD-GDPR-2024-012",
+    verificationUrl: "/certificates/verify/LMTD-GDPR-2024-012",
+    score: 100,
+    hoursCompleted: 0.5,
+    skillsEarned: ["GDPR Fundamentals", "Data Handling", "Privacy by Design"],
+  },
+  {
+    id: "cert-5",
+    courseId: "course-design-thinking",
+    courseTitle: "Design Thinking Workshop",
+    courseCategory: "Innovation",
+    instructorName: "Creative Director",
+    issuedAt: "2024-04-22T15:00:00Z",
+    expiresAt: null,
+    credentialId: "LMTD-DT-2024-002",
+    verificationUrl: "/certificates/verify/LMTD-DT-2024-002",
+    score: 90,
+    hoursCompleted: 3,
+    skillsEarned: ["Empathy Mapping", "Ideation", "Prototyping", "User Testing"],
   },
 ];
 
