@@ -638,7 +638,7 @@ export async function updateLessonProgress(input: {
       timeSpent: input.timeSpent
         ? { increment: input.timeSpent }
         : undefined,
-      progressData: input.progressData,
+      progressData: input.progressData as object | undefined,
       lastAccessedAt: new Date(),
     },
   });
