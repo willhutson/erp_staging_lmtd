@@ -84,6 +84,10 @@ model Organization {
   workflowBoards        WorkflowBoard[]
   workflowTemplates     WorkflowTemplate[]
 
+  // Dashboard Builder module
+  builderDashboards           BuilderDashboard[]
+  builderDashboardTemplates   BuilderDashboardTemplate[]
+
   @@map("organizations")
 }
 
@@ -256,6 +260,10 @@ model User {
   workflowAttachments           WorkflowAttachment[]
   workflowChecklistCompletions  WorkflowChecklistItem[]
   workflowTemplatesCreated      WorkflowTemplate[]
+
+  // Dashboard Builder module
+  builderDashboardsCreated      BuilderDashboard[]           @relation("DashboardCreator")
+  builderTemplatesCreated       BuilderDashboardTemplate[]   @relation("TemplateCreator")
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -1625,6 +1633,150 @@ enum MetricCategory {
   DELIVERY
   ENGAGEMENT
   PERFORMANCE
+}
+
+// ============================================
+// DASHBOARD BUILDER (Custom Dashboards)
+// ============================================
+
+// Custom dashboards created in the Builder module
+model BuilderDashboard {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String
+  description     String?
+  slug            String   // URL-friendly identifier
+
+  // Access control
+  visibility      DashboardVisibility @default(PRIVATE)
+  isPublished     Boolean  @default(false)
+  isDefault       Boolean  @default(false)
+
+  // Visual
+  thumbnail       String?  // Preview image URL
+  layout          Json     @default("[]")  // Widget positions: [{ widgetId, x, y, w, h }]
+  settings        Json?    // Dashboard-level settings
+
+  // Ownership
+  createdById     String
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  createdBy       User     @relation("DashboardCreator", fields: [createdById], references: [id])
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  widgets         BuilderWidget[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([createdById])
+  @@map("builder_dashboards")
+}
+
+enum DashboardVisibility {
+  PRIVATE       // Only creator
+  ORGANIZATION  // All org members
+  CLIENT        // Client portal access
+  PUBLIC        // Public link
+}
+
+// Reusable dashboard templates
+model BuilderDashboardTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String?  // null = global/official template
+
+  name            String
+  description     String?
+  category        String   // performance, campaigns, creators, media, client
+
+  // Template content
+  layout          Json     @default("[]")
+  widgetConfigs   Json     @default("[]")  // Widget configurations without data
+
+  // Visual
+  thumbnail       String?
+  previewImage    String?
+
+  // Metadata
+  isOfficial      Boolean  @default(false)  // Built-in template
+  isActive        Boolean  @default(true)
+  usageCount      Int      @default(0)
+
+  // Ownership
+  createdById     String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  createdBy       User?    @relation("TemplateCreator", fields: [createdById], references: [id])
+  organization    Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([category])
+  @@map("builder_dashboard_templates")
+}
+
+// Widgets placed on dashboards
+model BuilderWidget {
+  id              String   @id @default(cuid())
+  dashboardId     String
+
+  name            String
+  type            BuilderWidgetType
+
+  // Visual configuration
+  chartType       ChartType?
+  size            String   @default("medium")  // small, medium, large, full
+  position        Json?    // { x, y, w, h } grid position
+
+  // Data configuration
+  dataSource      String?  // API endpoint or data key
+  metric          String?  // What to measure
+  dimensions      String[] @default([])
+  filters         Json?
+
+  // Display settings
+  settings        Json?    // Widget-specific settings
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  dashboard       BuilderDashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  @@index([dashboardId])
+  @@map("builder_widgets")
+}
+
+enum BuilderWidgetType {
+  // Numbers
+  METRIC_CARD
+  COUNTER
+  GAUGE
+  PROGRESS
+
+  // Charts
+  LINE_CHART
+  BAR_CHART
+  AREA_CHART
+  PIE_CHART
+  DONUT_CHART
+
+  // Tables
+  DATA_TABLE
+  LEADERBOARD
+
+  // Time-based
+  TIMELINE
+  HEATMAP
+  CALENDAR
+
+  // Other
+  TEXT
+  IMAGE
+  EMBED
+  SPACER
 }
 
 // ============================================
