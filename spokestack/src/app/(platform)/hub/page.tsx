@@ -116,7 +116,22 @@ const MODULE_BUNDLES = [
       { label: "Resources", href: "/resources", icon: Calendar, description: "Capacity planning" },
       { label: "CRM", href: "/crm", icon: Handshake, description: "Lead management" },
       { label: "RFP Pipeline", href: "/rfp", icon: Target, description: "New business" },
-      { label: "Surveys", href: "/surveys", icon: ClipboardList, description: "Client feedback" },
+    ],
+  },
+  {
+    id: "forms",
+    label: "Forms",
+    tagline: "Surveys, Polls & More",
+    description: "Create surveys, polls, quizzes, and forms with AI-powered builder",
+    icon: ClipboardList,
+    href: "/surveys",
+    color: "from-rose-500 to-rose-600",
+    bgColor: "bg-rose-500",
+    modules: [
+      { label: "All Forms", href: "/surveys", icon: ClipboardList, description: "Surveys & responses" },
+      { label: "Templates", href: "/surveys/templates", icon: LayoutTemplate, description: "Reusable templates" },
+      { label: "Form Builder", href: "/surveys/builder", icon: Sparkles, description: "AI-powered builder" },
+      { label: "NPS", href: "/feedback/nps", icon: BarChart3, description: "Net Promoter Score" },
     ],
   },
   {
@@ -198,6 +213,7 @@ const MODULE_BUNDLES = [
     modules: [
       { label: "Learning Center", href: "/lms", icon: GraduationCap, description: "Training dashboard" },
       { label: "Courses", href: "/lms/courses", icon: BookOpen, description: "Browse all courses" },
+      { label: "Course Builder", href: "/lms/builder", icon: Sparkles, description: "AI curriculum builder" },
       { label: "My Learning", href: "/lms/my-learning", icon: FolderKanban, description: "Your enrollments" },
       { label: "Certificates", href: "/lms/certificates", icon: Award, description: "Earned credentials" },
     ],

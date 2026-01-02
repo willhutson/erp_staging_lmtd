@@ -30,6 +30,9 @@ import {
   GitBranch,
   Kanban,
   LayoutTemplate,
+  ClipboardList,
+  GraduationCap,
+  Award,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -41,6 +44,10 @@ const NAV_ITEMS = [
   { id: "studio-moodboard", label: "Moodboards", icon: ImageIcon },
   { id: "studio-calendar", label: "Content Calendar", icon: Calendar },
   { id: "studio-skills", label: "AI Skills", icon: Palette },
+  { id: "forms", label: "Forms", icon: ClipboardList },
+  { id: "form-builder", label: "Form Builder", icon: Sparkles },
+  { id: "learning", label: "Learning", icon: GraduationCap },
+  { id: "course-builder", label: "Course Builder", icon: Sparkles },
   { id: "workflows", label: "Workflows", icon: GitBranch },
   { id: "workflows-boards", label: "Workflow Boards", icon: Kanban },
   { id: "workflows-templates", label: "Workflow Templates", icon: LayoutTemplate },
@@ -339,6 +346,157 @@ export default function DocsPage() {
             <li>AI generates content based on the skill's system prompt</li>
             <li>Review, edit, and save to your documents</li>
           </ol>
+        </Section>
+
+        {/* Forms Overview */}
+        <Section id="forms" icon={ClipboardList} title="Forms">
+          <p className="text-muted-foreground mb-4">
+            Create surveys, polls, quizzes, and feedback forms with AI-powered question generation and analytics.
+          </p>
+
+          <h4 className="font-semibold mb-2">Form Types</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+            {[
+              { name: "Surveys", desc: "Multi-question feedback collection", href: "/surveys" },
+              { name: "Polls", desc: "Quick single-question voting", href: "/surveys/builder" },
+              { name: "Quizzes", desc: "Knowledge tests with scoring", href: "/surveys/builder" },
+            ].map((form) => (
+              <Link key={form.href + form.name} href={form.href} className="p-3 border rounded-lg hover:border-primary transition-colors">
+                <p className="font-medium">{form.name}</p>
+                <p className="text-sm text-muted-foreground">{form.desc}</p>
+              </Link>
+            ))}
+          </div>
+
+          <h4 className="font-semibold mb-2">Question Types</h4>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {["Short Text", "Long Text", "Single Choice", "Multiple Choice", "Rating Scale", "NPS (0-10)", "Star Rating", "Yes/No", "Date", "File Upload"].map((type) => (
+              <Badge key={type} variant="outline">{type}</Badge>
+            ))}
+          </div>
+
+          <h4 className="font-semibold mb-2">Features</h4>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• <strong>Template Library:</strong> Save and reuse form templates</li>
+            <li>• <strong>Branching Logic:</strong> Skip questions based on answers</li>
+            <li>• <strong>Multi-Channel:</strong> Web link, email, or in-app distribution</li>
+            <li>• <strong>Analytics:</strong> Real-time response tracking and insights</li>
+          </ul>
+
+          <Button variant="outline" size="sm" className="mt-4" asChild>
+            <Link href="/surveys">
+              Open Forms <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </Section>
+
+        {/* Form Builder */}
+        <Section id="form-builder" icon={Sparkles} title="Form Builder">
+          <p className="text-muted-foreground mb-4">
+            AI-powered form creation. Describe what you need and generate complete surveys, polls, or quizzes instantly.
+          </p>
+
+          <h4 className="font-semibold mb-2">AI Generation</h4>
+          <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside mb-4">
+            <li>Select form type (Survey, Poll, or Quiz)</li>
+            <li>Describe your topic (e.g., "Customer satisfaction after project delivery")</li>
+            <li>AI generates relevant questions with appropriate types</li>
+            <li>Review, customize, and publish</li>
+          </ol>
+
+          <h4 className="font-semibold mb-2">Builder Features</h4>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• <strong>Drag & Drop:</strong> Reorder questions easily</li>
+            <li>• <strong>Required Fields:</strong> Mark questions as mandatory</li>
+            <li>• <strong>Quiz Scoring:</strong> Set points and correct answers</li>
+            <li>• <strong>Preview:</strong> See how the form looks before publishing</li>
+          </ul>
+
+          <Button variant="outline" size="sm" className="mt-4" asChild>
+            <Link href="/surveys/builder">
+              Open Form Builder <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </Section>
+
+        {/* Learning Overview */}
+        <Section id="learning" icon={GraduationCap} title="Learning">
+          <p className="text-muted-foreground mb-4">
+            Learning Management System (LMS) for team training, onboarding, and skill development with course tracking and certificates.
+          </p>
+
+          <h4 className="font-semibold mb-2">Available Modules</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+            {[
+              { name: "Learning Center", desc: "Training dashboard and progress", href: "/lms" },
+              { name: "Course Library", desc: "Browse all available courses", href: "/lms/courses" },
+              { name: "My Learning", desc: "Your enrollments and progress", href: "/lms/my-learning" },
+              { name: "Certificates", desc: "Earned credentials and badges", href: "/lms/certificates" },
+            ].map((mod) => (
+              <Link key={mod.href} href={mod.href} className="p-3 border rounded-lg hover:border-primary transition-colors">
+                <p className="font-medium">{mod.name}</p>
+                <p className="text-sm text-muted-foreground">{mod.desc}</p>
+              </Link>
+            ))}
+          </div>
+
+          <h4 className="font-semibold mb-2">Course Structure</h4>
+          <ul className="text-sm text-muted-foreground space-y-1 mb-4">
+            <li>• <strong>Courses:</strong> Container for related learning content</li>
+            <li>• <strong>Modules:</strong> Sections within a course</li>
+            <li>• <strong>Lessons:</strong> Individual learning units (video, article, document)</li>
+            <li>• <strong>Assessments:</strong> Quizzes to test knowledge</li>
+          </ul>
+
+          <h4 className="font-semibold mb-2">Lesson Types</h4>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {["Video", "Article", "Document", "Quiz", "External Link"].map((type) => (
+              <Badge key={type} variant="outline">{type}</Badge>
+            ))}
+          </div>
+
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/lms">
+              Open Learning Center <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </Section>
+
+        {/* Course Builder */}
+        <Section id="course-builder" icon={Sparkles} title="Course Builder">
+          <p className="text-muted-foreground mb-4">
+            AI-powered course creation. Generate complete curricula with modules, lessons, and assessments from a simple description.
+          </p>
+
+          <h4 className="font-semibold mb-2">AI Curriculum Generation</h4>
+          <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside mb-4">
+            <li>Describe your course topic (e.g., "Social Media Marketing for Beginners")</li>
+            <li>AI generates a complete curriculum with modules and lessons</li>
+            <li>Customize titles, content types, and durations</li>
+            <li>Add assessments and set passing requirements</li>
+            <li>Publish and enroll learners</li>
+          </ol>
+
+          <h4 className="font-semibold mb-2">Builder Features</h4>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• <strong>Drag & Drop:</strong> Reorder modules and lessons</li>
+            <li>• <strong>Content Types:</strong> Video, Article, Document, or Quiz for each lesson</li>
+            <li>• <strong>AI Suggestions:</strong> Generate quiz questions or lesson content</li>
+            <li>• <strong>Course Settings:</strong> Certificate, passing score, allow skipping</li>
+          </ul>
+
+          <h4 className="font-semibold mt-4 mb-2">Course Categories</h4>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {["Onboarding", "Marketing", "Design", "Development", "Soft Skills", "Compliance"].map((cat) => (
+              <Badge key={cat} variant="outline">{cat}</Badge>
+            ))}
+          </div>
+
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/lms/builder">
+              Open Course Builder <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
         </Section>
 
         {/* Workflows Overview */}
