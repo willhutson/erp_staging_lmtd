@@ -6,6 +6,22 @@ import { format } from "date-fns";
 import prisma from "@/lib/prisma";
 import { NPSResponseForm } from "@/modules/nps/components";
 
+// Local type definition for NPS Survey (matches Prisma schema)
+interface NPSSurveyType {
+  id: string;
+  organizationId: string;
+  clientId: string;
+  quarter: number;
+  year: number;
+  status: string;
+  sentAt: Date | null;
+  sentToId: string | null;
+  reminderSentAt: Date | null;
+  createdById: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export const dynamic = "force-dynamic";
 
 // TODO: Replace with actual portal auth when implemented
@@ -52,30 +68,47 @@ export default async function PortalFeedbackPage({ searchParams }: PortalFeedbac
   }
 
   // Get pending NPS surveys for this client
-  const pendingSurveys = await prisma.nPSSurvey.findMany({
+  const pendingSurveys = (await prisma.nPSSurvey.findMany({
     where: {
       clientId,
       status: "SENT",
     },
     orderBy: { sentAt: "desc" },
-  });
+  })) as NPSSurveyType[];
+
+  // Define type for completed responses
+  interface CompletedResponse {
+    id: string;
+    surveyId: string;
+    score: number;
+    category: string;
+    submittedAt: Date;
+    survey: {
+      id: string;
+      quarter: number;
+      year: number;
+    };
+  }
 
   // Get completed responses (if user ID provided)
-  const completedResponses = portalUserId
-    ? await prisma.nPSResponse.findMany({
-        where: {
-          portalUserId,
-        },
-        include: {
-          survey: true,
-        },
-        orderBy: { submittedAt: "desc" },
-        take: 5,
-      })
-    : [];
+  let completedResponses: CompletedResponse[] = [];
+  let respondedSurveyIds: string[] = [];
+  if (portalUserId) {
+    const responses = await prisma.nPSResponse.findMany({
+      where: {
+        portalUserId,
+      },
+      include: {
+        survey: true,
+      },
+      orderBy: { submittedAt: "desc" },
+      take: 5,
+    });
+    completedResponses = responses as CompletedResponse[];
+    respondedSurveyIds = responses.map((r: { surveyId: string }) => r.surveyId);
+  }
 
   // Filter out already responded surveys
-  const respondedSurveyIds = completedResponses.map((r) => r.surveyId);
   const unresolvedSurveys = pendingSurveys.filter(
     (s) => !respondedSurveyIds.includes(s.id)
   );

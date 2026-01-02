@@ -47,9 +47,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { format } from "date-fns";
-import type { BuilderDashboardWithRelations } from "@/modules/builder/types";
+import type { BuilderDashboardWithRelations, DashboardVisibility } from "@/modules/builder/types";
 import { createDashboard, deleteDashboard, duplicateDashboard } from "@/modules/builder/actions";
-import type { DashboardVisibility } from "@prisma/client";
 
 interface DashboardsClientProps {
   initialDashboards: BuilderDashboardWithRelations[];

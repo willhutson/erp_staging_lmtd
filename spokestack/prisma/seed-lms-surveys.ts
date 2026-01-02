@@ -647,27 +647,6 @@ async function main() {
 
   console.log("  Created: Q4 2024 Client Feedback survey");
 
-  // ============================================
-  // UPDATE COUNTS
-  // ============================================
-
-  // Update course lesson counts
-  const courses = await prisma.lMSCourse.findMany({
-    where: { organizationId: org.id },
-    include: {
-      modules: {
-        include: {
-          _count: { select: { lessons: true } },
-        },
-      },
-    },
-  });
-
-  for (const course of courses) {
-    const lessonCount = course.modules.reduce((sum, m) => sum + m._count.lessons, 0);
-    // Course doesn't have a lessonCount field, but enrollments do
-  }
-
   console.log("\n✅ LMS and Survey seeding complete!");
   console.log(`   - ${3} survey templates`);
   console.log(`   - ${1} active survey`);
