@@ -212,13 +212,19 @@ export function SurveyList({ surveys, onCreateNew }: SurveyListProps) {
                   <TableCell>
                     <div className="flex gap-1">
                       {survey.channels.includes("WEB_LINK") && (
-                        <Link2 className="h-4 w-4 text-muted-foreground" title="Web Link" />
+                        <span title="Web Link">
+                          <Link2 className="h-4 w-4 text-muted-foreground" />
+                        </span>
                       )}
                       {survey.channels.includes("EMAIL") && (
-                        <Mail className="h-4 w-4 text-muted-foreground" title="Email" />
+                        <span title="Email">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                        </span>
                       )}
                       {survey.channels.includes("IN_APP") && (
-                        <Users className="h-4 w-4 text-muted-foreground" title="In-App" />
+                        <span title="In-App">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                        </span>
                       )}
                     </div>
                   </TableCell>
