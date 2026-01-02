@@ -5,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
-  FolderKanban,
+  CheckSquare,
   Clock,
-  Calendar,
-  ArrowRight,
   AlertTriangle,
+  ArrowRight,
+  GitBranch,
+  FileQuestion,
+  Bell,
 } from "lucide-react";
-import { getMyWorkflowCards } from "@/modules/workflows/actions";
+import { getMyWorkflowTasks, getWorkflowRuns } from "@/modules/workflow-builder/actions";
 import { formatDistanceToNow } from "date-fns";
 
 export const dynamic = "force-dynamic";
@@ -30,30 +32,34 @@ function PageError({ message }: { message: string }) {
   );
 }
 
-const PRIORITY_COLORS: Record<string, string> = {
-  LOW: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
-  MEDIUM: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  HIGH: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-  URGENT: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+const STEP_TYPE_ICONS: Record<string, React.ElementType> = {
+  TASK: CheckSquare,
+  APPROVAL: FileQuestion,
+  NOTIFICATION: Bell,
 };
 
-export default async function MyWorkflowsPage() {
+const STATUS_COLORS: Record<string, string> = {
+  PENDING: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+  IN_PROGRESS: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  COMPLETED: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  ESCALATED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+};
+
+export default async function MyWorkflowTasksPage() {
   try {
     const user = await getStudioUser();
 
-    const cards = await getMyWorkflowCards();
+    const tasks = await getMyWorkflowTasks();
 
-    // Group cards by priority
-    const urgentCards = cards.filter((c) => c.priority === "URGENT");
-    const highCards = cards.filter((c) => c.priority === "HIGH");
-    const mediumCards = cards.filter((c) => c.priority === "MEDIUM");
-    const lowCards = cards.filter((c) => c.priority === "LOW");
+    // Group tasks by status
+    const pendingTasks = tasks.filter((t) => t.status === "PENDING");
+    const inProgressTasks = tasks.filter((t) => t.status === "IN_PROGRESS");
 
-    // Cards due soon (within 7 days)
+    // Tasks due soon (within 24 hours)
     const now = new Date();
-    const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const dueSoon = cards.filter(
-      (c) => c.dueDate && new Date(c.dueDate) <= weekFromNow
+    const dayFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const urgentTasks = tasks.filter(
+      (t) => t.dueDate && new Date(t.dueDate) <= dayFromNow
     );
 
     return (
@@ -67,9 +73,9 @@ export default async function MyWorkflowsPage() {
             <ArrowLeft className="w-5 h-5 text-gray-500" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">My Workflows</h1>
+            <h1 className="text-2xl font-bold">My Workflow Tasks</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Tasks assigned to you across all workflow boards
+              Tasks awaiting your action across all workflows
             </p>
           </div>
         </div>
@@ -81,22 +87,34 @@ export default async function MyWorkflowsPage() {
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Total Tasks
               </CardTitle>
-              <FolderKanban className="h-4 w-4 text-blue-500" />
+              <CheckSquare className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{cards.length}</div>
+              <div className="text-2xl font-bold">{tasks.length}</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Urgent
+                Pending
               </CardTitle>
-              <Clock className="h-4 w-4 text-red-500" />
+              <Clock className="h-4 w-4 text-yellow-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{urgentCards.length}</div>
+              <div className="text-2xl font-bold text-yellow-600">{pendingTasks.length}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                In Progress
+              </CardTitle>
+              <GitBranch className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{inProgressTasks.length}</div>
             </CardContent>
           </Card>
 
@@ -105,80 +123,59 @@ export default async function MyWorkflowsPage() {
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Due Soon
               </CardTitle>
-              <Calendar className="h-4 w-4 text-orange-500" />
+              <AlertTriangle className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{dueSoon.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                High Priority
-              </CardTitle>
-              <Clock className="h-4 w-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{highCards.length}</div>
+              <div className="text-2xl font-bold text-red-600">{urgentTasks.length}</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Task List */}
-        {cards.length > 0 ? (
+        {tasks.length > 0 ? (
           <div className="space-y-6">
             {/* Urgent Tasks */}
-            {urgentCards.length > 0 && (
+            {urgentTasks.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold mb-3 text-red-600">
-                  🚨 Urgent ({urgentCards.length})
+                <h2 className="text-lg font-semibold mb-3 text-red-600 flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5" />
+                  Due Soon ({urgentTasks.length})
                 </h2>
                 <div className="grid gap-3">
-                  {urgentCards.map((card) => (
-                    <TaskCard key={card.id} card={card} />
+                  {urgentTasks.map((task) => (
+                    <TaskCard key={task.id} task={task} />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* High Priority Tasks */}
-            {highCards.length > 0 && (
+            {/* Pending Tasks */}
+            {pendingTasks.filter(t => !urgentTasks.includes(t)).length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold mb-3 text-orange-600">
-                  High Priority ({highCards.length})
+                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-yellow-500" />
+                  Pending ({pendingTasks.filter(t => !urgentTasks.includes(t)).length})
                 </h2>
                 <div className="grid gap-3">
-                  {highCards.map((card) => (
-                    <TaskCard key={card.id} card={card} />
-                  ))}
+                  {pendingTasks
+                    .filter(t => !urgentTasks.includes(t))
+                    .map((task) => (
+                      <TaskCard key={task.id} task={task} />
+                    ))}
                 </div>
               </div>
             )}
 
-            {/* Medium Priority Tasks */}
-            {mediumCards.length > 0 && (
+            {/* In Progress Tasks */}
+            {inProgressTasks.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold mb-3">
-                  Medium Priority ({mediumCards.length})
+                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <GitBranch className="h-5 w-5 text-blue-500" />
+                  In Progress ({inProgressTasks.length})
                 </h2>
                 <div className="grid gap-3">
-                  {mediumCards.map((card) => (
-                    <TaskCard key={card.id} card={card} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Low Priority Tasks */}
-            {lowCards.length > 0 && (
-              <div>
-                <h2 className="text-lg font-semibold mb-3 text-gray-500">
-                  Low Priority ({lowCards.length})
-                </h2>
-                <div className="grid gap-3">
-                  {lowCards.map((card) => (
-                    <TaskCard key={card.id} card={card} />
+                  {inProgressTasks.map((task) => (
+                    <TaskCard key={task.id} task={task} />
                   ))}
                 </div>
               </div>
@@ -187,16 +184,16 @@ export default async function MyWorkflowsPage() {
         ) : (
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center mb-4">
-                <FolderKanban className="w-8 h-8 text-blue-500" />
+              <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center mb-4">
+                <CheckSquare className="w-8 h-8 text-green-500" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">No tasks assigned</h3>
+              <h3 className="text-lg font-semibold mb-2">All caught up!</h3>
               <p className="text-sm text-muted-foreground text-center max-w-md mb-6">
-                You don&apos;t have any workflow tasks assigned to you yet.
+                You don&apos;t have any workflow tasks assigned to you right now.
               </p>
               <Button asChild>
                 <Link href="/workflows">
-                  View All Boards
+                  View All Workflows
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -206,54 +203,52 @@ export default async function MyWorkflowsPage() {
       </div>
     );
   } catch (error) {
-    console.error("My Workflows page error:", error);
+    console.error("My Tasks page error:", error);
     const message = error instanceof Error ? error.message : "An unexpected error occurred";
     return <PageError message={message} />;
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function TaskCard({ card }: { card: any }) {
-  const boardId = card.column?.board?.id;
-  const boardName = card.column?.board?.name;
+function TaskCard({ task }: { task: any }) {
+  const Icon = STEP_TYPE_ICONS[task.step?.stepType] || CheckSquare;
+  const runId = task.run?.id;
 
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-medium truncate">{card.title}</h3>
-              <Badge className={PRIORITY_COLORS[card.priority] || PRIORITY_COLORS.MEDIUM}>
-                {card.priority}
-              </Badge>
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-muted">
+              <Icon className="h-4 w-4" />
             </div>
-            {card.description && (
-              <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                {card.description}
-              </p>
-            )}
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              {boardName && (
-                <span className="flex items-center gap-1">
-                  <FolderKanban className="h-3 w-3" />
-                  {boardName}
-                </span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-medium truncate">{task.step?.name || "Task"}</h3>
+                <Badge className={STATUS_COLORS[task.status] || STATUS_COLORS.PENDING}>
+                  {task.status}
+                </Badge>
+              </div>
+              {task.step?.stepType === "APPROVAL" && (
+                <p className="text-sm text-muted-foreground mb-2">
+                  Approval required
+                </p>
               )}
-              {card.dueDate && (
-                <span className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  Due {formatDistanceToNow(new Date(card.dueDate), { addSuffix: true })}
-                </span>
-              )}
-              {card._count?.comments > 0 && (
-                <span>{card._count.comments} comments</span>
-              )}
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                {task.dueDate && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    Due {formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-          {boardId && (
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/workflows/${boardId}`}>View Board</Link>
+          {runId && (
+            <Button asChild variant="default" size="sm">
+              <Link href={`/workflows/runs/${runId}`}>
+                {task.step?.stepType === "APPROVAL" ? "Review" : "Complete"}
+              </Link>
             </Button>
           )}
         </div>

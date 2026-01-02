@@ -3,6 +3,7 @@
 import { getStudioUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 import type {
   WorkflowDefinitionWithRelations,
   WorkflowRunWithRelations,
@@ -78,7 +79,7 @@ export async function createWorkflowDefinition(
       category: input.category,
       triggerType: input.triggerType || "MANUAL",
       triggerEntity: input.triggerEntity,
-      triggerConfig: input.triggerConfig,
+      triggerConfig: input.triggerConfig as Prisma.InputJsonValue | undefined,
       defaultSlaHours: input.defaultSlaHours,
       createdById: user.id,
     },
@@ -170,9 +171,9 @@ export async function createWorkflowStep(input: CreateWorkflowStepInput) {
       assigneeId: input.assigneeId,
       assigneeRole: input.assigneeRole,
       assigneeField: input.assigneeField,
-      formConfig: input.formConfig,
-      conditions: input.conditions,
-      actions: input.actions,
+      formConfig: input.formConfig as Prisma.InputJsonValue | undefined,
+      conditions: input.conditions as Prisma.InputJsonValue | undefined,
+      actions: input.actions as Prisma.InputJsonValue | undefined,
       slaHours: input.slaHours,
       parallelGroup: input.parallelGroup,
       nextStepId: input.nextStepId,
@@ -284,7 +285,7 @@ export async function startWorkflow(input: StartWorkflowInput): Promise<Workflow
       currentStepId: firstStep.id,
       triggerEntityType: input.triggerEntityType,
       triggerEntityId: input.triggerEntityId,
-      formData: input.formData,
+      formData: input.formData as Prisma.InputJsonValue | undefined,
       startedAt: new Date(),
       startedById: user.id,
     },
@@ -397,7 +398,7 @@ export async function completeTask(input: CompleteTaskInput) {
       status: "COMPLETED",
       decision: input.decision,
       decisionNote: input.decisionNote,
-      formData: input.formData,
+      formData: input.formData as Prisma.InputJsonValue | undefined,
       completedAt: new Date(),
     },
   });

@@ -1,20 +1,20 @@
 import { notFound } from "next/navigation";
-import { getWorkflowBoard } from "@/modules/workflows/actions";
-import { WorkflowBoardClient } from "./board-client";
+import { getWorkflowDefinition } from "@/modules/workflow-builder/actions";
+import { WorkflowEditorClient } from "./workflow-editor-client";
 
 export const dynamic = "force-dynamic";
 
-interface WorkflowBoardPageProps {
+interface WorkflowDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function WorkflowBoardPage({ params }: WorkflowBoardPageProps) {
+export default async function WorkflowDetailPage({ params }: WorkflowDetailPageProps) {
   const { id } = await params;
-  const board = await getWorkflowBoard(id);
+  const workflow = await getWorkflowDefinition(id);
 
-  if (!board) {
+  if (!workflow) {
     notFound();
   }
 
-  return <WorkflowBoardClient board={board} />;
+  return <WorkflowEditorClient workflow={workflow} />;
 }
