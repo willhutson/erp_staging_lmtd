@@ -288,9 +288,9 @@ export interface SubmissionListItem {
   } | null;
   contact: {
     id: string;
-    firstName: string | null;
-    lastName: string | null;
-    email: string;
+    firstName: string;
+    lastName: string;
+    email: string | null;
   } | null;
 }
 
