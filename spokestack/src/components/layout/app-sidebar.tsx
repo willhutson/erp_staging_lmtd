@@ -210,6 +210,7 @@ const moduleBundles = [
         items: [
           { label: "Overview", href: "/surveys" },
           { label: "Templates", href: "/surveys/templates" },
+          { label: "Builder", href: "/surveys/builder" },
         ],
       },
     ],
@@ -333,6 +334,7 @@ const moduleBundles = [
           { label: "Browse", href: "/lms/browse" },
         ],
       },
+      { id: "lms-builder", label: "Course Builder", icon: Sparkles, href: "/lms/builder" },
       { id: "lms-certificates", label: "Certificates", icon: Star, href: "/lms/certificates" },
     ],
   },

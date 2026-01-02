@@ -117,6 +117,7 @@ const MODULE_BUNDLES = [
       { label: "CRM", href: "/crm", icon: Handshake, description: "Lead management" },
       { label: "RFP Pipeline", href: "/rfp", icon: Target, description: "New business" },
       { label: "Surveys", href: "/surveys", icon: ClipboardList, description: "Client feedback" },
+      { label: "Survey Builder", href: "/surveys/builder", icon: Sparkles, description: "AI-powered forms" },
     ],
   },
   {
@@ -198,6 +199,7 @@ const MODULE_BUNDLES = [
     modules: [
       { label: "Learning Center", href: "/lms", icon: GraduationCap, description: "Training dashboard" },
       { label: "Courses", href: "/lms/courses", icon: BookOpen, description: "Browse all courses" },
+      { label: "Course Builder", href: "/lms/builder", icon: Sparkles, description: "AI curriculum builder" },
       { label: "My Learning", href: "/lms/my-learning", icon: FolderKanban, description: "Your enrollments" },
       { label: "Certificates", href: "/lms/certificates", icon: Award, description: "Earned credentials" },
     ],
