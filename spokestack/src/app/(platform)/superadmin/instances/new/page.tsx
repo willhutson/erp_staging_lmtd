@@ -51,7 +51,6 @@ import {
   Calendar,
   Kanban,
   LayoutTemplate,
-  ClipboardList,
   GraduationCap,
   BookOpen,
   Award,
