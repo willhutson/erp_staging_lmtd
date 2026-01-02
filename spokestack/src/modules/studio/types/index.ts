@@ -151,7 +151,7 @@ export interface PitchDeck {
 export interface DeckSlide {
   id: string;
   deckId: string;
-  slideNumber: number;
+  orderIndex: number;
   layoutType: SlideLayoutType;
   title?: string | null;
   subtitle?: string | null;
@@ -159,6 +159,8 @@ export interface DeckSlide {
   speakerNotes?: string | null;
   backgroundUrl?: string | null;
   backgroundColor?: string | null;
+  aiGenerated: boolean;
+  aiPrompt?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
