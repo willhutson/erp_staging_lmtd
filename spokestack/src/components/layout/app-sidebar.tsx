@@ -78,6 +78,9 @@ import {
   Star,
   Play,
   ListChecks,
+  ClipboardList,
+  GraduationCap,
+  BookOpen,
 } from "lucide-react";
 import type { TenantConfig } from "@/lib/tenant";
 
@@ -199,6 +202,16 @@ const moduleBundles = [
           { label: "NPS Surveys", href: "/feedback/nps" },
         ],
       },
+      {
+        id: "surveys",
+        label: "Surveys",
+        icon: ClipboardList,
+        href: "/surveys",
+        items: [
+          { label: "Overview", href: "/surveys" },
+          { label: "Templates", href: "/surveys/templates" },
+        ],
+      },
     ],
   },
   {
@@ -301,6 +314,29 @@ const moduleBundles = [
     ],
   },
   {
+    id: "learning",
+    label: "Learning",
+    tagline: "Training & Development",
+    icon: GraduationCap,
+    color: "text-teal-500",
+    bgColor: "bg-teal-500",
+    modules: [
+      { id: "lms-home", label: "Learning Center", icon: GraduationCap, href: "/lms" },
+      {
+        id: "lms-courses",
+        label: "Courses",
+        icon: BookOpen,
+        href: "/lms/courses",
+        items: [
+          { label: "All Courses", href: "/lms/courses" },
+          { label: "My Learning", href: "/lms/my-learning" },
+          { label: "Browse", href: "/lms/browse" },
+        ],
+      },
+      { id: "lms-certificates", label: "Certificates", icon: Star, href: "/lms/certificates" },
+    ],
+  },
+  {
     id: "portal",
     label: "Client",
     tagline: "Clients Only",
@@ -329,7 +365,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ user, tenant }: AppSidebarProps) {
   const pathname = usePathname();
-  const [expandedBundles, setExpandedBundles] = useState<string[]>(["erp", "agency", "marketing", "studio", "boards", "workflows", "portal"]);
+  const [expandedBundles, setExpandedBundles] = useState<string[]>(["erp", "agency", "marketing", "studio", "boards", "workflows", "learning", "portal"]);
   const [expandedModules, setExpandedModules] = useState<string[]>([]);
 
   // Check if this is the default SpokeStack tenant (super admin access)
