@@ -191,7 +191,7 @@ export async function getPotentialDelegates(): Promise<
 /**
  * Get default delegation scope for new profiles
  */
-export function getDefaultScope(): DelegationScope {
+export async function getDefaultScope(): Promise<DelegationScope> {
   return {
     clients: "all",
     briefTypes: "all",
