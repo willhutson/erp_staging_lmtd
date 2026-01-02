@@ -28,13 +28,26 @@ export const dynamic = "force-dynamic";
 
 export default async function DelegationPage() {
   const user = await getStudioUser();
-  const [profile, delegations, potentialDelegates, overview, allDelegations] = await Promise.all([
-    getMyDelegationProfile(),
-    getMyDelegations(),
-    getPotentialDelegates(),
-    getOrganizationDelegationOverview(),
-    getAllActiveDelegations(),
-  ]);
+
+  let profile = null;
+  let delegations = { asDelegator: [], asDelegate: [] };
+  let potentialDelegates: Awaited<ReturnType<typeof getPotentialDelegates>> = [];
+  let overview = null;
+  let allDelegations: Awaited<ReturnType<typeof getAllActiveDelegations>> = [];
+  let dbError = false;
+
+  try {
+    [profile, delegations, potentialDelegates, overview, allDelegations] = await Promise.all([
+      getMyDelegationProfile(),
+      getMyDelegations(),
+      getPotentialDelegates(),
+      getOrganizationDelegationOverview(),
+      getAllActiveDelegations(),
+    ]);
+  } catch (error) {
+    console.error("Delegation data fetch error:", error);
+    dbError = true;
+  }
 
   const isAdmin = ["ADMIN", "LEADERSHIP"].includes(user.permissionLevel);
 
@@ -55,6 +68,29 @@ export default async function DelegationPage() {
           </p>
         </div>
       </div>
+
+      {/* Database Setup Required */}
+      {dbError && (
+        <Card className="border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-4">
+              <AlertTriangle className="h-6 w-6 text-yellow-600 shrink-0" />
+              <div>
+                <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">
+                  Database Setup Required
+                </h3>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
+                  The delegation tables haven't been created yet. Run{" "}
+                  <code className="bg-yellow-100 dark:bg-yellow-900 px-1 rounded">
+                    prisma db push
+                  </code>{" "}
+                  to set up the database schema.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Admin Overview */}
       {isAdmin && overview && (
