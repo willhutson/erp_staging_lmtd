@@ -199,14 +199,59 @@ These components use mock data for demonstration:
 
 ## SECTION 6: Database Setup
 
-### 6.1 Checklist
+> **IMPORTANT:** See [Database Setup Guide](../DATABASE_SETUP_GUIDE.md) for detailed Prisma + Supabase + Vercel configuration.
 
-- [ ] Create PostgreSQL database
-- [ ] Run `pnpm db:push` to create schema
+### 6.1 Environment Variables
+
+**For Vercel Production:**
+```env
+# Runtime queries (through connection pooler)
+DATABASE_URL="postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-[REGION].pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1&pool_timeout=30"
+
+# Schema migrations (direct connection)
+DIRECT_URL="postgresql://postgres.[PROJECT_REF]:[PASSWORD]@db.[PROJECT_REF].supabase.co:5432/postgres"
+```
+
+**Critical Parameters:**
+| Parameter | Why Required |
+|-----------|--------------|
+| `?pgbouncer=true` | Tells Prisma to use PgBouncer-compatible queries |
+| `&connection_limit=1` | Prevents serverless connection pool exhaustion |
+| `&pool_timeout=30` | Increases timeout from 10s default |
+
+### 6.2 Prisma Client Configuration
+
+Ensure `src/lib/prisma.ts` caches the client in **BOTH dev and production**:
+
+```typescript
+// CORRECT - caches in production too
+if (!globalForPrisma.prisma) globalForPrisma.prisma = prisma;
+
+// WRONG - only caches in development, causes connection exhaustion
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+```
+
+### 6.3 Database Setup Checklist
+
+- [ ] Create Supabase project
+- [ ] Get connection strings from Supabase Dashboard → Settings → Database
+- [ ] Set up `.env` locally with both `DATABASE_URL` and `DIRECT_URL`
+- [ ] Run `pnpm db:push` to create schema in production
+- [ ] Set environment variables in Vercel (with `?pgbouncer=true&connection_limit=1&pool_timeout=30`)
+- [ ] Verify Prisma client is cached in production
 - [ ] Run `pnpm db:seed` to add seed data (optional)
-- [ ] Verify all tables created in `prisma studio`
+- [ ] Verify all tables in `prisma studio` or Supabase Table Editor
 
-### 6.2 Seed Data Includes
+### 6.4 Common Issues
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| "Unable to check out connection from the pool" | Missing `?pgbouncer=true` or `connection_limit=1` | Add to DATABASE_URL |
+| "relation does not exist" | Tables not created in production | Run `prisma db push` with production DIRECT_URL |
+| Timeout after env var change | Deployment using old config | Redeploy in Vercel |
+| Build fails with undefined datasource | DATABASE_URL not set during build | Check Vercel env vars |
+
+### 6.5 Seed Data Includes
 
 - Sample organization
 - 46 team members (LMTD team)
