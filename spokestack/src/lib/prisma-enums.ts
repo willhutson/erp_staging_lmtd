@@ -20,9 +20,9 @@ export type StudioDocStatus = "DRAFT" | "IN_REVIEW" | "APPROVED" | "PUBLISHED" |
 
 export type SyncStatus = "PENDING" | "SYNCED" | "FAILED" | "SKIPPED";
 
-export type SocialContentType = "POST" | "REEL" | "STORY" | "LIVE" | "CAROUSEL" | "VIDEO" | "ARTICLE" | "TWEET" | "THREAD" | "AD" | "OTHER";
+export type SocialContentType = "POST" | "CAROUSEL" | "REEL" | "STORY" | "LIVE" | "ARTICLE" | "THREAD" | "AD";
 
-export type CalendarEntryStatus = "IDEA" | "PLANNED" | "IN_PROGRESS" | "READY" | "DRAFT" | "SCHEDULED" | "PUBLISHED" | "CANCELLED";
+export type CalendarEntryStatus = "IDEA" | "PLANNED" | "IN_PROGRESS" | "READY" | "SCHEDULED" | "PUBLISHED" | "CANCELLED";
 
 export type VideoProjectType = "SOCIAL_CONTENT" | "BRAND_VIDEO" | "COMMERCIAL" | "DOCUMENTARY" | "TESTIMONIAL" | "EVENT" | "EXPLAINER" | "ANIMATION" | "SHORT_FORM" | "LONG_FORM" | "AD" | "OTHER";
 
