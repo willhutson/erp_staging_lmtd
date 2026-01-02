@@ -42,11 +42,11 @@ export type MoodboardType = "GENERAL" | "BRAND" | "CAMPAIGN" | "VIDEO" | "PHOTO"
 
 export type MoodboardStatus = "ACTIVE" | "ARCHIVED";
 
-export type MoodboardItemType = "IMAGE" | "LINK" | "TEXT" | "COLOR" | "FILE";
+export type MoodboardItemType = "IMAGE" | "PDF" | "VIDEO" | "AUDIO" | "COLOR" | "TEXT" | "LINK" | "FILE";
 
-export type MoodboardOutputType = "IMAGE" | "TEXT" | "DOCUMENT" | "CODE" | "MIXED";
+export type MoodboardOutputType = "CAMPAIGN_CONCEPTS" | "COPY" | "VISUAL_DIRECTION" | "SCRIPT" | "DECK_OUTLINE" | "COLOR_PALETTE" | "TAGLINES" | "IMAGE" | "CUSTOM";
 
-export type ProcessingStatus = "PENDING" | "PROCESSING" | "COMPLETE" | "FAILED";
+export type ProcessingStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
 
 export type IndexStatus = "PENDING" | "INDEXING" | "INDEXED" | "FAILED";
 
