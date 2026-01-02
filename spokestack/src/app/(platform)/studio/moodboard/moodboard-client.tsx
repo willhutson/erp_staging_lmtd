@@ -67,7 +67,7 @@ export function MoodboardClient({ initialMoodboards, clients }: MoodboardClientP
       resetCreateForm();
 
       // Navigate to moodboard editor
-      router.push(`/moodboard/${newMoodboard.id}`);
+      router.push(`/studio/moodboard/${newMoodboard.id}`);
     } catch (error) {
       console.error("Failed to create moodboard:", error);
     } finally {
@@ -76,7 +76,7 @@ export function MoodboardClient({ initialMoodboards, clients }: MoodboardClientP
   };
 
   const handleMoodboardClick = (moodboard: MoodboardWithRelations) => {
-    router.push(`/moodboard/${moodboard.id}`);
+    router.push(`/studio/moodboard/${moodboard.id}`);
   };
 
   const handleDeleteClick = async (moodboard: MoodboardWithRelations) => {
