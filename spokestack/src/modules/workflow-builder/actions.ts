@@ -116,7 +116,16 @@ export async function updateWorkflowDefinition(
   const definition = await prisma.workflowDefinition.update({
     where: { id },
     data: {
-      ...input,
+      name: input.name,
+      description: input.description,
+      icon: input.icon,
+      color: input.color,
+      category: input.category,
+      triggerType: input.triggerType,
+      triggerEntity: input.triggerEntity,
+      triggerConfig: input.triggerConfig as Prisma.InputJsonValue | undefined,
+      isActive: input.isActive,
+      defaultSlaHours: input.defaultSlaHours,
       version: { increment: 1 },
     },
     include: {
