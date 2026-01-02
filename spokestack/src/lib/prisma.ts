@@ -13,6 +13,7 @@ export const prisma =
         : ["error"],
   });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+// Cache in both dev and production for serverless connection reuse
+if (!globalForPrisma.prisma) globalForPrisma.prisma = prisma;
 
 export default prisma;
