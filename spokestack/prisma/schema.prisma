@@ -90,6 +90,15 @@ model Organization {
   builderDashboards           BuilderDashboard[]
   builderDashboardTemplates   BuilderDashboardTemplate[]
 
+  // Survey/Form Builder module
+  surveyTags                  SurveyTag[]
+  surveyTemplates             SurveyTemplate[]
+  surveys                     Survey[]
+
+  // LMS module
+  lmsCourses                  LMSCourse[]
+  lmsAssessments              LMSAssessment[]
+
   @@map("organizations")
 }
 
@@ -281,6 +290,21 @@ model User {
   delegationsAsDelegator        ActiveDelegation[]           @relation("DelegationDelegator")
   delegationActivitiesPerformed DelegationActivity[]
 
+  // Survey/Form Builder module
+  surveyTemplatesCreated        SurveyTemplate[]             @relation("SurveyTemplateCreator")
+  surveyVersionsCreated         SurveyTemplateVersion[]      @relation("SurveyVersionCreator")
+  surveysCreated                Survey[]                     @relation("SurveyCreator")
+  surveysPublished              Survey[]                     @relation("SurveyPublisher")
+  surveySubmissions             SurveySubmission[]           @relation("SurveyRespondent")
+
+  // LMS module
+  coursesCreated                LMSCourse[]                  @relation("CourseCreator")
+  coursesPublished              LMSCourse[]                  @relation("CoursePublisher")
+  courseEnrollments             LMSEnrollment[]              @relation("CourseEnrollments")
+  courseEnrollmentsAssigned     LMSEnrollment[]              @relation("CourseEnroller")
+  assessmentsGraded             LMSAssessmentAttempt[]       @relation("AssessmentGrader")
+  lmsCertificates               LMSCertificate[]             @relation("UserCertificates")
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([organizationId, email])
@@ -395,6 +419,9 @@ model Client {
 
   // Board module
   boards                Board[]
+
+  // Survey/Form Builder module
+  surveys               Survey[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
@@ -4860,6 +4887,9 @@ model Contact {
   notes           ContactNote[]
   formSubmissions ContactFormSubmission[]
 
+  // Survey/Form Builder module
+  surveySubmissions SurveySubmission[] @relation("SurveyContactRespondent")
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([companyId])
@@ -7264,4 +7294,805 @@ enum DelegationActivityType {
   BRIEF_UPDATED           // Delegate updated a brief
   HANDOFF_STARTED         // Handoff process began
   HANDOFF_COMPLETED       // Handoff completed
+}
+
+// ============================================
+// SURVEY / FORM BUILDER MODULE
+// ============================================
+
+// Template source for org-level management
+enum TemplateKind {
+  SURVEY         // Feedback collection
+  FORM           // Data capture
+  QUIZ           // Knowledge check with scoring
+  POLL           // Quick single-question
+  FEEDBACK       // Post-event/service feedback
+}
+
+enum TemplateCategory {
+  EMPLOYEE_ENGAGEMENT     // Team feedback, pulse surveys
+  CLIENT_SATISFACTION     // NPS, CSAT, project feedback
+  EVENT_FEEDBACK          // Post-event surveys
+  ONBOARDING              // New hire/client onboarding forms
+  ASSESSMENT              // Knowledge checks, skills assessment
+  APPLICATION             // Job applications, service requests
+  RESEARCH                // Market research, user research
+  INTERNAL_PROCESS        // IT requests, approvals
+  CUSTOM                  // User-defined
+}
+
+enum SurveyChannel {
+  WEB_LINK        // Public link
+  EMAIL           // Email embed
+  SMS             // SMS link
+  IN_APP          // Embedded in platform
+  QR_CODE         // QR code scan
+  PORTAL          // Client portal
+  API             // Programmatic
+}
+
+enum QuestionKind {
+  // Basic types
+  SHORT_TEXT
+  LONG_TEXT
+  NUMBER
+  EMAIL
+  PHONE
+  URL
+  DATE
+  DATE_TIME
+  
+  // Choice types
+  SINGLE_CHOICE       // Radio buttons
+  MULTIPLE_CHOICE     // Checkboxes
+  DROPDOWN
+  RANKING             // Drag to rank
+  
+  // Rating types
+  RATING_SCALE        // 1-5 or 1-10 scale
+  NPS                 // Net Promoter Score (0-10)
+  STAR_RATING         // Star-based rating
+  SLIDER              // Slider scale
+  
+  // Matrix types
+  MATRIX_SINGLE       // Grid with single choice per row
+  MATRIX_MULTIPLE     // Grid with multiple choice per row
+  MATRIX_SCALE        // Grid with scale per row
+  
+  // File types
+  FILE_UPLOAD
+  IMAGE_UPLOAD
+  SIGNATURE
+  
+  // Layout types (not actual questions)
+  SECTION_BREAK
+  PAGE_BREAK
+  STATEMENT           // Read-only text block
+  
+  // Advanced types
+  OPINION_SCALE       // Likert scale with labels
+  IMAGE_CHOICE        // Choose from images
+  CONTACT_INFO        // Bundled name/email/phone
+  ADDRESS             // Full address block
+}
+
+enum SurveyStatus {
+  DRAFT           // Being edited
+  SCHEDULED       // Ready to go live at scheduled time
+  ACTIVE          // Accepting responses
+  PAUSED          // Temporarily stopped
+  CLOSED          // Permanently closed
+  ARCHIVED        // Archived (hidden from lists)
+}
+
+enum SubmissionStatus {
+  IN_PROGRESS     // Started but not completed
+  COMPLETED       // Fully submitted
+  ABANDONED       // Started but not finished (timeout)
+  DISQUALIFIED    // Failed screening/logic
+}
+
+// Template source - where template came from
+model SurveyTemplateSource {
+  id              String   @id @default(cuid())
+  
+  name            String   // "Platform Library", "Organization Templates"
+  slug            String   @unique
+  description     String?
+  
+  isSystem        Boolean  @default(false)  // Platform-provided
+  isPublic        Boolean  @default(false)  // Visible to all orgs
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  templates       SurveyTemplate[]
+  
+  @@map("survey_template_sources")
+}
+
+// Tag taxonomy for templates
+model SurveyTag {
+  id              String   @id @default(cuid())
+  organizationId  String?  // Null = system tag
+  
+  name            String
+  slug            String
+  color           String?  // Hex color for UI
+  
+  createdAt       DateTime @default(now())
+  
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+  templateTags    SurveyTemplateTag[]
+  
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@map("survey_tags")
+}
+
+// Survey/Form Template
+model SurveyTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String
+  
+  // Identity
+  name            String
+  slug            String
+  description     String?  @db.Text
+  
+  // Classification
+  kind            TemplateKind @default(SURVEY)
+  category        TemplateCategory @default(CUSTOM)
+  
+  // Source tracking
+  sourceId        String?
+  source          SurveyTemplateSource? @relation(fields: [sourceId], references: [id])
+  
+  // Versioning - current active version
+  currentVersionId String?  @unique
+  versionCount    Int      @default(1)
+  
+  // Thumbnail/preview
+  thumbnailUrl    String?
+  
+  // Settings
+  settings        Json     @default("{}")  // SurveySettings
+  
+  // Visibility
+  isPublished     Boolean  @default(false)
+  isArchived      Boolean  @default(false)
+  
+  // Usage stats
+  usageCount      Int      @default(0)
+  lastUsedAt      DateTime?
+  
+  // Audit
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdBy       User     @relation("SurveyTemplateCreator", fields: [createdById], references: [id])
+  currentVersion  SurveyTemplateVersion? @relation("CurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  versions        SurveyTemplateVersion[] @relation("TemplateVersions")
+  tags            SurveyTemplateTag[]
+  surveys         Survey[]
+  
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([kind, category])
+  @@index([isPublished])
+  @@map("survey_templates")
+}
+
+// Template version for history tracking
+model SurveyTemplateVersion {
+  id              String   @id @default(cuid())
+  templateId      String
+  
+  version         Int      // Sequential version number
+  
+  // Full snapshot of questions and design at this version
+  schema          Json     // Array of SurveyQuestion
+  design          Json     // SurveyDesign object
+  settings        Json     // SurveySettings at this version
+  
+  // Change tracking
+  changeNote      String?  // "Added new section", "Fixed logic"
+  
+  // Audit
+  createdById     String
+  createdAt       DateTime @default(now())
+  
+  // Relations
+  template        SurveyTemplate @relation("TemplateVersions", fields: [templateId], references: [id], onDelete: Cascade)
+  templateAsCurrent SurveyTemplate? @relation("CurrentVersion")
+  createdBy       User     @relation("SurveyVersionCreator", fields: [createdById], references: [id])
+  
+  @@unique([templateId, version])
+  @@index([templateId])
+  @@map("survey_template_versions")
+}
+
+// Many-to-many template-tag
+model SurveyTemplateTag {
+  id              String   @id @default(cuid())
+  templateId      String
+  tagId           String
+  
+  template        SurveyTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  tag             SurveyTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@unique([templateId, tagId])
+  @@map("survey_template_tags")
+}
+
+// Survey instance (runtime)
+model Survey {
+  id              String   @id @default(cuid())
+  organizationId  String
+  
+  // Template reference
+  templateId      String
+  template        SurveyTemplate @relation(fields: [templateId], references: [id])
+  versionId       String?  // Locked to specific version
+  
+  // Identity
+  title           String
+  description     String?  @db.Text
+  
+  // Distribution
+  slug            String   // For public URL
+  accessCode      String?  // Optional password
+  
+  // Status
+  status          SurveyStatus @default(DRAFT)
+  
+  // Scheduling
+  startsAt        DateTime?
+  endsAt          DateTime?
+  timezone        String   @default("UTC")
+  
+  // Limits
+  maxResponses    Int?
+  responseCount   Int      @default(0)
+  
+  // Distribution channels
+  channels        SurveyChannel[] @default([WEB_LINK])
+  
+  // Target audience
+  targetClientId  String?  // Specific client (or null for internal/all)
+  targetUserIds   String[] @default([])  // Specific users
+  
+  // Notifications
+  notifyOnSubmit  Boolean  @default(true)
+  notifyEmail     String?
+  
+  // Customization overrides from template
+  customSettings  Json     @default("{}")
+  customDesign    Json     @default("{}")
+  
+  // Audit
+  createdById     String
+  publishedById   String?
+  publishedAt     DateTime?
+  closedAt        DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  targetClient    Client?  @relation(fields: [targetClientId], references: [id])
+  createdBy       User     @relation("SurveyCreator", fields: [createdById], references: [id])
+  publishedBy     User?    @relation("SurveyPublisher", fields: [publishedById], references: [id])
+  submissions     SurveySubmission[]
+  invitations     SurveyInvitation[]
+  
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([templateId])
+  @@index([status])
+  @@index([targetClientId])
+  @@map("surveys")
+}
+
+// Individual survey response
+model SurveySubmission {
+  id              String   @id @default(cuid())
+  surveyId        String
+  
+  // Respondent info (one of these should be set)
+  userId          String?  // Internal user
+  contactId       String?  // CRM contact
+  respondentEmail String?  // Anonymous respondent
+  respondentName  String?
+  
+  // Submission tracking
+  status          SubmissionStatus @default(IN_PROGRESS)
+  
+  // Answers as JSON object
+  answers         Json     // { [questionId]: AnswerValue }
+  
+  // Scoring (for quizzes)
+  score           Int?
+  maxScore        Int?
+  scorePercent    Decimal? @db.Decimal(5, 2)
+  
+  // Metadata
+  startedAt       DateTime @default(now())
+  submittedAt     DateTime?
+  timeSpent       Int?     // Seconds
+  
+  // Tracking
+  deviceType      String?  // mobile, desktop, tablet
+  browser         String?
+  ipAddress       String?
+  referrer        String?
+  utm             Json?    // UTM parameters
+  
+  // Invitation tracking
+  invitationId    String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  survey          Survey   @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  user            User?    @relation("SurveyRespondent", fields: [userId], references: [id])
+  contact         Contact? @relation("SurveyContactRespondent", fields: [contactId], references: [id])
+  invitation      SurveyInvitation? @relation(fields: [invitationId], references: [id])
+  
+  @@index([surveyId])
+  @@index([userId])
+  @@index([contactId])
+  @@index([status])
+  @@index([submittedAt])
+  @@map("survey_submissions")
+}
+
+// Survey invitation for tracking
+model SurveyInvitation {
+  id              String   @id @default(cuid())
+  surveyId        String
+  
+  // Recipient
+  email           String
+  name            String?
+  contactId       String?  // Link to CRM contact
+  
+  // Token for unique link
+  token           String   @unique @default(cuid())
+  
+  // Status
+  sentAt          DateTime?
+  viewedAt        DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  
+  // Reminder tracking
+  remindersSent   Int      @default(0)
+  lastReminderAt  DateTime?
+  
+  createdAt       DateTime @default(now())
+  
+  survey          Survey   @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  submissions     SurveySubmission[]
+  
+  @@unique([surveyId, email])
+  @@index([surveyId])
+  @@index([token])
+  @@map("survey_invitations")
+}
+
+// ============================================
+// LMS (Learning Management System) MODULE
+// ============================================
+
+enum CourseStatus {
+  DRAFT           // Being created
+  REVIEW          // Under review before publishing
+  PUBLISHED       // Available to enroll
+  ARCHIVED        // No new enrollments
+}
+
+enum CourseVisibility {
+  PUBLIC          // Anyone in org can enroll
+  PRIVATE         // By invitation only
+  DEPARTMENT      // Specific departments
+  CLIENT          // For client portal users
+}
+
+enum EnrollmentStatus {
+  ENROLLED        // Active enrollment
+  IN_PROGRESS     // Started at least one lesson
+  COMPLETED       // Finished all required content
+  FAILED          // Failed assessment requirements
+  DROPPED         // Voluntarily dropped
+  EXPIRED         // Time limit exceeded
+}
+
+enum LessonType {
+  VIDEO           // Video content
+  DOCUMENT        // PDF, document viewer
+  PRESENTATION    // Slides
+  ARTICLE         // Rich text content
+  QUIZ            // Knowledge check
+  ASSIGNMENT      // Submit work
+  SCORM           // SCORM package
+  EXTERNAL_LINK   // External resource
+  LIVE_SESSION    // Scheduled live session
+}
+
+enum LMSQuestionType {
+  MULTIPLE_CHOICE   // Single correct answer
+  MULTI_SELECT      // Multiple correct answers
+  TRUE_FALSE        // True/false
+  SHORT_ANSWER      // Free text (manual grading)
+  MATCHING          // Match pairs
+  ORDERING          // Arrange in order
+  FILL_BLANK        // Fill in the blanks
+}
+
+// Course definition
+model LMSCourse {
+  id              String   @id @default(cuid())
+  organizationId  String
+  
+  // Identity
+  title           String
+  slug            String
+  description     String?  @db.Text
+  shortDescription String?
+  
+  // Media
+  thumbnailUrl    String?
+  trailerUrl      String?  // Preview video
+  
+  // Classification
+  category        String?
+  tags            String[] @default([])
+  skillLevel      String?  // Beginner, Intermediate, Advanced
+  
+  // Status
+  status          CourseStatus @default(DRAFT)
+  visibility      CourseVisibility @default(PUBLIC)
+  
+  // Departments that can access (when visibility = DEPARTMENT)
+  allowedDepartments String[] @default([])
+  
+  // Requirements
+  prerequisites   String[] @default([])  // Course IDs that must be completed first
+  
+  // Timing
+  estimatedDuration Int?    // Minutes
+  timeLimit       Int?      // Days to complete (null = unlimited)
+  
+  // Certification
+  hasCertificate  Boolean  @default(false)
+  certificateTemplateId String?
+  
+  // Completion requirements
+  passingScore    Int?     // Minimum assessment score (percentage)
+  requiredCompletionPercent Int @default(100)  // % of lessons required
+  
+  // Settings
+  allowSkipLessons Boolean @default(false)
+  showProgressBar Boolean  @default(true)
+  
+  // Audit
+  createdById     String
+  publishedById   String?
+  publishedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Stats
+  enrollmentCount Int      @default(0)
+  completionCount Int      @default(0)
+  avgRating       Decimal? @db.Decimal(2, 1)
+  
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdBy       User     @relation("CourseCreator", fields: [createdById], references: [id])
+  publishedBy     User?    @relation("CoursePublisher", fields: [publishedById], references: [id])
+  modules         LMSModule[]
+  enrollments     LMSEnrollment[]
+  certificates    LMSCertificate[]
+  
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([status])
+  @@index([visibility])
+  @@map("lms_courses")
+}
+
+// Course module (section/chapter)
+model LMSModule {
+  id              String   @id @default(cuid())
+  courseId        String
+  
+  title           String
+  description     String?
+  
+  // Ordering
+  sortOrder       Int      @default(0)
+  
+  // Module-level requirements
+  isRequired      Boolean  @default(true)
+  unlockAfterModuleId String?  // Sequential unlock
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  course          LMSCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons         LMSLesson[]
+  
+  @@index([courseId])
+  @@map("lms_modules")
+}
+
+// Individual lesson
+model LMSLesson {
+  id              String   @id @default(cuid())
+  moduleId        String
+  
+  title           String
+  description     String?
+  
+  // Content
+  type            LessonType @default(ARTICLE)
+  content         Json     // Type-specific content data
+  
+  // For video/audio
+  duration        Int?     // Seconds
+  
+  // Ordering
+  sortOrder       Int      @default(0)
+  
+  // Requirements
+  isRequired      Boolean  @default(true)
+  minimumTimeSpent Int?    // Seconds - must spend at least this long
+  
+  // For quizzes/assignments
+  assessmentId    String?  @unique
+  
+  // Resources
+  resources       Json     @default("[]")  // Downloadable files, links
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  module          LMSModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  assessment      LMSAssessment? @relation(fields: [assessmentId], references: [id])
+  progress        LMSLessonProgress[]
+  
+  @@index([moduleId])
+  @@map("lms_lessons")
+}
+
+// Assessment (quiz/assignment)
+model LMSAssessment {
+  id              String   @id @default(cuid())
+  organizationId  String
+  
+  title           String
+  description     String?
+  instructions    String?  @db.Text
+  
+  // Settings
+  passingScore    Int      @default(70)  // Percentage
+  maxAttempts     Int?     // Null = unlimited
+  timeLimit       Int?     // Minutes
+  
+  // Question settings
+  randomizeQuestions Boolean @default(false)
+  randomizeOptions   Boolean @default(false)
+  showCorrectAnswers Boolean @default(true)  // After submission
+  
+  // Grading
+  isManualGrading Boolean  @default(false)  // Has short answer questions
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  questions       LMSQuestion[]
+  lesson          LMSLesson?
+  attempts        LMSAssessmentAttempt[]
+  
+  @@index([organizationId])
+  @@map("lms_assessments")
+}
+
+// Assessment question
+model LMSQuestion {
+  id              String   @id @default(cuid())
+  assessmentId    String
+  
+  // Question content
+  type            LMSQuestionType @default(MULTIPLE_CHOICE)
+  question        String   @db.Text
+  explanation     String?  @db.Text  // Shown after answering
+  
+  // Options for choice questions (JSON array)
+  options         Json     @default("[]")
+  
+  // Correct answer(s)
+  correctAnswer   Json     // Type depends on question type
+  
+  // Scoring
+  points          Int      @default(1)
+  
+  // Ordering
+  sortOrder       Int      @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  assessment      LMSAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  
+  @@index([assessmentId])
+  @@map("lms_questions")
+}
+
+// User enrollment in a course
+model LMSEnrollment {
+  id              String   @id @default(cuid())
+  courseId        String
+  userId          String
+  
+  status          EnrollmentStatus @default(ENROLLED)
+  
+  // Progress
+  progressPercent Int      @default(0)
+  lessonsCompleted Int     @default(0)
+  totalLessons    Int      @default(0)
+  
+  // Timing
+  enrolledAt      DateTime @default(now())
+  startedAt       DateTime?
+  completedAt     DateTime?
+  expiresAt       DateTime?
+  
+  // Time tracking
+  totalTimeSpent  Int      @default(0)  // Seconds
+  lastAccessedAt  DateTime?
+  
+  // Assignment (who enrolled them)
+  enrolledById    String?  // Null = self-enrolled
+  
+  // Completion
+  finalScore      Int?     // Overall assessment score
+  hasPassed       Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  course          LMSCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user            User     @relation("CourseEnrollments", fields: [userId], references: [id])
+  enrolledBy      User?    @relation("CourseEnroller", fields: [enrolledById], references: [id])
+  lessonProgress  LMSLessonProgress[]
+  assessmentAttempts LMSAssessmentAttempt[]
+  certificate     LMSCertificate?
+  
+  @@unique([courseId, userId])
+  @@index([courseId])
+  @@index([userId])
+  @@index([status])
+  @@map("lms_enrollments")
+}
+
+// Lesson completion tracking
+model LMSLessonProgress {
+  id              String   @id @default(cuid())
+  enrollmentId    String
+  lessonId        String
+  
+  // Progress
+  isCompleted     Boolean  @default(false)
+  completedAt     DateTime?
+  
+  // Time tracking
+  timeSpent       Int      @default(0)  // Seconds
+  lastAccessedAt  DateTime?
+  
+  // For video/audio - position tracking
+  progressData    Json     @default("{}")  // { position: 120, duration: 600 }
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  enrollment      LMSEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  lesson          LMSLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  @@unique([enrollmentId, lessonId])
+  @@index([enrollmentId])
+  @@index([lessonId])
+  @@map("lms_lesson_progress")
+}
+
+// Assessment attempt
+model LMSAssessmentAttempt {
+  id              String   @id @default(cuid())
+  enrollmentId    String
+  assessmentId    String
+  
+  // Attempt tracking
+  attemptNumber   Int      @default(1)
+  
+  // Answers
+  answers         Json     // { [questionId]: answer }
+  
+  // Scoring
+  score           Int?
+  maxScore        Int?
+  scorePercent    Decimal? @db.Decimal(5, 2)
+  isPassing       Boolean  @default(false)
+  
+  // Timing
+  startedAt       DateTime @default(now())
+  submittedAt     DateTime?
+  timeSpent       Int?     // Seconds
+  
+  // For manual grading
+  isGraded        Boolean  @default(false)
+  gradedById      String?
+  gradedAt        DateTime?
+  feedback        String?  @db.Text
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  enrollment      LMSEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  assessment      LMSAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  gradedBy        User?    @relation("AssessmentGrader", fields: [gradedById], references: [id])
+  
+  @@index([enrollmentId])
+  @@index([assessmentId])
+  @@map("lms_assessment_attempts")
+}
+
+// Course completion certificate
+model LMSCertificate {
+  id              String   @id @default(cuid())
+  enrollmentId    String   @unique
+  courseId        String
+  userId          String
+  
+  // Certificate details
+  certificateNumber String  @unique
+  
+  // Snapshot at completion
+  courseTitleSnapshot String
+  userNameSnapshot    String
+  completionDate      DateTime
+  
+  // PDF storage
+  pdfUrl          String?
+  
+  // Verification
+  verificationUrl String?  // Public verification page
+  
+  // Expiry (for time-limited certifications)
+  expiresAt       DateTime?
+  
+  issuedAt        DateTime @default(now())
+  
+  // Relations
+  enrollment      LMSEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  course          LMSCourse @relation(fields: [courseId], references: [id])
+  user            User     @relation("UserCertificates", fields: [userId], references: [id])
+  
+  @@index([userId])
+  @@index([courseId])
+  @@index([certificateNumber])
+  @@map("lms_certificates")
 }
