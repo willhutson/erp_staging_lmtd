@@ -534,9 +534,6 @@ export async function getSubmission(id: string) {
     where: { id },
     include: {
       survey: {
-        where: {
-          organizationId: user.organizationId,
-        },
         include: {
           template: {
             include: {
@@ -557,7 +554,7 @@ export async function getSubmission(id: string) {
     },
   });
 
-  if (!submission?.survey) {
+  if (!submission?.survey || submission.survey.organizationId !== user.organizationId) {
     throw new Error("Submission not found");
   }
 
