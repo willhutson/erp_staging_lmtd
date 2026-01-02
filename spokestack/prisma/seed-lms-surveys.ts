@@ -49,7 +49,6 @@ async function main() {
       kind: "SURVEY",
       category: "CLIENT_SATISFACTION",
       isPublished: true,
-      publishedAt: new Date(),
       settings: {
         showProgressBar: true,
         allowBackNavigation: true,
@@ -148,7 +147,6 @@ async function main() {
       kind: "SURVEY",
       category: "EMPLOYEE_ENGAGEMENT",
       isPublished: true,
-      publishedAt: new Date(),
       settings: {
         showProgressBar: true,
         allowBackNavigation: true,
@@ -246,7 +244,6 @@ async function main() {
       kind: "POLL",
       category: "INTERNAL_PROCESS",
       isPublished: true,
-      publishedAt: new Date(),
       settings: {
         showProgressBar: false,
         allowBackNavigation: false,
