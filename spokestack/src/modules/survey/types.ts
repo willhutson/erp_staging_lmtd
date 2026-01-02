@@ -5,7 +5,6 @@ import type {
   TemplateKind,
   TemplateCategory,
   SurveyChannel,
-  QuestionKind,
   FormSurveyStatus,
   SubmissionStatus,
 } from "@prisma/client";
@@ -15,10 +14,38 @@ export type {
   TemplateKind,
   TemplateCategory,
   SurveyChannel,
-  QuestionKind,
   FormSurveyStatus,
   SubmissionStatus,
 };
+
+// QuestionKind is used in JSON fields, not as a direct column type,
+// so Prisma doesn't export it. Define locally to match schema.prisma.
+export type QuestionKind =
+  | "SHORT_TEXT"
+  | "LONG_TEXT"
+  | "NUMBER"
+  | "EMAIL"
+  | "PHONE"
+  | "URL"
+  | "DATE"
+  | "DATE_TIME"
+  | "SINGLE_CHOICE"
+  | "MULTIPLE_CHOICE"
+  | "DROPDOWN"
+  | "RANKING"
+  | "RATING_SCALE"
+  | "NPS"
+  | "STAR_RATING"
+  | "SLIDER"
+  | "MATRIX_SINGLE"
+  | "MATRIX_MULTIPLE"
+  | "MATRIX_SCALE"
+  | "FILE_UPLOAD"
+  | "IMAGE_UPLOAD"
+  | "SIGNATURE"
+  | "SECTION_BREAK"
+  | "PAGE_BREAK"
+  | "STATEMENT";
 
 // Alias for convenience in this module
 export type SurveyStatus = FormSurveyStatus;
