@@ -31,12 +31,9 @@ const contentTypeLabels: Record<SocialContentType, string> = {
   REEL: "Reel",
   STORY: "Story",
   LIVE: "Live",
-  VIDEO: "Video",
   ARTICLE: "Article",
-  TWEET: "Tweet",
   THREAD: "Thread",
   AD: "Ad",
-  OTHER: "Other",
 };
 
 // Status colors
@@ -45,7 +42,6 @@ const statusColors: Record<CalendarEntryStatus, string> = {
   PLANNED: "border-l-yellow-500",
   IN_PROGRESS: "border-l-blue-500",
   READY: "border-l-green-500",
-  DRAFT: "border-l-slate-400",
   SCHEDULED: "border-l-purple-500",
   PUBLISHED: "border-l-green-600",
   CANCELLED: "border-l-red-500",
