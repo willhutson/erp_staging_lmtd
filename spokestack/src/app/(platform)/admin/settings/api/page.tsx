@@ -41,6 +41,9 @@ import {
   Video,
   Presentation,
   ImageIcon,
+  ClipboardList,
+  GraduationCap,
+  Award,
 } from "lucide-react";
 
 type Endpoint = {
@@ -343,6 +346,47 @@ const API_CATEGORIES: ApiCategory[] = [
       { method: "PATCH", path: "/api/v1/studio/skills/:id/toggle", description: "Enable/disable skill" },
     ],
   },
+  {
+    title: "Forms",
+    description: "Surveys, polls, quizzes, and form management",
+    icon: ClipboardList,
+    endpoints: [
+      { method: "GET", path: "/api/v1/forms", description: "List all forms with filtering" },
+      { method: "POST", path: "/api/v1/forms", description: "Create a new form", requestBody: '{ "title": "...", "type": "SURVEY", "questions": [...] }' },
+      { method: "GET", path: "/api/v1/forms/:id", description: "Get form with questions" },
+      { method: "PATCH", path: "/api/v1/forms/:id", description: "Update form details or questions" },
+      { method: "DELETE", path: "/api/v1/forms/:id", description: "Delete form (draft only)" },
+      { method: "POST", path: "/api/v1/forms/:id/publish", description: "Publish form for responses" },
+      { method: "GET", path: "/api/v1/forms/:id/responses", description: "List form responses" },
+      { method: "POST", path: "/api/v1/forms/:id/responses", description: "Submit form response", requestBody: '{ "answers": [...] }' },
+      { method: "GET", path: "/api/v1/forms/:id/analytics", description: "Get form analytics and NPS scores" },
+      { method: "GET", path: "/api/v1/forms/templates", description: "List form templates" },
+      { method: "POST", path: "/api/v1/forms/templates/:id/use", description: "Create form from template" },
+      { method: "POST", path: "/api/v1/forms/generate", description: "AI-generate form questions", auth: "TEAM_LEAD+", requestBody: '{ "prompt": "...", "type": "SURVEY", "questionCount": 10 }' },
+    ],
+  },
+  {
+    title: "Learning (LMS)",
+    description: "Courses, enrollments, and certifications",
+    icon: GraduationCap,
+    endpoints: [
+      { method: "GET", path: "/api/v1/lms/courses", description: "List all courses" },
+      { method: "POST", path: "/api/v1/lms/courses", description: "Create a new course", auth: "TEAM_LEAD+", requestBody: '{ "title": "...", "description": "...", "modules": [...] }' },
+      { method: "GET", path: "/api/v1/lms/courses/:id", description: "Get course with modules and lessons" },
+      { method: "PATCH", path: "/api/v1/lms/courses/:id", description: "Update course", auth: "TEAM_LEAD+" },
+      { method: "DELETE", path: "/api/v1/lms/courses/:id", description: "Delete course (draft only)", auth: "ADMIN" },
+      { method: "POST", path: "/api/v1/lms/courses/:id/publish", description: "Publish course", auth: "TEAM_LEAD+" },
+      { method: "GET", path: "/api/v1/lms/courses/:id/modules", description: "List course modules" },
+      { method: "POST", path: "/api/v1/lms/courses/:id/modules", description: "Add module to course", auth: "TEAM_LEAD+" },
+      { method: "GET", path: "/api/v1/lms/enrollments", description: "List user enrollments" },
+      { method: "POST", path: "/api/v1/lms/courses/:id/enroll", description: "Enroll in a course" },
+      { method: "GET", path: "/api/v1/lms/enrollments/:id/progress", description: "Get enrollment progress" },
+      { method: "POST", path: "/api/v1/lms/lessons/:id/complete", description: "Mark lesson as completed" },
+      { method: "GET", path: "/api/v1/lms/certificates", description: "List earned certificates" },
+      { method: "GET", path: "/api/v1/lms/certificates/:id", description: "Get certificate details" },
+      { method: "POST", path: "/api/v1/lms/generate", description: "AI-generate course curriculum", auth: "TEAM_LEAD+", requestBody: '{ "topic": "...", "targetAudience": "...", "moduleCount": 5 }' },
+    ],
+  },
 ];
 
 const WEBHOOK_EVENTS = [
@@ -381,6 +425,14 @@ const WEBHOOK_EVENTS = [
   { event: "studio.calendar.entry_created", description: "Calendar entry created" },
   { event: "studio.calendar.entry_scheduled", description: "Calendar entry scheduled" },
   { event: "studio.skill.executed", description: "AI skill executed" },
+  { event: "form.created", description: "New form created" },
+  { event: "form.published", description: "Form published for responses" },
+  { event: "form.response_submitted", description: "Form response submitted" },
+  { event: "lms.course.created", description: "New course created" },
+  { event: "lms.course.published", description: "Course published" },
+  { event: "lms.enrollment.created", description: "User enrolled in course" },
+  { event: "lms.lesson.completed", description: "Lesson marked as completed" },
+  { event: "lms.certificate.issued", description: "Certificate issued to user" },
 ];
 
 const ERROR_CODES = [

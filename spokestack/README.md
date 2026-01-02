@@ -22,6 +22,19 @@ A modern multi-tenant ERP and creative studio platform built for professional se
 - **Content Calendar** - Social media content planning and scheduling
 - **AI Skills** - Pre-built AI assistants for copywriting, video scripts, design briefs, and more
 
+### Forms (Surveys, Polls & Quizzes)
+- **All Forms** - Create and manage surveys, polls, and quizzes
+- **Templates** - Reusable form templates for common use cases
+- **Form Builder** - AI-powered builder for intelligent question generation
+- **NPS** - Net Promoter Score surveys and analytics
+
+### Learning (LMS)
+- **Learning Center** - Training dashboard with enrollments and progress
+- **Courses** - Browse and manage training courses
+- **Course Builder** - AI-powered curriculum and quiz generation
+- **My Learning** - Track personal course enrollments and progress
+- **Certificates** - Earned credentials and certifications
+
 ## Tech Stack
 
 - **Framework**: Next.js 14 (App Router)
