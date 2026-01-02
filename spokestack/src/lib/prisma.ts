@@ -11,14 +11,9 @@ export const prisma =
       process.env.NODE_ENV === "development"
         ? ["query", "error", "warn"]
         : ["error"],
-    datasources: {
-      db: {
-        url: process.env.DATABASE_URL,
-      },
-    },
   });
 
-// Cache the client in development AND production for serverless
+// Cache the client in both dev and production for serverless connection reuse
 if (!globalForPrisma.prisma) globalForPrisma.prisma = prisma;
 
 export default prisma;
