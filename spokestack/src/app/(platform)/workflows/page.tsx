@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   ArrowRight,
 } from "lucide-react";
+import { getWorkflowBoards, getMyWorkflowCards } from "@/modules/workflows/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -30,20 +31,17 @@ function WorkflowsError({ message }: { message: string }) {
   );
 }
 
-// Placeholder workflow data - will be replaced with real data once DB is seeded
-const SAMPLE_BOARDS = [
-  { id: "1", name: "Content Production", status: "active", tasksCount: 12, completedCount: 5 },
-  { id: "2", name: "Client Onboarding", status: "active", tasksCount: 8, completedCount: 8 },
-  { id: "3", name: "Campaign Launch", status: "draft", tasksCount: 6, completedCount: 0 },
-];
-
 export default async function WorkflowsPage() {
   try {
     const user = await getStudioUser();
 
-    // Workflow boards will be fetched once the WorkflowBoard model is created
-    // For now, show empty state
-    const boards: typeof SAMPLE_BOARDS = [];
+    // Fetch real data from the database
+    const [boards, myCards] = await Promise.all([
+      getWorkflowBoards(),
+      getMyWorkflowCards(),
+    ]);
+
+    const activeBoards = boards.filter((b) => !b.isArchived);
 
     return (
       <div className="p-6 lg:p-8 space-y-6">
@@ -73,9 +71,7 @@ export default async function WorkflowsPage() {
               <Kanban className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {boards.filter((b) => b.status === "active").length || 0}
-              </div>
+              <div className="text-2xl font-bold">{activeBoards.length}</div>
               <p className="text-xs text-muted-foreground">
                 In progress
               </p>
@@ -85,12 +81,12 @@ export default async function WorkflowsPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                My Workflows
+                My Tasks
               </CardTitle>
               <FolderKanban className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{boards.length}</div>
+              <div className="text-2xl font-bold">{myCards.length}</div>
               <p className="text-xs text-muted-foreground">
                 Assigned to you
               </p>
@@ -117,31 +113,32 @@ export default async function WorkflowsPage() {
         {boards.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {boards.map((board) => (
-              <Card key={board.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{board.name}</CardTitle>
-                    <Badge variant={board.status === "active" ? "default" : "secondary"}>
-                      {board.status}
-                    </Badge>
-                  </div>
-                  <CardDescription>
-                    {board.completedCount} of {board.tasksCount} tasks completed
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="w-full bg-secondary rounded-full h-2">
-                    <div
-                      className="bg-primary h-2 rounded-full transition-all"
-                      style={{
-                        width: board.tasksCount > 0
-                          ? `${(board.completedCount / board.tasksCount) * 100}%`
-                          : "0%",
-                      }}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+              <Link key={board.id} href={`/workflows/${board.id}`}>
+                <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">{board.name}</CardTitle>
+                      <Badge variant={board.isArchived ? "secondary" : "default"}>
+                        {board.isArchived ? "Archived" : "Active"}
+                      </Badge>
+                    </div>
+                    <CardDescription>
+                      {board.description || "No description"}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <span>{board._count?.columns || 0} columns</span>
+                      <span>{board._count?.members || 0} members</span>
+                    </div>
+                    {board.client && (
+                      <Badge variant="outline" className="mt-2">
+                        {board.client.name}
+                      </Badge>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         ) : (

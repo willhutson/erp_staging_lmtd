@@ -54,3 +54,6 @@ export type IndexStatus = "PENDING" | "INDEXING" | "INDEXED" | "FAILED";
 export type RFPStatus = "VETTING" | "CONFIRMED" | "IN_PROGRESS" | "SUBMITTED" | "WON" | "LOST" | "CANCELLED";
 
 export type RFPSubitemStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "BLOCKED";
+
+// Workflow types
+export type WorkflowMemberRole = "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";

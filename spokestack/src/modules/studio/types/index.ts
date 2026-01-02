@@ -169,9 +169,13 @@ export interface DeckTemplate {
   name: string;
   description?: string | null;
   type: DeckType;
-  thumbnail?: string | null;
-  isPublic: boolean;
-  createdById: string;
+  slideTemplates?: unknown | null;
+  colorScheme?: unknown | null;
+  fonts?: unknown | null;
+  logoUrl?: string | null;
+  googleTemplateId?: string | null;
+  isDefault: boolean;
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
