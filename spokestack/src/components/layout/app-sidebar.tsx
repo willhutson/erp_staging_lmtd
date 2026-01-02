@@ -75,6 +75,9 @@ import {
   GitBranch,
   LayoutTemplate,
   Kanban,
+  Star,
+  Play,
+  ListChecks,
 } from "lucide-react";
 import type { TenantConfig } from "@/lib/tenant";
 
@@ -155,6 +158,7 @@ const moduleBundles = [
           { label: "Directory", href: "/team" },
           { label: "Departments", href: "/team/departments" },
           { label: "Org Chart", href: "/team/org-chart" },
+          { label: "Delegation", href: "/team/delegation" },
         ],
       },
       { id: "chat", label: "SpokeChat", icon: MessageSquare, href: "/chat" },
@@ -185,6 +189,16 @@ const moduleBundles = [
       { id: "resources", label: "Resources", icon: Calendar, href: "/resources" },
       { id: "crm", label: "CRM", icon: Handshake, href: "/crm" },
       { id: "rfp", label: "RFP Pipeline", icon: Target, href: "/rfp" },
+      {
+        id: "feedback",
+        label: "Feedback",
+        icon: Star,
+        href: "/feedback",
+        items: [
+          { label: "Overview", href: "/feedback" },
+          { label: "NPS Surveys", href: "/feedback/nps" },
+        ],
+      },
     ],
   },
   {
@@ -260,6 +274,19 @@ const moduleBundles = [
     ],
   },
   {
+    id: "boards",
+    label: "Boards",
+    tagline: "Visual Projects",
+    icon: Kanban,
+    color: "text-sky-500",
+    bgColor: "bg-sky-500",
+    modules: [
+      { id: "boards-all", label: "All Boards", icon: Kanban, href: "/boards" },
+      { id: "boards-my", label: "My Cards", icon: ListChecks, href: "/boards/my" },
+      { id: "boards-templates", label: "Templates", icon: LayoutTemplate, href: "/boards/templates" },
+    ],
+  },
+  {
     id: "workflows",
     label: "Workflows",
     tagline: "Process Automation",
@@ -267,8 +294,9 @@ const moduleBundles = [
     color: "text-orange-500",
     bgColor: "bg-orange-500",
     modules: [
-      { id: "workflows-boards", label: "Boards", icon: Kanban, href: "/workflows" },
-      { id: "workflows-my", label: "My Workflows", icon: FolderKanban, href: "/workflows/my" },
+      { id: "workflows-all", label: "All Workflows", icon: GitBranch, href: "/workflows" },
+      { id: "workflows-my", label: "My Tasks", icon: ListChecks, href: "/workflows/my" },
+      { id: "workflows-runs", label: "Active Runs", icon: Play, href: "/workflows/runs" },
       { id: "workflows-templates", label: "Templates", icon: LayoutTemplate, href: "/workflows/templates" },
     ],
   },
@@ -285,6 +313,7 @@ const moduleBundles = [
       { id: "portal-approvals", label: "Approvals", icon: FileCheck, href: "/portal/approvals" },
       { id: "portal-deliverables", label: "Deliverables", icon: FolderKanban, href: "/portal/deliverables" },
       { id: "portal-reports", label: "Reports", icon: BarChart3, href: "/portal/reports" },
+      { id: "portal-feedback", label: "Feedback", icon: Star, href: "/portal/feedback" },
     ],
   },
 ];
@@ -300,7 +329,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ user, tenant }: AppSidebarProps) {
   const pathname = usePathname();
-  const [expandedBundles, setExpandedBundles] = useState<string[]>(["erp", "agency", "marketing", "studio", "workflows", "portal"]);
+  const [expandedBundles, setExpandedBundles] = useState<string[]>(["erp", "agency", "marketing", "studio", "boards", "workflows", "portal"]);
   const [expandedModules, setExpandedModules] = useState<string[]>([]);
 
   // Check if this is the default SpokeStack tenant (super admin access)
