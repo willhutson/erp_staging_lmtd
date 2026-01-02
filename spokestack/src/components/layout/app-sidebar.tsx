@@ -192,6 +192,27 @@ const moduleBundles = [
       { id: "resources", label: "Resources", icon: Calendar, href: "/resources" },
       { id: "crm", label: "CRM", icon: Handshake, href: "/crm" },
       { id: "rfp", label: "RFP Pipeline", icon: Target, href: "/rfp" },
+    ],
+  },
+  {
+    id: "forms",
+    label: "Forms",
+    tagline: "Surveys, Polls & More",
+    icon: ClipboardList,
+    color: "text-rose-500",
+    bgColor: "bg-rose-500",
+    modules: [
+      {
+        id: "surveys",
+        label: "Surveys",
+        icon: ClipboardList,
+        href: "/surveys",
+        items: [
+          { label: "All Forms", href: "/surveys" },
+          { label: "Templates", href: "/surveys/templates" },
+        ],
+      },
+      { id: "form-builder", label: "Form Builder", icon: Sparkles, href: "/surveys/builder" },
       {
         id: "feedback",
         label: "Feedback",
@@ -199,18 +220,7 @@ const moduleBundles = [
         href: "/feedback",
         items: [
           { label: "Overview", href: "/feedback" },
-          { label: "NPS Surveys", href: "/feedback/nps" },
-        ],
-      },
-      {
-        id: "surveys",
-        label: "Surveys",
-        icon: ClipboardList,
-        href: "/surveys",
-        items: [
-          { label: "Overview", href: "/surveys" },
-          { label: "Templates", href: "/surveys/templates" },
-          { label: "Builder", href: "/surveys/builder" },
+          { label: "NPS", href: "/feedback/nps" },
         ],
       },
     ],
@@ -367,7 +377,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ user, tenant }: AppSidebarProps) {
   const pathname = usePathname();
-  const [expandedBundles, setExpandedBundles] = useState<string[]>(["erp", "agency", "marketing", "studio", "boards", "workflows", "learning", "portal"]);
+  const [expandedBundles, setExpandedBundles] = useState<string[]>(["erp", "agency", "forms", "marketing", "studio", "boards", "workflows", "learning", "portal"]);
   const [expandedModules, setExpandedModules] = useState<string[]>([]);
 
   // Check if this is the default SpokeStack tenant (super admin access)
