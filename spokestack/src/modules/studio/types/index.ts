@@ -205,21 +205,34 @@ export interface MoodboardItem {
   id: string;
   moodboardId: string;
   type: MoodboardItemType;
-  fileUrl?: string | null;
-  sourceUrl?: string | null;
-  title?: string | null;
-  description?: string | null;
-  color?: string | null;
-  text?: string | null;
+  // Position
   positionX?: number | null;
   positionY?: number | null;
   width?: number | null;
   height?: number | null;
   rotation?: number | null;
   zIndex?: number | null;
+  // Content
+  fileUrl?: string | null;
+  thumbnailUrl?: string | null;
+  sourceUrl?: string | null;
+  title?: string | null;
+  description?: string | null;
+  color?: string | null;
+  text?: string | null;
+  // Extracted content
+  extractedText?: string | null;
+  extractedColors?: string[];
+  aiDescription?: string | null;
+  embedding?: unknown | null;
+  // Processing
   processingStatus: ProcessingStatus;
-  indexStatus: IndexStatus;
-  createdById: string;
+  processingError?: string | null;
+  // Metadata
+  tags?: string[];
+  mimeType?: string | null;
+  fileSize?: number | null;
+  duration?: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
