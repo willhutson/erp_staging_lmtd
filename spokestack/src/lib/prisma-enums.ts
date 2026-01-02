@@ -55,5 +55,18 @@ export type RFPStatus = "VETTING" | "CONFIRMED" | "IN_PROGRESS" | "SUBMITTED" | 
 
 export type RFPSubitemStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "BLOCKED";
 
-// Workflow types
-export type WorkflowMemberRole = "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
+// Board types (Kanban)
+export type BoardMemberRole = "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
+
+// Workflow Builder types
+export type WorkflowTriggerType = "MANUAL" | "ENTITY_CREATED" | "ENTITY_UPDATED" | "SCHEDULED" | "WEBHOOK" | "FORM_SUBMITTED";
+
+export type WorkflowStepType = "TASK" | "APPROVAL" | "FORM_INPUT" | "CONDITION" | "NOTIFICATION" | "WEBHOOK" | "DELAY" | "PARALLEL_START" | "PARALLEL_END";
+
+export type WorkflowAssigneeType = "SPECIFIC_USER" | "BY_ROLE" | "BY_DEPARTMENT" | "FROM_TRIGGER" | "ROUND_ROBIN" | "PREVIOUS_ACTOR";
+
+export type WorkflowRunStatus = "PENDING" | "IN_PROGRESS" | "PAUSED" | "COMPLETED" | "CANCELLED" | "FAILED";
+
+export type WorkflowTaskStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "SKIPPED" | "ESCALATED";
+
+export type WorkflowDecision = "APPROVED" | "REJECTED" | "NEEDS_REVISION" | "DELEGATED";

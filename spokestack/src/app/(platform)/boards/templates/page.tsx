@@ -6,16 +6,16 @@ import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
   LayoutTemplate,
-  FileCheck,
+  FileText,
   Users,
-  Briefcase,
-  DollarSign,
-  Clock,
   Megaphone,
+  Target,
+  Calendar,
+  Building2,
   AlertTriangle,
-  GitBranch,
 } from "lucide-react";
-import { getWorkflowTemplates } from "@/modules/workflow-builder/actions";
+import { CreateBoardButton } from "./create-board-button";
+import { getBoardTemplates } from "@/modules/boards/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -35,94 +35,93 @@ function PageError({ message }: { message: string }) {
 
 // Icon mapping for templates
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  FileCheck,
-  Users,
-  Briefcase,
-  DollarSign,
-  Clock,
+  FileText,
+  Building2,
   Megaphone,
+  Target,
+  Calendar,
+  Users,
   LayoutTemplate,
-  GitBranch,
 };
 
-// Pre-built workflow templates
+// Pre-built board templates (fallback if no DB templates)
 const DEFAULT_TEMPLATES = [
   {
-    id: "brief-approval",
-    name: "Brief Approval",
-    description: "Multi-step approval workflow for creative briefs with manager and client sign-off",
-    category: "Approval",
-    icon: "FileCheck",
-    color: "text-green-500",
-    bgColor: "bg-green-100 dark:bg-green-900/20",
-    steps: 4,
-    triggers: "Manual, Brief Created",
-  },
-  {
-    id: "client-onboarding",
-    name: "Client Onboarding",
-    description: "Automated onboarding workflow with tasks for contracts, setup, and kickoff",
-    category: "Onboarding",
-    icon: "Users",
-    color: "text-blue-500",
-    bgColor: "bg-blue-100 dark:bg-blue-900/20",
-    steps: 8,
-    triggers: "Deal Won",
-  },
-  {
-    id: "invoice-approval",
-    name: "Invoice Approval",
-    description: "Finance approval workflow with budget checks and multi-level sign-off",
-    category: "Finance",
-    icon: "DollarSign",
-    color: "text-emerald-500",
-    bgColor: "bg-emerald-100 dark:bg-emerald-900/20",
-    steps: 5,
-    triggers: "Invoice Created",
-  },
-  {
-    id: "content-review",
-    name: "Content Review",
-    description: "Editorial workflow with copyediting, legal review, and final approval",
+    id: "content-production",
+    name: "Content Production",
+    description: "End-to-end workflow for content creation and delivery",
     category: "Creative",
     icon: "Megaphone",
     color: "text-purple-500",
     bgColor: "bg-purple-100 dark:bg-purple-900/20",
     steps: 6,
-    triggers: "Content Ready",
+    avgDuration: "3-5 days",
   },
   {
-    id: "employee-onboarding",
-    name: "Employee Onboarding",
-    description: "HR workflow for new hire setup, training, and equipment provisioning",
-    category: "HR",
-    icon: "Briefcase",
+    id: "project-management",
+    name: "Project Management",
+    description: "Standard project board with To Do, In Progress, Review, Done",
+    category: "Agency",
+    icon: "FileText",
+    color: "text-blue-500",
+    bgColor: "bg-blue-100 dark:bg-blue-900/20",
+    steps: 4,
+    avgDuration: "Varies",
+  },
+  {
+    id: "client-onboarding",
+    name: "Client Onboarding",
+    description: "Structured process for onboarding new clients",
+    category: "Agency",
+    icon: "Building2",
+    color: "text-emerald-500",
+    bgColor: "bg-emerald-100 dark:bg-emerald-900/20",
+    steps: 8,
+    avgDuration: "1-2 weeks",
+  },
+  {
+    id: "campaign-launch",
+    name: "Campaign Launch",
+    description: "Checklist-driven board for launching campaigns",
+    category: "Marketing",
+    icon: "Target",
     color: "text-orange-500",
     bgColor: "bg-orange-100 dark:bg-orange-900/20",
     steps: 10,
-    triggers: "Offer Accepted",
+    avgDuration: "1-2 weeks",
   },
   {
-    id: "time-off-request",
-    name: "Time Off Request",
-    description: "Leave request workflow with manager approval and calendar blocking",
-    category: "HR",
-    icon: "Clock",
+    id: "monthly-reporting",
+    name: "Monthly Reporting",
+    description: "Recurring board for client monthly reports",
+    category: "Agency",
+    icon: "Calendar",
     color: "text-cyan-500",
     bgColor: "bg-cyan-100 dark:bg-cyan-900/20",
-    steps: 3,
-    triggers: "Form Submitted",
+    steps: 5,
+    avgDuration: "2-3 days",
+  },
+  {
+    id: "team-review",
+    name: "Team Review",
+    description: "Performance review and feedback collection board",
+    category: "HR",
+    icon: "Users",
+    color: "text-pink-500",
+    bgColor: "bg-pink-100 dark:bg-pink-900/20",
+    steps: 4,
+    avgDuration: "1 week",
   },
 ];
 
-const CATEGORIES = ["All", "Approval", "Onboarding", "Creative", "Finance", "HR"];
+const CATEGORIES = ["All", "Agency", "Creative", "Marketing", "HR"];
 
-export default async function WorkflowTemplatesPage() {
+export default async function BoardTemplatesPage() {
   try {
     const user = await getStudioUser();
 
-    // Try to get templates from DB
-    let templates = await getWorkflowTemplates();
+    // Try to get templates from DB, fall back to defaults
+    let templates = await getBoardTemplates();
 
     // If no DB templates, use defaults
     const displayTemplates = templates.length > 0
@@ -130,12 +129,12 @@ export default async function WorkflowTemplatesPage() {
           id: t.id,
           name: t.name,
           description: t.description || "",
-          category: t.category || "Other",
-          icon: t.icon || "GitBranch",
+          category: t.category,
+          icon: t.icon || "LayoutTemplate",
           color: t.color || "text-gray-500",
           bgColor: "bg-gray-100 dark:bg-gray-900/20",
-          steps: t._count?.steps || 0,
-          triggers: "Manual",
+          steps: Array.isArray(t.columns) ? (t.columns as unknown[]).length : 4,
+          avgDuration: "Varies",
           isDbTemplate: true,
         }))
       : DEFAULT_TEMPLATES.map(t => ({ ...t, isDbTemplate: false }));
@@ -146,24 +145,19 @@ export default async function WorkflowTemplatesPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
-              href="/workflows"
+              href="/boards"
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-gray-500" />
             </Link>
             <div>
-              <h1 className="text-2xl font-bold">Workflow Templates</h1>
+              <h1 className="text-2xl font-bold">Board Templates</h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Start with pre-built automation workflows
+                Start with pre-built templates for common agency processes
               </p>
             </div>
           </div>
-          <Button asChild>
-            <Link href="/workflows">
-              <GitBranch className="mr-2 h-4 w-4" />
-              Build Custom
-            </Link>
-          </Button>
+          <CreateBoardButton templateName="Custom Board" className="opacity-100" />
         </div>
 
         {/* Category Filter */}
@@ -182,7 +176,7 @@ export default async function WorkflowTemplatesPage() {
         {/* Templates Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {displayTemplates.map((template) => {
-            const Icon = ICON_MAP[template.icon] || GitBranch;
+            const Icon = ICON_MAP[template.icon] || LayoutTemplate;
             return (
               <Card
                 key={template.id}
@@ -200,35 +194,35 @@ export default async function WorkflowTemplatesPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                    <span>{template.steps} steps</span>
-                    <span>Trigger: {template.triggers}</span>
+                    <span>{template.steps} columns</span>
+                    <span>~{template.avgDuration}</span>
                   </div>
-                  <Button className="w-full" variant="outline">
-                    Use Template
-                  </Button>
+                  <CreateBoardButton
+                    templateId={template.isDbTemplate ? template.id : undefined}
+                    templateName={template.name}
+                    className="w-full group-hover:bg-primary/90 transition-colors"
+                  />
                 </CardContent>
               </Card>
             );
           })}
         </div>
 
-        {/* Custom Workflow CTA */}
+        {/* Custom Template CTA */}
         <Card className="border-dashed">
           <CardContent className="flex flex-col sm:flex-row items-center justify-between py-6 gap-4">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-indigo-100 dark:bg-indigo-900/20">
-                <GitBranch className="h-6 w-6 text-indigo-500" />
+              <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-800">
+                <LayoutTemplate className="h-6 w-6 text-gray-500" />
               </div>
               <div>
-                <h3 className="font-semibold">Build from scratch</h3>
+                <h3 className="font-semibold">Start from scratch</h3>
                 <p className="text-sm text-muted-foreground">
-                  Create a custom workflow tailored to your process
+                  Create a blank board and customize it your way
                 </p>
               </div>
             </div>
-            <Button asChild>
-              <Link href="/workflows">Create Custom Workflow</Link>
-            </Button>
+            <CreateBoardButton templateName="New Board" />
           </CardContent>
         </Card>
       </div>

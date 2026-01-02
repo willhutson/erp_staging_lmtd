@@ -4,9 +4,9 @@ import { getStudioUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import type {
-  WorkflowBoardWithRelations,
-  WorkflowCardWithRelations,
-  WorkflowTemplateWithRelations,
+  BoardWithRelations,
+  BoardCardWithRelations,
+  BoardTemplateWithRelations,
   CreateBoardInput,
   CreateColumnInput,
   CreateCardInput,
@@ -18,10 +18,10 @@ import type {
 // Board Actions
 // ============================================
 
-export async function getWorkflowBoards(): Promise<WorkflowBoardWithRelations[]> {
+export async function getBoards(): Promise<BoardWithRelations[]> {
   const user = await getStudioUser();
 
-  const boards = await prisma.workflowBoard.findMany({
+  const boards = await prisma.board.findMany({
     where: {
       organizationId: user.organizationId,
       isArchived: false,
@@ -43,13 +43,13 @@ export async function getWorkflowBoards(): Promise<WorkflowBoardWithRelations[]>
     orderBy: { updatedAt: "desc" },
   });
 
-  return boards as WorkflowBoardWithRelations[];
+  return boards as BoardWithRelations[];
 }
 
-export async function getWorkflowBoard(boardId: string): Promise<WorkflowBoardWithRelations | null> {
+export async function getBoard(boardId: string): Promise<BoardWithRelations | null> {
   const user = await getStudioUser();
 
-  const board = await prisma.workflowBoard.findFirst({
+  const board = await prisma.board.findFirst({
     where: {
       id: boardId,
       organizationId: user.organizationId,
@@ -93,10 +93,10 @@ export async function getWorkflowBoard(boardId: string): Promise<WorkflowBoardWi
     },
   });
 
-  return board as WorkflowBoardWithRelations | null;
+  return board as BoardWithRelations | null;
 }
 
-export async function createWorkflowBoard(input: CreateBoardInput): Promise<WorkflowBoardWithRelations> {
+export async function createBoard(input: CreateBoardInput): Promise<BoardWithRelations> {
   const user = await getStudioUser();
 
   // If creating from template, get template data
@@ -108,20 +108,20 @@ export async function createWorkflowBoard(input: CreateBoardInput): Promise<Work
   ];
 
   if (input.templateId) {
-    const template = await prisma.workflowTemplate.findUnique({
+    const template = await prisma.boardTemplate.findUnique({
       where: { id: input.templateId },
     });
     if (template?.columns) {
       defaultColumns = template.columns as typeof defaultColumns;
       // Increment usage count
-      await prisma.workflowTemplate.update({
+      await prisma.boardTemplate.update({
         where: { id: input.templateId },
         data: { usageCount: { increment: 1 } },
       });
     }
   }
 
-  const board = await prisma.workflowBoard.create({
+  const board = await prisma.board.create({
     data: {
       organizationId: user.organizationId,
       name: input.name,
@@ -171,9 +171,9 @@ export async function createWorkflowBoard(input: CreateBoardInput): Promise<Work
     },
   });
 
-  revalidatePath("/workflows");
+  revalidatePath("/boards");
 
-  return board as WorkflowBoardWithRelations;
+  return board as BoardWithRelations;
 }
 
 // ============================================
@@ -184,7 +184,7 @@ export async function createColumn(input: CreateColumnInput) {
   const user = await getStudioUser();
 
   // Verify board belongs to user's org
-  const board = await prisma.workflowBoard.findFirst({
+  const board = await prisma.board.findFirst({
     where: {
       id: input.boardId,
       organizationId: user.organizationId,
@@ -196,12 +196,12 @@ export async function createColumn(input: CreateColumnInput) {
   }
 
   // Get max position
-  const maxPosition = await prisma.workflowColumn.aggregate({
+  const maxPosition = await prisma.boardColumn.aggregate({
     where: { boardId: input.boardId },
     _max: { position: true },
   });
 
-  const column = await prisma.workflowColumn.create({
+  const column = await prisma.boardColumn.create({
     data: {
       boardId: input.boardId,
       name: input.name,
@@ -214,7 +214,7 @@ export async function createColumn(input: CreateColumnInput) {
     },
   });
 
-  revalidatePath(`/workflows/${input.boardId}`);
+  revalidatePath(`/boards/${input.boardId}`);
 
   return column;
 }
@@ -223,11 +223,11 @@ export async function createColumn(input: CreateColumnInput) {
 // Card Actions
 // ============================================
 
-export async function createCard(input: CreateCardInput): Promise<WorkflowCardWithRelations> {
+export async function createCard(input: CreateCardInput): Promise<BoardCardWithRelations> {
   const user = await getStudioUser();
 
   // Verify column belongs to user's org
-  const column = await prisma.workflowColumn.findFirst({
+  const column = await prisma.boardColumn.findFirst({
     where: {
       id: input.columnId,
       board: {
@@ -244,12 +244,12 @@ export async function createCard(input: CreateCardInput): Promise<WorkflowCardWi
   }
 
   // Get max position in column
-  const maxPosition = await prisma.workflowCard.aggregate({
+  const maxPosition = await prisma.boardCard.aggregate({
     where: { columnId: input.columnId },
     _max: { position: true },
   });
 
-  const card = await prisma.workflowCard.create({
+  const card = await prisma.boardCard.create({
     data: {
       columnId: input.columnId,
       title: input.title,
@@ -278,16 +278,16 @@ export async function createCard(input: CreateCardInput): Promise<WorkflowCardWi
     },
   });
 
-  revalidatePath(`/workflows/${column.boardId}`);
+  revalidatePath(`/boards/${column.boardId}`);
 
-  return card as WorkflowCardWithRelations;
+  return card as BoardCardWithRelations;
 }
 
-export async function updateCard(cardId: string, input: UpdateCardInput): Promise<WorkflowCardWithRelations> {
+export async function updateCard(cardId: string, input: UpdateCardInput): Promise<BoardCardWithRelations> {
   const user = await getStudioUser();
 
   // Verify card belongs to user's org
-  const existingCard = await prisma.workflowCard.findFirst({
+  const existingCard = await prisma.boardCard.findFirst({
     where: {
       id: cardId,
       column: {
@@ -310,7 +310,7 @@ export async function updateCard(cardId: string, input: UpdateCardInput): Promis
   // Handle completion
   let completedAt = existingCard.completedAt;
   if (input.columnId) {
-    const targetColumn = await prisma.workflowColumn.findUnique({
+    const targetColumn = await prisma.boardColumn.findUnique({
       where: { id: input.columnId },
     });
     if (targetColumn?.name.toLowerCase().includes("done")) {
@@ -320,7 +320,7 @@ export async function updateCard(cardId: string, input: UpdateCardInput): Promis
     }
   }
 
-  const card = await prisma.workflowCard.update({
+  const card = await prisma.boardCard.update({
     where: { id: cardId },
     data: {
       ...input,
@@ -339,16 +339,16 @@ export async function updateCard(cardId: string, input: UpdateCardInput): Promis
     },
   });
 
-  revalidatePath(`/workflows/${existingCard.column.boardId}`);
+  revalidatePath(`/boards/${existingCard.column.boardId}`);
 
-  return card as WorkflowCardWithRelations;
+  return card as BoardCardWithRelations;
 }
 
 export async function moveCard(input: MoveCardInput) {
   const user = await getStudioUser();
 
   // Verify card and target column belong to user's org
-  const card = await prisma.workflowCard.findFirst({
+  const card = await prisma.boardCard.findFirst({
     where: {
       id: input.cardId,
       column: {
@@ -368,7 +368,7 @@ export async function moveCard(input: MoveCardInput) {
     throw new Error("Card not found");
   }
 
-  const targetColumn = await prisma.workflowColumn.findFirst({
+  const targetColumn = await prisma.boardColumn.findFirst({
     where: {
       id: input.targetColumnId,
       board: {
@@ -390,7 +390,7 @@ export async function moveCard(input: MoveCardInput) {
   }
 
   // Update card position
-  await prisma.workflowCard.update({
+  await prisma.boardCard.update({
     where: { id: input.cardId },
     data: {
       columnId: input.targetColumnId,
@@ -400,7 +400,7 @@ export async function moveCard(input: MoveCardInput) {
   });
 
   // Reorder other cards in target column
-  await prisma.workflowCard.updateMany({
+  await prisma.boardCard.updateMany({
     where: {
       columnId: input.targetColumnId,
       id: { not: input.cardId },
@@ -411,17 +411,17 @@ export async function moveCard(input: MoveCardInput) {
     },
   });
 
-  revalidatePath(`/workflows/${card.column.boardId}`);
+  revalidatePath(`/boards/${card.column.boardId}`);
 }
 
 // ============================================
 // Template Actions
 // ============================================
 
-export async function getWorkflowTemplates(): Promise<WorkflowTemplateWithRelations[]> {
+export async function getBoardTemplates(): Promise<BoardTemplateWithRelations[]> {
   const user = await getStudioUser();
 
-  const templates = await prisma.workflowTemplate.findMany({
+  const templates = await prisma.boardTemplate.findMany({
     where: {
       isActive: true,
       OR: [
@@ -440,17 +440,17 @@ export async function getWorkflowTemplates(): Promise<WorkflowTemplateWithRelati
     orderBy: [{ usageCount: "desc" }, { name: "asc" }],
   });
 
-  return templates as WorkflowTemplateWithRelations[];
+  return templates as BoardTemplateWithRelations[];
 }
 
 // ============================================
-// My Workflows (cards assigned to user)
+// My Cards (cards assigned to user)
 // ============================================
 
-export async function getMyWorkflowCards(): Promise<WorkflowCardWithRelations[]> {
+export async function getMyCards(): Promise<BoardCardWithRelations[]> {
   const user = await getStudioUser();
 
-  const cards = await prisma.workflowCard.findMany({
+  const cards = await prisma.boardCard.findMany({
     where: {
       assigneeId: user.id,
       column: {
@@ -482,5 +482,5 @@ export async function getMyWorkflowCards(): Promise<WorkflowCardWithRelations[]>
     orderBy: [{ dueDate: "asc" }, { priority: "desc" }],
   });
 
-  return cards as unknown as WorkflowCardWithRelations[];
+  return cards as unknown as BoardCardWithRelations[];
 }

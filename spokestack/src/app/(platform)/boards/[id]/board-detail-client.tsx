@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -25,13 +25,13 @@ import {
   CheckSquare,
 } from "lucide-react";
 import { format } from "date-fns";
-import type { WorkflowBoardWithRelations } from "@/modules/workflows/types";
+import type { BoardWithRelations } from "@/modules/boards/types";
 
-interface WorkflowBoardClientProps {
-  board: WorkflowBoardWithRelations;
+interface BoardDetailClientProps {
+  board: BoardWithRelations;
 }
 
-export function WorkflowBoardClient({ board }: WorkflowBoardClientProps) {
+export function BoardDetailClient({ board }: BoardDetailClientProps) {
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
 
   const getPriorityColor = (priority: string) => {
@@ -55,7 +55,7 @@ export function WorkflowBoardClient({ board }: WorkflowBoardClientProps) {
       <div className="flex items-center justify-between p-4 border-b bg-background">
         <div className="flex items-center gap-4">
           <Link
-            href="/workflows"
+            href="/boards"
             className="p-2 rounded-lg hover:bg-muted transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -246,7 +246,7 @@ export function WorkflowBoardClient({ board }: WorkflowBoardClientProps) {
           <div className="text-center">
             <h3 className="text-lg font-medium mb-2">No columns yet</h3>
             <p className="text-muted-foreground mb-4">
-              Add your first column to start organizing your workflow
+              Add your first column to start organizing your tasks
             </p>
             <Button>
               <Plus className="mr-2 h-4 w-4" />

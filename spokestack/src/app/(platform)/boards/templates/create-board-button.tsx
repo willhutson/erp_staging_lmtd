@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { createWorkflowBoard } from "@/modules/workflows/actions";
+import { createBoard } from "@/modules/boards/actions";
 
 interface CreateBoardButtonProps {
   templateId?: string;
@@ -39,7 +39,7 @@ export function CreateBoardButton({ templateId, templateName, className }: Creat
 
     setLoading(true);
     try {
-      const board = await createWorkflowBoard({
+      const board = await createBoard({
         name: name.trim(),
         description: description.trim() || undefined,
         templateId,
@@ -47,7 +47,7 @@ export function CreateBoardButton({ templateId, templateName, className }: Creat
 
       toast.success("Board created successfully!");
       setOpen(false);
-      router.push(`/workflows/${board.id}`);
+      router.push(`/boards/${board.id}`);
     } catch (error) {
       console.error("Failed to create board:", error);
       toast.error("Failed to create board. Please try again.");
@@ -71,7 +71,7 @@ export function CreateBoardButton({ templateId, templateName, className }: Creat
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create Workflow Board</DialogTitle>
+            <DialogTitle>Create Project Board</DialogTitle>
             <DialogDescription>
               Create a new board based on the {templateName} template
             </DialogDescription>

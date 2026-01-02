@@ -26,15 +26,15 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { WorkflowBoardWithRelations, WorkflowCardWithRelations } from "@/modules/workflows/types";
-import { createWorkflowBoard } from "@/modules/workflows/actions";
+import type { BoardWithRelations, BoardCardWithRelations } from "@/modules/boards/types";
+import { createBoard } from "@/modules/boards/actions";
 
-interface WorkflowsClientProps {
-  initialBoards: WorkflowBoardWithRelations[];
-  myCards: WorkflowCardWithRelations[];
+interface BoardsClientProps {
+  initialBoards: BoardWithRelations[];
+  myCards: BoardCardWithRelations[];
 }
 
-export function WorkflowsClient({ initialBoards, myCards }: WorkflowsClientProps) {
+export function BoardsClient({ initialBoards, myCards }: BoardsClientProps) {
   const router = useRouter();
   const [boards, setBoards] = useState(initialBoards);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -54,7 +54,7 @@ export function WorkflowsClient({ initialBoards, myCards }: WorkflowsClientProps
 
     startTransition(async () => {
       try {
-        const board = await createWorkflowBoard({
+        const board = await createBoard({
           name: newName.trim(),
           description: newDescription.trim() || undefined,
         });
@@ -63,7 +63,7 @@ export function WorkflowsClient({ initialBoards, myCards }: WorkflowsClientProps
         setIsCreateDialogOpen(false);
         setNewName("");
         setNewDescription("");
-        router.push(`/workflows/${board.id}`);
+        router.push(`/boards/${board.id}`);
       } catch (error) {
         console.error("Failed to create board:", error);
         toast.error("Failed to create board. Please try again.");
@@ -76,14 +76,14 @@ export function WorkflowsClient({ initialBoards, myCards }: WorkflowsClientProps
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Workflow Boards</h1>
+          <h1 className="text-2xl font-bold">Project Boards</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage your team&apos;s processes with Monday.com-style boards
+            Manage your team&apos;s tasks with Kanban-style boards
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
-            <Link href="/workflows/templates">
+            <Link href="/boards/templates">
               <LayoutTemplate className="mr-2 h-4 w-4" />
               Templates
             </Link>
@@ -99,9 +99,9 @@ export function WorkflowsClient({ initialBoards, myCards }: WorkflowsClientProps
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Create Workflow Board</DialogTitle>
+            <DialogTitle>Create Project Board</DialogTitle>
             <DialogDescription>
-              Create a new board to manage your team&apos;s workflow
+              Create a new board to manage your team&apos;s tasks
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -128,7 +128,7 @@ export function WorkflowsClient({ initialBoards, myCards }: WorkflowsClientProps
             <p className="text-xs text-muted-foreground">
               Want pre-configured columns?{" "}
               <Link
-                href="/workflows/templates"
+                href="/boards/templates"
                 className="text-primary hover:underline"
                 onClick={() => setIsCreateDialogOpen(false)}
               >
@@ -168,7 +168,7 @@ export function WorkflowsClient({ initialBoards, myCards }: WorkflowsClientProps
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              My Tasks
+              My Cards
             </CardTitle>
             <FolderKanban className="h-4 w-4 text-blue-500" />
           </CardHeader>
@@ -200,7 +200,7 @@ export function WorkflowsClient({ initialBoards, myCards }: WorkflowsClientProps
       {boards.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {boards.map((board) => (
-            <Link key={board.id} href={`/workflows/${board.id}`}>
+            <Link key={board.id} href={`/boards/${board.id}`}>
               <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -234,14 +234,14 @@ export function WorkflowsClient({ initialBoards, myCards }: WorkflowsClientProps
             <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center mb-4">
               <Kanban className="w-8 h-8 text-orange-500" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">No workflow boards yet</h3>
+            <h3 className="text-lg font-semibold mb-2">No project boards yet</h3>
             <p className="text-sm text-muted-foreground text-center max-w-md mb-6">
-              Create your first workflow board to start managing
-              your team&apos;s processes visually.
+              Create your first project board to start managing
+              your team&apos;s tasks visually.
             </p>
             <div className="flex gap-2">
               <Button variant="outline" asChild>
-                <Link href="/workflows/templates">
+                <Link href="/boards/templates">
                   Browse Templates
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -261,15 +261,15 @@ export function WorkflowsClient({ initialBoards, myCards }: WorkflowsClientProps
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FolderKanban className="h-5 w-5 text-blue-500" />
-              My Workflows
+              My Cards
             </CardTitle>
             <CardDescription>
-              View and manage workflows assigned to you
+              View and manage cards assigned to you
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild variant="outline" className="w-full">
-              <Link href="/workflows/my">View My Workflows</Link>
+              <Link href="/boards/my">View My Cards</Link>
             </Button>
           </CardContent>
         </Card>
@@ -281,12 +281,12 @@ export function WorkflowsClient({ initialBoards, myCards }: WorkflowsClientProps
               Template Library
             </CardTitle>
             <CardDescription>
-              Pre-built workflows for common agency processes
+              Pre-built boards for common agency processes
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild variant="outline" className="w-full">
-              <Link href="/workflows/templates">Browse Templates</Link>
+              <Link href="/boards/templates">Browse Templates</Link>
             </Button>
           </CardContent>
         </Card>

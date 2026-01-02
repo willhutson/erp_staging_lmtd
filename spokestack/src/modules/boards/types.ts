@@ -1,16 +1,16 @@
-// Workflow Module Types
-// Re-exports enum types and defines module-specific types
+// Boards Module Types
+// Kanban-style project boards (renamed from Workflows)
 
-import type { Priority, WorkflowMemberRole } from "@/lib/prisma-enums";
+import type { Priority, BoardMemberRole } from "@/lib/prisma-enums";
 
 // Re-export enums
-export type { Priority, WorkflowMemberRole };
+export type { Priority, BoardMemberRole };
 
 // ============================================
 // Core Models
 // ============================================
 
-export interface WorkflowBoard {
+export interface Board {
   id: string;
   organizationId: string;
   name: string;
@@ -26,7 +26,7 @@ export interface WorkflowBoard {
   updatedAt: Date;
 }
 
-export interface WorkflowColumn {
+export interface BoardColumn {
   id: string;
   boardId: string;
   name: string;
@@ -38,7 +38,7 @@ export interface WorkflowColumn {
   updatedAt: Date;
 }
 
-export interface WorkflowCard {
+export interface BoardCard {
   id: string;
   columnId: string;
   title: string;
@@ -59,15 +59,15 @@ export interface WorkflowCard {
   completedAt?: Date | null;
 }
 
-export interface WorkflowBoardMember {
+export interface BoardMember {
   id: string;
   boardId: string;
   userId: string;
-  role: WorkflowMemberRole;
+  role: BoardMemberRole;
   createdAt: Date;
 }
 
-export interface WorkflowComment {
+export interface BoardCardComment {
   id: string;
   cardId: string;
   content: string;
@@ -76,7 +76,7 @@ export interface WorkflowComment {
   updatedAt: Date;
 }
 
-export interface WorkflowAttachment {
+export interface BoardCardAttachment {
   id: string;
   cardId: string;
   name: string;
@@ -87,7 +87,7 @@ export interface WorkflowAttachment {
   createdAt: Date;
 }
 
-export interface WorkflowChecklist {
+export interface BoardCardChecklist {
   id: string;
   cardId: string;
   title: string;
@@ -96,7 +96,7 @@ export interface WorkflowChecklist {
   updatedAt: Date;
 }
 
-export interface WorkflowChecklistItem {
+export interface BoardChecklistItem {
   id: string;
   checklistId: string;
   title: string;
@@ -108,7 +108,7 @@ export interface WorkflowChecklistItem {
   updatedAt: Date;
 }
 
-export interface WorkflowTemplate {
+export interface BoardTemplate {
   id: string;
   organizationId?: string | null;
   name: string;
@@ -129,29 +129,32 @@ export interface WorkflowTemplate {
 // Relations Types
 // ============================================
 
-export interface WorkflowBoardWithRelations extends WorkflowBoard {
+export interface BoardWithRelations extends Board {
   createdBy: { id: string; name: string; avatarUrl?: string | null };
   client?: { id: string; name: string } | null;
   project?: { id: string; name: string } | null;
-  columns?: WorkflowColumnWithCards[];
-  members?: WorkflowBoardMemberWithUser[];
+  columns?: BoardColumnWithCards[];
+  members?: BoardMemberWithUser[];
   _count?: {
     columns: number;
     members: number;
   };
 }
 
-export interface WorkflowColumnWithCards extends WorkflowColumn {
-  cards: WorkflowCardWithRelations[];
+export interface BoardColumnWithCards extends BoardColumn {
+  cards: BoardCardWithRelations[];
 }
 
-export interface WorkflowCardWithRelations extends WorkflowCard {
+export interface BoardCardWithRelations extends BoardCard {
   assignee?: { id: string; name: string; avatarUrl?: string | null } | null;
   createdBy: { id: string; name: string; avatarUrl?: string | null };
   brief?: { id: string; title: string } | null;
-  comments?: WorkflowComment[];
-  attachments?: WorkflowAttachment[];
-  checklists?: WorkflowChecklistWithItems[];
+  column?: {
+    board: { id: string; name: string };
+  };
+  comments?: BoardCardComment[];
+  attachments?: BoardCardAttachment[];
+  checklists?: BoardChecklistWithItems[];
   _count?: {
     comments: number;
     attachments: number;
@@ -159,15 +162,15 @@ export interface WorkflowCardWithRelations extends WorkflowCard {
   };
 }
 
-export interface WorkflowBoardMemberWithUser extends WorkflowBoardMember {
+export interface BoardMemberWithUser extends BoardMember {
   user: { id: string; name: string; avatarUrl?: string | null };
 }
 
-export interface WorkflowChecklistWithItems extends WorkflowChecklist {
-  items: WorkflowChecklistItem[];
+export interface BoardChecklistWithItems extends BoardCardChecklist {
+  items: BoardChecklistItem[];
 }
 
-export interface WorkflowTemplateWithRelations extends WorkflowTemplate {
+export interface BoardTemplateWithRelations extends BoardTemplate {
   organization?: { id: string; name: string } | null;
   createdBy?: { id: string; name: string } | null;
 }
@@ -249,7 +252,7 @@ export interface MoveCardInput {
 export interface AddBoardMemberInput {
   boardId: string;
   userId: string;
-  role?: WorkflowMemberRole;
+  role?: BoardMemberRole;
 }
 
 export interface CreateCommentInput {
@@ -271,14 +274,14 @@ export interface CreateChecklistItemInput {
 // Filter Types
 // ============================================
 
-export interface WorkflowBoardFilters {
+export interface BoardFilters {
   clientId?: string;
   projectId?: string;
   isArchived?: boolean;
   search?: string;
 }
 
-export interface WorkflowCardFilters {
+export interface BoardCardFilters {
   assigneeId?: string;
   priority?: Priority;
   hasDeadline?: boolean;
