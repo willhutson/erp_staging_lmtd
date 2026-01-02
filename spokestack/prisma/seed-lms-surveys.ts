@@ -302,6 +302,25 @@ async function main() {
   // ============================================
   console.log("\nCreating LMS courses...");
 
+  // Clean up existing LMS modules and lessons (no compound unique constraint available)
+  // Delete lessons first (child), then modules (parent)
+  await prisma.lMSLesson.deleteMany({
+    where: {
+      module: {
+        course: {
+          organizationId: org.id,
+        },
+      },
+    },
+  });
+  await prisma.lMSModule.deleteMany({
+    where: {
+      course: {
+        organizationId: org.id,
+      },
+    },
+  });
+
   // Course 1: Brand Guidelines Training
   const brandCourse = await prisma.lMSCourse.upsert({
     where: {
@@ -334,15 +353,8 @@ async function main() {
   });
 
   // Create modules for brand course
-  const brandModule1 = await prisma.lMSModule.upsert({
-    where: {
-      courseId_sortOrder: {
-        courseId: brandCourse.id,
-        sortOrder: 1,
-      },
-    },
-    update: {},
-    create: {
+  const brandModule1 = await prisma.lMSModule.create({
+    data: {
       courseId: brandCourse.id,
       title: "Introduction to Our Brand",
       description: "Understanding what makes LMTD unique",
@@ -351,15 +363,8 @@ async function main() {
     },
   });
 
-  await prisma.lMSLesson.upsert({
-    where: {
-      moduleId_sortOrder: {
-        moduleId: brandModule1.id,
-        sortOrder: 1,
-      },
-    },
-    update: {},
-    create: {
+  await prisma.lMSLesson.create({
+    data: {
       moduleId: brandModule1.id,
       title: "Welcome to LMTD",
       description: "An introduction to our agency and values",
@@ -375,15 +380,8 @@ async function main() {
     },
   });
 
-  await prisma.lMSLesson.upsert({
-    where: {
-      moduleId_sortOrder: {
-        moduleId: brandModule1.id,
-        sortOrder: 2,
-      },
-    },
-    update: {},
-    create: {
+  await prisma.lMSLesson.create({
+    data: {
       moduleId: brandModule1.id,
       title: "Our Mission & Values",
       description: "What drives us every day",
@@ -398,15 +396,8 @@ async function main() {
     },
   });
 
-  const brandModule2 = await prisma.lMSModule.upsert({
-    where: {
-      courseId_sortOrder: {
-        courseId: brandCourse.id,
-        sortOrder: 2,
-      },
-    },
-    update: {},
-    create: {
+  const brandModule2 = await prisma.lMSModule.create({
+    data: {
       courseId: brandCourse.id,
       title: "Visual Identity",
       description: "Logo, colors, and typography",
@@ -415,15 +406,8 @@ async function main() {
     },
   });
 
-  await prisma.lMSLesson.upsert({
-    where: {
-      moduleId_sortOrder: {
-        moduleId: brandModule2.id,
-        sortOrder: 1,
-      },
-    },
-    update: {},
-    create: {
+  await prisma.lMSLesson.create({
+    data: {
       moduleId: brandModule2.id,
       title: "Logo Usage Guidelines",
       description: "Proper use of the LMTD logo",
@@ -439,15 +423,8 @@ async function main() {
     },
   });
 
-  await prisma.lMSLesson.upsert({
-    where: {
-      moduleId_sortOrder: {
-        moduleId: brandModule2.id,
-        sortOrder: 2,
-      },
-    },
-    update: {},
-    create: {
+  await prisma.lMSLesson.create({
+    data: {
       moduleId: brandModule2.id,
       title: "Color Palette & Typography",
       description: "Our color system and font choices",
@@ -495,15 +472,8 @@ async function main() {
     },
   });
 
-  const socialModule1 = await prisma.lMSModule.upsert({
-    where: {
-      courseId_sortOrder: {
-        courseId: socialCourse.id,
-        sortOrder: 1,
-      },
-    },
-    update: {},
-    create: {
+  const socialModule1 = await prisma.lMSModule.create({
+    data: {
       courseId: socialCourse.id,
       title: "Platform Fundamentals",
       description: "Understanding each social platform",
@@ -512,15 +482,8 @@ async function main() {
     },
   });
 
-  await prisma.lMSLesson.upsert({
-    where: {
-      moduleId_sortOrder: {
-        moduleId: socialModule1.id,
-        sortOrder: 1,
-      },
-    },
-    update: {},
-    create: {
+  await prisma.lMSLesson.create({
+    data: {
       moduleId: socialModule1.id,
       title: "Instagram Strategy",
       description: "Mastering visual storytelling on Instagram",
@@ -536,15 +499,8 @@ async function main() {
     },
   });
 
-  await prisma.lMSLesson.upsert({
-    where: {
-      moduleId_sortOrder: {
-        moduleId: socialModule1.id,
-        sortOrder: 2,
-      },
-    },
-    update: {},
-    create: {
+  await prisma.lMSLesson.create({
+    data: {
       moduleId: socialModule1.id,
       title: "LinkedIn for B2B",
       description: "Leveraging LinkedIn for professional content",
@@ -560,15 +516,8 @@ async function main() {
     },
   });
 
-  await prisma.lMSLesson.upsert({
-    where: {
-      moduleId_sortOrder: {
-        moduleId: socialModule1.id,
-        sortOrder: 3,
-      },
-    },
-    update: {},
-    create: {
+  await prisma.lMSLesson.create({
+    data: {
       moduleId: socialModule1.id,
       title: "TikTok & Short-Form Video",
       description: "Creating viral short-form content",
@@ -584,15 +533,8 @@ async function main() {
     },
   });
 
-  const socialModule2 = await prisma.lMSModule.upsert({
-    where: {
-      courseId_sortOrder: {
-        courseId: socialCourse.id,
-        sortOrder: 2,
-      },
-    },
-    update: {},
-    create: {
+  const socialModule2 = await prisma.lMSModule.create({
+    data: {
       courseId: socialCourse.id,
       title: "Content Creation",
       description: "Creating engaging content",
@@ -601,15 +543,8 @@ async function main() {
     },
   });
 
-  await prisma.lMSLesson.upsert({
-    where: {
-      moduleId_sortOrder: {
-        moduleId: socialModule2.id,
-        sortOrder: 1,
-      },
-    },
-    update: {},
-    create: {
+  await prisma.lMSLesson.create({
+    data: {
       moduleId: socialModule2.id,
       title: "Writing Engaging Captions",
       description: "The art of social media copywriting",
@@ -655,15 +590,8 @@ async function main() {
     },
   });
 
-  const clientCommModule1 = await prisma.lMSModule.upsert({
-    where: {
-      courseId_sortOrder: {
-        courseId: clientCommCourse.id,
-        sortOrder: 1,
-      },
-    },
-    update: {},
-    create: {
+  const clientCommModule1 = await prisma.lMSModule.create({
+    data: {
       courseId: clientCommCourse.id,
       title: "Communication Fundamentals",
       description: "Core principles of client communication",
@@ -672,15 +600,8 @@ async function main() {
     },
   });
 
-  await prisma.lMSLesson.upsert({
-    where: {
-      moduleId_sortOrder: {
-        moduleId: clientCommModule1.id,
-        sortOrder: 1,
-      },
-    },
-    update: {},
-    create: {
+  await prisma.lMSLesson.create({
+    data: {
       moduleId: clientCommModule1.id,
       title: "Setting Expectations",
       description: "How to set and manage client expectations",
@@ -714,7 +635,7 @@ async function main() {
     create: {
       organizationId: org.id,
       templateId: clientSatTemplate.id,
-      name: "Q4 2024 Client Feedback",
+      title: "Q4 2024 Client Feedback",
       slug: "q4-2024-client-feedback",
       status: "ACTIVE",
       channels: ["WEB_LINK", "EMAIL"],
