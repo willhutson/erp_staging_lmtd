@@ -629,7 +629,7 @@ export async function updateLessonProgress(input: {
       isCompleted: input.isCompleted,
       completedAt: input.isCompleted ? new Date() : null,
       timeSpent: input.timeSpent || 0,
-      progressData: input.progressData || {},
+      progressData: (input.progressData || {}) as object,
       lastAccessedAt: new Date(),
     },
     update: {
