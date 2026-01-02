@@ -118,9 +118,9 @@ export async function getTemplate(id: string) {
 
   return {
     ...template,
-    schema: template.currentVersion?.schema as SurveyQuestion[] | undefined,
-    design: template.currentVersion?.design as SurveyDesign | undefined,
-    settings: template.settings as SurveySettings,
+    schema: template.currentVersion?.schema as unknown as SurveyQuestion[] | undefined,
+    design: template.currentVersion?.design as unknown as SurveyDesign | undefined,
+    settings: template.settings as unknown as SurveySettings,
     tags: template.tags.map((tt) => tt.tag),
   };
 }
