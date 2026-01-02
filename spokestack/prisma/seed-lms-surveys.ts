@@ -635,7 +635,7 @@ async function main() {
     create: {
       organizationId: org.id,
       templateId: clientSatTemplate.id,
-      name: "Q4 2024 Client Feedback",
+      title: "Q4 2024 Client Feedback",
       slug: "q4-2024-client-feedback",
       status: "ACTIVE",
       channels: ["WEB_LINK", "EMAIL"],
