@@ -7376,7 +7376,7 @@ enum QuestionKind {
   ADDRESS             // Full address block
 }
 
-enum SurveyStatus {
+enum FormSurveyStatus {
   DRAFT           // Being edited
   SCHEDULED       // Ready to go live at scheduled time
   ACTIVE          // Accepting responses
@@ -7547,8 +7547,8 @@ model Survey {
   accessCode      String?  // Optional password
   
   // Status
-  status          SurveyStatus @default(DRAFT)
-  
+  status          FormSurveyStatus @default(DRAFT)
+
   // Scheduling
   startsAt        DateTime?
   endsAt          DateTime?

@@ -7,7 +7,7 @@ import type {
   TemplateKind,
   TemplateCategory,
   SurveyChannel,
-  SurveyStatus,
+  FormSurveyStatus,
 } from "@prisma/client";
 import type {
   TemplateListItem,
@@ -20,6 +20,7 @@ import type {
   DEFAULT_SURVEY_DESIGN,
   CreateTemplateInput,
   CreateSurveyInput,
+  SurveyStatus,
 } from "./types";
 
 // ============================================

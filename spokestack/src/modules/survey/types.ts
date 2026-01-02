@@ -6,7 +6,7 @@ import type {
   TemplateCategory,
   SurveyChannel,
   QuestionKind,
-  SurveyStatus,
+  FormSurveyStatus,
   SubmissionStatus,
 } from "@prisma/client";
 
@@ -16,9 +16,12 @@ export type {
   TemplateCategory,
   SurveyChannel,
   QuestionKind,
-  SurveyStatus,
+  FormSurveyStatus,
   SubmissionStatus,
 };
+
+// Alias for convenience in this module
+export type SurveyStatus = FormSurveyStatus;
 
 // ============================================
 // TEMPLATE SETTINGS
