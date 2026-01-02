@@ -48,7 +48,6 @@ async function main() {
       description: "Measure client satisfaction after project completion",
       kind: "SURVEY",
       category: "CLIENT_SATISFACTION",
-      source: "CUSTOM",
       isPublished: true,
       publishedAt: new Date(),
       settings: {
@@ -148,7 +147,6 @@ async function main() {
       description: "Quarterly employee engagement and satisfaction check",
       kind: "SURVEY",
       category: "EMPLOYEE_ENGAGEMENT",
-      source: "CUSTOM",
       isPublished: true,
       publishedAt: new Date(),
       settings: {
@@ -247,7 +245,6 @@ async function main() {
       description: "Quick poll to find the best meeting time",
       kind: "POLL",
       category: "INTERNAL_PROCESS",
-      source: "CUSTOM",
       isPublished: true,
       publishedAt: new Date(),
       settings: {
