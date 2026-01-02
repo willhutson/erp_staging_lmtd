@@ -3,6 +3,7 @@
 import { getStudioUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { BuilderWidgetType as PrismaBuilderWidgetType } from "@prisma/client";
 import type {
   BuilderDashboardWithRelations,
   BuilderDashboardTemplateWithRelations,
@@ -286,7 +287,7 @@ export async function createWidget(input: CreateWidgetInput): Promise<BuilderWid
     data: {
       dashboardId: input.dashboardId,
       name: input.name,
-      type: input.type,
+      type: input.type as PrismaBuilderWidgetType,
       chartType: input.chartType,
       size: input.size ?? "medium",
       position: input.position as object | undefined,
@@ -330,7 +331,7 @@ export async function updateWidget(
     where: { id: widgetId },
     data: {
       name: input.name,
-      type: input.type,
+      type: input.type as PrismaBuilderWidgetType | undefined,
       chartType: input.chartType,
       size: input.size,
       position: input.position as object | undefined,
