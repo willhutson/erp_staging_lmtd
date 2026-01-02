@@ -32,7 +32,7 @@ export type ScriptStatus = "DRAFT" | "IN_REVIEW" | "APPROVED" | "REVISION_REQUES
 
 export type ShotStatus = "PLANNED" | "READY" | "SHOT" | "UNUSABLE";
 
-export type DeckType = "PITCH" | "PROPOSAL" | "REPORT" | "CREDENTIALS" | "CASE_STUDY" | "STRATEGY" | "INTERNAL" | "WORKSHOP" | "OTHER";
+export type DeckType = "PITCH" | "PROPOSAL" | "REPORT" | "CASE_STUDY" | "CREDENTIALS" | "WORKSHOP" | "INTERNAL";
 
 export type DeckStatus = "DRAFT" | "IN_REVIEW" | "APPROVED" | "PRESENTED" | "WON" | "LOST" | "ARCHIVED";
 
