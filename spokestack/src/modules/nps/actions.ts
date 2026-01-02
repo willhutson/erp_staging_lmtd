@@ -36,7 +36,6 @@ export async function getNPSSurveys(filters?: NPSSurveyFilters): Promise<NPSSurv
       client: { select: { id: true, name: true, code: true } },
       sentTo: { select: { id: true, name: true, email: true } },
       responses: true,
-      createdBy: { select: { id: true, name: true, avatarUrl: true } },
     },
     orderBy: [{ year: "desc" }, { quarter: "desc" }],
   });
@@ -56,7 +55,6 @@ export async function getNPSSurvey(id: string): Promise<NPSSurveyWithRelations |
       client: { select: { id: true, name: true, code: true } },
       sentTo: { select: { id: true, name: true, email: true } },
       responses: true,
-      createdBy: { select: { id: true, name: true, avatarUrl: true } },
     },
   });
 
@@ -98,7 +96,6 @@ export async function createNPSSurvey(input: CreateNPSSurveyInput): Promise<NPSS
       client: { select: { id: true, name: true, code: true } },
       sentTo: { select: { id: true, name: true, email: true } },
       responses: true,
-      createdBy: { select: { id: true, name: true, avatarUrl: true } },
     },
   });
 

@@ -7,7 +7,6 @@ export type NPSSurveyWithRelations = NPSSurvey & {
   client: { id: string; name: string; code: string };
   sentTo: { id: string; name: string; email: string | null } | null;
   responses: NPSResponse[];
-  createdBy: { id: string; name: string | null; avatarUrl: string | null };
   _count?: { responses: number };
 };
 
