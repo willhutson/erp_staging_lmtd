@@ -6,6 +6,7 @@
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import {
   getAuthContext,
   requireTeamLead,
@@ -116,7 +117,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const updateData = {
       ...data,
-      formData: data.formData as Record<string, unknown> | undefined,
+      formData: data.formData as Prisma.InputJsonValue | undefined,
       updatedAt: new Date(),
     };
 
