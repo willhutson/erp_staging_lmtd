@@ -81,8 +81,10 @@ model Organization {
   moodboards            Moodboard[]
 
   // Workflow module
-  workflowBoards        WorkflowBoard[]
-  workflowTemplates     WorkflowTemplate[]
+  boards                Board[]
+  boardTemplates        BoardTemplate[]
+  workflowDefinitions   WorkflowDefinition[]
+  workflowRuns          WorkflowRun[]
 
   // Dashboard Builder module
   builderDashboards           BuilderDashboard[]
@@ -252,14 +254,21 @@ model User {
   moodboardOutputs              MoodboardOutput[]
 
   // Workflow module
-  workflowBoardsCreated         WorkflowBoard[]        @relation("WorkflowBoardCreator")
-  workflowCardsAssigned         WorkflowCard[]         @relation("WorkflowCardAssignee")
-  workflowCardsCreated          WorkflowCard[]         @relation("WorkflowCardCreator")
-  workflowBoardMemberships      WorkflowBoardMember[]
-  workflowComments              WorkflowComment[]
-  workflowAttachments           WorkflowAttachment[]
-  workflowChecklistCompletions  WorkflowChecklistItem[]
-  workflowTemplatesCreated      WorkflowTemplate[]
+  // Board module relations
+  boardsCreated                 Board[]                @relation("BoardCreator")
+  boardCardsAssigned            BoardCard[]            @relation("BoardCardAssignee")
+  boardCardsCreated             BoardCard[]            @relation("BoardCardCreator")
+  boardMemberships              BoardMember[]
+  boardCardComments             BoardCardComment[]
+  boardCardAttachments          BoardCardAttachment[]
+  boardChecklistCompletions     BoardChecklistItem[]
+  boardTemplatesCreated         BoardTemplate[]
+
+  // Workflow Builder module relations
+  workflowDefinitionsCreated    WorkflowDefinition[]   @relation("WorkflowDefinitionCreator")
+  workflowRunsStarted           WorkflowRun[]          @relation("WorkflowRunStarter")
+  workflowTasksAssigned         WorkflowTask[]         @relation("WorkflowTaskAssignee")
+  workflowHistory               WorkflowHistory[]
 
   // Dashboard Builder module
   builderDashboardsCreated      BuilderDashboard[]           @relation("DashboardCreator")
@@ -377,8 +386,8 @@ model Client {
   pitchDecks            PitchDeck[]
   moodboards            Moodboard[]
 
-  // Workflow module
-  workflowBoards        WorkflowBoard[]
+  // Board module
+  boards                Board[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
@@ -556,8 +565,8 @@ model Project {
   pitchDecks            PitchDeck[]
   moodboards            Moodboard[]
 
-  // Workflow module
-  workflowBoards        WorkflowBoard[]
+  // Board module
+  boards                Board[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -640,8 +649,8 @@ model Brief {
   videoProjects         VideoProject[]
   moodboards            Moodboard[]
 
-  // Workflow module
-  workflowCards         WorkflowCard[]
+  // Board module
+  boardCards            BoardCard[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -6615,10 +6624,10 @@ enum IndexStatus {
 }
 
 // ============================================
-// Workflow Module
+// Boards Module (Kanban/Project Boards)
 // ============================================
 
-model WorkflowBoard {
+model Board {
   id              String   @id @default(cuid())
   organizationId  String
 
@@ -6642,11 +6651,11 @@ model WorkflowBoard {
 
   // Relations
   organization    Organization @relation(fields: [organizationId], references: [id])
-  createdBy       User         @relation("WorkflowBoardCreator", fields: [createdById], references: [id])
+  createdBy       User         @relation("BoardCreator", fields: [createdById], references: [id])
   client          Client?      @relation(fields: [clientId], references: [id])
   project         Project?     @relation(fields: [projectId], references: [id])
-  columns         WorkflowColumn[]
-  members         WorkflowBoardMember[]
+  columns         BoardColumn[]
+  members         BoardMember[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -6654,7 +6663,7 @@ model WorkflowBoard {
   @@map("workflow_boards")
 }
 
-model WorkflowColumn {
+model BoardColumn {
   id              String   @id @default(cuid())
   boardId         String
 
@@ -6670,14 +6679,14 @@ model WorkflowColumn {
   updatedAt       DateTime @updatedAt
 
   // Relations
-  board           WorkflowBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  cards           WorkflowCard[]
+  board           Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards           BoardCard[]
 
   @@index([boardId])
   @@map("workflow_columns")
 }
 
-model WorkflowCard {
+model BoardCard {
   id              String   @id @default(cuid())
   columnId        String
 
@@ -6707,13 +6716,13 @@ model WorkflowCard {
   completedAt     DateTime?
 
   // Relations
-  column          WorkflowColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
-  assignee        User?          @relation("WorkflowCardAssignee", fields: [assigneeId], references: [id])
-  createdBy       User           @relation("WorkflowCardCreator", fields: [createdById], references: [id])
-  brief           Brief?         @relation(fields: [briefId], references: [id])
-  comments        WorkflowComment[]
-  attachments     WorkflowAttachment[]
-  checklists      WorkflowChecklist[]
+  column          BoardColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  assignee        User?       @relation("BoardCardAssignee", fields: [assigneeId], references: [id])
+  createdBy       User        @relation("BoardCardCreator", fields: [createdById], references: [id])
+  brief           Brief?      @relation(fields: [briefId], references: [id])
+  comments        BoardCardComment[]
+  attachments     BoardCardAttachment[]
+  checklists      BoardCardChecklist[]
 
   @@index([columnId])
   @@index([assigneeId])
@@ -6721,18 +6730,18 @@ model WorkflowCard {
   @@map("workflow_cards")
 }
 
-model WorkflowBoardMember {
+model BoardMember {
   id              String   @id @default(cuid())
   boardId         String
   userId          String
 
-  role            WorkflowMemberRole @default(MEMBER)
+  role            BoardMemberRole @default(MEMBER)
 
   createdAt       DateTime @default(now())
 
   // Relations
-  board           WorkflowBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  user            User          @relation(fields: [userId], references: [id])
+  board           Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user            User  @relation(fields: [userId], references: [id])
 
   @@unique([boardId, userId])
   @@index([boardId])
@@ -6740,7 +6749,7 @@ model WorkflowBoardMember {
   @@map("workflow_board_members")
 }
 
-model WorkflowComment {
+model BoardCardComment {
   id              String   @id @default(cuid())
   cardId          String
 
@@ -6751,14 +6760,14 @@ model WorkflowComment {
   updatedAt       DateTime @updatedAt
 
   // Relations
-  card            WorkflowCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  createdBy       User         @relation(fields: [createdById], references: [id])
+  card            BoardCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  createdBy       User      @relation(fields: [createdById], references: [id])
 
   @@index([cardId])
   @@map("workflow_comments")
 }
 
-model WorkflowAttachment {
+model BoardCardAttachment {
   id              String   @id @default(cuid())
   cardId          String
 
@@ -6771,14 +6780,14 @@ model WorkflowAttachment {
   createdAt       DateTime @default(now())
 
   // Relations
-  card            WorkflowCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  createdBy       User         @relation(fields: [createdById], references: [id])
+  card            BoardCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  createdBy       User      @relation(fields: [createdById], references: [id])
 
   @@index([cardId])
   @@map("workflow_attachments")
 }
 
-model WorkflowChecklist {
+model BoardCardChecklist {
   id              String   @id @default(cuid())
   cardId          String
 
@@ -6789,14 +6798,14 @@ model WorkflowChecklist {
   updatedAt       DateTime @updatedAt
 
   // Relations
-  card            WorkflowCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  items           WorkflowChecklistItem[]
+  card            BoardCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  items           BoardChecklistItem[]
 
   @@index([cardId])
   @@map("workflow_checklists")
 }
 
-model WorkflowChecklistItem {
+model BoardChecklistItem {
   id              String   @id @default(cuid())
   checklistId     String
 
@@ -6811,14 +6820,14 @@ model WorkflowChecklistItem {
   updatedAt       DateTime @updatedAt
 
   // Relations
-  checklist       WorkflowChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
-  completedBy     User?             @relation(fields: [completedById], references: [id])
+  checklist       BoardCardChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  completedBy     User?              @relation(fields: [completedById], references: [id])
 
   @@index([checklistId])
   @@map("workflow_checklist_items")
 }
 
-model WorkflowTemplate {
+model BoardTemplate {
   id              String   @id @default(cuid())
   organizationId  String?  // null = global template
 
@@ -6848,9 +6857,264 @@ model WorkflowTemplate {
   @@map("workflow_templates")
 }
 
-enum WorkflowMemberRole {
+enum BoardMemberRole {
   OWNER
   ADMIN
   MEMBER
   VIEWER
+}
+
+// ============================================
+// Workflow Builder Module (Process Automation)
+// ============================================
+
+// Workflow Definition - The template/blueprint for a workflow
+model WorkflowDefinition {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String
+  description     String?  @db.Text
+  icon            String?
+  color           String?
+  category        String?  // Approval, Onboarding, Creative, Finance, etc.
+
+  // Trigger configuration
+  triggerType     WorkflowTriggerType @default(MANUAL)
+  triggerEntity   String?  // Brief, RFP, Deal, etc.
+  triggerConfig   Json?    // Trigger conditions
+
+  // Settings
+  isActive        Boolean  @default(true)
+  isTemplate      Boolean  @default(false) // Can be used as starting point
+  version         Int      @default(1)
+
+  // SLA defaults
+  defaultSlaHours Int?
+
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdBy       User         @relation("WorkflowDefinitionCreator", fields: [createdById], references: [id])
+  steps           WorkflowStep[]
+  runs            WorkflowRun[]
+
+  @@index([organizationId])
+  @@index([triggerType])
+  @@index([isActive])
+  @@map("workflow_definitions")
+}
+
+// Workflow Step - A step within a workflow definition
+model WorkflowStep {
+  id              String   @id @default(cuid())
+  definitionId    String
+
+  name            String
+  description     String?  @db.Text
+  stepType        WorkflowStepType @default(TASK)
+  position        Int      @default(0)
+
+  // Assignment rules
+  assigneeType    WorkflowAssigneeType @default(SPECIFIC_USER)
+  assigneeId      String?  // User ID if SPECIFIC_USER
+  assigneeRole    String?  // Role name if BY_ROLE
+  assigneeField   String?  // Field path if FROM_TRIGGER (e.g., "client.accountManager")
+
+  // Form configuration (for FORM_INPUT type)
+  formConfig      Json?    // Fields to collect at this step
+
+  // Conditions for branching
+  conditions      Json?    // Conditions to evaluate for CONDITION type
+
+  // Actions to perform
+  actions         Json?    // Actions: notify, update field, call webhook, etc.
+
+  // SLA
+  slaHours        Int?     // Override definition default
+
+  // For parallel steps
+  parallelGroup   String?  // Steps with same group run in parallel
+
+  // Next step configuration
+  nextStepId      String?  // Default next step
+  onRejectStepId  String?  // Step to go to on rejection
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  definition      WorkflowDefinition @relation(fields: [definitionId], references: [id], onDelete: Cascade)
+  tasks           WorkflowTask[]
+
+  @@index([definitionId])
+  @@index([position])
+  @@map("workflow_steps")
+}
+
+// Workflow Run - An instance of a running workflow
+model WorkflowRun {
+  id              String   @id @default(cuid())
+  organizationId  String
+  definitionId    String
+
+  // Status
+  status          WorkflowRunStatus @default(PENDING)
+  currentStepId   String?
+
+  // Trigger context
+  triggerEntityType String?  // Brief, RFP, Deal, etc.
+  triggerEntityId   String?  // ID of the triggering entity
+
+  // Collected data from form steps
+  formData        Json?
+
+  // Timing
+  startedAt       DateTime?
+  completedAt     DateTime?
+  dueDate         DateTime?
+
+  // Who started it
+  startedById     String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization       @relation(fields: [organizationId], references: [id])
+  definition      WorkflowDefinition @relation(fields: [definitionId], references: [id])
+  startedBy       User?              @relation("WorkflowRunStarter", fields: [startedById], references: [id])
+  tasks           WorkflowTask[]
+  history         WorkflowHistory[]
+
+  @@index([organizationId])
+  @@index([definitionId])
+  @@index([status])
+  @@index([triggerEntityType, triggerEntityId])
+  @@map("workflow_runs")
+}
+
+// Workflow Task - An individual task within a workflow run
+model WorkflowTask {
+  id              String   @id @default(cuid())
+  runId           String
+  stepId          String
+
+  // Status
+  status          WorkflowTaskStatus @default(PENDING)
+
+  // Assignment
+  assigneeId      String?
+
+  // Task data
+  formData        Json?    // Data submitted for this task
+  comments        String?  @db.Text
+
+  // Decision
+  decision        WorkflowDecision?
+  decisionNote    String?  @db.Text
+
+  // Timing
+  dueDate         DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  run             WorkflowRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
+  step            WorkflowStep @relation(fields: [stepId], references: [id])
+  assignee        User?        @relation("WorkflowTaskAssignee", fields: [assigneeId], references: [id])
+
+  @@index([runId])
+  @@index([stepId])
+  @@index([assigneeId])
+  @@index([status])
+  @@map("workflow_tasks")
+}
+
+// Workflow History - Audit log for workflow runs
+model WorkflowHistory {
+  id              String   @id @default(cuid())
+  runId           String
+
+  action          String   // STARTED, STEP_COMPLETED, APPROVED, REJECTED, ESCALATED, etc.
+  stepId          String?
+  taskId          String?
+
+  // Who performed the action
+  performedById   String?
+  performedAt     DateTime @default(now())
+
+  // Additional context
+  details         Json?
+  previousStatus  String?
+  newStatus       String?
+
+  // Relations
+  run             WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  performedBy     User?       @relation(fields: [performedById], references: [id])
+
+  @@index([runId])
+  @@index([performedAt])
+  @@map("workflow_history")
+}
+
+// Enums for Workflow Builder
+enum WorkflowTriggerType {
+  MANUAL           // Started manually
+  ENTITY_CREATED   // When entity is created
+  ENTITY_UPDATED   // When entity field changes
+  SCHEDULED        // Cron-based
+  WEBHOOK          // External trigger
+  FORM_SUBMITTED   // Form submission
+}
+
+enum WorkflowStepType {
+  TASK             // Simple task to complete
+  APPROVAL         // Requires approve/reject decision
+  FORM_INPUT       // Collect additional data
+  CONDITION        // Branching logic
+  NOTIFICATION     // Send notification only
+  WEBHOOK          // Call external system
+  DELAY            // Wait for duration
+  PARALLEL_START   // Begin parallel execution
+  PARALLEL_END     // Wait for all parallel tasks
+}
+
+enum WorkflowAssigneeType {
+  SPECIFIC_USER    // Assigned to specific user
+  BY_ROLE          // Assigned to users with role
+  BY_DEPARTMENT    // Assigned to department
+  FROM_TRIGGER     // Dynamic from trigger entity field
+  ROUND_ROBIN      // Distribute among group
+  PREVIOUS_ACTOR   // Person who completed previous step
+}
+
+enum WorkflowRunStatus {
+  PENDING          // Not yet started
+  IN_PROGRESS      // Currently running
+  PAUSED           // Temporarily paused
+  COMPLETED        // Successfully completed
+  CANCELLED        // Cancelled by user
+  FAILED           // Failed due to error
+}
+
+enum WorkflowTaskStatus {
+  PENDING          // Waiting to be worked on
+  IN_PROGRESS      // Currently being worked on
+  COMPLETED        // Task completed successfully
+  SKIPPED          // Skipped due to conditions
+  ESCALATED        // Escalated to another user
+}
+
+enum WorkflowDecision {
+  APPROVED
+  REJECTED
+  NEEDS_REVISION
+  DELEGATED
 }

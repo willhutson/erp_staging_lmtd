@@ -1,6 +1,6 @@
 import { AlertTriangle } from "lucide-react";
-import { getWorkflowBoards, getMyWorkflowCards } from "@/modules/workflows/actions";
-import { WorkflowsClient } from "./workflows-client";
+import { getWorkflowDefinitions, getMyWorkflowTasks } from "@/modules/workflow-builder/actions";
+import { WorkflowBuilderClient } from "./workflow-builder-client";
 
 export const dynamic = "force-dynamic";
 
@@ -22,12 +22,12 @@ function WorkflowsError({ message }: { message: string }) {
 
 export default async function WorkflowsPage() {
   try {
-    const [boards, myCards] = await Promise.all([
-      getWorkflowBoards(),
-      getMyWorkflowCards(),
+    const [definitions, myTasks] = await Promise.all([
+      getWorkflowDefinitions(),
+      getMyWorkflowTasks(),
     ]);
 
-    return <WorkflowsClient initialBoards={boards} myCards={myCards} />;
+    return <WorkflowBuilderClient definitions={definitions} myTasks={myTasks} />;
   } catch (error) {
     console.error("Workflows page error:", error);
     const message = error instanceof Error ? error.message : "An unexpected error occurred";
