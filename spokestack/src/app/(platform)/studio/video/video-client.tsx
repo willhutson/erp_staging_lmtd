@@ -78,7 +78,7 @@ export function VideoClient({ initialProjects, clients, directors }: VideoClient
       resetCreateForm();
 
       // Navigate to project editor
-      router.push(`/video/${newProject.id}`);
+      router.push(`/studio/video/${newProject.id}`);
     } catch (error) {
       console.error("Failed to create project:", error);
     } finally {
@@ -87,7 +87,7 @@ export function VideoClient({ initialProjects, clients, directors }: VideoClient
   };
 
   const handleProjectClick = (project: VideoProjectWithRelations) => {
-    router.push(`/video/${project.id}`);
+    router.push(`/studio/video/${project.id}`);
   };
 
   const handleDeleteClick = async (project: VideoProjectWithRelations) => {
