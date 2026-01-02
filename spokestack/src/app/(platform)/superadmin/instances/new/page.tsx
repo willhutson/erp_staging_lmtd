@@ -51,6 +51,10 @@ import {
   Calendar,
   Kanban,
   LayoutTemplate,
+  ClipboardList,
+  GraduationCap,
+  BookOpen,
+  Award,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -111,6 +115,24 @@ const MODULE_BUNDLES = [
     modules: ["workflows-boards", "workflows-my", "workflows-templates"],
     color: "bg-orange-500",
     icon: GitBranch,
+  },
+  {
+    id: "forms",
+    label: "Forms",
+    tagline: "Surveys & Polls",
+    description: "Create surveys, polls, quizzes with AI-powered form builder and NPS tracking",
+    modules: ["forms", "forms-templates", "forms-builder", "forms-nps"],
+    color: "bg-rose-500",
+    icon: ClipboardList,
+  },
+  {
+    id: "learning",
+    label: "Learning",
+    tagline: "Team Development",
+    description: "LMS for team training, AI-powered course builder, and certifications",
+    modules: ["lms", "lms-courses", "lms-builder", "lms-my-learning", "lms-certificates"],
+    color: "bg-teal-500",
+    icon: GraduationCap,
   },
 ];
 
@@ -179,6 +201,25 @@ const MODULE_CATEGORIES = [
       { id: "workflows-boards", label: "Boards", description: "Monday.com-style workflow boards", icon: Kanban },
       { id: "workflows-my", label: "My Workflows", description: "Personal workflow assignments and tasks", icon: FolderKanban },
       { id: "workflows-templates", label: "Templates", description: "Pre-built workflow templates for common processes", icon: LayoutTemplate },
+    ],
+  },
+  {
+    category: "Forms",
+    modules: [
+      { id: "forms", label: "All Forms", description: "Manage surveys, polls, and quizzes", icon: ClipboardList },
+      { id: "forms-templates", label: "Templates", description: "Reusable form templates", icon: LayoutTemplate },
+      { id: "forms-builder", label: "Form Builder", description: "AI-powered form creation and question generation", icon: Sparkles },
+      { id: "forms-nps", label: "NPS", description: "Net Promoter Score surveys and analytics", icon: BarChart3 },
+    ],
+  },
+  {
+    category: "Learning",
+    modules: [
+      { id: "lms", label: "Learning Center", description: "Training dashboard with enrollments", icon: GraduationCap },
+      { id: "lms-courses", label: "Courses", description: "Browse and manage all courses", icon: BookOpen },
+      { id: "lms-builder", label: "Course Builder", description: "AI-powered curriculum and quiz generation", icon: Sparkles },
+      { id: "lms-my-learning", label: "My Learning", description: "Personal course enrollments and progress", icon: FolderKanban },
+      { id: "lms-certificates", label: "Certificates", description: "Earned credentials and certifications", icon: Award },
     ],
   },
 ];

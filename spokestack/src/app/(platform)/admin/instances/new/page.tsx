@@ -27,6 +27,10 @@ const AVAILABLE_MODULES = [
   { id: "builder", label: "Dashboard Builder", description: "Custom dashboard creation" },
   { id: "briefs", label: "Briefs", description: "Project briefs and workflows" },
   { id: "time", label: "Time Tracking", description: "Time logs and timesheets" },
+  { id: "forms", label: "Forms", description: "Surveys, polls, quizzes, and NPS" },
+  { id: "forms-builder", label: "Form Builder", description: "AI-powered form creation" },
+  { id: "lms", label: "Learning Center", description: "Courses and training" },
+  { id: "lms-builder", label: "Course Builder", description: "AI-powered curriculum creation" },
 ];
 
 // Force dynamic rendering - uses cookies for auth
