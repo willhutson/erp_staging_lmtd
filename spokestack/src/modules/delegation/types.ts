@@ -31,7 +31,11 @@ export type DelegationActivityType =
 /**
  * Authority level for the delegate
  */
-export type DelegationAuthority = "full" | "execute_only" | "monitor_only";
+export type DelegationAuthority =
+  | "full"           // Full decision-making power
+  | "execute_only"   // Handle day-to-day, escalate decisions
+  | "keep_in_loop"   // Act independently but CC delegator on everything
+  | "monitor_only";  // Read-only visibility
 
 /**
  * Conditions that trigger escalation to manager
@@ -52,6 +56,9 @@ export interface DelegationScope {
 
   /** Which brief types are delegated - 'all' or specific types */
   briefTypes: "all" | string[];
+
+  /** Whether delegate can handle client-facing communications */
+  clientFacing: boolean;
 
   /** Value threshold - escalate if project value exceeds this */
   valueThreshold?: number;

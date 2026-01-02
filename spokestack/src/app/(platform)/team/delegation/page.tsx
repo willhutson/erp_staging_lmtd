@@ -22,7 +22,8 @@ import {
   getOrganizationDelegationOverview,
   getAllActiveDelegations,
 } from "@/modules/delegation/actions";
-import { format, formatDistanceToNow } from "date-fns";
+import { CreateProfileDialog } from "@/modules/delegation/components/create-profile-dialog";
+import { format } from "date-fns";
 
 export const dynamic = "force-dynamic";
 
@@ -194,8 +195,13 @@ export default async function DelegationPage() {
                     <Badge variant="outline">
                       Brief Types: {(profile.scope as { briefTypes: string | string[] }).briefTypes === "all" ? "All" : "Selected"}
                     </Badge>
+                    {(profile.scope as { clientFacing?: boolean }).clientFacing && (
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        Client Facing
+                      </Badge>
+                    )}
                     <Badge variant="secondary">
-                      {(profile.scope as { authority: string }).authority.replace("_", " ")}
+                      {(profile.scope as { authority: string }).authority.replace(/_/g, " ")}
                     </Badge>
                   </div>
                 </div>
@@ -211,9 +217,9 @@ export default async function DelegationPage() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Set up your delegation profile to ensure coverage when you're away
                 </p>
-                <Button disabled>
-                  Create Profile (Coming Soon)
-                </Button>
+                <CreateProfileDialog potentialDelegates={potentialDelegates}>
+                  <Button>Create Profile</Button>
+                </CreateProfileDialog>
               </div>
             )}
           </CardContent>

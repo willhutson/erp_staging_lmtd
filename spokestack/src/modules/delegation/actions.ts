@@ -195,6 +195,7 @@ export async function getDefaultScope(): Promise<DelegationScope> {
   return {
     clients: "all",
     briefTypes: "all",
+    clientFacing: true,
     authority: "execute_only",
   };
 }
