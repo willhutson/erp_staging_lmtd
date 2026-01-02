@@ -13,8 +13,9 @@ import {
   Calendar,
   Building2,
   AlertTriangle,
-  Plus,
 } from "lucide-react";
+import { CreateBoardButton } from "./create-board-button";
+import { getWorkflowTemplates } from "@/modules/workflows/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -32,14 +33,25 @@ function PageError({ message }: { message: string }) {
   );
 }
 
-// Pre-built workflow templates
-const WORKFLOW_TEMPLATES = [
+// Icon mapping for templates
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  FileText,
+  Building2,
+  Megaphone,
+  Target,
+  Calendar,
+  Users,
+  LayoutTemplate,
+};
+
+// Pre-built workflow templates (fallback if no DB templates)
+const DEFAULT_TEMPLATES = [
   {
     id: "brief-approval",
     name: "Brief Approval",
     description: "Standard workflow for getting briefs reviewed and approved",
     category: "Agency",
-    icon: FileText,
+    icon: "FileText",
     color: "text-blue-500",
     bgColor: "bg-blue-100 dark:bg-blue-900/20",
     steps: 4,
@@ -50,7 +62,7 @@ const WORKFLOW_TEMPLATES = [
     name: "Client Onboarding",
     description: "Structured process for onboarding new clients",
     category: "Agency",
-    icon: Building2,
+    icon: "Building2",
     color: "text-emerald-500",
     bgColor: "bg-emerald-100 dark:bg-emerald-900/20",
     steps: 8,
@@ -61,7 +73,7 @@ const WORKFLOW_TEMPLATES = [
     name: "Content Production",
     description: "End-to-end workflow for content creation and delivery",
     category: "Creative",
-    icon: Megaphone,
+    icon: "Megaphone",
     color: "text-purple-500",
     bgColor: "bg-purple-100 dark:bg-purple-900/20",
     steps: 6,
@@ -72,7 +84,7 @@ const WORKFLOW_TEMPLATES = [
     name: "Campaign Launch",
     description: "Checklist-driven workflow for launching campaigns",
     category: "Marketing",
-    icon: Target,
+    icon: "Target",
     color: "text-orange-500",
     bgColor: "bg-orange-100 dark:bg-orange-900/20",
     steps: 10,
@@ -83,7 +95,7 @@ const WORKFLOW_TEMPLATES = [
     name: "Monthly Reporting",
     description: "Recurring workflow for client monthly reports",
     category: "Agency",
-    icon: Calendar,
+    icon: "Calendar",
     color: "text-cyan-500",
     bgColor: "bg-cyan-100 dark:bg-cyan-900/20",
     steps: 5,
@@ -94,7 +106,7 @@ const WORKFLOW_TEMPLATES = [
     name: "Team Review",
     description: "Performance review and feedback collection workflow",
     category: "HR",
-    icon: Users,
+    icon: "Users",
     color: "text-pink-500",
     bgColor: "bg-pink-100 dark:bg-pink-900/20",
     steps: 4,
@@ -107,6 +119,25 @@ const CATEGORIES = ["All", "Agency", "Creative", "Marketing", "HR"];
 export default async function WorkflowTemplatesPage() {
   try {
     const user = await getStudioUser();
+
+    // Try to get templates from DB, fall back to defaults
+    let templates = await getWorkflowTemplates();
+
+    // If no DB templates, use defaults
+    const displayTemplates = templates.length > 0
+      ? templates.map(t => ({
+          id: t.id,
+          name: t.name,
+          description: t.description || "",
+          category: t.category,
+          icon: t.icon || "LayoutTemplate",
+          color: t.color || "text-gray-500",
+          bgColor: "bg-gray-100 dark:bg-gray-900/20",
+          steps: Array.isArray(t.columns) ? (t.columns as unknown[]).length : 4,
+          avgDuration: "Varies",
+          isDbTemplate: true,
+        }))
+      : DEFAULT_TEMPLATES.map(t => ({ ...t, isDbTemplate: false }));
 
     return (
       <div className="p-6 lg:p-8 space-y-6">
@@ -126,10 +157,7 @@ export default async function WorkflowTemplatesPage() {
               </p>
             </div>
           </div>
-          <Button disabled className="opacity-60">
-            <Plus className="mr-2 h-4 w-4" />
-            New Workflow
-          </Button>
+          <CreateBoardButton templateName="Custom Board" className="opacity-100" />
         </div>
 
         {/* Category Filter */}
@@ -147,12 +175,12 @@ export default async function WorkflowTemplatesPage() {
 
         {/* Templates Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {WORKFLOW_TEMPLATES.map((template) => {
-            const Icon = template.icon;
+          {displayTemplates.map((template) => {
+            const Icon = ICON_MAP[template.icon] || LayoutTemplate;
             return (
               <Card
                 key={template.id}
-                className="hover:shadow-md transition-shadow cursor-pointer group"
+                className="hover:shadow-md transition-shadow group"
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -166,12 +194,14 @@ export default async function WorkflowTemplatesPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                    <span>{template.steps} steps</span>
+                    <span>{template.steps} columns</span>
                     <span>~{template.avgDuration}</span>
                   </div>
-                  <Button className="w-full group-hover:bg-primary/90 transition-colors">
-                    Use Template
-                  </Button>
+                  <CreateBoardButton
+                    templateId={template.isDbTemplate ? template.id : undefined}
+                    templateName={template.name}
+                    className="w-full group-hover:bg-primary/90 transition-colors"
+                  />
                 </CardContent>
               </Card>
             );
@@ -186,15 +216,13 @@ export default async function WorkflowTemplatesPage() {
                 <LayoutTemplate className="h-6 w-6 text-gray-500" />
               </div>
               <div>
-                <h3 className="font-semibold">Need a custom workflow?</h3>
+                <h3 className="font-semibold">Start from scratch</h3>
                 <p className="text-sm text-muted-foreground">
-                  Build your own from scratch with our visual workflow builder
+                  Create a blank board and customize it your way
                 </p>
               </div>
             </div>
-            <Button variant="outline" disabled className="opacity-60">
-              Coming Soon
-            </Button>
+            <CreateBoardButton templateName="New Board" />
           </CardContent>
         </Card>
       </div>

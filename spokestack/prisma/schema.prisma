@@ -80,6 +80,10 @@ model Organization {
   deckTemplates         DeckTemplate[]
   moodboards            Moodboard[]
 
+  // Workflow module
+  workflowBoards        WorkflowBoard[]
+  workflowTemplates     WorkflowTemplate[]
+
   @@map("organizations")
 }
 
@@ -243,6 +247,16 @@ model User {
   moodboardConversations        MoodboardConversation[]
   moodboardOutputs              MoodboardOutput[]
 
+  // Workflow module
+  workflowBoardsCreated         WorkflowBoard[]        @relation("WorkflowBoardCreator")
+  workflowCardsAssigned         WorkflowCard[]         @relation("WorkflowCardAssignee")
+  workflowCardsCreated          WorkflowCard[]         @relation("WorkflowCardCreator")
+  workflowBoardMemberships      WorkflowBoardMember[]
+  workflowComments              WorkflowComment[]
+  workflowAttachments           WorkflowAttachment[]
+  workflowChecklistCompletions  WorkflowChecklistItem[]
+  workflowTemplatesCreated      WorkflowTemplate[]
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([organizationId, email])
@@ -354,6 +368,9 @@ model Client {
   videoProjects         VideoProject[]
   pitchDecks            PitchDeck[]
   moodboards            Moodboard[]
+
+  // Workflow module
+  workflowBoards        WorkflowBoard[]
 
   @@unique([organizationId, code])
   @@index([organizationId])
@@ -531,6 +548,9 @@ model Project {
   pitchDecks            PitchDeck[]
   moodboards            Moodboard[]
 
+  // Workflow module
+  workflowBoards        WorkflowBoard[]
+
   @@index([organizationId])
   @@index([clientId])
   @@map("projects")
@@ -611,6 +631,9 @@ model Brief {
   studioCalendarEntries StudioCalendarEntry[]
   videoProjects         VideoProject[]
   moodboards            Moodboard[]
+
+  // Workflow module
+  workflowCards         WorkflowCard[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -6437,4 +6460,245 @@ enum IndexStatus {
   INDEXING
   INDEXED
   FAILED
+}
+
+// ============================================
+// Workflow Module
+// ============================================
+
+model WorkflowBoard {
+  id              String   @id @default(cuid())
+  organizationId  String
+
+  name            String
+  description     String?  @db.Text
+  icon            String?
+  color           String?
+
+  // Settings
+  isArchived      Boolean  @default(false)
+  isPublic        Boolean  @default(false)
+
+  // Optional associations
+  clientId        String?
+  projectId       String?
+
+  // Ownership
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  createdBy       User         @relation("WorkflowBoardCreator", fields: [createdById], references: [id])
+  client          Client?      @relation(fields: [clientId], references: [id])
+  project         Project?     @relation(fields: [projectId], references: [id])
+  columns         WorkflowColumn[]
+  members         WorkflowBoardMember[]
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([projectId])
+  @@map("workflow_boards")
+}
+
+model WorkflowColumn {
+  id              String   @id @default(cuid())
+  boardId         String
+
+  name            String
+  color           String?
+  position        Int      @default(0)
+
+  // Column settings
+  wipLimit        Int?     // Work-in-progress limit
+  isCollapsed     Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  board           WorkflowBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards           WorkflowCard[]
+
+  @@index([boardId])
+  @@map("workflow_columns")
+}
+
+model WorkflowCard {
+  id              String   @id @default(cuid())
+  columnId        String
+
+  title           String
+  description     String?  @db.Text
+  position        Int      @default(0)
+
+  // Task details
+  priority        Priority @default(MEDIUM)
+  dueDate         DateTime?
+  startDate       DateTime?
+  estimatedHours  Float?
+  actualHours     Float?
+
+  // Labels/Tags
+  labels          String[] @default([])
+  color           String?
+
+  // Associations
+  assigneeId      String?
+  briefId         String?
+
+  // Ownership
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  completedAt     DateTime?
+
+  // Relations
+  column          WorkflowColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  assignee        User?          @relation("WorkflowCardAssignee", fields: [assigneeId], references: [id])
+  createdBy       User           @relation("WorkflowCardCreator", fields: [createdById], references: [id])
+  brief           Brief?         @relation(fields: [briefId], references: [id])
+  comments        WorkflowComment[]
+  attachments     WorkflowAttachment[]
+  checklists      WorkflowChecklist[]
+
+  @@index([columnId])
+  @@index([assigneeId])
+  @@index([briefId])
+  @@map("workflow_cards")
+}
+
+model WorkflowBoardMember {
+  id              String   @id @default(cuid())
+  boardId         String
+  userId          String
+
+  role            WorkflowMemberRole @default(MEMBER)
+
+  createdAt       DateTime @default(now())
+
+  // Relations
+  board           WorkflowBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user            User          @relation(fields: [userId], references: [id])
+
+  @@unique([boardId, userId])
+  @@index([boardId])
+  @@index([userId])
+  @@map("workflow_board_members")
+}
+
+model WorkflowComment {
+  id              String   @id @default(cuid())
+  cardId          String
+
+  content         String   @db.Text
+
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  card            WorkflowCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  createdBy       User         @relation(fields: [createdById], references: [id])
+
+  @@index([cardId])
+  @@map("workflow_comments")
+}
+
+model WorkflowAttachment {
+  id              String   @id @default(cuid())
+  cardId          String
+
+  name            String
+  url             String
+  type            String?
+  size            Int?
+
+  createdById     String
+  createdAt       DateTime @default(now())
+
+  // Relations
+  card            WorkflowCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  createdBy       User         @relation(fields: [createdById], references: [id])
+
+  @@index([cardId])
+  @@map("workflow_attachments")
+}
+
+model WorkflowChecklist {
+  id              String   @id @default(cuid())
+  cardId          String
+
+  title           String
+  position        Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  card            WorkflowCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  items           WorkflowChecklistItem[]
+
+  @@index([cardId])
+  @@map("workflow_checklists")
+}
+
+model WorkflowChecklistItem {
+  id              String   @id @default(cuid())
+  checklistId     String
+
+  title           String
+  isCompleted     Boolean  @default(false)
+  position        Int      @default(0)
+
+  completedById   String?
+  completedAt     DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  checklist       WorkflowChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  completedBy     User?             @relation(fields: [completedById], references: [id])
+
+  @@index([checklistId])
+  @@map("workflow_checklist_items")
+}
+
+model WorkflowTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String?  // null = global template
+
+  name            String
+  description     String?  @db.Text
+  category        String   // Agency, Creative, Marketing, HR, etc.
+  icon            String?
+  color           String?
+
+  // Template structure
+  columns         Json     // Default columns configuration
+  cards           Json?    // Default cards/tasks
+
+  isActive        Boolean  @default(true)
+  usageCount      Int      @default(0)
+
+  createdById     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+  createdBy       User?         @relation(fields: [createdById], references: [id])
+
+  @@index([organizationId])
+  @@index([category])
+  @@map("workflow_templates")
+}
+
+enum WorkflowMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
 }
