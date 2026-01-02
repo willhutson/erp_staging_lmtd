@@ -38,6 +38,10 @@ import {
   Video,
   Presentation,
   ImageIcon,
+  ClipboardList,
+  GraduationCap,
+  BookOpen,
+  Award,
 } from "lucide-react";
 
 // Admin sections (left side)
@@ -112,6 +116,7 @@ const MODULE_BUNDLES = [
       { label: "Resources", href: "/resources", icon: Calendar, description: "Capacity planning" },
       { label: "CRM", href: "/crm", icon: Handshake, description: "Lead management" },
       { label: "RFP Pipeline", href: "/rfp", icon: Target, description: "New business" },
+      { label: "Surveys", href: "/surveys", icon: ClipboardList, description: "Client feedback" },
     ],
   },
   {
@@ -179,6 +184,22 @@ const MODULE_BUNDLES = [
       { label: "Boards", href: "/workflows", icon: Kanban, description: "Workflow boards" },
       { label: "My Workflows", href: "/workflows/my", icon: FolderKanban, description: "Your assigned tasks" },
       { label: "Templates", href: "/workflows/templates", icon: LayoutTemplate, description: "Pre-built processes" },
+    ],
+  },
+  {
+    id: "learning",
+    label: "Learning",
+    tagline: "Team Development",
+    description: "LMS for team training, courses, and certifications",
+    icon: GraduationCap,
+    href: "/lms",
+    color: "from-teal-500 to-teal-600",
+    bgColor: "bg-teal-500",
+    modules: [
+      { label: "Learning Center", href: "/lms", icon: GraduationCap, description: "Training dashboard" },
+      { label: "Courses", href: "/lms/courses", icon: BookOpen, description: "Browse all courses" },
+      { label: "My Learning", href: "/lms/my-learning", icon: FolderKanban, description: "Your enrollments" },
+      { label: "Certificates", href: "/lms/certificates", icon: Award, description: "Earned credentials" },
     ],
   },
 ];
