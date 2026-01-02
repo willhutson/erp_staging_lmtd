@@ -29,10 +29,10 @@ export const dynamic = "force-dynamic";
 export default async function DelegationPage() {
   const user = await getStudioUser();
 
-  let profile = null;
-  let delegations = { asDelegator: [], asDelegate: [] };
+  let profile: Awaited<ReturnType<typeof getMyDelegationProfile>> = null;
+  let delegations: Awaited<ReturnType<typeof getMyDelegations>> = { asDelegator: [], asDelegate: [] };
   let potentialDelegates: Awaited<ReturnType<typeof getPotentialDelegates>> = [];
-  let overview = null;
+  let overview: Awaited<ReturnType<typeof getOrganizationDelegationOverview>> = null;
   let allDelegations: Awaited<ReturnType<typeof getAllActiveDelegations>> = [];
   let dbError = false;
 
