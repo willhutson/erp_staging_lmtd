@@ -28,9 +28,9 @@ export type VideoProjectType = "SOCIAL_CONTENT" | "BRAND_VIDEO" | "COMMERCIAL" |
 
 export type VideoProjectStatus = "CONCEPT" | "SCRIPTING" | "PRE_PRODUCTION" | "PRODUCTION" | "POST_PRODUCTION" | "REVIEW" | "COMPLETE" | "CANCELLED";
 
-export type ScriptStatus = "DRAFT" | "IN_REVIEW" | "APPROVED" | "FINAL";
+export type ScriptStatus = "DRAFT" | "IN_REVIEW" | "APPROVED" | "REVISION_REQUESTED";
 
-export type ShotStatus = "PENDING" | "READY" | "SHOT" | "CAPTURED" | "UNUSABLE" | "CANCELLED";
+export type ShotStatus = "PLANNED" | "READY" | "SHOT" | "UNUSABLE";
 
 export type DeckType = "PITCH" | "PROPOSAL" | "REPORT" | "CREDENTIALS" | "CASE_STUDY" | "STRATEGY" | "INTERNAL" | "WORKSHOP" | "OTHER";
 

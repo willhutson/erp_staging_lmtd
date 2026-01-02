@@ -121,16 +121,17 @@ export interface StoryboardFrame {
 export interface ShotListItem {
   id: string;
   videoProjectId: string;
+  orderIndex: number;
   shotNumber: string;
-  description?: string | null;
+  description: string;
   shotType?: string | null;
   location?: string | null;
   talent?: string | null;
   equipment?: string | null;
+  duration?: number | null;
   notes?: string | null;
   status: ShotStatus;
   createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface PitchDeck {
