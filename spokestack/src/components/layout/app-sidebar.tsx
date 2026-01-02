@@ -158,6 +158,7 @@ const moduleBundles = [
           { label: "Directory", href: "/team" },
           { label: "Departments", href: "/team/departments" },
           { label: "Org Chart", href: "/team/org-chart" },
+          { label: "Delegation", href: "/team/delegation" },
         ],
       },
       { id: "chat", label: "SpokeChat", icon: MessageSquare, href: "/chat" },
