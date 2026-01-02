@@ -296,13 +296,11 @@ export async function deleteModule(id: string) {
 export async function createLesson(input: CreateLessonInput) {
   const user = await getStudioUser();
 
-  // Verify module exists
+  // Verify module exists and belongs to user's org
   const module = await prisma.lMSModule.findFirst({
     where: { id: input.moduleId },
     include: {
-      course: {
-        where: { organizationId: user.organizationId },
-      },
+      course: true,
       lessons: {
         select: { sortOrder: true },
         orderBy: { sortOrder: "desc" },
@@ -311,7 +309,7 @@ export async function createLesson(input: CreateLessonInput) {
     },
   });
 
-  if (!module?.course) {
+  if (!module?.course || module.course.organizationId !== user.organizationId) {
     throw new Error("Module not found");
   }
 
