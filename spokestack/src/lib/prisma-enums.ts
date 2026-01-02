@@ -14,17 +14,17 @@ export type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 export type PermissionLevel = "ADMIN" | "LEADERSHIP" | "TEAM_LEAD" | "STAFF" | "FREELANCER" | "CLIENT";
 
 // Studio types
-export type StudioDocType = "DOCUMENT" | "SCRIPT" | "ARTICLE" | "SOCIAL_COPY" | "AD_COPY" | "BLOG" | "BLOG_POST" | "EMAIL" | "PRESS_RELEASE" | "PROPOSAL" | "SOW" | "OTHER";
+export type StudioDocType = "DOCUMENT" | "SCRIPT" | "SOCIAL_COPY" | "AD_COPY" | "BLOG_POST" | "EMAIL" | "PROPOSAL" | "SOW";
 
 export type StudioDocStatus = "DRAFT" | "IN_REVIEW" | "APPROVED" | "PUBLISHED" | "ARCHIVED";
 
 export type SyncStatus = "PENDING" | "SYNCED" | "FAILED" | "SKIPPED";
 
-export type SocialContentType = "POST" | "REEL" | "STORY" | "LIVE" | "CAROUSEL" | "VIDEO" | "ARTICLE" | "TWEET" | "THREAD" | "AD" | "OTHER";
+export type SocialContentType = "POST" | "CAROUSEL" | "REEL" | "STORY" | "LIVE" | "ARTICLE" | "THREAD" | "AD";
 
-export type CalendarEntryStatus = "IDEA" | "PLANNED" | "IN_PROGRESS" | "READY" | "DRAFT" | "SCHEDULED" | "PUBLISHED" | "CANCELLED";
+export type CalendarEntryStatus = "IDEA" | "PLANNED" | "IN_PROGRESS" | "READY" | "SCHEDULED" | "PUBLISHED" | "CANCELLED";
 
-export type VideoProjectType = "SOCIAL_CONTENT" | "BRAND_VIDEO" | "COMMERCIAL" | "DOCUMENTARY" | "TESTIMONIAL" | "EVENT" | "EXPLAINER" | "ANIMATION" | "SHORT_FORM" | "LONG_FORM" | "AD" | "OTHER";
+export type VideoProjectType = "BRAND_VIDEO" | "SOCIAL_CONTENT" | "COMMERCIAL" | "TESTIMONIAL" | "EXPLAINER" | "EVENT" | "DOCUMENTARY" | "ANIMATION";
 
 export type VideoProjectStatus = "CONCEPT" | "SCRIPTING" | "PRE_PRODUCTION" | "PRODUCTION" | "POST_PRODUCTION" | "REVIEW" | "COMPLETE" | "CANCELLED";
 
@@ -32,13 +32,13 @@ export type ScriptStatus = "DRAFT" | "IN_REVIEW" | "APPROVED" | "REVISION_REQUES
 
 export type ShotStatus = "PLANNED" | "READY" | "SHOT" | "UNUSABLE";
 
-export type DeckType = "PITCH" | "PROPOSAL" | "REPORT" | "CREDENTIALS" | "CASE_STUDY" | "STRATEGY" | "INTERNAL" | "WORKSHOP" | "OTHER";
+export type DeckType = "PITCH" | "PROPOSAL" | "REPORT" | "CASE_STUDY" | "CREDENTIALS" | "WORKSHOP" | "INTERNAL";
 
 export type DeckStatus = "DRAFT" | "IN_REVIEW" | "APPROVED" | "PRESENTED" | "WON" | "LOST" | "ARCHIVED";
 
 export type SlideLayoutType = "TITLE" | "CONTENT" | "SECTION" | "TWO_COLUMN" | "IMAGE_LEFT" | "IMAGE_RIGHT" | "IMAGE_FULL" | "STATS" | "QUOTE" | "TEAM" | "TIMELINE" | "COMPARISON" | "PRICING" | "CTA" | "THANK_YOU";
 
-export type MoodboardType = "GENERAL" | "BRAND" | "CAMPAIGN" | "VIDEO" | "PHOTO" | "DESIGN" | "PITCH" | "VISUAL" | "REFERENCE" | "COMPETITOR" | "INSPIRATION" | "OTHER";
+export type MoodboardType = "GENERAL" | "BRAND" | "CAMPAIGN" | "VIDEO" | "PHOTO" | "DESIGN" | "PITCH";
 
 export type MoodboardStatus = "ACTIVE" | "ARCHIVED";
 

@@ -2,6 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import type {
   CreateDeckInput,
   DeckWithRelations,
@@ -235,7 +236,7 @@ export async function updateSlide(
     data: {
       title: updates.title,
       subtitle: updates.subtitle,
-      content: updates.content as Record<string, unknown> | undefined,
+      content: updates.content as Prisma.InputJsonValue | undefined,
       speakerNotes: updates.speakerNotes,
       backgroundUrl: updates.backgroundUrl,
       backgroundColor: updates.backgroundColor,
