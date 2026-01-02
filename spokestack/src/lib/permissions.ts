@@ -1,5 +1,7 @@
-import type { PermissionLevel } from "@prisma/client";
 import type { SessionUser } from "@/types";
+
+// Define PermissionLevel locally to avoid Prisma client dependency
+type PermissionLevel = "ADMIN" | "LEADERSHIP" | "TEAM_LEAD" | "STAFF" | "FREELANCER" | "CLIENT";
 
 const PERMISSION_HIERARCHY: Record<PermissionLevel, number> = {
   ADMIN: 100,

@@ -105,7 +105,7 @@ export async function GET(request: Request, { params }: RouteParams) {
     // Calculate progress
     const totalSubitems = rfp.subitems.length;
     const completedSubitems = rfp.subitems.filter(
-      (s) => s.status === "COMPLETED"
+      (s: { status: string }) => s.status === "COMPLETED"
     ).length;
 
     return success({

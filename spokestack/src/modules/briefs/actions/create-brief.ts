@@ -3,8 +3,10 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { can } from "@/lib/permissions";
-import type { BriefType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+
+// Define BriefType locally to avoid Prisma client dependency
+type BriefType = "VIDEO_SHOOT" | "VIDEO_EDIT" | "DESIGN" | "COPYWRITING_EN" | "COPYWRITING_AR" | "PAID_MEDIA" | "REPORT";
 
 interface CreateBriefInput {
   type: BriefType;

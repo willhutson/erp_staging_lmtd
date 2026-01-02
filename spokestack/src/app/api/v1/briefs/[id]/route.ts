@@ -5,7 +5,6 @@
  */
 
 import { z } from "zod";
-import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import {
   getAuthContext,
@@ -117,7 +116,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const updateData = {
       ...data,
-      formData: data.formData as Prisma.InputJsonValue | undefined,
+      formData: data.formData as Record<string, unknown> | undefined,
       updatedAt: new Date(),
     };
 

@@ -27,6 +27,9 @@ import {
   Presentation,
   ImageIcon,
   Palette,
+  GitBranch,
+  Kanban,
+  LayoutTemplate,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -38,6 +41,9 @@ const NAV_ITEMS = [
   { id: "studio-moodboard", label: "Moodboards", icon: ImageIcon },
   { id: "studio-calendar", label: "Content Calendar", icon: Calendar },
   { id: "studio-skills", label: "AI Skills", icon: Palette },
+  { id: "workflows", label: "Workflows", icon: GitBranch },
+  { id: "workflows-boards", label: "Workflow Boards", icon: Kanban },
+  { id: "workflows-templates", label: "Workflow Templates", icon: LayoutTemplate },
   { id: "briefs", label: "Briefs", icon: FileText },
   { id: "time-tracking", label: "Time Tracking", icon: Clock },
   { id: "leave", label: "Leave Management", icon: Calendar },
@@ -332,6 +338,115 @@ export default function DocsPage() {
             <li>Fill in the required inputs (client, brief, tone, etc.)</li>
             <li>AI generates content based on the skill's system prompt</li>
             <li>Review, edit, and save to your documents</li>
+          </ol>
+        </Section>
+
+        {/* Workflows Overview */}
+        <Section id="workflows" icon={GitBranch} title="Workflows">
+          <p className="text-muted-foreground mb-4">
+            Monday.com-style workflow boards for managing team processes, approvals, and recurring tasks with visual kanban interfaces.
+          </p>
+
+          <h4 className="font-semibold mb-2">Core Concepts</h4>
+          <ul className="text-sm text-muted-foreground space-y-1 mb-4">
+            <li>• <strong>Boards:</strong> Kanban-style boards for visual task management</li>
+            <li>• <strong>Columns:</strong> Customizable stages (To Do, In Progress, Review, Done)</li>
+            <li>• <strong>Cards:</strong> Individual tasks with assignees, due dates, and status</li>
+            <li>• <strong>Templates:</strong> Pre-built workflows for common agency processes</li>
+          </ul>
+
+          <h4 className="font-semibold mb-2">Available Modules</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+            {[
+              { name: "Boards", desc: "Kanban workflow boards", href: "/workflows" },
+              { name: "My Workflows", desc: "Your assigned tasks", href: "/workflows/my" },
+              { name: "Templates", desc: "Pre-built process templates", href: "/workflows/templates" },
+            ].map((mod) => (
+              <Link key={mod.href} href={mod.href} className="p-3 border rounded-lg hover:border-primary transition-colors">
+                <p className="font-medium">{mod.name}</p>
+                <p className="text-sm text-muted-foreground">{mod.desc}</p>
+              </Link>
+            ))}
+          </div>
+
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/workflows">
+              Open Workflows <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </Section>
+
+        {/* Workflow Boards */}
+        <Section id="workflows-boards" icon={Kanban} title="Workflow Boards">
+          <p className="text-muted-foreground mb-4">
+            Visual kanban boards for managing work across teams. Drag and drop cards between columns to update status.
+          </p>
+
+          <h4 className="font-semibold mb-2">Board Features</h4>
+          <ul className="text-sm text-muted-foreground space-y-1 mb-4">
+            <li>• <strong>Drag & Drop:</strong> Move cards between columns instantly</li>
+            <li>• <strong>Filters:</strong> Filter by assignee, due date, or priority</li>
+            <li>• <strong>Views:</strong> Kanban board, list view, or timeline</li>
+            <li>• <strong>Automations:</strong> Trigger actions on status changes</li>
+          </ul>
+
+          <h4 className="font-semibold mb-2">Card Properties</h4>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {["Title", "Description", "Assignee", "Due Date", "Priority", "Labels", "Attachments", "Comments"].map((prop) => (
+              <Badge key={prop} variant="outline">{prop}</Badge>
+            ))}
+          </div>
+
+          <h4 className="font-semibold mb-2">Status Columns</h4>
+          <div className="flex flex-wrap gap-1 mb-4">
+            {["Backlog", "To Do", "In Progress", "Review", "Done"].map((status, i) => (
+              <span key={status} className="flex items-center gap-1 text-sm">
+                <Badge variant="secondary">{status}</Badge>
+                {i < 4 && <ArrowRight className="h-3 w-3 text-muted-foreground" />}
+              </span>
+            ))}
+          </div>
+        </Section>
+
+        {/* Workflow Templates */}
+        <Section id="workflows-templates" icon={LayoutTemplate} title="Workflow Templates">
+          <p className="text-muted-foreground mb-4">
+            Pre-built workflow templates for common agency processes. Start with a template and customize for your needs.
+          </p>
+
+          <h4 className="font-semibold mb-2">Available Templates</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+            {[
+              { name: "Brief Approval", desc: "Review and approve creative briefs", steps: 4 },
+              { name: "Client Onboarding", desc: "Structured new client setup", steps: 8 },
+              { name: "Content Production", desc: "End-to-end content creation", steps: 6 },
+              { name: "Campaign Launch", desc: "Campaign launch checklist", steps: 10 },
+              { name: "Monthly Reporting", desc: "Client monthly report workflow", steps: 5 },
+              { name: "Team Review", desc: "Performance review process", steps: 4 },
+            ].map((template) => (
+              <div key={template.name} className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="font-medium">{template.name}</p>
+                  <p className="text-sm text-muted-foreground">{template.desc}</p>
+                </div>
+                <Badge variant="secondary">{template.steps} steps</Badge>
+              </div>
+            ))}
+          </div>
+
+          <h4 className="font-semibold mb-2">Template Categories</h4>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {["Agency", "Creative", "Marketing", "HR", "Operations"].map((cat) => (
+              <Badge key={cat} variant="outline">{cat}</Badge>
+            ))}
+          </div>
+
+          <h4 className="font-semibold mb-2">Creating from Template</h4>
+          <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+            <li>Browse templates in the Template Library</li>
+            <li>Click "Use Template" on your chosen template</li>
+            <li>Customize columns, cards, and automations</li>
+            <li>Invite team members and start working</li>
           </ol>
         </Section>
 
