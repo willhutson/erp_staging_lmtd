@@ -83,8 +83,12 @@ export interface VideoScript {
   videoProjectId: string;
   content?: unknown | null;
   contentText?: string | null;
+  version: number;
+  wordCount: number;
+  estimatedDuration?: number | null;
   status: ScriptStatus;
-  createdById: string;
+  aiGenerated: boolean;
+  aiPrompt?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -92,7 +96,6 @@ export interface VideoScript {
 export interface Storyboard {
   id: string;
   videoProjectId: string;
-  createdById: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -100,15 +103,17 @@ export interface Storyboard {
 export interface StoryboardFrame {
   id: string;
   storyboardId: string;
-  frameNumber: number;
+  orderIndex: number;
   imageUrl?: string | null;
   description?: string | null;
   dialogue?: string | null;
   action?: string | null;
+  duration?: number | null;
   shotType?: string | null;
   cameraMovement?: string | null;
-  duration?: number | null;
   notes?: string | null;
+  aiGenerated: boolean;
+  aiPrompt?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
