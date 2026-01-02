@@ -190,7 +190,7 @@ export default async function WorkflowRunDetailPage({ params }: WorkflowRunDetai
                         className="flex gap-4 relative"
                       >
                         {/* Timeline connector */}
-                        {index < run.tasks.length - 1 && (
+                        {run.tasks && index < run.tasks.length - 1 && (
                           <div className="absolute left-5 top-10 w-0.5 h-full bg-muted -z-10" />
                         )}
 
