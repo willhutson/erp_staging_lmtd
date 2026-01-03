@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { format, addMonths, startOfMonth } from "date-fns";
+import { format, addMonths, startOfMonth, endOfMonth } from "date-fns";
 import {
   X,
   Sparkles,
@@ -22,13 +22,24 @@ import type { SocialContentType } from "@prisma/client";
 import {
   generateAICalendar,
   saveGeneratedCalendarEntries,
-  getHolidaysForMonth,
   UAE_HOLIDAYS_2025,
   SOCIAL_AWARENESS_DAYS,
   type AICalendarGeneratorInput,
   type GeneratedCalendarEntry,
   type PlatformCadence,
 } from "../actions/ai-calendar-actions";
+
+// Local utility function (not a server action)
+function getHolidaysForMonth(month: Date): Array<{ date: string; name: string; type: string }> {
+  const monthStart = startOfMonth(month);
+  const monthEnd = endOfMonth(month);
+  const allHolidays = [...UAE_HOLIDAYS_2025, ...SOCIAL_AWARENESS_DAYS];
+
+  return allHolidays.filter(h => {
+    const holidayDate = new Date(h.date);
+    return holidayDate >= monthStart && holidayDate <= monthEnd;
+  });
+}
 
 interface AICalendarGeneratorModalProps {
   isOpen: boolean;

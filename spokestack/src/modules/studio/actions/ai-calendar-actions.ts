@@ -99,7 +99,7 @@ export const SOCIAL_AWARENESS_DAYS = [
   { date: "2025-11-13", name: "World Kindness Day", type: "social" },
 ];
 
-export function getHolidaysForMonth(month: Date): Array<{ date: string; name: string; type: string }> {
+export async function getHolidaysForMonth(month: Date): Promise<Array<{ date: string; name: string; type: string }>> {
   const monthStart = startOfMonth(month);
   const monthEnd = endOfMonth(month);
   const allHolidays = [...UAE_HOLIDAYS_2025, ...SOCIAL_AWARENESS_DAYS];
