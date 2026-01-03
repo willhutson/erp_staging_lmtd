@@ -7,6 +7,7 @@ import type { SocialContentType, CalendarEntryStatus } from "@prisma/client";
 import type { CreateCalendarEntryInput } from "../types";
 import { createCalendarEntry } from "./calendar-actions";
 import { addDays, format, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from "date-fns";
+import { UAE_HOLIDAYS_2025, SOCIAL_AWARENESS_DAYS } from "../data/holidays";
 
 // ============================================
 // TYPES
@@ -55,49 +56,6 @@ export interface AICalendarGeneratorResult {
   error?: string;
   tokensUsed?: number;
 }
-
-// ============================================
-// UAE & INTERNATIONAL HOLIDAYS 2025
-// ============================================
-
-export const UAE_HOLIDAYS_2025 = [
-  { date: "2025-01-01", name: "New Year's Day", type: "international" },
-  { date: "2025-01-29", name: "Ramadan Start (approx)", type: "islamic" },
-  { date: "2025-02-14", name: "Valentine's Day", type: "international" },
-  { date: "2025-03-08", name: "International Women's Day", type: "international" },
-  { date: "2025-03-21", name: "Mother's Day (UAE)", type: "uae" },
-  { date: "2025-03-30", name: "Eid Al Fitr (approx)", type: "islamic" },
-  { date: "2025-04-22", name: "Earth Day", type: "international" },
-  { date: "2025-05-01", name: "Labour Day", type: "international" },
-  { date: "2025-06-06", name: "Eid Al Adha (approx)", type: "islamic" },
-  { date: "2025-06-15", name: "Father's Day", type: "international" },
-  { date: "2025-06-27", name: "Islamic New Year (approx)", type: "islamic" },
-  { date: "2025-07-30", name: "Commemoration Day", type: "uae" },
-  { date: "2025-09-05", name: "Prophet's Birthday (approx)", type: "islamic" },
-  { date: "2025-10-31", name: "Halloween", type: "international" },
-  { date: "2025-11-28", name: "UAE Flag Day", type: "uae" },
-  { date: "2025-12-02", name: "UAE National Day", type: "uae" },
-  { date: "2025-12-25", name: "Christmas", type: "international" },
-  { date: "2025-12-31", name: "New Year's Eve", type: "international" },
-];
-
-// Social media awareness days
-export const SOCIAL_AWARENESS_DAYS = [
-  { date: "2025-01-21", name: "National Hugging Day", type: "social" },
-  { date: "2025-02-04", name: "World Cancer Day", type: "social" },
-  { date: "2025-02-13", name: "World Radio Day", type: "social" },
-  { date: "2025-03-20", name: "World Happiness Day", type: "social" },
-  { date: "2025-04-07", name: "World Health Day", type: "social" },
-  { date: "2025-05-04", name: "Star Wars Day", type: "social" },
-  { date: "2025-05-17", name: "World Telecommunication Day", type: "social" },
-  { date: "2025-06-05", name: "World Environment Day", type: "social" },
-  { date: "2025-06-21", name: "International Yoga Day", type: "social" },
-  { date: "2025-07-17", name: "World Emoji Day", type: "social" },
-  { date: "2025-08-19", name: "World Photography Day", type: "social" },
-  { date: "2025-09-21", name: "International Day of Peace", type: "social" },
-  { date: "2025-10-10", name: "World Mental Health Day", type: "social" },
-  { date: "2025-11-13", name: "World Kindness Day", type: "social" },
-];
 
 export async function getHolidaysForMonth(month: Date): Promise<Array<{ date: string; name: string; type: string }>> {
   const monthStart = startOfMonth(month);

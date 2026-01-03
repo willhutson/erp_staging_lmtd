@@ -22,12 +22,11 @@ import type { SocialContentType } from "@prisma/client";
 import {
   generateAICalendar,
   saveGeneratedCalendarEntries,
-  UAE_HOLIDAYS_2025,
-  SOCIAL_AWARENESS_DAYS,
   type AICalendarGeneratorInput,
   type GeneratedCalendarEntry,
   type PlatformCadence,
 } from "../actions/ai-calendar-actions";
+import { UAE_HOLIDAYS_2025, SOCIAL_AWARENESS_DAYS } from "../data/holidays";
 
 // Local utility function (not a server action)
 function getHolidaysForMonth(month: Date): Array<{ date: string; name: string; type: string }> {
