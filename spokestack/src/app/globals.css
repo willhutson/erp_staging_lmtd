@@ -882,3 +882,285 @@
   color: hsl(var(--muted-foreground));
   margin-top: 0.5rem;
 }
+
+/* ================================================
+   Animated Icons - Lucide-style animations
+   ================================================ */
+
+/* Sparkle animation */
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    opacity: 0.8;
+    transform: scale(0.95) rotate(-5deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05) rotate(5deg);
+  }
+  75% {
+    opacity: 0.9;
+    transform: scale(0.98) rotate(-3deg);
+  }
+}
+
+.animate-sparkle {
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+/* Zap electric pulse */
+@keyframes zap {
+  0%, 100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  10%, 30% {
+    opacity: 0.8;
+    filter: brightness(1.3);
+  }
+  20% {
+    opacity: 1;
+    filter: brightness(1.5);
+  }
+}
+
+@keyframes zap-glow {
+  0%, 100% {
+    opacity: 0;
+  }
+  10%, 30% {
+    opacity: 0.6;
+  }
+  20% {
+    opacity: 0.8;
+  }
+}
+
+.animate-zap {
+  animation: zap 1.5s ease-in-out infinite;
+}
+
+.animate-zap-glow {
+  animation: zap-glow 1.5s ease-in-out infinite;
+}
+
+/* Bell ring animation */
+@keyframes bell-ring {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  10% {
+    transform: rotate(15deg);
+  }
+  20% {
+    transform: rotate(-15deg);
+  }
+  30% {
+    transform: rotate(10deg);
+  }
+  40% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+  60% {
+    transform: rotate(-5deg);
+  }
+}
+
+.animate-bell-ring {
+  animation: bell-ring 1s ease-in-out;
+  transform-origin: top center;
+}
+
+/* Check pop-in */
+@keyframes check-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-check-pop {
+  animation: check-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Send fly-away */
+@keyframes send-fly {
+  0% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(20px) translateY(-10px) rotate(-15deg);
+    opacity: 0;
+  }
+}
+
+.animate-send-fly {
+  animation: send-fly 0.4s ease-out forwards;
+}
+
+/* Heart beat */
+@keyframes heart-beat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1);
+  }
+  75% {
+    transform: scale(1.15);
+  }
+}
+
+.animate-heart-beat {
+  animation: heart-beat 0.6s ease-in-out;
+}
+
+/* Star twinkle */
+@keyframes star-twinkle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.1) rotate(10deg);
+    filter: brightness(1.2);
+  }
+}
+
+.animate-star-twinkle {
+  animation: star-twinkle 0.4s ease-out;
+}
+
+/* Trend grow */
+@keyframes trend-grow {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-3px);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-trend-grow {
+  animation: trend-grow 0.5s ease-out forwards;
+}
+
+/* Wiggle */
+@keyframes wiggle {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
+}
+
+.animate-wiggle {
+  animation: wiggle 0.5s ease-in-out;
+}
+
+/* Shake */
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-4px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Circle draw (for success animation) */
+@keyframes circle-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-circle-draw {
+  animation: circle-draw 0.6s ease-out forwards;
+}
+
+/* Check draw (for success animation) */
+@keyframes check-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-check-draw {
+  animation: check-draw 0.3s ease-out 0.4s forwards;
+}
+
+/* Fade in animation */
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+/* ================================================
+   Pipeline Funnel Styles
+   ================================================ */
+
+.funnel-stage {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.funnel-stage:hover {
+  z-index: 10;
+}
+
+.funnel-stage-bar {
+  transition: all 0.3s ease;
+}
+
+.funnel-stage:hover .funnel-stage-bar {
+  filter: brightness(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.funnel-connector {
+  position: relative;
+}
+
+.funnel-connector::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to bottom, currentColor, transparent);
+  opacity: 0.2;
+}
