@@ -166,7 +166,7 @@ export function CalendarGalleryClient({ clients }: CalendarGalleryClientProps) {
                   <div className="flex items-center gap-2 mt-4 pt-3 border-t border-ltd-border-1">
                     <span className="text-xs text-ltd-text-3">Platforms:</span>
                     <div className="flex gap-1.5">
-                      {[...new Set(client.recentEntries.flatMap((e) => e.platforms))].map(
+                      {Array.from(new Set(client.recentEntries.flatMap((e) => e.platforms))).map(
                         (platform) => {
                           const Icon = PLATFORM_ICONS[platform.toLowerCase()] || Calendar;
                           return (
