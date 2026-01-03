@@ -1,5 +1,4 @@
 import { getStudioUser } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,18 +15,33 @@ import {
   Play,
   BarChart2,
   Star,
+  AlertCircle,
 } from "lucide-react";
 import { getCourses, getMyEnrollments } from "@/modules/lms/actions";
 
 export const dynamic = "force-dynamic";
 
+// Types
+type CourseListItem = Awaited<ReturnType<typeof getCourses>>[number];
+type EnrollmentListItem = Awaited<ReturnType<typeof getMyEnrollments>>[number];
+
 export default async function LMSPage() {
   const user = await getStudioUser();
 
-  const [courses, myEnrollments] = await Promise.all([
-    getCourses(),
-    getMyEnrollments(),
-  ]);
+  // Fetch with error handling for when LMS tables don't exist yet
+  let courses: CourseListItem[] = [];
+  let myEnrollments: EnrollmentListItem[] = [];
+  let hasError = false;
+
+  try {
+    [courses, myEnrollments] = await Promise.all([
+      getCourses(),
+      getMyEnrollments(),
+    ]);
+  } catch (error) {
+    console.error("LMS data fetch error:", error);
+    hasError = true;
+  }
 
   const isAdmin = ["ADMIN", "LEADERSHIP"].includes(user.permissionLevel);
   const publishedCourses = courses.filter((c) => c.status === "PUBLISHED");
@@ -39,6 +53,39 @@ export default async function LMSPage() {
     ["ENROLLED", "IN_PROGRESS"].includes(e.status)
   );
   const completed = myEnrollments.filter((e) => e.status === "COMPLETED");
+
+  // Show setup message if LMS tables don't exist
+  if (hasError) {
+    return (
+      <div className="p-6 lg:p-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Learning Center</h1>
+            <p className="text-muted-foreground mt-1">
+              Courses, training, and professional development
+            </p>
+          </div>
+        </div>
+        <Card className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+              <AlertCircle className="h-5 w-5" />
+              LMS Module Setup Required
+            </CardTitle>
+            <CardDescription className="text-amber-600 dark:text-amber-500">
+              The Learning Management System tables need to be created in the database.
+              Please run database migrations to enable this module.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Contact your administrator to run: <code className="bg-muted px-2 py-1 rounded">npx prisma db push</code>
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
