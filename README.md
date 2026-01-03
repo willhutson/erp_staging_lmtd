@@ -199,3 +199,73 @@ src/app/(platform)/loading.tsx  # Platform loading skeleton
 src/app/(platform)/lms/loading.tsx  # LMS loading skeleton
 .claude/commands/technicalwriter.md  # Documentation update command
 ```
+
+---
+
+## Frontend Redesign (January 2025)
+
+### CEO Hub Dashboard
+
+Role-adaptive Hub at `/hub` with executive-level views:
+
+- **CEO View**: 12-module quick navigation grid, Revenue MTD, Pipeline value, Company Pulse alerts
+- **AM View**: Briefs submitted, client calendars, focus items
+- **Creative View**: Assignments, timer, moodboard access
+- **Leadership View**: Team capacity, retainer health, pipeline
+
+### Pipeline Funnel Component
+
+Sales pipeline visualization at `/crm`:
+
+```typescript
+import { PipelineFunnel, MiniFunnel, VerticalFunnel } from "@/components/ui/pipeline-funnel";
+
+// Full funnel with conversion rates
+<PipelineFunnel stages={stages} showConversion showValue />
+
+// Compact inline version
+<MiniFunnel stages={stages} />
+
+// Classic vertical shape
+<VerticalFunnel stages={stages} />
+```
+
+### Animated Icons
+
+CSS-based animated icons (no external dependencies):
+
+```typescript
+import {
+  SparklesAnimated, ZapAnimated, BellAnimated,
+  HeartAnimated, AIThinking, SuccessAnimated
+} from "@/components/ui/animated-icons";
+
+<SparklesAnimated trigger="hover" />
+<BellAnimated hasNotification />
+<AIThinking /> // Continuous loading animation
+```
+
+### Auth Redesign
+
+Split-screen login/signup pages:
+- Left: Branding panel with TeamLMTD turquoise gradient
+- Right: Clean form with social login options
+
+### New Pages Added
+
+| Route | Description |
+|-------|-------------|
+| `/briefs/briefed-by-me` | AM view of submitted briefs |
+| `/resources/availability` | Team capacity grid with fuel gauges |
+| `/retainers/burn` | Retainer burn rate monitoring |
+| `/retainers/scope-changes` | Scope change request management |
+| `/lms/browse` | Course catalog with search |
+
+### Design System Components
+
+```
+spokestack/src/components/ui/
+  pipeline-funnel.tsx    # Funnel visualizations
+  animated-icons.tsx     # CSS-animated Lucide icons
+  design-system.ts       # Barrel export for all design components
+```
