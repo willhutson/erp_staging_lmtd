@@ -18,10 +18,33 @@ import {
   Target,
   Repeat,
   MessageSquare,
+  Handshake,
+  Headphones,
+  CreditCard,
+  BarChart3,
+  Palmtree,
+  Layers,
+  Shield,
 } from "lucide-react";
 
 // Force dynamic rendering - uses cookies for auth
 export const dynamic = "force-dynamic";
+
+// CEO Dashboard Modules (from /admin)
+const CEO_MODULES = [
+  { id: "crm", label: "CRM", description: "Deals & pipeline", icon: Handshake, href: "/crm", color: "bg-blue-500" },
+  { id: "briefs", label: "Briefs", description: "Work requests", icon: FileText, href: "/briefs", color: "bg-indigo-500" },
+  { id: "resources", label: "Resources", description: "Team capacity", icon: Users, href: "/resources/availability", color: "bg-cyan-500" },
+  { id: "retainers", label: "Retainers", description: "Burn & health", icon: Repeat, href: "/retainers/burn", color: "bg-emerald-500" },
+  { id: "time", label: "Time", description: "Track hours", icon: Clock, href: "/time", color: "bg-amber-500" },
+  { id: "rfp", label: "RFP", description: "Proposals", icon: Target, href: "/rfp", color: "bg-rose-500" },
+  { id: "analytics", label: "Analytics", description: "Reports", icon: BarChart3, href: "/analytics", color: "bg-orange-500" },
+  { id: "listening", label: "Listening", description: "Creators", icon: Headphones, href: "/listening", color: "bg-purple-500" },
+  { id: "mediabuying", label: "Media", description: "Ad campaigns", icon: CreditCard, href: "/mediabuying", color: "bg-green-500" },
+  { id: "leave", label: "Leave", description: "PTO", icon: Palmtree, href: "/leave", color: "bg-teal-500" },
+  { id: "portals", label: "Portals", description: "White-label", icon: Layers, href: "/admin/instances", color: "bg-slate-500" },
+  { id: "admin", label: "Admin", description: "Settings", icon: Shield, href: "/admin", color: "bg-red-500" },
+];
 
 // Mock data - in production, this would come from server actions
 const mockUser = {
@@ -331,52 +354,137 @@ export default function HubPage() {
 
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        {/* Left: Focus Items */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">{isCeo ? "Company Pulse" : "Focus Items"}</h2>
-            <Link href={isCeo ? "/admin" : "/briefs"} className="text-sm text-primary hover:underline flex items-center gap-1">
-              {isCeo ? "Full dashboard" : "View all"} <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
+        {/* Left: Focus Items or CEO Modules */}
+        <div className="space-y-6">
+          {isCeo ? (
+            <>
+              {/* CEO Modules Grid */}
+              <div>
+                <h2 className="text-lg font-semibold mb-4">Modules</h2>
+                <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
+                  {CEO_MODULES.map((module) => {
+                    const Icon = module.icon;
+                    return (
+                      <Link key={module.id} href={module.href}>
+                        <Card className="h-full hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer group interactive-lift">
+                          <CardContent className="p-4">
+                            <div className="flex flex-col items-center text-center gap-2">
+                              <div className={`p-2 rounded-lg ${module.color}`}>
+                                <Icon className="h-5 w-5 text-white" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-sm group-hover:text-primary transition-colors">
+                                  {module.label}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {module.description}
+                                </p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
 
-          <div className="space-y-3 stagger-children">
-            {mockFocusItems.map((item) => (
-              <Card key={item.id} className="interactive-lift">
-                <CardContent className="py-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <div className={`p-2 rounded-lg ${
-                        item.type === "overdue" ? "bg-red-100 dark:bg-red-900/30" :
-                        item.type === "due_today" ? "bg-amber-100 dark:bg-amber-900/30" :
-                        "bg-blue-100 dark:bg-blue-900/30"
-                      }`}>
-                        {item.type === "overdue" ? (
-                          <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                        ) : item.type === "due_today" ? (
-                          <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                        ) : (
-                          <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium">{item.title}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-sm text-muted-foreground">{item.client}</span>
-                          <span className="text-muted-foreground">•</span>
-                          <span className="text-sm text-muted-foreground">{item.briefType}</span>
+              {/* Company Pulse - Alerts */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">Company Pulse</h2>
+                  <Link href="/admin" className="text-sm text-primary hover:underline flex items-center gap-1">
+                    Full dashboard <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+                <div className="space-y-3 stagger-children">
+                  {mockFocusItems.map((item) => (
+                    <Card key={item.id} className="interactive-lift">
+                      <CardContent className="py-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-start gap-3">
+                            <div className={`p-2 rounded-lg ${
+                              item.type === "needs_attention" ? "bg-orange-100 dark:bg-orange-900/30" :
+                              item.type === "due_today" ? "bg-amber-100 dark:bg-amber-900/30" :
+                              "bg-blue-100 dark:bg-blue-900/30"
+                            }`}>
+                              {item.type === "needs_attention" ? (
+                                <AlertCircle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                              ) : item.type === "due_today" ? (
+                                <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                              ) : (
+                                <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-medium">{item.title}</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-sm text-muted-foreground">{item.client}</span>
+                                <span className="text-muted-foreground">•</span>
+                                <span className="text-sm text-muted-foreground">{item.briefType}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <FocusItemBadge type={item.type} />
+                            <p className="text-xs text-muted-foreground mt-1">{item.dueDate}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Non-CEO Focus Items */
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Focus Items</h2>
+                <Link href="/briefs" className="text-sm text-primary hover:underline flex items-center gap-1">
+                  View all <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
+
+              <div className="space-y-3 stagger-children">
+                {mockFocusItems.map((item) => (
+                  <Card key={item.id} className="interactive-lift">
+                    <CardContent className="py-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2 rounded-lg ${
+                            item.type === "overdue" ? "bg-red-100 dark:bg-red-900/30" :
+                            item.type === "due_today" ? "bg-amber-100 dark:bg-amber-900/30" :
+                            "bg-blue-100 dark:bg-blue-900/30"
+                          }`}>
+                            {item.type === "overdue" ? (
+                              <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                            ) : item.type === "due_today" ? (
+                              <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            ) : (
+                              <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium">{item.title}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-sm text-muted-foreground">{item.client}</span>
+                              <span className="text-muted-foreground">•</span>
+                              <span className="text-sm text-muted-foreground">{item.briefType}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <FocusItemBadge type={item.type} />
+                          <p className="text-xs text-muted-foreground mt-1">{item.dueDate}</p>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <FocusItemBadge type={item.type} />
-                      <p className="text-xs text-muted-foreground mt-1">{item.dueDate}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right: Sidebar */}
