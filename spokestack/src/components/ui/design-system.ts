@@ -48,3 +48,40 @@ export {
   RandomnessDial,
   CreativitySlider,
 } from "./randomness-dial";
+
+// Enhanced card variants
+export {
+  InteractiveCard,
+  StatCard,
+  ModuleCard,
+  FocusItemCard,
+  NotificationCard,
+  EmptyStateCard,
+  AIInsightCard,
+} from "./enhanced-card";
+
+// Chat components
+export {
+  Message,
+  ThreadPanel,
+  ItemLinkedThread,
+  TypingIndicator,
+  PresenceRow,
+} from "./chat-components";
+
+// Loading states
+export {
+  Skeleton,
+  CardSkeleton,
+  StatCardSkeleton,
+  ModuleCardSkeleton,
+  FocusItemSkeleton,
+  MessageSkeleton,
+  TableRowSkeleton,
+  AIGreetingSkeleton,
+  DashboardSkeleton,
+  StudioGridSkeleton,
+  ChatSkeleton,
+  Spinner,
+  LoadingOverlay,
+} from "./loading-skeleton";
