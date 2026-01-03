@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useTransition, useMemo } from "react";
-import { Plus, Filter, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Filter, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import {
   StudioCalendar,
   CreateCalendarEntryModal,
   CalendarEntryPanel,
   CalendarFilters,
+  AICalendarGeneratorModal,
   type CreateEntryFormData,
 } from "@/modules/studio/components";
 import type { CalendarEntryWithRelations, SocialContentType, CalendarEntryStatus } from "@/modules/studio/types";
@@ -29,6 +30,7 @@ export function CalendarClient({ initialEntries, clients, briefDeadlines = [] }:
   const [isPending, startTransition] = useTransition();
   const [entries, setEntries] = useState(initialEntries);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isAIGeneratorOpen, setIsAIGeneratorOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -195,6 +197,13 @@ export function CalendarClient({ initialEntries, clients, briefDeadlines = [] }:
             {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
           <button
+            onClick={() => setIsAIGeneratorOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-ltd-primary text-ltd-primary rounded-[var(--ltd-radius-md)] font-medium text-sm hover:bg-ltd-primary/10 transition-colors"
+          >
+            <Sparkles className="w-4 h-4" />
+            AI Generate
+          </button>
+          <button
             onClick={() => {
               setSelectedDate(new Date());
               setIsCreateModalOpen(true);
@@ -261,6 +270,18 @@ export function CalendarClient({ initialEntries, clients, briefDeadlines = [] }:
           onDelete={handleDeleteEntry}
         />
       )}
+
+      {/* AI Calendar Generator Modal */}
+      <AICalendarGeneratorModal
+        isOpen={isAIGeneratorOpen}
+        onClose={() => setIsAIGeneratorOpen(false)}
+        onComplete={() => {
+          startTransition(() => {
+            router.refresh();
+          });
+        }}
+        clients={clients}
+      />
     </div>
   );
 }
