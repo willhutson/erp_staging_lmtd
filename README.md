@@ -162,3 +162,40 @@ export async function myServerAction() {
 ## License
 
 Private - TeamLMTD
+
+---
+
+## Recent Updates (January 2025)
+
+### AI Calendar Generator (SpokeStudio)
+
+New AI-powered social media content calendar generator in **Studio → Calendar**:
+
+- **3-Step Wizard**: Setup → Cadence → Preview workflow
+- **"Sample for Pitch" Mode**: Generate showcase-quality content for RFP demos
+- **UAE Holidays**: Auto-populated Islamic holidays, National Day, international events
+- **Platform Cadence**: Configure posts per week for Instagram, Facebook, LinkedIn, Twitter, TikTok
+- **GPT-4 Powered**: Generates titles, descriptions, content types, optimal posting times
+- **Bulk Preview**: Review and select AI-generated entries before adding to calendar
+
+### Performance Optimizations
+
+- **React `cache()` Deduplication**: Auth and session calls are memoized per-request
+- **Loading Skeletons**: Instant feedback with `loading.tsx` files for platform routes
+- **Graceful Error Handling**: LMS and other modules show setup messages instead of crashing
+
+### Custom Commands
+
+| Command | Description |
+|---------|-------------|
+| `/technicalwriter` | Update technical documentation after code changes |
+
+### Files Added
+
+```
+src/modules/studio/actions/ai-calendar-actions.ts  # AI generation + UAE holidays
+src/modules/studio/components/AICalendarGeneratorModal.tsx  # Full wizard UI
+src/app/(platform)/loading.tsx  # Platform loading skeleton
+src/app/(platform)/lms/loading.tsx  # LMS loading skeleton
+.claude/commands/technicalwriter.md  # Documentation update command
+```
