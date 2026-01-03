@@ -13,6 +13,7 @@ interface CreateCalendarEntryModalProps {
   initialDate?: Date;
   clients?: { id: string; name: string }[];
   isLoading?: boolean;
+  defaultClientId?: string;
 }
 
 export interface CreateEntryFormData {
@@ -64,6 +65,7 @@ export function CreateCalendarEntryModal({
   initialDate,
   clients = [],
   isLoading = false,
+  defaultClientId,
 }: CreateCalendarEntryModalProps) {
   const [formData, setFormData] = useState<CreateEntryFormData>({
     title: "",
@@ -72,7 +74,7 @@ export function CreateCalendarEntryModal({
     scheduledDate: initialDate ? format(initialDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
     scheduledTime: "",
     platforms: [],
-    clientId: "",
+    clientId: defaultClientId || "",
     color: "",
   });
 

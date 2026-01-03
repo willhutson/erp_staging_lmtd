@@ -16,6 +16,7 @@ interface CalendarFiltersProps {
   onStatusChange: (status: CalendarEntryStatus | undefined) => void;
   onClearAll: () => void;
   className?: string;
+  hideClientFilter?: boolean;
 }
 
 const platforms = [
@@ -60,9 +61,10 @@ export function CalendarFilters({
   onStatusChange,
   onClearAll,
   className,
+  hideClientFilter,
 }: CalendarFiltersProps) {
   const hasActiveFilters =
-    selectedClientId ||
+    (!hideClientFilter && selectedClientId) ||
     selectedPlatforms.length > 0 ||
     selectedContentType ||
     selectedStatus;
@@ -74,7 +76,7 @@ export function CalendarFilters({
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-ltd-text-3">Active filters:</span>
 
-          {selectedClientId && (
+          {!hideClientFilter && selectedClientId && (
             <FilterChip
               label={clients.find((c) => c.id === selectedClientId)?.name || "Client"}
               onRemove={() => onClientChange(undefined)}
@@ -115,23 +117,25 @@ export function CalendarFilters({
       {/* Filter Controls */}
       <div className="flex flex-wrap gap-3">
         {/* Client Filter */}
-        <div className="min-w-[150px]">
-          <label className="block text-xs font-medium text-ltd-text-3 mb-1">
-            Client
-          </label>
-          <select
-            value={selectedClientId || ""}
-            onChange={(e) => onClientChange(e.target.value || undefined)}
-            className="w-full px-3 py-1.5 text-sm border border-ltd-border-1 rounded-[var(--ltd-radius-md)] bg-ltd-surface-1 text-ltd-text-1 focus:outline-none focus:ring-2 focus:ring-ltd-primary/50"
-          >
-            <option value="">All Clients</option>
-            {clients.map((client) => (
-              <option key={client.id} value={client.id}>
-                {client.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        {!hideClientFilter && (
+          <div className="min-w-[150px]">
+            <label className="block text-xs font-medium text-ltd-text-3 mb-1">
+              Client
+            </label>
+            <select
+              value={selectedClientId || ""}
+              onChange={(e) => onClientChange(e.target.value || undefined)}
+              className="w-full px-3 py-1.5 text-sm border border-ltd-border-1 rounded-[var(--ltd-radius-md)] bg-ltd-surface-1 text-ltd-text-1 focus:outline-none focus:ring-2 focus:ring-ltd-primary/50"
+            >
+              <option value="">All Clients</option>
+              {clients.map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Platform Filter */}
         <div className="min-w-[150px]">
