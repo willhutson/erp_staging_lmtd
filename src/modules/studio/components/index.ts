@@ -14,6 +14,7 @@ export type { CreateEntryFormData } from "./CreateCalendarEntryModal";
 export { CalendarEntryPanel } from "./CalendarEntryPanel";
 export { CalendarFilters } from "./CalendarFilters";
 export { BriefDeadlineMarkerCard, BriefDeadlineList } from "./BriefDeadlineMarker";
+export { AICalendarGeneratorModal } from "./AICalendarGeneratorModal";
 
 // Document Components
 export { DocumentList } from "./DocumentList";
