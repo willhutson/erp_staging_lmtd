@@ -260,9 +260,22 @@ These phrases trigger continuity actions:
 
 SpokeStudio is the content creation suite located at [`/studio`](https://spokestack.vercel.app/studio). Key features:
 
-### AI Calendar Generator ([`/studio/calendar`](https://spokestack.vercel.app/studio/calendar))
+### Content Calendar ([`/studio/calendar`](https://spokestack.vercel.app/studio/calendar))
 
-AI-powered social media content calendar generator:
+**Gallery Landing Page** - Shows all client calendars as cards:
+- Active calendars with entry previews and platform icons
+- Empty clients prompt AI calendar generation
+- AI Calendar Generator hero card prominently featured
+
+**Client Calendar View** (`/studio/calendar/[clientId]`) - Per-client calendar:
+- Full month calendar with scheduled posts
+- Drag-and-drop rescheduling
+- Brief deadline integration
+- Filter by platform, content type, status
+
+### AI Calendar Generator
+
+AI-powered social media content calendar generator (GPT-4):
 
 ```typescript
 // Server action: src/modules/studio/actions/ai-calendar-actions.ts
@@ -285,11 +298,21 @@ const result = await generateAICalendar({
 ```
 
 **Features:**
+- 3-step wizard: Setup → Cadence → Preview
 - UAE holidays auto-populated (Islamic + international)
-- Platform cadence settings per channel
+- Platform cadence settings per channel (posts/week)
+- Content mix percentages (POST, REEL, CAROUSEL, etc.)
 - "Sample for Pitch" mode for RFP demos
 - GPT-4 powered content generation
 - Bulk preview and select before saving
+
+**File Structure:**
+```
+spokestack/src/modules/studio/
+  /actions/ai-calendar-actions.ts   # Server actions for AI generation
+  /components/AICalendarGeneratorModal.tsx
+  /data/holidays.ts                 # UAE holidays (shared client/server)
+```
 
 ### Content Types
 
