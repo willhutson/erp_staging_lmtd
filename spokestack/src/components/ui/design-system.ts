@@ -85,3 +85,29 @@ export {
   Spinner,
   LoadingOverlay,
 } from "./loading-skeleton";
+
+// Pipeline funnel visualizations
+export {
+  PipelineFunnel,
+  MiniFunnel,
+  VerticalFunnel,
+  DEMO_PIPELINE_STAGES,
+} from "./pipeline-funnel";
+
+// Animated icons (Lucide-style)
+export {
+  AnimatedIcon,
+  SparklesAnimated,
+  ZapAnimated,
+  CheckAnimated,
+  BellAnimated,
+  SendAnimated,
+  LoadingAnimated,
+  HeartAnimated,
+  StarAnimated,
+  TrendingAnimated,
+  PlusToX,
+  ArrowSlide,
+  SuccessAnimated,
+  AIThinking,
+} from "./animated-icons";
