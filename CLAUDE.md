@@ -6,6 +6,33 @@ A multi-tenant ERP platform for professional services agencies. TeamLMTD (a Duba
 
 **Tech Stack:** Next.js 14, TypeScript, Tailwind CSS, shadcn/ui, Prisma, PostgreSQL, NextAuth.js v5
 
+## CRITICAL: SpokeStack is the Source of Truth
+
+**The `/spokestack` folder is the production codebase deployed to Vercel.**
+
+- **DO NOT** edit files in the root `/src` or `/prisma` folders - they are legacy/deprecated
+- **ALWAYS** make changes in `/spokestack/`
+- The root `/src` and `/prisma` folders may be removed in a future cleanup
+
+```
+/spokestack                     # ← PRODUCTION CODEBASE (edit here)
+  /src/
+    /app/(platform)/            # Main app routes (dashboard, studio, admin, etc.)
+    /app/(auth)/                # Auth routes (login, signup)
+    /app/api/                   # API routes
+    /modules/                   # Feature modules (briefs, studio, rfp, lms, etc.)
+    /lib/                       # Utilities (db.ts, auth.ts, supabase/, etc.)
+    /components/                # Shared UI components
+  /prisma/
+    schema.prisma               # Production database schema
+    seed.ts                     # Seed data
+
+/src                            # ← DEPRECATED (do not edit)
+/prisma                         # ← DEPRECATED (do not edit)
+```
+
+**Database:** Use `spokestack/prisma/schema.prisma` for all schema changes.
+
 ## Core Architecture Principles
 
 1. **Config-Driven**: Tenant behavior lives in `/config`, never hardcoded
