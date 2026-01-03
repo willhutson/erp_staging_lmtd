@@ -26,24 +26,41 @@ export const dynamic = "force-dynamic";
 // Mock data - in production, this would come from server actions
 const mockUser = {
   name: "Will",
-  role: "leadership", // "am" | "creative" | "leadership" | "team_lead"
+  role: "ceo", // "am" | "creative" | "leadership" | "team_lead" | "ceo"
 };
 
-const mockFocusItems = [
+// CEO-focused items show company health, not individual briefs
+const mockFocusItems = mockUser.role === "ceo" ? [
+  { id: "1", title: "DET Retainer at 90% Burn", type: "needs_attention" as const, dueDate: "12 days left", client: "DET", briefType: "Retainer Health" },
+  { id: "2", title: "Q1 Pipeline Review", type: "due_today" as const, dueDate: "Today, 3pm", client: "All Clients", briefType: "Strategy" },
+  { id: "3", title: "New RFP: Abu Dhabi Tourism", type: "upcoming" as const, dueDate: "Deadline: Jan 15", client: "Prospect", briefType: "RFP" },
+  { id: "4", title: "3 Team Members Over Capacity", type: "needs_attention" as const, dueDate: "This week", client: "Internal", briefType: "Resourcing" },
+] : [
   { id: "1", title: "ADEK Monthly Report", type: "overdue" as const, dueDate: "2 days ago", client: "ADEK", briefType: "Report" },
   { id: "2", title: "DET Ramadan Campaign Video", type: "due_today" as const, dueDate: "Today, 5pm", client: "DET", briefType: "Video Edit" },
   { id: "3", title: "CCAD Social Calendar Review", type: "due_today" as const, dueDate: "Today, EOD", client: "CCAD", briefType: "Review" },
   { id: "4", title: "ECD Brand Guidelines Update", type: "upcoming" as const, dueDate: "Tomorrow", client: "ECD", briefType: "Design" },
 ];
 
-const mockStats = {
+// CEO sees company-level stats
+const mockStats = mockUser.role === "ceo" ? {
+  briefs: { active: 47, completed: 156, thisWeek: 23 },
+  time: { loggedToday: "312h", weekTotal: "1,248h", target: "1,600h" },
+  retainers: { atRisk: 2, healthy: 6 },
+  team: { available: 38, onLeave: 4, overCapacity: 3 },
+  revenue: { mtd: "$124,500", pipeline: "$890,000", wonThisMonth: 3 },
+} : {
   briefs: { active: 12, completed: 45, thisWeek: 8 },
   time: { loggedToday: "4h 32m", weekTotal: "28h", target: "40h" },
   retainers: { atRisk: 2, healthy: 6 },
   team: { available: 38, onLeave: 4, overCapacity: 3 },
 };
 
-const mockNotifications = [
+const mockNotifications = mockUser.role === "ceo" ? [
+  { id: "1", message: "Won: CCAD Q2 Retainer ($45,000)", time: "2 hours ago", type: "complete" },
+  { id: "2", message: "New RFP submitted: Abu Dhabi Tourism", time: "Yesterday", type: "assignment" },
+  { id: "3", message: "DET retainer approaching 90% burn", time: "1 hour ago", type: "warning" },
+] : [
   { id: "1", message: "Sarah completed ADEK Video Edit", time: "2 min ago", type: "complete" },
   { id: "2", message: "New brief assigned: CCAD Social Post", time: "15 min ago", type: "assignment" },
   { id: "3", message: "DET retainer at 85% burn", time: "1 hour ago", type: "warning" },
@@ -71,6 +88,12 @@ const quickActions = {
     { label: "Approve Time", href: "/time/approvals", icon: Clock },
     { label: "Department View", href: "/resources", icon: Users },
   ],
+  ceo: [
+    { label: "Company Dashboard", href: "/admin", icon: Building2 },
+    { label: "Revenue & Pipeline", href: "/crm", icon: TrendingUp },
+    { label: "Team Capacity", href: "/resources/availability", icon: Users },
+    { label: "Retainer Health", href: "/retainers/burn", icon: Repeat },
+  ],
 };
 
 function getTimeGreeting(): string {
@@ -80,7 +103,17 @@ function getTimeGreeting(): string {
   return "Good evening";
 }
 
-function getFocusMessage(items: typeof mockFocusItems): string {
+function getFocusMessage(items: typeof mockFocusItems, role: string): string {
+  if (role === "ceo") {
+    const needsAttention = items.filter(i => i.type === "needs_attention").length;
+    const dueToday = items.filter(i => i.type === "due_today").length;
+
+    if (needsAttention > 0) {
+      return `${needsAttention} item${needsAttention > 1 ? "s" : ""} need${needsAttention === 1 ? "s" : ""} your attention. Company health is strong overall.`;
+    }
+    return "The agency is running smoothly. All systems operational.";
+  }
+
   const overdue = items.filter(i => i.type === "overdue").length;
   const dueToday = items.filter(i => i.type === "due_today").length;
 
@@ -117,10 +150,12 @@ function FocusItemBadge({ type }: { type: "overdue" | "due_today" | "upcoming" |
 
 export default function HubPage() {
   const greeting = getTimeGreeting();
-  const focusMessage = getFocusMessage(mockFocusItems);
+  const focusMessage = getFocusMessage(mockFocusItems, mockUser.role);
   const roleActions = quickActions[mockUser.role as keyof typeof quickActions] || quickActions.am;
   const overdueCount = mockFocusItems.filter(i => i.type === "overdue").length;
   const dueTodayCount = mockFocusItems.filter(i => i.type === "due_today").length;
+  const needsAttentionCount = mockFocusItems.filter(i => i.type === "needs_attention").length;
+  const isCeo = mockUser.role === "ceo";
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -135,82 +170,163 @@ export default function HubPage() {
           </p>
           <p className="ai-message-content">{focusMessage}</p>
           <div className="ai-suggestions mt-3">
-            {overdueCount > 0 && (
-              <Link href="/briefs?filter=overdue" className="ai-suggestion-chip">
-                Show overdue ({overdueCount})
-              </Link>
+            {isCeo ? (
+              <>
+                {needsAttentionCount > 0 && (
+                  <Link href="/retainers/burn" className="ai-suggestion-chip">
+                    Review alerts ({needsAttentionCount})
+                  </Link>
+                )}
+                <Link href="/crm" className="ai-suggestion-chip">
+                  View pipeline
+                </Link>
+                <Link href="/resources/availability" className="ai-suggestion-chip">
+                  Team capacity
+                </Link>
+              </>
+            ) : (
+              <>
+                {overdueCount > 0 && (
+                  <Link href="/briefs?filter=overdue" className="ai-suggestion-chip">
+                    Show overdue ({overdueCount})
+                  </Link>
+                )}
+                {dueTodayCount > 0 && (
+                  <Link href="/briefs?filter=due_today" className="ai-suggestion-chip">
+                    Today's deadlines ({dueTodayCount})
+                  </Link>
+                )}
+                <Link href="/briefs" className="ai-suggestion-chip">
+                  View all briefs
+                </Link>
+              </>
             )}
-            {dueTodayCount > 0 && (
-              <Link href="/briefs?filter=due_today" className="ai-suggestion-chip">
-                Today's deadlines ({dueTodayCount})
-              </Link>
-            )}
-            <Link href="/briefs" className="ai-suggestion-chip">
-              View all briefs
-            </Link>
           </div>
         </div>
       </div>
 
       {/* Quick Stats Row */}
       <div className="grid gap-4 grid-cols-2 md:grid-cols-4 stagger-children">
-        <Card className="interactive-lift">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <FileText className="h-4 w-4" />
-              <span className="text-sm">Active Briefs</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold">{mockStats.briefs.active}</span>
-              <span className="text-sm text-emerald-500">+{mockStats.briefs.thisWeek} this week</span>
-            </div>
-          </CardContent>
-        </Card>
+        {isCeo ? (
+          <>
+            <Card className="interactive-lift">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <TrendingUp className="h-4 w-4" />
+                  <span className="text-sm">Revenue MTD</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-emerald-500">{(mockStats as any).revenue?.mtd}</span>
+                  <span className="text-sm text-emerald-500">+{(mockStats as any).revenue?.wonThisMonth} won</span>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card className="interactive-lift">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <Clock className="h-4 w-4" />
-              <span className="text-sm">Time Today</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold">{mockStats.time.loggedToday}</span>
-              <span className="text-sm text-muted-foreground">/ {mockStats.time.target}</span>
-            </div>
-          </CardContent>
-        </Card>
+            <Card className="interactive-lift">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Target className="h-4 w-4" />
+                  <span className="text-sm">Pipeline</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold">{(mockStats as any).revenue?.pipeline}</span>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card className="interactive-lift">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <Repeat className="h-4 w-4" />
-              <span className="text-sm">Retainers</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-emerald-500">{mockStats.retainers.healthy}</span>
-              <span className="text-sm text-muted-foreground">healthy</span>
-              {mockStats.retainers.atRisk > 0 && (
-                <Badge variant="destructive" className="ml-2">{mockStats.retainers.atRisk} at risk</Badge>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            <Card className="interactive-lift">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Repeat className="h-4 w-4" />
+                  <span className="text-sm">Retainers</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-emerald-500">{mockStats.retainers.healthy}</span>
+                  <span className="text-sm text-muted-foreground">healthy</span>
+                  {mockStats.retainers.atRisk > 0 && (
+                    <Badge variant="destructive" className="ml-2">{mockStats.retainers.atRisk} at risk</Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card className="interactive-lift">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <Users className="h-4 w-4" />
-              <span className="text-sm">Team</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold">{mockStats.team.available}</span>
-              <span className="text-sm text-muted-foreground">available</span>
-              {mockStats.team.onLeave > 0 && (
-                <span className="text-sm text-amber-500 ml-2">{mockStats.team.onLeave} on leave</span>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            <Card className="interactive-lift">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Users className="h-4 w-4" />
+                  <span className="text-sm">Team</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold">{mockStats.team.available}</span>
+                  <span className="text-sm text-muted-foreground">available</span>
+                  {mockStats.team.overCapacity > 0 && (
+                    <Badge variant="secondary" className="ml-2 text-amber-600">{mockStats.team.overCapacity} overloaded</Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <>
+            <Card className="interactive-lift">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <FileText className="h-4 w-4" />
+                  <span className="text-sm">Active Briefs</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold">{mockStats.briefs.active}</span>
+                  <span className="text-sm text-emerald-500">+{mockStats.briefs.thisWeek} this week</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="interactive-lift">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Clock className="h-4 w-4" />
+                  <span className="text-sm">Time Today</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold">{mockStats.time.loggedToday}</span>
+                  <span className="text-sm text-muted-foreground">/ {mockStats.time.target}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="interactive-lift">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Repeat className="h-4 w-4" />
+                  <span className="text-sm">Retainers</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-emerald-500">{mockStats.retainers.healthy}</span>
+                  <span className="text-sm text-muted-foreground">healthy</span>
+                  {mockStats.retainers.atRisk > 0 && (
+                    <Badge variant="destructive" className="ml-2">{mockStats.retainers.atRisk} at risk</Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="interactive-lift">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Users className="h-4 w-4" />
+                  <span className="text-sm">Team</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold">{mockStats.team.available}</span>
+                  <span className="text-sm text-muted-foreground">available</span>
+                  {mockStats.team.onLeave > 0 && (
+                    <span className="text-sm text-amber-500 ml-2">{mockStats.team.onLeave} on leave</span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
       {/* Main Content Grid */}
@@ -218,9 +334,9 @@ export default function HubPage() {
         {/* Left: Focus Items */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Focus Items</h2>
-            <Link href="/briefs" className="text-sm text-primary hover:underline flex items-center gap-1">
-              View all <ArrowRight className="h-3 w-3" />
+            <h2 className="text-lg font-semibold">{isCeo ? "Company Pulse" : "Focus Items"}</h2>
+            <Link href={isCeo ? "/admin" : "/briefs"} className="text-sm text-primary hover:underline flex items-center gap-1">
+              {isCeo ? "Full dashboard" : "View all"} <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
 
