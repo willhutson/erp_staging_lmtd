@@ -4,6 +4,26 @@
 
 Course creation, delivery, and tracking system for employee training and development.
 
+## Important Notes
+
+### Database Setup
+The LMS tables must be created in the database before use. Run:
+```bash
+npx prisma db push
+```
+
+If the tables don't exist, the LMS page will show a friendly "Setup Required" message instead of crashing.
+
+### Error Handling
+The LMS page (`/lms/page.tsx`) includes error handling for missing tables:
+```typescript
+try {
+  [courses, myEnrollments] = await Promise.all([getCourses(), getMyEnrollments()]);
+} catch (error) {
+  hasError = true; // Shows setup message
+}
+```
+
 ## Key Concepts
 
 ### Course Structure

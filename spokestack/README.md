@@ -45,6 +45,42 @@ A modern multi-tenant ERP and creative studio platform built for professional se
 - **State**: Zustand + React Query
 - **Deployment**: Vercel
 
+## Performance Optimizations
+
+### Request Deduplication
+Auth and database calls are memoized using React's `cache()` function, ensuring each request only makes one call to Supabase and the database even when multiple components need user data:
+
+```typescript
+// src/lib/supabase/server.ts - Runs once per request
+export const getUser = cache(async () => {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+});
+```
+
+### Loading States
+The platform uses skeleton loading components for instant visual feedback during navigation:
+
+```
+/src/app/(platform)/loading.tsx       # Platform-wide skeleton
+/src/app/(platform)/lms/loading.tsx   # LMS-specific skeleton
+/src/app/(platform)/admin/loading.tsx # Admin skeleton
+/src/app/(platform)/hub/loading.tsx   # Hub skeleton
+```
+
+### Error Handling
+Server Components include graceful error handling for modules that may not be initialized:
+
+```typescript
+// Example: LMS page handles missing database tables
+try {
+  [courses, enrollments] = await Promise.all([getCourses(), getMyEnrollments()]);
+} catch (error) {
+  hasError = true; // Shows setup message instead of crashing
+}
+```
+
 ## Getting Started
 
 ### Prerequisites

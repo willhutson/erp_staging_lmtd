@@ -42,6 +42,42 @@
 | Supabase | Managed PostgreSQL + Realtime |
 | Sentry | Error monitoring |
 
+### Performance Optimizations
+
+| Optimization | Implementation |
+|--------------|----------------|
+| Request Deduplication | React `cache()` for auth/DB calls |
+| Loading States | Skeleton components in `loading.tsx` |
+| Error Boundaries | Graceful degradation for missing modules |
+
+#### Request Deduplication
+Auth and user database lookups are memoized per-request using React's `cache()`:
+
+```typescript
+// src/lib/supabase/server.ts
+export const getUser = cache(async () => {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+});
+
+// src/lib/auth.ts
+const getUserFromDatabase = cache(async () => {
+  const supabaseUser = await getUser();
+  return prisma.user.findFirst({ where: { supabaseId: supabaseUser.id } });
+});
+```
+
+This ensures that even when layout, page, and components all call `getStudioUser()`, only one Supabase API call and one database query occurs per request.
+
+#### Loading States
+Each major route has a `loading.tsx` file with skeleton components for instant visual feedback:
+
+- `/src/app/(platform)/loading.tsx` - Platform-wide
+- `/src/app/(platform)/lms/loading.tsx` - LMS module
+- `/src/app/(platform)/admin/loading.tsx` - Admin section
+- `/src/app/(platform)/hub/loading.tsx` - Hub section
+
 ---
 
 ## 2. Project Structure
