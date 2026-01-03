@@ -19,8 +19,17 @@ A modern multi-tenant ERP and creative studio platform built for professional se
 - **Video Projects** - Scripts, storyboards, shot lists, and production tracking
 - **Pitch Decks** - AI-assisted presentation builder with slide templates
 - **Moodboards** - Visual inspiration boards with AI generation
-- **Content Calendar** - Social media content planning and scheduling
+- **Content Calendar** - Social media content planning and scheduling with AI generation
 - **AI Skills** - Pre-built AI assistants for copywriting, video scripts, design briefs, and more
+
+### AI Calendar Generator
+Generate complete content calendars with GPT-4:
+- **Gallery View** - Client calendars as cards with entry previews
+- **3-Step Wizard** - Setup (mood, goals, holidays) → Cadence (posts/week) → Preview & Save
+- **UAE Holidays** - Auto-populated Islamic and international holidays
+- **Platform Cadence** - Configure posts per week per platform (Instagram, LinkedIn, TikTok, etc.)
+- **Content Mix** - Set percentages for POST, REEL, CAROUSEL, STORY, etc.
+- **Pitch Mode** - Generate sample calendars for RFP proposals
 
 ### Forms (Surveys, Polls & Quizzes)
 - **All Forms** - Create and manage surveys, polls, and quizzes
