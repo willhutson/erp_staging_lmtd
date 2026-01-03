@@ -35,10 +35,12 @@ A multi-tenant ERP platform for professional services agencies. TeamLMTD (a Duba
   
   /modules             # Feature modules (each has own CLAUDE.md)
     /briefs
-    /resources  
+    /resources
     /time-tracking
     /rfp
     /integrations
+    /studio            # SpokeStudio - content creation suite
+    /lms               # Learning Management System
   
   /components
     /ui                # shadcn/ui components
@@ -226,6 +228,115 @@ These phrases trigger continuity actions:
 - **"create handoff"** → Generate session transfer document
 - **"resume from handoff"** → Load prior context and continue
 - **"what's the current state?"** → Review ledger and recent work
+
+## SpokeStudio Module
+
+SpokeStudio is the content creation suite located at `/studio`. Key features:
+
+### AI Calendar Generator (`/studio/calendar`)
+
+AI-powered social media content calendar generator:
+
+```typescript
+// Server action: src/modules/studio/actions/ai-calendar-actions.ts
+import { generateAICalendar, saveGeneratedCalendarEntries } from "./ai-calendar-actions";
+
+const result = await generateAICalendar({
+  clientId: "...",
+  clientName: "Client Name",
+  month: new Date("2025-02-01"),
+  moodTheme: "Modern and minimalist",
+  goals: "Launch new product, increase engagement",
+  holidays: ["Valentine's Day (Feb 14)"],
+  cadence: {
+    instagram: { postsPerWeek: 5, contentMix: [...] },
+    linkedin: { postsPerWeek: 3, contentMix: [...] },
+    // ...
+  },
+  isPitchMode: false, // Set true for RFP sample calendars
+});
+```
+
+**Features:**
+- UAE holidays auto-populated (Islamic + international)
+- Platform cadence settings per channel
+- "Sample for Pitch" mode for RFP demos
+- GPT-4 powered content generation
+- Bulk preview and select before saving
+
+### Content Types
+
+| Type | Best For |
+|------|----------|
+| POST | Static image posts |
+| CAROUSEL | Multi-image educational content |
+| REEL | Short-form video (Instagram/TikTok) |
+| STORY | Ephemeral 24h content |
+| LIVE | Live streaming events |
+| ARTICLE | LinkedIn long-form |
+| THREAD | Twitter/X threads |
+| AD | Paid promotional content |
+
+## Performance Optimizations
+
+### React `cache()` for Request Deduplication
+
+Auth and session calls are memoized per-request to avoid redundant database queries:
+
+```typescript
+// src/lib/supabase/server.ts
+import { cache } from "react";
+
+export const getSession = cache(async () => {
+  const client = await createClient();
+  const { data } = await client?.auth.getSession();
+  return data?.session ?? null;
+});
+
+export const getUser = cache(async () => {
+  const client = await createClient();
+  const { data } = await client?.auth.getUser();
+  return data?.user ?? null;
+});
+```
+
+### Loading Skeletons
+
+Use `loading.tsx` files for instant feedback during navigation:
+
+```
+src/app/(platform)/loading.tsx      # Platform-wide skeleton
+src/app/(platform)/lms/loading.tsx  # LMS-specific skeleton
+src/app/(platform)/admin/loading.tsx
+src/app/(platform)/hub/loading.tsx
+```
+
+### Graceful Error Handling
+
+Modules with optional database tables should handle missing tables gracefully:
+
+```typescript
+// Example: LMS page with try-catch
+let courses = [];
+let hasError = false;
+
+try {
+  courses = await getCourses();
+} catch (error) {
+  console.error("LMS data fetch error:", error);
+  hasError = true;
+}
+
+if (hasError) {
+  return <SetupRequiredMessage />;
+}
+```
+
+## Custom Commands
+
+| Command | Description |
+|---------|-------------|
+| `/technicalwriter` | Update technical documentation after code changes |
 
 ## Documentation
 
