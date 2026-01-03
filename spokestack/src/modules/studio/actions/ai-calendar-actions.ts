@@ -171,8 +171,8 @@ export async function generateAICalendar(
       .filter(([_, config]) => config.postsPerWeek > 0)
       .map(([platform, config]) => {
         const mixDesc = config.contentMix
-          .filter(m => m.percentage > 0)
-          .map(m => `${m.percentage}% ${m.type}`)
+          .filter((m: ContentMixItem) => m.percentage > 0)
+          .map((m: ContentMixItem) => `${m.percentage}% ${m.type}`)
           .join(", ");
         return `- ${platform}: ${config.postsPerWeek} posts/week (${mixDesc || "any format"})`;
       })
