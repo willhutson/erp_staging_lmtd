@@ -169,7 +169,7 @@ Private - TeamLMTD
 
 ### AI Calendar Generator (SpokeStudio)
 
-New AI-powered social media content calendar generator in **Studio → Calendar**:
+New AI-powered social media content calendar generator at **[spokestack.vercel.app/studio/calendar](https://spokestack.vercel.app/studio/calendar)**:
 
 - **3-Step Wizard**: Setup → Cadence → Preview workflow
 - **"Sample for Pitch" Mode**: Generate showcase-quality content for RFP demos

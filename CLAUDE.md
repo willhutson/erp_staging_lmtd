@@ -231,9 +231,9 @@ These phrases trigger continuity actions:
 
 ## SpokeStudio Module
 
-SpokeStudio is the content creation suite located at `/studio`. Key features:
+SpokeStudio is the content creation suite located at [`/studio`](https://spokestack.vercel.app/studio). Key features:
 
-### AI Calendar Generator (`/studio/calendar`)
+### AI Calendar Generator ([`/studio/calendar`](https://spokestack.vercel.app/studio/calendar))
 
 AI-powered social media content calendar generator:
 
