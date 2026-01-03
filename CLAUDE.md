@@ -388,6 +388,66 @@ if (hasError) {
 |---------|-------------|
 | `/technicalwriter` | Update technical documentation after code changes |
 
+## Design System Components
+
+Located in `spokestack/src/components/ui/`:
+
+### Pipeline Funnel (`pipeline-funnel.tsx`)
+
+Sales pipeline visualization with conversion rates:
+
+```typescript
+import { PipelineFunnel, MiniFunnel, VerticalFunnel, DEMO_PIPELINE_STAGES } from "@/components/ui/pipeline-funnel";
+
+// Full funnel with conversion percentages between stages
+<PipelineFunnel
+  stages={stages}
+  title="Sales Pipeline"
+  showConversion={true}
+  showValue={true}
+/>
+
+// Compact horizontal mini funnel for dashboards
+<MiniFunnel stages={stages} />
+
+// Classic vertical funnel shape
+<VerticalFunnel stages={stages} />
+```
+
+### Animated Icons (`animated-icons.tsx`)
+
+CSS-based animated Lucide icons (no external dependencies):
+
+```typescript
+import {
+  SparklesAnimated,  // Scale/rotate sparkle
+  ZapAnimated,       // Electric flash with glow
+  BellAnimated,      // Ring notification
+  CheckAnimated,     // Pop-in checkmark
+  SendAnimated,      // Fly animation
+  HeartAnimated,     // Pulse/beat
+  StarAnimated,      // Twinkle rotation
+  TrendingAnimated,  // Grow animation
+  SuccessAnimated,   // Circle draw + check
+  AIThinking,        // Continuous loading pulse
+} from "@/components/ui/animated-icons";
+
+<SparklesAnimated trigger="hover" />
+<BellAnimated hasNotification={true} />
+<AIThinking />  // Use for AI loading states
+```
+
+### Hub Role-Adaptive Views
+
+The Hub (`/hub`) adapts based on user role:
+
+| Role | Stats Shown | Quick Actions |
+|------|-------------|---------------|
+| CEO | Revenue MTD, Pipeline, Retainers, Team | 12-module grid + Company Pulse |
+| Leadership | Active Deals, Team Capacity, Retainer Health | Pipeline, Resources, RFP |
+| AM | Active Briefs, Time Logged, Retainers, Team | New Brief, My Briefs, Calendar |
+| Creative | Assignments, Time, Projects | My Work, Timer, Moodboard |
+
 ## Documentation
 
 Full specs are in `/docs`:
