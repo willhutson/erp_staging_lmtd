@@ -1,7 +1,6 @@
 import { getStudioUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { CalendarClient } from "./calendar-client";
-import { startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
+import { CalendarGalleryClient } from "./gallery-client";
 import { AlertTriangle } from "lucide-react";
 
 // Force dynamic rendering - uses cookies for auth
@@ -16,104 +15,69 @@ function CalendarError({ message }: { message: string }) {
         </div>
         <h2 className="text-xl font-semibold mb-2">Calendar Unavailable</h2>
         <p className="text-muted-foreground mb-4">
-          {message || "Unable to load calendar. Please try again later."}
+          {message || "Unable to load calendar data. Please try again later."}
         </p>
       </div>
     </div>
   );
 }
 
-export default async function CalendarPage() {
+export default async function CalendarGalleryPage() {
   try {
     const user = await getStudioUser();
 
-  // Calculate date range for fetching (3 months window)
-  const now = new Date();
-  const rangeStart = startOfMonth(subMonths(now, 1));
-  const rangeEnd = endOfMonth(addMonths(now, 1));
-
-  // Fetch calendar entries for the organization
-  const entries = await db.studioCalendarEntry.findMany({
-    where: {
-      organizationId: user.organizationId,
-    },
-    include: {
-      createdBy: { select: { id: true, name: true, avatarUrl: true } },
-      assignee: { select: { id: true, name: true, avatarUrl: true } },
-      client: { select: { id: true, name: true } },
-      document: { select: { id: true, title: true } },
-    },
-    orderBy: { scheduledDate: "asc" },
-  });
-
-  // Fetch clients for the create modal
-  const clients = await db.client.findMany({
-    where: {
-      organizationId: user.organizationId,
-      isActive: true,
-    },
-    select: { id: true, name: true, code: true },
-    orderBy: { name: "asc" },
-  });
-
-  // Fetch brief deadlines for the calendar
-  const briefDeadlines = await db.brief.findMany({
-    where: {
-      organizationId: user.organizationId,
-      deadline: {
-        gte: rangeStart,
-        lte: rangeEnd,
+    // Fetch clients with their calendar entry counts
+    const clients = await db.client.findMany({
+      where: {
+        organizationId: user.organizationId,
+        isActive: true,
       },
-      status: {
-        notIn: ["COMPLETED", "CANCELLED"],
-      },
-    },
-    select: {
-      id: true,
-      briefNumber: true,
-      title: true,
-      type: true,
-      status: true,
-      deadline: true,
-      client: {
-        select: {
-          id: true,
-          name: true,
-          code: true,
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        _count: {
+          select: {
+            studioCalendarEntries: true,
+          },
         },
       },
-      assignee: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-    },
-    orderBy: { deadline: "asc" },
-  });
+      orderBy: { name: "asc" },
+    });
 
-  // Transform deadlines to match the expected type
-  type BriefDeadline = (typeof briefDeadlines)[number];
-  const formattedDeadlines = briefDeadlines.map((brief: BriefDeadline) => ({
-    id: brief.id,
-    briefNumber: brief.briefNumber,
-    title: brief.title,
-    type: brief.type,
-    status: brief.status,
-    deadline: brief.deadline!,
-    client: brief.client,
-    assignee: brief.assignee || undefined,
-  }));
+    // Get recent calendar entries per client for preview
+    const clientsWithPreview = await Promise.all(
+      clients.map(async (client) => {
+        const recentEntries = await db.studioCalendarEntry.findMany({
+          where: {
+            clientId: client.id,
+            organizationId: user.organizationId,
+          },
+          select: {
+            id: true,
+            title: true,
+            contentType: true,
+            scheduledDate: true,
+            platforms: true,
+            color: true,
+          },
+          orderBy: { scheduledDate: "desc" },
+          take: 5,
+        });
 
-    return (
-      <CalendarClient
-        initialEntries={entries}
-        clients={clients}
-        briefDeadlines={formattedDeadlines}
-      />
+        return {
+          id: client.id,
+          name: client.name,
+          code: client.code,
+          entryCount: client._count.studioCalendarEntries,
+          recentEntries,
+        };
+      })
     );
+
+    return <CalendarGalleryClient clients={clientsWithPreview} />;
   } catch (error) {
-    console.error("Calendar page error:", error);
+    console.error("Calendar gallery error:", error);
     const message = error instanceof Error ? error.message : "An unexpected error occurred";
     return <CalendarError message={message} />;
   }

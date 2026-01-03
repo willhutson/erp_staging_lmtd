@@ -45,6 +45,7 @@ interface AICalendarGeneratorModalProps {
   onClose: () => void;
   onComplete: () => void;
   clients: { id: string; name: string; code?: string }[];
+  defaultClientId?: string;
 }
 
 type Step = "setup" | "cadence" | "preview";
@@ -80,6 +81,7 @@ export function AICalendarGeneratorModal({
   onClose,
   onComplete,
   clients,
+  defaultClientId,
 }: AICalendarGeneratorModalProps) {
   const [step, setStep] = useState<Step>("setup");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -89,7 +91,7 @@ export function AICalendarGeneratorModal({
   const [selectedEntries, setSelectedEntries] = useState<Set<number>>(new Set());
 
   // Form state - Setup
-  const [clientId, setClientId] = useState("");
+  const [clientId, setClientId] = useState(defaultClientId || "");
   const [selectedMonth, setSelectedMonth] = useState(startOfMonth(addMonths(new Date(), 1)));
   const [moodTheme, setMoodTheme] = useState("");
   const [goals, setGoals] = useState("");
@@ -196,7 +198,7 @@ export function AICalendarGeneratorModal({
 
   const resetForm = () => {
     setStep("setup");
-    setClientId("");
+    setClientId(defaultClientId || "");
     setSelectedMonth(startOfMonth(addMonths(new Date(), 1)));
     setMoodTheme("");
     setGoals("");
