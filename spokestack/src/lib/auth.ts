@@ -1,6 +1,7 @@
 // Auth compatibility layer for studio module
 // Wraps Supabase auth to provide NextAuth-like interface
 
+import { cache } from "react";
 import { getSession, getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 
@@ -19,9 +20,9 @@ export interface Session {
 
 /**
  * Get user from database based on Supabase auth
- * Used by layouts and pages to get the current user
+ * Memoized - only runs once per request even if called multiple times
  */
-async function getUserFromDatabase(): Promise<SessionUser | null> {
+const getUserFromDatabase = cache(async (): Promise<SessionUser | null> => {
   const supabaseUser = await getUser();
   if (!supabaseUser) {
     return null;
@@ -60,7 +61,7 @@ async function getUserFromDatabase(): Promise<SessionUser | null> {
     organizationId: user.organizationId,
     permissionLevel: user.permissionLevel,
   };
-}
+});
 
 /**
  * Get session with user data

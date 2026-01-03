@@ -1,7 +1,9 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 
-export async function createClient() {
+// Memoized client creation - only runs once per request
+export const createClient = cache(async () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -30,22 +32,24 @@ export async function createClient() {
       },
     },
   });
-}
+});
 
-export async function getSession() {
+// Memoized session fetch - only runs once per request even if called multiple times
+export const getSession = cache(async () => {
   const supabase = await createClient();
   if (!supabase) return null;
   const {
     data: { session },
   } = await supabase.auth.getSession();
   return session;
-}
+});
 
-export async function getUser() {
+// Memoized user fetch - only runs once per request even if called multiple times
+export const getUser = cache(async () => {
   const supabase = await createClient();
   if (!supabase) return null;
   const {
     data: { user },
   } = await supabase.auth.getUser();
   return user;
-}
+});
