@@ -120,12 +120,59 @@ const adminModules = [
   },
 ];
 
-// Module bundles with nested modules
+// Module bundles with nested modules - Redesigned navigation (Q1 2025)
 const moduleBundles = [
+  // AGENCY - Primary work section (moved to top)
   {
-    id: "erp",
-    label: "ERP",
-    tagline: "Core Operations",
+    id: "agency",
+    label: "Agency",
+    tagline: "Client Services",
+    icon: Building2,
+    color: "text-emerald-500",
+    bgColor: "bg-emerald-500",
+    modules: [
+      {
+        id: "briefs",
+        label: "Briefs",
+        icon: FileText,
+        href: "/briefs",
+        items: [
+          { label: "All Briefs", href: "/briefs" },
+          { label: "My Briefs", href: "/briefs/my" },
+          { label: "Briefed by Me", href: "/briefs/briefed-by-me" },
+          { label: "Pending Review", href: "/briefs/pending" },
+        ],
+      },
+      { id: "projects", label: "Projects", icon: FolderKanban, href: "/projects" },
+      { id: "clients", label: "Clients", icon: Building2, href: "/clients" },
+      {
+        id: "resources",
+        label: "Resources",
+        icon: Calendar,
+        href: "/resources",
+        items: [
+          { label: "Capacity", href: "/resources" },
+          { label: "Team Availability", href: "/resources/availability" },
+        ],
+      },
+      {
+        id: "retainers",
+        label: "Retainers",
+        icon: Repeat,
+        href: "/retainers",
+        items: [
+          { label: "Active Retainers", href: "/retainers" },
+          { label: "Burn Rate", href: "/retainers/burn" },
+          { label: "Scope Changes", href: "/retainers/scope-changes" },
+        ],
+      },
+    ],
+  },
+  // TIME & TEAM - Tracking and People
+  {
+    id: "operations",
+    label: "Operations",
+    tagline: "Time & Team",
     icon: Briefcase,
     color: "text-indigo-500",
     bgColor: "bg-indigo-500",
@@ -148,6 +195,7 @@ const moduleBundles = [
         href: "/leave",
         items: [
           { label: "My Leave", href: "/leave" },
+          { label: "Request", href: "/leave/request" },
           { label: "Calendar", href: "/leave/calendar" },
           { label: "Approvals", href: "/leave/approvals" },
         ],
@@ -159,39 +207,37 @@ const moduleBundles = [
         href: "/team",
         items: [
           { label: "Directory", href: "/team" },
-          { label: "Departments", href: "/team/departments" },
           { label: "Org Chart", href: "/team/org-chart" },
+          { label: "Departments", href: "/team/departments" },
           { label: "Delegation", href: "/team/delegation" },
         ],
       },
       { id: "chat", label: "SpokeChat", icon: MessageSquare, href: "/chat" },
     ],
   },
+  // CRM - Pipeline (merged RFP with type tag)
   {
-    id: "agency",
-    label: "Agency",
-    tagline: "Client Services",
-    icon: Building2,
-    color: "text-emerald-500",
-    bgColor: "bg-emerald-500",
+    id: "crm-bundle",
+    label: "CRM",
+    tagline: "Pipeline & Deals",
+    icon: Handshake,
+    color: "text-blue-500",
+    bgColor: "bg-blue-500",
     modules: [
       {
-        id: "briefs",
-        label: "Briefs",
-        icon: FileText,
-        href: "/briefs",
+        id: "pipeline",
+        label: "Pipeline",
+        icon: Target,
+        href: "/crm",
         items: [
-          { label: "All Briefs", href: "/briefs" },
-          { label: "My Briefs", href: "/briefs/my" },
-          { label: "Pending Review", href: "/briefs/pending" },
+          { label: "All Deals", href: "/crm" },
+          { label: "Private Deals", href: "/crm/deals" },
+          { label: "RFPs & Tenders", href: "/rfp" },
+          { label: "Tasks", href: "/crm/tasks" },
         ],
       },
-      { id: "clients", label: "Clients", icon: Building2, href: "/clients" },
-      { id: "retainers", label: "Retainers", icon: Repeat, href: "/retainers" },
-      { id: "projects", label: "Projects", icon: FolderKanban, href: "/projects" },
-      { id: "resources", label: "Resources", icon: Calendar, href: "/resources" },
-      { id: "crm", label: "CRM", icon: Handshake, href: "/crm" },
-      { id: "rfp", label: "RFP Pipeline", icon: Target, href: "/rfp" },
+      { id: "contacts", label: "Contacts", icon: Users, href: "/crm/contacts" },
+      { id: "companies", label: "Companies", icon: Building2, href: "/crm/companies" },
     ],
   },
   {
@@ -377,7 +423,8 @@ interface AppSidebarProps {
 
 export function AppSidebar({ user, tenant }: AppSidebarProps) {
   const pathname = usePathname();
-  const [expandedBundles, setExpandedBundles] = useState<string[]>(["erp", "agency", "forms", "marketing", "studio", "boards", "workflows", "learning", "portal"]);
+  // Agency and Operations expanded by default for quick access
+  const [expandedBundles, setExpandedBundles] = useState<string[]>(["agency", "operations", "crm-bundle", "studio"]);
   const [expandedModules, setExpandedModules] = useState<string[]>([]);
 
   // Check if this is the default SpokeStack tenant (super admin access)
@@ -440,18 +487,49 @@ export function AppSidebar({ user, tenant }: AppSidebarProps) {
       </SidebarHeader>
 
       <SidebarContent className="px-2">
-        {/* Hub Link */}
+        {/* Hub Link - Command Center */}
         <SidebarGroup className="pt-2">
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname === "/hub"}>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === "/hub"}
+                className="bg-gradient-to-r from-primary/10 to-transparent hover:from-primary/20"
+              >
                 <Link href="/hub">
-                  <Home className="h-4 w-4" />
-                  <span>Hub</span>
+                  <Home className="h-4 w-4 text-primary" />
+                  <span className="font-medium">Hub</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
+        </SidebarGroup>
+
+        {/* Quick Actions */}
+        <SidebarGroup className="pt-1">
+          <SidebarGroupLabel className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+            Quick Actions
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className="text-muted-foreground hover:text-foreground">
+                  <Link href="/briefs/new">
+                    <FileText className="h-3.5 w-3.5" />
+                    <span className="text-sm">New Brief</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className="text-muted-foreground hover:text-foreground">
+                  <Link href="/time">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span className="text-sm">Start Timer</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarSeparator className="my-2" />

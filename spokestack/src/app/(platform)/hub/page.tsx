@@ -3,383 +3,338 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Shield,
-  Settings,
-  Headphones,
-  CreditCard,
-  BarChart3,
-  Palette,
-  FileText,
   Clock,
-  Palmtree,
-  Users,
+  FileText,
+  AlertCircle,
+  CheckCircle2,
   ArrowRight,
-  Building2,
-  Briefcase,
-  Layers,
-  FolderKanban,
-  Repeat,
-  Handshake,
-  Target,
-  Radio,
-  Sparkles,
-  Grid3X3,
-  Megaphone,
   Calendar,
-  Globe,
-  UserCircle,
-  Plug,
+  TrendingUp,
+  Users,
+  Building2,
+  Sparkles,
+  Bell,
+  Timer,
+  Target,
+  Repeat,
   MessageSquare,
-  FileCheck,
-  Eye,
-  GitBranch,
-  Kanban,
-  LayoutTemplate,
-  Video,
-  Presentation,
-  ImageIcon,
-  ClipboardList,
-  GraduationCap,
-  BookOpen,
-  Award,
 } from "lucide-react";
-
-// Admin sections (left side)
-const ADMIN_SECTIONS = [
-  {
-    id: "admin",
-    label: "Admin",
-    description: "Organization settings, users, roles, and integrations",
-    icon: Settings,
-    href: "/admin",
-    color: "from-slate-500 to-slate-600",
-    bgColor: "bg-slate-500",
-    modules: [
-      { label: "Dashboard", href: "/admin", icon: Settings },
-      { label: "Organizations", href: "/admin/organizations", icon: Building2 },
-      { label: "Users", href: "/admin/users", icon: Users },
-      { label: "Roles", href: "/admin/roles", icon: UserCircle },
-      { label: "Client Portals", href: "/admin/instances", icon: Layers },
-      { label: "Integrations", href: "/admin/integrations", icon: Plug },
-    ],
-  },
-  {
-    id: "superadmin",
-    label: "Super Admin",
-    description: "Platform-wide management for SpokeStack staff",
-    icon: Shield,
-    href: "/superadmin",
-    color: "from-red-500 to-red-600",
-    bgColor: "bg-red-500",
-    badge: "Staff Only",
-    modules: [
-      { label: "Dashboard", href: "/superadmin", icon: Shield },
-      { label: "Organizations", href: "/superadmin/organizations", icon: Building2 },
-      { label: "Instances", href: "/superadmin/instances", icon: Layers },
-      { label: "Domains", href: "/superadmin/domains", icon: Globe },
-    ],
-  },
-];
-
-// Module bundles (right side)
-const MODULE_BUNDLES = [
-  {
-    id: "erp",
-    label: "ERP",
-    tagline: "Core Operations",
-    description: "Briefs, time tracking, leave management, team, and communication",
-    icon: Briefcase,
-    href: "/briefs",
-    color: "from-indigo-500 to-indigo-600",
-    bgColor: "bg-indigo-500",
-    modules: [
-      { label: "Briefs", href: "/briefs", icon: FileText, description: "Work requests & briefs" },
-      { label: "Time Tracking", href: "/time", icon: Clock, description: "Timer & timesheets" },
-      { label: "Leave", href: "/leave", icon: Palmtree, description: "PTO & approvals" },
-      { label: "Team", href: "/team", icon: Users, description: "Directory & org chart" },
-      { label: "SpokeChat", href: "/chat", icon: MessageSquare, description: "Team communication" },
-    ],
-  },
-  {
-    id: "agency",
-    label: "Agency",
-    tagline: "Client Services",
-    description: "Clients, retainers, projects, resources, CRM, and RFP pipeline",
-    icon: Building2,
-    href: "/clients",
-    color: "from-emerald-500 to-emerald-600",
-    bgColor: "bg-emerald-500",
-    modules: [
-      { label: "Clients", href: "/clients", icon: Building2, description: "Client accounts" },
-      { label: "Retainers", href: "/retainers", icon: Repeat, description: "Recurring contracts" },
-      { label: "Projects", href: "/projects", icon: FolderKanban, description: "Project management" },
-      { label: "Resources", href: "/resources", icon: Calendar, description: "Capacity planning" },
-      { label: "CRM", href: "/crm", icon: Handshake, description: "Lead management" },
-      { label: "RFP Pipeline", href: "/rfp", icon: Target, description: "New business" },
-    ],
-  },
-  {
-    id: "forms",
-    label: "Forms",
-    tagline: "Surveys, Polls & More",
-    description: "Create surveys, polls, quizzes, and forms with AI-powered builder",
-    icon: ClipboardList,
-    href: "/surveys",
-    color: "from-rose-500 to-rose-600",
-    bgColor: "bg-rose-500",
-    modules: [
-      { label: "All Forms", href: "/surveys", icon: ClipboardList, description: "Surveys & responses" },
-      { label: "Templates", href: "/surveys/templates", icon: LayoutTemplate, description: "Reusable templates" },
-      { label: "Form Builder", href: "/surveys/builder", icon: Sparkles, description: "AI-powered builder" },
-      { label: "NPS", href: "/feedback/nps", icon: BarChart3, description: "Net Promoter Score" },
-    ],
-  },
-  {
-    id: "marketing",
-    label: "Marketing",
-    tagline: "Digital Tools",
-    description: "Social listening, media buying, analytics, and dashboard builder",
-    icon: Megaphone,
-    href: "/listening",
-    color: "from-purple-500 to-purple-600",
-    bgColor: "bg-purple-500",
-    modules: [
-      { label: "Listening", href: "/listening", icon: Headphones, description: "Brand monitoring" },
-      { label: "Trackers", href: "/listening/trackers", icon: Radio, description: "Mention tracking" },
-      { label: "Media Buying", href: "/mediabuying", icon: CreditCard, description: "Ad campaigns" },
-      { label: "Analytics", href: "/analytics", icon: BarChart3, description: "Performance data" },
-      { label: "Builder", href: "/builder", icon: Palette, description: "Custom dashboards" },
-    ],
-  },
-  {
-    id: "portal",
-    label: "Client",
-    tagline: "Clients Only",
-    description: "Client-facing portal for approvals, deliverables, and reports",
-    icon: Eye,
-    href: "/portal",
-    color: "from-cyan-500 to-cyan-600",
-    bgColor: "bg-cyan-500",
-    badge: true,
-    modules: [
-      { label: "Dashboard", href: "/portal", icon: Grid3X3, description: "Overview & stats" },
-      { label: "Approvals", href: "/portal/approvals", icon: FileCheck, description: "Review deliverables" },
-      { label: "Deliverables", href: "/portal/deliverables", icon: FolderKanban, description: "All project assets" },
-      { label: "Reports", href: "/portal/reports", icon: BarChart3, description: "Campaign analytics" },
-    ],
-  },
-  {
-    id: "studio",
-    label: "Studio",
-    tagline: "AI Creative",
-    description: "AI-powered creative workspace with docs, decks, video, and moodboards",
-    icon: Sparkles,
-    href: "/studio",
-    color: "from-violet-500 to-violet-600",
-    bgColor: "bg-violet-500",
-    modules: [
-      { label: "Documents", href: "/studio/docs", icon: FileText, description: "Rich text with AI" },
-      { label: "Pitch Decks", href: "/studio/decks", icon: Presentation, description: "AI presentations" },
-      { label: "Video Studio", href: "/studio/video", icon: Video, description: "Scripts & storyboards" },
-      { label: "Moodboards", href: "/studio/moodboard", icon: ImageIcon, description: "Visual inspiration" },
-      { label: "Calendar", href: "/studio/calendar", icon: Calendar, description: "Content scheduling" },
-      { label: "AI Skills", href: "/studio/skills", icon: Palette, description: "Custom AI assistants" },
-    ],
-  },
-  {
-    id: "workflows",
-    label: "Workflows",
-    tagline: "Process Automation",
-    description: "Monday.com-style boards for team processes and automation",
-    icon: GitBranch,
-    href: "/workflows",
-    color: "from-orange-500 to-orange-600",
-    bgColor: "bg-orange-500",
-    modules: [
-      { label: "Boards", href: "/workflows", icon: Kanban, description: "Workflow boards" },
-      { label: "My Workflows", href: "/workflows/my", icon: FolderKanban, description: "Your assigned tasks" },
-      { label: "Templates", href: "/workflows/templates", icon: LayoutTemplate, description: "Pre-built processes" },
-    ],
-  },
-  {
-    id: "learning",
-    label: "Learning",
-    tagline: "Team Development",
-    description: "LMS for team training, courses, and certifications",
-    icon: GraduationCap,
-    href: "/lms",
-    color: "from-teal-500 to-teal-600",
-    bgColor: "bg-teal-500",
-    modules: [
-      { label: "Learning Center", href: "/lms", icon: GraduationCap, description: "Training dashboard" },
-      { label: "Courses", href: "/lms/courses", icon: BookOpen, description: "Browse all courses" },
-      { label: "Course Builder", href: "/lms/builder", icon: Sparkles, description: "AI curriculum builder" },
-      { label: "My Learning", href: "/lms/my-learning", icon: FolderKanban, description: "Your enrollments" },
-      { label: "Certificates", href: "/lms/certificates", icon: Award, description: "Earned credentials" },
-    ],
-  },
-];
 
 // Force dynamic rendering - uses cookies for auth
 export const dynamic = "force-dynamic";
 
-export default function HubPage() {
+// Mock data - in production, this would come from server actions
+const mockUser = {
+  name: "Will",
+  role: "leadership", // "am" | "creative" | "leadership" | "team_lead"
+};
+
+const mockFocusItems = [
+  { id: "1", title: "ADEK Monthly Report", type: "overdue" as const, dueDate: "2 days ago", client: "ADEK", briefType: "Report" },
+  { id: "2", title: "DET Ramadan Campaign Video", type: "due_today" as const, dueDate: "Today, 5pm", client: "DET", briefType: "Video Edit" },
+  { id: "3", title: "CCAD Social Calendar Review", type: "due_today" as const, dueDate: "Today, EOD", client: "CCAD", briefType: "Review" },
+  { id: "4", title: "ECD Brand Guidelines Update", type: "upcoming" as const, dueDate: "Tomorrow", client: "ECD", briefType: "Design" },
+];
+
+const mockStats = {
+  briefs: { active: 12, completed: 45, thisWeek: 8 },
+  time: { loggedToday: "4h 32m", weekTotal: "28h", target: "40h" },
+  retainers: { atRisk: 2, healthy: 6 },
+  team: { available: 38, onLeave: 4, overCapacity: 3 },
+};
+
+const mockNotifications = [
+  { id: "1", message: "Sarah completed ADEK Video Edit", time: "2 min ago", type: "complete" },
+  { id: "2", message: "New brief assigned: CCAD Social Post", time: "15 min ago", type: "assignment" },
+  { id: "3", message: "DET retainer at 85% burn", time: "1 hour ago", type: "warning" },
+];
+
+// Quick actions based on role
+const quickActions = {
+  am: [
+    { label: "New Brief", href: "/briefs/new", icon: FileText },
+    { label: "View My Briefs", href: "/briefs/briefed-by-me", icon: FileText },
+    { label: "Client Calendar", href: "/studio/calendar", icon: Calendar },
+  ],
+  creative: [
+    { label: "My Assignments", href: "/briefs/my", icon: FileText },
+    { label: "Start Timer", href: "/time", icon: Timer },
+    { label: "Moodboard", href: "/studio/moodboard", icon: Sparkles },
+  ],
+  leadership: [
+    { label: "Team Capacity", href: "/resources", icon: Users },
+    { label: "Retainer Health", href: "/retainers", icon: Repeat },
+    { label: "Pipeline", href: "/crm", icon: Target },
+  ],
+  team_lead: [
+    { label: "Team Assignments", href: "/briefs/pending", icon: FileText },
+    { label: "Approve Time", href: "/time/approvals", icon: Clock },
+    { label: "Department View", href: "/resources", icon: Users },
+  ],
+};
+
+function getTimeGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function getFocusMessage(items: typeof mockFocusItems): string {
+  const overdue = items.filter(i => i.type === "overdue").length;
+  const dueToday = items.filter(i => i.type === "due_today").length;
+
+  if (overdue > 0 && dueToday > 0) {
+    return `You have ${overdue} overdue item${overdue > 1 ? "s" : ""} and ${dueToday} due today.`;
+  } else if (overdue > 0) {
+    return `You have ${overdue} overdue item${overdue > 1 ? "s" : ""} that need${overdue === 1 ? "s" : ""} attention.`;
+  } else if (dueToday > 0) {
+    return `You have ${dueToday} item${dueToday > 1 ? "s" : ""} due today.`;
+  }
+  return "You're all caught up! No urgent items.";
+}
+
+function FocusItemBadge({ type }: { type: "overdue" | "due_today" | "upcoming" | "needs_attention" }) {
+  const styles = {
+    overdue: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    due_today: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    upcoming: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    needs_attention: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+  };
+  const labels = {
+    overdue: "Overdue",
+    due_today: "Due Today",
+    upcoming: "Upcoming",
+    needs_attention: "Needs Attention",
+  };
+
   return (
-    <div className="min-h-[calc(100vh-120px)] flex flex-col">
-      {/* Header */}
-      <div className="text-center py-8 border-b mb-8">
-        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          SpokeStack
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Your complete agency operations platform
-        </p>
+    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${styles[type]}`}>
+      {labels[type]}
+    </span>
+  );
+}
+
+export default function HubPage() {
+  const greeting = getTimeGreeting();
+  const focusMessage = getFocusMessage(mockFocusItems);
+  const roleActions = quickActions[mockUser.role as keyof typeof quickActions] || quickActions.am;
+  const overdueCount = mockFocusItems.filter(i => i.type === "overdue").length;
+  const dueTodayCount = mockFocusItems.filter(i => i.type === "due_today").length;
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* AI Greeting Section */}
+      <div className="ai-greeting">
+        <div className="ai-avatar">
+          <Sparkles className="w-6 h-6 text-primary-foreground" />
+        </div>
+        <div className="ai-message">
+          <p className="ai-message-header">
+            {greeting}, {mockUser.name}
+          </p>
+          <p className="ai-message-content">{focusMessage}</p>
+          <div className="ai-suggestions mt-3">
+            {overdueCount > 0 && (
+              <Link href="/briefs?filter=overdue" className="ai-suggestion-chip">
+                Show overdue ({overdueCount})
+              </Link>
+            )}
+            {dueTodayCount > 0 && (
+              <Link href="/briefs?filter=due_today" className="ai-suggestion-chip">
+                Today's deadlines ({dueTodayCount})
+              </Link>
+            )}
+            <Link href="/briefs" className="ai-suggestion-chip">
+              View all briefs
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* Main Content - Two Column Layout */}
-      <div className="flex-1 grid lg:grid-cols-[320px_1fr] gap-8">
-        {/* Left Column - Admin & Super Admin */}
-        <div className="space-y-6">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider px-1">
-            Administration
-          </h2>
+      {/* Quick Stats Row */}
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4 stagger-children">
+        <Card className="interactive-lift">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <FileText className="h-4 w-4" />
+              <span className="text-sm">Active Briefs</span>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold">{mockStats.briefs.active}</span>
+              <span className="text-sm text-emerald-500">+{mockStats.briefs.thisWeek} this week</span>
+            </div>
+          </CardContent>
+        </Card>
 
-          {ADMIN_SECTIONS.map((section) => {
-            const Icon = section.icon;
-            return (
-              <Card key={section.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                <div className={`h-1.5 bg-gradient-to-r ${section.color}`} />
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${section.bgColor}`}>
-                        <Icon className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{section.label}</CardTitle>
-                        {section.badge && (
-                          <Badge variant="destructive" className="text-[10px] mt-1">
-                            {section.badge}
-                          </Badge>
+        <Card className="interactive-lift">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <Clock className="h-4 w-4" />
+              <span className="text-sm">Time Today</span>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold">{mockStats.time.loggedToday}</span>
+              <span className="text-sm text-muted-foreground">/ {mockStats.time.target}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="interactive-lift">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <Repeat className="h-4 w-4" />
+              <span className="text-sm">Retainers</span>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-emerald-500">{mockStats.retainers.healthy}</span>
+              <span className="text-sm text-muted-foreground">healthy</span>
+              {mockStats.retainers.atRisk > 0 && (
+                <Badge variant="destructive" className="ml-2">{mockStats.retainers.atRisk} at risk</Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="interactive-lift">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <Users className="h-4 w-4" />
+              <span className="text-sm">Team</span>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold">{mockStats.team.available}</span>
+              <span className="text-sm text-muted-foreground">available</span>
+              {mockStats.team.onLeave > 0 && (
+                <span className="text-sm text-amber-500 ml-2">{mockStats.team.onLeave} on leave</span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        {/* Left: Focus Items */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Focus Items</h2>
+            <Link href="/briefs" className="text-sm text-primary hover:underline flex items-center gap-1">
+              View all <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+
+          <div className="space-y-3 stagger-children">
+            {mockFocusItems.map((item) => (
+              <Card key={item.id} className="interactive-lift">
+                <CardContent className="py-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className={`p-2 rounded-lg ${
+                        item.type === "overdue" ? "bg-red-100 dark:bg-red-900/30" :
+                        item.type === "due_today" ? "bg-amber-100 dark:bg-amber-900/30" :
+                        "bg-blue-100 dark:bg-blue-900/30"
+                      }`}>
+                        {item.type === "overdue" ? (
+                          <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                        ) : item.type === "due_today" ? (
+                          <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        ) : (
+                          <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                         )}
                       </div>
+                      <div>
+                        <p className="font-medium">{item.title}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-sm text-muted-foreground">{item.client}</span>
+                          <span className="text-muted-foreground">•</span>
+                          <span className="text-sm text-muted-foreground">{item.briefType}</span>
+                        </div>
+                      </div>
                     </div>
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link href={section.href}>
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                  <CardDescription className="text-xs mt-2">
-                    {section.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="grid grid-cols-2 gap-1">
-                    {section.modules.map((mod) => {
-                      const ModIcon = mod.icon;
-                      return (
-                        <Link
-                          key={mod.href}
-                          href={mod.href}
-                          className="flex items-center gap-2 p-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                        >
-                          <ModIcon className="h-3.5 w-3.5" />
-                          {mod.label}
-                        </Link>
-                      );
-                    })}
+                    <div className="text-right">
+                      <FocusItemBadge type={item.type} />
+                      <p className="text-xs text-muted-foreground mt-1">{item.dueDate}</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            );
-          })}
+            ))}
+          </div>
         </div>
 
-        {/* Right Column - Module Bundles */}
+        {/* Right: Sidebar */}
         <div className="space-y-6">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider px-1">
-            Module Bundles
-          </h2>
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2">
+              {roleActions.map((action) => {
+                const Icon = action.icon;
+                return (
+                  <Button key={action.href} variant="outline" className="justify-start" asChild>
+                    <Link href={action.href}>
+                      <Icon className="h-4 w-4 mr-2" />
+                      {action.label}
+                    </Link>
+                  </Button>
+                );
+              })}
+            </CardContent>
+          </Card>
 
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {MODULE_BUNDLES.map((bundle) => {
-              const Icon = bundle.icon;
-              return (
-                <Card key={bundle.id} className="overflow-hidden hover:shadow-lg transition-all group">
-                  <div className={`h-2 bg-gradient-to-r ${bundle.color}`} />
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between">
-                      <div className={`p-3 rounded-xl bg-gradient-to-br ${bundle.color} shadow-lg`}>
-                        <Icon className="h-6 w-6 text-white" />
-                      </div>
-                      <Badge variant="outline" className="text-[10px] font-normal">
-                        {bundle.tagline}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-xl flex items-center gap-2 mt-3">
-                      {bundle.label}
-                      <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                    </CardTitle>
-                    <CardDescription className="text-xs">
-                      {bundle.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-1">
-                      {bundle.modules.map((mod) => {
-                        const ModIcon = mod.icon;
-                        return (
-                          <Link
-                            key={mod.href}
-                            href={mod.href}
-                            className="flex items-center gap-3 p-2 rounded-md hover:bg-muted transition-colors group/item"
-                          >
-                            <div className={`p-1.5 rounded-md ${bundle.bgColor}/10`}>
-                              <ModIcon className={`h-4 w-4 ${bundle.bgColor.replace('bg-', 'text-')}`} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium group-hover/item:text-primary transition-colors">
-                                {mod.label}
-                              </p>
-                              <p className="text-[11px] text-muted-foreground truncate">
-                                {mod.description}
-                              </p>
-                            </div>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                    <Button variant="outline" size="sm" className="w-full mt-4" asChild>
-                      <Link href={bundle.href}>
-                        Open {bundle.label}
-                        <ArrowRight className="ml-2 h-3 w-3" />
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Quick Stats or Getting Started */}
-          <Card className="bg-muted/50 border-dashed">
-            <CardContent className="py-6">
+          {/* Recent Notifications */}
+          <Card>
+            <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold">Need help getting started?</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Check out the documentation or contact support
-                  </p>
+                <CardTitle className="text-base">Notifications</CardTitle>
+                <Bell className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {mockNotifications.map((notif) => (
+                <div key={notif.id} className="flex items-start gap-3">
+                  <div className={`p-1.5 rounded-full ${
+                    notif.type === "complete" ? "bg-emerald-100 dark:bg-emerald-900/30" :
+                    notif.type === "warning" ? "bg-amber-100 dark:bg-amber-900/30" :
+                    "bg-blue-100 dark:bg-blue-900/30"
+                  }`}>
+                    {notif.type === "complete" ? (
+                      <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                    ) : notif.type === "warning" ? (
+                      <AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                    ) : (
+                      <FileText className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm">{notif.message}</p>
+                    <p className="text-xs text-muted-foreground">{notif.time}</p>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href="/docs">Documentation</Link>
-                  </Button>
-                  <Button size="sm" asChild>
-                    <a href="mailto:support@spokestack.io">Contact Support</a>
-                  </Button>
+              ))}
+              <Button variant="ghost" size="sm" className="w-full mt-2" asChild>
+                <Link href="/notifications">View all notifications</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Chat Shortcut */}
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <MessageSquare className="h-5 w-5 text-primary" />
                 </div>
+                <div className="flex-1">
+                  <p className="font-medium">SpokeChat</p>
+                  <p className="text-sm text-muted-foreground">3 unread messages</p>
+                </div>
+                <Button size="sm" asChild>
+                  <Link href="/chat">Open</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
