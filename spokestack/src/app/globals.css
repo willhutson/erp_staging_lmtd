@@ -212,6 +212,125 @@
   }
 }
 
+/* ============================================
+   WORKSPACE MODES (Frontend Design Skill)
+   Living | Control | Executive
+   ============================================ */
+
+/* Living Workspace (Default) - Light, airy, activity-focused */
+[data-workspace="living"], :root {
+  --ws-bg-primary: 0 0% 100%;
+  --ws-bg-secondary: 210 20% 98%;
+  --ws-bg-tertiary: 210 14% 96%;
+  --ws-surface-elevated: 0 0% 100%;
+  --ws-surface-overlay: 0 0% 100%;
+
+  /* Living mode accents - warm, inviting */
+  --ws-accent-gradient-start: 160 84% 63%;
+  --ws-accent-gradient-end: 173 80% 50%;
+
+  /* Typography */
+  --ws-heading-weight: 600;
+  --ws-body-tracking: 0.01em;
+
+  /* Spacing - generous, breathable */
+  --ws-section-gap: 2rem;
+  --ws-card-gap: 1.5rem;
+
+  /* Shadows - soft, subtle */
+  --ws-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.03);
+  --ws-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --ws-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --ws-shadow-glow: 0 0 20px -5px hsl(160 84% 63% / 0.15);
+
+  /* Borders - minimal, refined */
+  --ws-border-radius: 12px;
+  --ws-border-width: 1px;
+  --ws-border-opacity: 0.08;
+
+  /* Animation - smooth, delightful */
+  --ws-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --ws-transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --ws-transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --ws-transition-bounce: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Control Tower - Dark, data-dense, terminal-like */
+[data-workspace="control"] {
+  --ws-bg-primary: 222 47% 8%;
+  --ws-bg-secondary: 222 47% 11%;
+  --ws-bg-tertiary: 220 40% 14%;
+  --ws-surface-elevated: 222 40% 13%;
+  --ws-surface-overlay: 222 47% 11%;
+
+  /* Control mode accents - high contrast, alert */
+  --ws-accent-gradient-start: 160 84% 63%;
+  --ws-accent-gradient-end: 142 70% 45%;
+
+  /* Typography - monospace influence */
+  --ws-heading-weight: 700;
+  --ws-body-tracking: 0.02em;
+
+  /* Spacing - compact, efficient */
+  --ws-section-gap: 1.25rem;
+  --ws-card-gap: 1rem;
+
+  /* Shadows - minimal, glow-focused */
+  --ws-shadow-sm: 0 0 0 1px rgb(255 255 255 / 0.05);
+  --ws-shadow-md: 0 0 0 1px rgb(255 255 255 / 0.08), 0 4px 12px -2px rgb(0 0 0 / 0.3);
+  --ws-shadow-lg: 0 0 0 1px rgb(255 255 255 / 0.1), 0 8px 24px -4px rgb(0 0 0 / 0.4);
+  --ws-shadow-glow: 0 0 30px -8px hsl(160 84% 63% / 0.3);
+
+  /* Borders - defined, structural */
+  --ws-border-radius: 8px;
+  --ws-border-width: 1px;
+  --ws-border-opacity: 0.15;
+
+  /* Animation - snappy, purposeful */
+  --ws-transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+  --ws-transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --ws-transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --ws-transition-bounce: 400ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+/* Executive Dashboard - Clean, KPI-forward, minimal chrome */
+[data-workspace="executive"] {
+  --ws-bg-primary: 0 0% 99%;
+  --ws-bg-secondary: 0 0% 97%;
+  --ws-bg-tertiary: 0 0% 95%;
+  --ws-surface-elevated: 0 0% 100%;
+  --ws-surface-overlay: 0 0% 100%;
+
+  /* Executive mode accents - sophisticated, restrained */
+  --ws-accent-gradient-start: 160 50% 45%;
+  --ws-accent-gradient-end: 160 60% 40%;
+
+  /* Typography - refined, authoritative */
+  --ws-heading-weight: 500;
+  --ws-body-tracking: 0.005em;
+
+  /* Spacing - generous, premium */
+  --ws-section-gap: 2.5rem;
+  --ws-card-gap: 2rem;
+
+  /* Shadows - ultra-subtle, elegant */
+  --ws-shadow-sm: 0 1px 1px 0 rgb(0 0 0 / 0.02);
+  --ws-shadow-md: 0 2px 4px -1px rgb(0 0 0 / 0.03), 0 1px 2px -1px rgb(0 0 0 / 0.02);
+  --ws-shadow-lg: 0 4px 8px -2px rgb(0 0 0 / 0.04), 0 2px 4px -2px rgb(0 0 0 / 0.02);
+  --ws-shadow-glow: none;
+
+  /* Borders - whisper-thin, refined */
+  --ws-border-radius: 16px;
+  --ws-border-width: 1px;
+  --ws-border-opacity: 0.05;
+
+  /* Animation - elegant, understated */
+  --ws-transition-fast: 200ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ws-transition-base: 350ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ws-transition-slow: 500ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ws-transition-bounce: 600ms cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
 /* Animations */
 @keyframes fade-in {
   from { opacity: 0; }
@@ -251,4 +370,515 @@
 
 .animation-delay-400 {
   animation-delay: 400ms;
+}
+
+.animation-delay-500 {
+  animation-delay: 500ms;
+}
+
+.animation-delay-600 {
+  animation-delay: 600ms;
+}
+
+/* ============================================
+   ENHANCED ANIMATIONS (Frontend Design Skill)
+   Staggered reveals, high-impact moments
+   ============================================ */
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scale-bounce {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  60% {
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(var(--ws-accent-gradient-start) / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px hsl(var(--ws-accent-gradient-start) / 0.2);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Animation utility classes */
+.animate-slide-up {
+  animation: slide-up var(--ws-transition-base, 250ms) ease-out forwards;
+}
+
+.animate-slide-down {
+  animation: slide-down var(--ws-transition-base, 250ms) ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right var(--ws-transition-base, 250ms) ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left var(--ws-transition-base, 250ms) ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in var(--ws-transition-base, 250ms) ease-out forwards;
+}
+
+.animate-scale-bounce {
+  animation: scale-bounce var(--ws-transition-bounce, 500ms) ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--ws-accent-gradient-start) / 0.1) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+/* Stagger animation for lists */
+.stagger-children > * {
+  opacity: 0;
+  animation: slide-up var(--ws-transition-base, 250ms) ease-out forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 350ms; }
+.stagger-children > *:nth-child(9) { animation-delay: 400ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 450ms; }
+
+/* ============================================
+   GLASSMORPHISM & SURFACE TREATMENTS
+   ============================================ */
+
+.glass {
+  background: hsl(var(--ws-surface-overlay) / 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glass-subtle {
+  background: hsl(var(--ws-surface-overlay) / 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.glass-heavy {
+  background: hsl(var(--ws-surface-overlay) / 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ============================================
+   GRADIENT UTILITIES
+   ============================================ */
+
+.gradient-brand {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--ws-accent-gradient-start)) 0%,
+    hsl(var(--ws-accent-gradient-end)) 100%
+  );
+}
+
+.gradient-brand-subtle {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--ws-accent-gradient-start) / 0.1) 0%,
+    hsl(var(--ws-accent-gradient-end) / 0.1) 100%
+  );
+}
+
+.gradient-brand-text {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--ws-accent-gradient-start)) 0%,
+    hsl(var(--ws-accent-gradient-end)) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================
+   INTERACTIVE STATES
+   ============================================ */
+
+.interactive-lift {
+  transition: transform var(--ws-transition-fast), box-shadow var(--ws-transition-fast);
+}
+
+.interactive-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--ws-shadow-lg);
+}
+
+.interactive-lift:active {
+  transform: translateY(0);
+  box-shadow: var(--ws-shadow-sm);
+}
+
+.interactive-glow {
+  transition: box-shadow var(--ws-transition-base);
+}
+
+.interactive-glow:hover {
+  box-shadow: var(--ws-shadow-glow);
+}
+
+.interactive-scale {
+  transition: transform var(--ws-transition-fast);
+}
+
+.interactive-scale:hover {
+  transform: scale(1.02);
+}
+
+.interactive-scale:active {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   FUEL GAUGE / CAPACITY INDICATORS
+   ============================================ */
+
+.fuel-gauge {
+  --gauge-fill: 0%;
+  --gauge-color: hsl(var(--ws-accent-gradient-start));
+  position: relative;
+  height: 8px;
+  background: hsl(var(--muted));
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.fuel-gauge::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: var(--gauge-fill);
+  background: var(--gauge-color);
+  border-radius: 4px;
+  transition: width var(--ws-transition-slow);
+}
+
+.fuel-gauge[data-level="low"]::after {
+  --gauge-color: hsl(var(--ltd-state-success));
+}
+
+.fuel-gauge[data-level="medium"]::after {
+  --gauge-color: hsl(var(--ltd-state-warning));
+}
+
+.fuel-gauge[data-level="high"]::after {
+  --gauge-color: hsl(var(--ltd-state-error));
+}
+
+.fuel-gauge[data-level="critical"]::after {
+  --gauge-color: hsl(var(--ltd-state-error));
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+/* Circular gauge variant */
+.gauge-circle {
+  --gauge-value: 0;
+  --gauge-size: 64px;
+  --gauge-stroke: 6px;
+  width: var(--gauge-size);
+  height: var(--gauge-size);
+  position: relative;
+}
+
+.gauge-circle svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.gauge-circle .gauge-bg {
+  fill: none;
+  stroke: hsl(var(--muted));
+  stroke-width: var(--gauge-stroke);
+}
+
+.gauge-circle .gauge-fill {
+  fill: none;
+  stroke: hsl(var(--ws-accent-gradient-start));
+  stroke-width: var(--gauge-stroke);
+  stroke-linecap: round;
+  stroke-dasharray: 283;
+  stroke-dashoffset: calc(283 - (283 * var(--gauge-value) / 100));
+  transition: stroke-dashoffset var(--ws-transition-slow);
+}
+
+/* ============================================
+   SPLIT SCREEN LAYOUT (for AI interfaces)
+   ============================================ */
+
+.split-screen {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ws-card-gap);
+  min-height: 100%;
+}
+
+.split-screen-input {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: var(--ws-section-gap);
+  background: hsl(var(--ws-bg-secondary));
+  border-radius: var(--ws-border-radius);
+}
+
+.split-screen-output {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: var(--ws-section-gap);
+  background: hsl(var(--ws-surface-elevated));
+  border-radius: var(--ws-border-radius);
+  border: var(--ws-border-width) solid hsl(var(--border) / var(--ws-border-opacity));
+}
+
+@media (max-width: 1024px) {
+  .split-screen {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
+   AI ASSISTANT COMPONENTS
+   ============================================ */
+
+.ai-greeting {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--ws-accent-gradient-start) / 0.08) 0%,
+    hsl(var(--ws-accent-gradient-end) / 0.05) 100%
+  );
+  border-radius: var(--ws-border-radius);
+  border: var(--ws-border-width) solid hsl(var(--ws-accent-gradient-start) / 0.2);
+}
+
+.ai-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--ws-accent-gradient-start)) 0%,
+    hsl(var(--ws-accent-gradient-end)) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ai-avatar svg {
+  width: 24px;
+  height: 24px;
+  color: hsl(var(--primary-foreground));
+}
+
+.ai-message {
+  flex: 1;
+}
+
+.ai-message-header {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 0.25rem;
+}
+
+.ai-message-content {
+  font-size: 1.125rem;
+  font-weight: var(--ws-heading-weight);
+  color: hsl(var(--foreground));
+}
+
+.ai-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.ai-suggestion-chip {
+  padding: 0.5rem 1rem;
+  background: hsl(var(--ws-surface-elevated));
+  border: var(--ws-border-width) solid hsl(var(--border));
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all var(--ws-transition-fast);
+}
+
+.ai-suggestion-chip:hover {
+  background: hsl(var(--ws-accent-gradient-start) / 0.1);
+  border-color: hsl(var(--ws-accent-gradient-start) / 0.3);
+}
+
+/* ============================================
+   RANDOMNESS DIAL (Creativity Temperature)
+   ============================================ */
+
+.randomness-dial {
+  --dial-value: 5;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: hsl(var(--ws-bg-secondary));
+  border-radius: var(--ws-border-radius);
+}
+
+.randomness-dial-track {
+  flex: 1;
+  height: 8px;
+  background: linear-gradient(
+    to right,
+    hsl(200 80% 50%) 0%,
+    hsl(160 84% 63%) 50%,
+    hsl(30 90% 55%) 100%
+  );
+  border-radius: 4px;
+  position: relative;
+}
+
+.randomness-dial-thumb {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--dial-value) * 10%);
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: var(--ws-shadow-md);
+  cursor: grab;
+  transition: left var(--ws-transition-fast);
+}
+
+.randomness-dial-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.5rem;
 }
